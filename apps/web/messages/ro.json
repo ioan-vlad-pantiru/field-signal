@@ -79,10 +79,22 @@
     "prioritiesTitle": "Ce contează pentru dumneavoastră?",
     "prioritiesHint": "Mutați glisoarele. Cu cât mai la dreapta, cu atât contează mai mult.",
     "priority": {
-      "yield": { "label": "Recoltă sigură", "hint": "Producție cât mai constantă de la an la an" },
-      "water": { "label": "Apă", "hint": "Culturi care se descurcă în veri secetoase" },
-      "soil": { "label": "Sănătatea solului", "hint": "Mai multă materie organică, sol acoperit iarna" },
-      "risk": { "label": "Risc mic", "hint": "Cât mai puțini ani slabi" }
+      "yield": {
+        "label": "Recoltă sigură",
+        "hint": "Producție cât mai constantă de la an la an"
+      },
+      "water": {
+        "label": "Apă",
+        "hint": "Culturi care se descurcă în veri secetoase"
+      },
+      "soil": {
+        "label": "Sănătatea solului",
+        "hint": "Mai multă materie organică, sol acoperit iarna"
+      },
+      "risk": {
+        "label": "Risc mic",
+        "hint": "Cât mai puțini ani slabi"
+      }
     },
     "importance": "{value} din 100",
     "irrigatedTitle": "Câmpul este irigat",
@@ -181,6 +193,22 @@
       "delta": "+{delta} puncte",
       "versus": "Rotația de acum are {current} din 100.",
       "seeYears": "Vedeți fiecare an"
+    },
+    "planTitle": "Ce cultivați și unde",
+    "planHint": "Câmpul împărțit în parcele, câte una pentru fiecare an al rotației. Așa aveți în fiecare an toate culturile din plan.",
+    "plan": {
+      "strategyLabel": "Alegeți rotația",
+      "season": "Sezonul (anul recoltei)",
+      "previous": "Sezonul anterior",
+      "next": "Sezonul următor",
+      "play": "Arată anii",
+      "pause": "Oprește",
+      "mapLabel": "Harta câmpului în {year}: {plots}",
+      "legend": "Culturi în acest sezon",
+      "tableCaption": "Ce cultură are fiecare parcelă în fiecare sezon",
+      "plot": "Parcela",
+      "area": "{ha} ha",
+      "note": "Exemplu: un câmp de {ha} ha împărțit în {plots} parcele egale. Granițele sunt desenate de noi, nu sunt ale câmpului dumneavoastră. Înălțimea culturilor pe hartă este exagerată."
     }
   },
   "Feed": {
@@ -287,5 +315,17 @@
     },
     "nasaNote": "Folosim date publice, gratuite, publicate de NASA și de alte instituții. NASA nu este partener și nu susține acest instrument.",
     "aiHint": "Inteligența artificială face două lucruri mici și verificabile. Nu ia decizii în locul dumneavoastră."
+  },
+  "CropsShort": {
+    "maize": "Porumb",
+    "wheat": "Grâu",
+    "barley": "Orz",
+    "soybean": "Soia",
+    "sunflower": "Floarea-soarelui",
+    "pea": "Mazăre",
+    "cover_mustard": "Muștar",
+    "cover_phacelia": "Facelia",
+    "cover_vetch": "Măzăriche",
+    "fallow": "Pârloagă"
   }
 }

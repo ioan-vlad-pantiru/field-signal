@@ -392,3 +392,16 @@ input[type="range"].slider::-moz-range-thumb {
 .field-pin > svg {
   animation: pin-drop var(--duration-slow) var(--ease-pop);
 }
+
+/* Plot labels on the field-plan map. */
+.plot-label {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-2);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+}

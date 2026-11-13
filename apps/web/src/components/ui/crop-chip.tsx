@@ -2,23 +2,19 @@
 
 import { useTranslations } from "next-intl";
 import type { Crop } from "@/lib/contracts";
-import { cropGroup, type CropGroup } from "@/lib/crops";
-
-const GROUP_DOT: Record<CropGroup, string> = {
-  cereal: "bg-wheat",
-  legume: "bg-status-good",
-  oilseed: "bg-status-watch",
-  cover: "bg-field",
-  fallow: "bg-status-nodata",
-};
+import { CROP_COLORS } from "@/lib/crops";
 
 export function CropDot({ crop }: { crop: Crop }) {
   return (
-    <span aria-hidden="true" className={`h-2.5 w-2.5 shrink-0 rounded-full ${GROUP_DOT[cropGroup(crop)]}`} />
+    <span
+      aria-hidden="true"
+      className="h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-ink/15"
+      style={{ background: CROP_COLORS[crop] }}
+    />
   );
 }
 
-/** A crop name with a dot for its family (cereal, legume, ...). */
+/** A crop name with its colour dot (the same colour as on the field-plan map). */
 export function CropChip({ crop, size = "md" }: { crop: Crop; size?: "sm" | "md" }) {
   const t = useTranslations("Crops");
   return (

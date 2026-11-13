@@ -79,10 +79,22 @@
     "prioritiesTitle": "What matters to you?",
     "prioritiesHint": "Move the sliders. The further right, the more it matters.",
     "priority": {
-      "yield": { "label": "Reliable harvest", "hint": "A harvest that stays steady from year to year" },
-      "water": { "label": "Water", "hint": "Crops that cope with dry summers" },
-      "soil": { "label": "Soil health", "hint": "More organic matter, soil covered in winter" },
-      "risk": { "label": "Low risk", "hint": "As few poor years as possible" }
+      "yield": {
+        "label": "Reliable harvest",
+        "hint": "A harvest that stays steady from year to year"
+      },
+      "water": {
+        "label": "Water",
+        "hint": "Crops that cope with dry summers"
+      },
+      "soil": {
+        "label": "Soil health",
+        "hint": "More organic matter, soil covered in winter"
+      },
+      "risk": {
+        "label": "Low risk",
+        "hint": "As few poor years as possible"
+      }
     },
     "importance": "{value} of 100",
     "irrigatedTitle": "The field is irrigated",
@@ -181,6 +193,22 @@
       "delta": "+{delta} points",
       "versus": "Your current rotation scores {current} of 100.",
       "seeYears": "See every year"
+    },
+    "planTitle": "What to grow where",
+    "planHint": "Your field split into plots, one for each year of the rotation, so every crop in the plan is on the farm each year.",
+    "plan": {
+      "strategyLabel": "Choose the rotation",
+      "season": "Season (harvest year)",
+      "previous": "Previous season",
+      "next": "Next season",
+      "play": "Play the years",
+      "pause": "Pause",
+      "mapLabel": "Field map for {year}: {plots}",
+      "legend": "Crops this season",
+      "tableCaption": "Which crop each plot has in each season",
+      "plot": "Plot",
+      "area": "{ha} ha",
+      "note": "Example: a {ha} ha field split into {plots} equal plots. We drew the boundaries; they are not your field's. Crop heights on the map are exaggerated."
     }
   },
   "Feed": {
@@ -287,5 +315,17 @@
     },
     "nasaNote": "We use free public data published by NASA and other institutions. NASA is not a partner and does not endorse this tool.",
     "aiHint": "AI does two small, checkable jobs. It does not make decisions for you."
+  },
+  "CropsShort": {
+    "maize": "Maize",
+    "wheat": "Wheat",
+    "barley": "Barley",
+    "soybean": "Soybean",
+    "sunflower": "Sunflower",
+    "pea": "Pea",
+    "cover_mustard": "Mustard",
+    "cover_phacelia": "Phacelia",
+    "cover_vetch": "Vetch",
+    "fallow": "Fallow"
   }
 }

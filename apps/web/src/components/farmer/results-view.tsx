@@ -15,6 +15,7 @@ import { ReplayGrid } from "./replay-grid";
 import { SoilCard } from "./soil-card";
 import { StrategyCards } from "./strategy-cards";
 import { StrategyExplanations } from "./strategy-explanations";
+import { FieldPlan } from "./field-plan";
 import { VerdictCard } from "./verdict-card";
 
 export function ResultsView({
@@ -62,6 +63,9 @@ export function ResultsView({
       </header>
 
       <VerdictCard strategies={analysis.strategies} />
+
+      <SectionTitle hint={t("planHint")}>{t("planTitle")}</SectionTitle>
+      <FieldPlan center={location.point} strategies={analysis.strategies} />
 
       <SectionTitle hint={t("indicatorsHint")}>{t("indicatorsTitle")}</SectionTitle>
       <div className="grid gap-3 sm:grid-cols-2">
