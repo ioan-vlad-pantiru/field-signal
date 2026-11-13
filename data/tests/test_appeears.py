@@ -45,6 +45,7 @@ def test_load_keeps_batch_1_on_overlap(monkeypatch: pytest.MonkeyPatch, tmp_path
     pd.DataFrame(
         [{**row, "sm_rootzone": 0.99}, {**row, "point": 1, "sm_rootzone": 0.2}]
     ).to_parquet(tmp_path / "smap-2.parquet")
+    pd.DataFrame([{**row, "sm_rootzone": 0.5}]).to_parquet(tmp_path / "smap-old.parquet")
     df = appeears.load("smap")
     assert df is not None and len(df) == 2
     assert df.loc[df.point == 0, "sm_rootzone"].item() == 0.30

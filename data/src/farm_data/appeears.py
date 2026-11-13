@@ -23,6 +23,7 @@ import io
 import json
 import netrc
 import os
+import re
 import sys
 import time
 from datetime import date
@@ -261,7 +262,8 @@ def fetch(wait: bool = True) -> None:
 def load(stem: str) -> pd.DataFrame | None:
     """All finished batches of `stem` ("modis" or "smap"), batch 1 first; a point/date found in
     two batches is kept once."""
-    fs = sorted(OUT.glob(f"{stem}*.parquet"), key=lambda f: int(f.stem.partition("-")[2] or 1))
+    fs = [f for f in OUT.glob(f"{stem}*.parquet") if re.fullmatch(rf"{stem}(-\d+)?", f.stem)]
+    fs.sort(key=lambda f: int(f.stem.partition("-")[2] or 1))  # other names (smap-old) skipped
     if not fs:
         return None
     df = pd.concat([pd.read_parquet(f) for f in fs], ignore_index=True)
