@@ -16,7 +16,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    app_name: str = "Farm Titans API"
+    app_name: str = "Field Signal API"
     environment: str = "development"
     cors_origins: list[str] = ["http://localhost:3000"]
 

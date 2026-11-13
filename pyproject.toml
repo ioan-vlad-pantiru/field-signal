@@ -1,7 +1,7 @@
 [project]
-name = "farm-titans-field-shift"
+name = "field-signal"
 version = "0.1.0"
-description = "Farm Titans — NASA Space Apps Challenge 2026 (Field Shift) monorepo root"
+description = "Field Signal by Farm Titans — NASA Space Apps Challenge 2026 (Field Shift) monorepo root"
 requires-python = ">=3.12,<3.13"
 dependencies = []
 

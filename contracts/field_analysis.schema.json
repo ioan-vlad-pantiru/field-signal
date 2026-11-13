@@ -745,5 +745,5 @@
   ],
   "title": "FieldAnalysis",
   "type": "object",
-  "$id": "https://farm-titans/contracts/field_analysis/0.1.0"
+  "$id": "https://field-signal/contracts/field_analysis/0.1.0"
 }

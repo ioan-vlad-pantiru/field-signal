@@ -88,5 +88,5 @@
   ],
   "title": "FieldRequest",
   "type": "object",
-  "$id": "https://farm-titans/contracts/field_request/0.1.0"
+  "$id": "https://field-signal/contracts/field_request/0.1.0"
 }

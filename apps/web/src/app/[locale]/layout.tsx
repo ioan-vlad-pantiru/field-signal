@@ -12,7 +12,7 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Farm Titans",
+  title: "Field Signal",
   description:
     "Crop-rotation decision support for Romanian farmers, built on NASA Earth observation data.",
 };

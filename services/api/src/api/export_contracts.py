@@ -22,7 +22,7 @@ def main() -> None:
     CONTRACTS_DIR.mkdir(exist_ok=True)
     for name, model in EXPORTED.items():
         schema = model.model_json_schema(mode="serialization")
-        schema["$id"] = f"https://farm-titans/contracts/{name}/{SCHEMA_VERSION}"
+        schema["$id"] = f"https://field-signal/contracts/{name}/{SCHEMA_VERSION}"
         path = CONTRACTS_DIR / f"{name}.schema.json"
         path.write_text(json.dumps(schema, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         print(f"wrote {path.relative_to(CONTRACTS_DIR.parent)}")

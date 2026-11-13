@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Farm Titans — data-access check for one point.
+Field Signal — data-access check for one point.
 
 Pulls, for a single lat/lon:
   1. NASA POWER daily agroclimate (no account)          -> power_daily.csv

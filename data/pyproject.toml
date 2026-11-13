@@ -1,7 +1,7 @@
 [project]
 name = "farm-data"
 version = "0.1.0"
-description = "Farm Titans — Datasets and fetch pipelines"
+description = "Field Signal — Datasets and fetch pipelines"
 requires-python = ">=3.12,<3.13"
 dependencies = [
   "pandas>=2.2",
