@@ -1,9 +1,275 @@
 {
-  "Home": {
-    "title": "Field Signal",
-    "tagline": "Sprijin decizional pentru rotația culturilor, construit pe date de observare a Pământului de la NASA.",
-    "status": "Schelet de proiect — funcționalitățile vin în curând.",
-    "switchLocale": "English",
-    "mapLabel": "Hartă România"
+  "App": {
+    "name": "Field Signal",
+    "description": "Ajutor pentru alegerea rotației culturilor, pe baza datelor din satelit și a vremii din ultimii 25 de ani."
+  },
+  "Nav": {
+    "label": "Navigare principală",
+    "field": "Câmp",
+    "feed": "Furaje",
+    "about": "Despre",
+    "switchLocale": "EN",
+    "switchLocaleLabel": "Switch to English"
+  },
+  "Footer": {
+    "credit": "Creat la NASA Space Apps Challenge 2026 · Date: NASA POWER, MODIS, SMAP, SoilGrids",
+    "team": "Echipa Farm Titans"
+  },
+  "Banner": {
+    "title": "Date demonstrative",
+    "text": "Cifrele de mai jos sunt inventate pentru demonstrație. Nu luați decizii pe baza lor.",
+    "offline": "Serverul nu răspunde, așa că afișăm datele incluse în aplicație."
+  },
+  "Common": {
+    "verifyAgronomist": "Verificați cu un agronom",
+    "close": "Închide",
+    "sequence": "Ordinea culturilor",
+    "errorTitle": "Nu am putut încărca rezultatele",
+    "errorText": "Cererea nu a fost acceptată. Verificați datele introduse și încercați din nou.",
+    "retry": "Încearcă din nou"
+  },
+  "Status": {
+    "good": "Bun",
+    "watch": "Atenție",
+    "bad": "Slab",
+    "no_data": "Fără date"
+  },
+  "Risk": {
+    "low": "Risc mic",
+    "medium": "Risc mediu",
+    "high": "Risc mare"
+  },
+  "Confidence": {
+    "label": "Încredere: {level}",
+    "low": "scăzută",
+    "medium": "medie",
+    "high": "ridicată"
+  },
+  "Crops": {
+    "maize": "Porumb",
+    "wheat": "Grâu",
+    "barley": "Orz",
+    "soybean": "Soia",
+    "sunflower": "Floarea-soarelui",
+    "pea": "Mazăre furajeră",
+    "cover_mustard": "Muștar (cultură de acoperire)",
+    "cover_phacelia": "Facelia (cultură de acoperire)",
+    "cover_vetch": "Măzăriche (cultură de acoperire)",
+    "fallow": "Pârloagă"
+  },
+  "Units": {
+    "days": "zile",
+    "seasons": "sezoane"
+  },
+  "Field": {
+    "step": "Pasul 1 din 2",
+    "title": "Despre câmpul dumneavoastră",
+    "intro": "Spuneți-ne unde este câmpul și ce cultivați. Vă arătăm cum ar fi mers trei rotații în ultimii 25 de ani.",
+    "whereTitle": "Unde este câmpul?",
+    "whereHint": "Atingeți harta pentru a muta acul. Puteți și să-l trageți.",
+    "mapLabel": "Hartă pentru alegerea câmpului",
+    "coordinates": "{lat}° N · {lon}° E",
+    "resetPin": "Înapoi la Aiud",
+    "rotationTitle": "Rotația de acum",
+    "rotationHint": "Ce cultivați an de an pe acest câmp. Între 2 și 4 culturi.",
+    "year": "Anul {n}",
+    "removeCrop": "Scoate {crop} din anul {n}",
+    "addCrop": "Adăugați anul următor:",
+    "rotationFull": "Rotația are deja {max} ani. Scoateți o cultură ca să adăugați alta.",
+    "prioritiesTitle": "Ce contează pentru dumneavoastră?",
+    "prioritiesHint": "Mutați glisoarele. Cu cât mai la dreapta, cu atât contează mai mult.",
+    "priority": {
+      "yield": { "label": "Recoltă sigură", "hint": "Producție cât mai constantă de la an la an" },
+      "water": { "label": "Apă", "hint": "Culturi care se descurcă în veri secetoase" },
+      "soil": { "label": "Sănătatea solului", "hint": "Mai multă materie organică, sol acoperit iarna" },
+      "risk": { "label": "Risc mic", "hint": "Cât mai puțini ani slabi" }
+    },
+    "importance": "{value} din 100",
+    "irrigatedTitle": "Câmpul este irigat",
+    "irrigatedHint": "Bifați dacă puteți uda culturile vara.",
+    "analyze": "Analizează"
+  },
+  "Results": {
+    "back": "Schimbă câmpul sau rotația",
+    "period": "Perioada analizată: {start}–{end}",
+    "loading": "Analizăm 25 de ani de date pentru acest loc…",
+    "indicatorsTitle": "Ce arată datele pentru acest loc",
+    "indicatorsHint": "Ultimul an comparat cu media anilor. Linia punctată este media.",
+    "noComparison": "Nu avem destule date pentru comparație",
+    "nearNormal": "Aproape de medie",
+    "aboveNormal": "Peste medie",
+    "belowNormal": "Sub medie",
+    "whatIs": "Ce înseamnă: {term}",
+    "latest": "În {year}",
+    "mean": "Media anilor",
+    "meanLegend": "media",
+    "sparklineLabel": "Evoluția pentru {name}, {from}–{to}",
+    "soil": {
+      "title": "Solul",
+      "depth": "Stratul de la suprafață ({depth})",
+      "whatIs": "Ce înseamnă: {term}",
+      "mix": "{clay}% argilă · {sand}% nisip · {silt}% praf",
+      "carbon": {
+        "label": "Carbon organic",
+        "help": "Cât de bogat este solul în materie organică. Mai mult carbon înseamnă de obicei un sol care ține mai bine apa și hrana plantelor."
+      },
+      "ph": {
+        "label": "pH",
+        "help": "Cât de acid sau alcalin este solul. Între 6 și 7,5 se potrivește pentru majoritatea culturilor de câmp."
+      },
+      "texture": {
+        "label": "Textură",
+        "help": "Amestecul de argilă, nisip și praf. Solurile argiloase țin apa mai mult, cele nisipoase se usucă repede."
+      }
+    },
+    "strategiesTitle": "Trei rotații, comparate",
+    "strategiesHint": "Scorul arată cât de bine s-ar potrivi rotația cu prioritățile dumneavoastră. 100 este cel mai bun.",
+    "strategy": {
+      "listLabel": "Rotații comparate",
+      "current": "Rotația de acum",
+      "best": "Scorul cel mai bun",
+      "score": "Scor total",
+      "rangeLabel": "Scor probabil între {low} și {high}, cel mai probabil {mid}",
+      "low": "min {value}",
+      "mid": "probabil {value}",
+      "high": "max {value}",
+      "breakdown": {
+        "yield_stability": "Recoltă constantă",
+        "water": "Apă",
+        "soil_health": "Sănătatea solului",
+        "low_risk": "Risc mic"
+      }
+    },
+    "replayTitle": "Cum ar fi mers în fiecare an",
+    "replayHint": "Fiecare pătrat este un sezon. Atingeți un pătrat ca să vedeți de ce.",
+    "replay": {
+      "scrollLabel": "Tabel pe ani, se poate derula orizontal",
+      "caption": "Rezultatul fiecărei rotații în fiecare sezon",
+      "cellLabel": "{year}, {crop}: {status}, dovezi {evidence}",
+      "evidence": {
+        "high": "solide",
+        "medium": "medii",
+        "low": "slabe"
+      },
+      "legend": "Legendă",
+      "weakEvidence": "Dovezi slabe (înainte de 2015)",
+      "sheetTitle": "Sezonul {year}",
+      "evidenceLine": "Dovezi pentru acest an: {level}.",
+      "reasons": "De ce",
+      "noReasons": "Nimic deosebit în datele acestui sezon."
+    },
+    "explainTitle": "De ce aceste scoruri",
+    "explainHint": "Alegeți o rotație ca să vedeți explicația.",
+    "explain": {
+      "tabsLabel": "Alegeți rotația",
+      "why": "Pe scurt",
+      "evidence": "Ce arată datele",
+      "source": "Sursa: {source}",
+      "benefits": "Avantaje",
+      "gaps": "Ce nu știm",
+      "risks": "Riscuri de verificat local",
+      "generatedBy": {
+        "template": "Text generat după un șablon, din valorile calculate mai sus.",
+        "llm": "Text scris de un model AI doar din valorile calculate mai sus."
+      }
+    },
+    "caveatsTitle": "De reținut",
+    "sourcesTitle": "Surse de date"
+  },
+  "Feed": {
+    "eyebrow": "Field Signal · Furaje",
+    "title": "De unde cumpărați furaje anul acesta?",
+    "intro": "Pentru fiecare comună: dacă va fi destulă recoltă, ce riscuri de calitate există și cât de prietenos cu mediul se cultivă.",
+    "loading": "Încărcăm zonele…",
+    "regionLine": "{region} · sezonul {season} · {count} comune",
+    "cropToggle": "Alegeți cultura",
+    "mapLabel": "Hartă cu riscul de aprovizionare pentru {crop}",
+    "mapHint": "Culoarea și semnul arată riscul de a nu găsi destulă recoltă. Atingeți o comună pentru detalii.",
+    "markerLabel": "{zone}: {risk}",
+    "zoneList": "Comune",
+    "riskShort": "Aprovizionare",
+    "noCropData": "Fără date pentru această cultură",
+    "noZones": "Nu avem încă zone pentru această regiune.",
+    "sheetTitle": "{zone} · {crop}",
+    "zone": {
+      "area": "{ha} ha cultivate",
+      "availability": "Cantitate",
+      "riskScore": "Scor de risc",
+      "yieldAnomaly": "Recolta față de normal",
+      "anomalyRange": "între {low}% și {high}%",
+      "drivers": "De ce",
+      "quality": "Calitate",
+      "noFlags": "Nu sunt semnale de risc pentru calitate.",
+      "flagDays": "{observed} zile cu risc anul acesta, față de {normal} într-un an obișnuit",
+      "window": "Perioada urmărită: {window}",
+      "impact": "Mediu",
+      "waterDeficit": "Lipsă de apă în sezon",
+      "legumeShare": "Leguminoase în rotație",
+      "winterCover": "Sol acoperit iarna",
+      "model": "Versiunea modelului: {version}"
+    },
+    "recommendationTitle": "Recomandare",
+    "assumptions": "Presupuneri",
+    "scenarioTitle": "Dacă mai mulți fermieri ar cultiva soia",
+    "adoption": {
+      "estimate": "Estimare",
+      "title": "Câtă {crop} în plus ar fi în zonă",
+      "hint": "Mutați glisorul: ce procent dintre furnizori ar introduce cultura în rotație.",
+      "sliderLabel": "Furnizori care adaugă {crop}",
+      "area": "Suprafață în plus",
+      "production": "Producție în plus",
+      "protein": "Proteină în plus",
+      "rangeLabel": "Între {low} și {high} {unit}, cel mai probabil {mid} {unit}",
+      "range": "între {low} și {high} {unit}",
+      "assumptions": "Presupuneri",
+      "linear": "Rezultatele cresc proporțional cu procentul de adoptare, pornind de la scenariul calculat pentru {base}%."
+    },
+    "caveatsTitle": "De reținut"
+  },
+  "About": {
+    "title": "Despre Field Signal",
+    "intro": "Field Signal pune la un loc 25 de ani de date despre vreme, umiditatea solului și starea vegetației, ca să vedeți cum s-ar fi descurcat diferite rotații pe câmpul dumneavoastră.",
+    "judgment": "Instrumentul sprijină judecata fermierului. Nu o înlocuiește.",
+    "whatTitle": "Ce face",
+    "what": {
+      "farmer": "Pentru fermieri: compară rotația de acum cu două alternative (cel puțin una cu soia sau mazăre) și arată, an de an, cum ar fi mers fiecare.",
+      "buyer": "Pentru cumpărătorii de furaje: arată pe comune riscul de a nu găsi destulă recoltă, riscurile de calitate (aflatoxine, fuzarioză, ploi la recoltare) și impactul asupra mediului.",
+      "transparency": "Fiecare cifră are sursa, perioada, presupunerile și nivelul de încredere lângă ea."
+    },
+    "sourcesTitle": "Datele folosite",
+    "sourcesHint": "Date publice. Rezoluția arată cât de mare este „pixelul” fiecărei surse.",
+    "table": {
+      "dataset": "Sursa",
+      "use": "La ce o folosim",
+      "resolution": "Rezoluție",
+      "period": "Perioadă",
+      "nasaData": "Date NASA",
+      "otherData": "Altă sursă publică"
+    },
+    "sources": {
+      "power": "Căldură, ploaie și umezeala aerului, zi de zi",
+      "modis": "Cât de verde și viguroasă este vegetația (NDVI)",
+      "smap": "Apa din sol, în zona rădăcinilor",
+      "soilgrids": "Carbon organic, pH și textura solului",
+      "eucropmap": "Ce culturi sunt unde, pentru suprafețe pe comună",
+      "ins": "Producții oficiale pe județ, pentru verificarea modelului"
+    },
+    "aiTitle": "Rolul inteligenței artificiale",
+    "ai": {
+      "modelTitle": "Modelul de risc",
+      "model": "Un model mic estimează șansa unui an slab pentru fiecare zonă și cultură, din semnalele de vreme și vegetație din perioadele critice. Îl testăm lăsând deoparte câte un an și publicăm și reușitele, și greșelile.",
+      "textTitle": "Explicațiile",
+      "text": "Un model de limbaj transformă cifrele calculate în text simplu. Are voie să folosească doar valorile calculate de noi și un format fix."
+    },
+    "limitsTitle": "Ce nu poate vedea",
+    "limits": {
+      "hail": "Grindina și alte fenomene locale de scurtă durată.",
+      "pests": "Dăunătorii și bolile din câmpul dumneavoastră.",
+      "markets": "Prețurile și piețele.",
+      "management": "Lucrările, hibrizii și îngrășămintele folosite de dumneavoastră.",
+      "scale": "Datele de vreme descriu o zonă de zeci de kilometri, nu exact parcela."
+    },
+    "demoTitle": "Despre datele din demonstrație",
+    "demo": "În această versiune, cifrele sunt demonstrative. Le marcăm clar cu „Date demonstrative” până când legăm datele reale."
   }
 }
