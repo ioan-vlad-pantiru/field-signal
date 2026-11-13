@@ -8,6 +8,7 @@ import { useCountUp } from "@/lib/use-count-up";
 import { ConfidenceBadge } from "@/components/ui/badges";
 import { RangeBar, ScoreBar } from "@/components/ui/charts";
 import { CropSequence } from "@/components/ui/crop-chip";
+import { Link } from "@/i18n/navigation";
 
 const BREAKDOWN = ["yield_stability", "water", "soil_health", "low_risk"] as const;
 
@@ -21,6 +22,7 @@ function StrategyCard({
   index: number;
 }) {
   const t = useTranslations("Results.strategy");
+  const tSim = useTranslations("Simulator");
   const locale = useAppLocale();
   const l = useLocalized();
   const { score, score_range: range } = strategy;
@@ -83,6 +85,13 @@ function StrategyCard({
           </li>
         ))}
       </ul>
+
+      <Link
+        href={`/simulator?strategy=${encodeURIComponent(strategy.id)}&seq=${strategy.sequence.join(",")}`}
+        className="mt-auto inline-flex min-h-11 items-center gap-1 self-start font-medium text-field underline underline-offset-4"
+      >
+        {tSim("openLink")} →
+      </Link>
     </article>
   );
 }
