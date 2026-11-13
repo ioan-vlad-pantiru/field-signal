@@ -1,4 +1,4 @@
-// Field Signal front door: serves fieldsignal.ioan-vlad-pantiru.com from the two Azure Container
+// Field Signal front door: serves fieldsignal.land (www. redirects to it) from the two Azure Container
 // Apps. /api/* goes to the API (prefix stripped), everything else to the web app, so the browser
 // talks to a single origin.
 const WEB = "https://field-signal.proudocean-c71411f0.germanywestcentral.azurecontainerapps.io";
@@ -7,6 +7,10 @@ const API = "https://field-signal-api.proudocean-c71411f0.germanywestcentral.azu
 export default {
   async fetch(request) {
     const url = new URL(request.url);
+    if (url.hostname === "www.fieldsignal.land") {
+      url.hostname = "fieldsignal.land";
+      return Response.redirect(url.toString(), 301);
+    }
     const isApi = url.pathname === "/api" || url.pathname.startsWith("/api/");
     const origin = isApi ? API : WEB;
     const path = isApi ? url.pathname.slice(4) || "/" : url.pathname;

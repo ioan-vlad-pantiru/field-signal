@@ -4,5 +4,9 @@
   "main": "worker.js",
   "compatibility_date": "2026-11-01",
   "workers_dev": false,
-  "routes": [{ "pattern": "fieldsignal.ioan-vlad-pantiru.com", "custom_domain": true }]
+  "routes": [
+    { "pattern": "fieldsignal.land", "custom_domain": true },
+    { "pattern": "www.fieldsignal.land", "custom_domain": true },
+    { "pattern": "fieldsignal.ioan-vlad-pantiru.com", "custom_domain": true }
+  ]
 }
