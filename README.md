@@ -4,6 +4,8 @@ Field Signal, by team Farm Titans, is crop-rotation decision support for Romania
 
 Created at the **NASA Space Apps Challenge 2026** (14–15 Nov 2026) for the challenge *Field Shift: Adapting Farms with NASA Data*. This is an independent hackathon project; it is not endorsed by or affiliated with NASA.
 
+**Live demo:** https://field-signal.proudocean-c71411f0.germanywestcentral.azurecontainerapps.io (API: https://field-signal-api.proudocean-c71411f0.germanywestcentral.azurecontainerapps.io/docs). Both scale to zero, so the first visit after a quiet spell takes a few seconds.
+
 ## Team
 
 | Who | Role | Owns |
@@ -52,6 +54,10 @@ uv run --package farm-data python data/scripts/<script>.py
 ```
 
 Lint / format everything: `pnpm lint`, `pnpm format` (or `make lint`, `make format`).
+
+## Deploy
+
+Both apps run on Azure Container Apps (consumption plan, scale to zero) in resource group `rg-field-signal`. After `az login`, `scripts/deploy-azure.sh` builds the images, pushes them to the registry and rolls out both apps; pass `api` or `web` to deploy only one. The web image bakes in the API URL at build time, and the API's `CORS_ORIGINS` allows the web URL.
 
 ## Data sources
 
