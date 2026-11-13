@@ -16,7 +16,8 @@ TARGETS=${1:-"api web"}
 
 cd "$(git rev-parse --show-toplevel)"
 az acr login -n "$ACR" >/dev/null
-API_URL=https://$(az containerapp show -g "$RG" -n "$API_APP" --query properties.configuration.ingress.fqdn -o tsv)
+# The browser reaches the API through the Cloudflare front door (deploy/cloudflare), same origin.
+API_URL=${PUBLIC_API_URL:-https://fieldsignal.ioan-vlad-pantiru.com/api}
 
 for target in $TARGETS; do
   case $target in

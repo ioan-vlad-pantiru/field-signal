@@ -4,7 +4,7 @@ Field Signal, by team Farm Titans, is crop-rotation decision support for Romania
 
 Created at the **NASA Space Apps Challenge 2026** (14–15 Nov 2026) for the challenge *Field Shift: Adapting Farms with NASA Data*. This is an independent hackathon project; it is not endorsed by or affiliated with NASA.
 
-**Live demo:** https://field-signal.proudocean-c71411f0.germanywestcentral.azurecontainerapps.io (API: https://field-signal-api.proudocean-c71411f0.germanywestcentral.azurecontainerapps.io/docs). Both scale to zero, so the first visit after a quiet spell takes a few seconds.
+**Live demo:** https://fieldsignal.ioan-vlad-pantiru.com (API docs: https://fieldsignal.ioan-vlad-pantiru.com/api/docs). Both scale to zero, so the first visit after a quiet spell takes a few seconds.
 
 ## Team
 
@@ -57,7 +57,7 @@ Lint / format everything: `pnpm lint`, `pnpm format` (or `make lint`, `make form
 
 ## Deploy
 
-Both apps run on Azure Container Apps (consumption plan, scale to zero) in resource group `rg-field-signal`. After `az login`, `scripts/deploy-azure.sh` builds the images, pushes them to the registry and rolls out both apps; pass `api` or `web` to deploy only one. The web image bakes in the API URL at build time, and the API's `CORS_ORIGINS` allows the web URL.
+Both apps run on Azure Container Apps (consumption plan, scale to zero) in resource group `rg-field-signal`. After `az login`, `scripts/deploy-azure.sh` builds the images, pushes them to the registry and rolls out both apps; pass `api` or `web` to deploy only one. A Cloudflare Worker (`deploy/cloudflare`, deploy with `npx wrangler deploy` there) serves the public domain: `/api/*` goes to the API, everything else to the web app. The web image bakes in the public API URL at build time.
 
 ## Data sources
 
