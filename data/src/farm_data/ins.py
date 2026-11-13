@@ -3,7 +3,7 @@
 Tables (Institutul Național de Statistică, TEMPO Online, http://statistici.insse.ro:8077/tempo-online/):
 - AGR108A cultivated area (ha), AGR109A production (t), AGR110A average yield (kg/ha),
   by main crop x ownership form (we keep "Total") x county x year.
-INS data are free to reuse with attribution ("Sursa: INS").
+Terms: see README Data sources.
 
     uv run --package farm-data python -m farm_data.ins   # -> data/cache/ins/county_yields.parquet
 

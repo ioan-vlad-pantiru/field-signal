@@ -30,7 +30,7 @@ MODIS: $modis. SMAP: $smap. This release is replaced as the AppEEARS tasks finis
 
 Install: \`gh release download data-latest -p field-signal-data.tar.gz -O - | tar -xz -C data\`
 
-Sources and attribution: README \"Data sources\" (NASA POWER, MODIS, SMAP: NASA open data; SoilGrids, EUCROPMAP: CC BY 4.0; Sursa: INS)."
+Sources and attribution: README \"Data sources\" (NASA POWER, MODIS, SMAP: NASA open data; SoilGrids: CC BY 4.0; EUCROPMAP: EC reuse notice (Commission Decision 2011/833/EU of 12 Dec 2011), acknowledge the source; INS TEMPO (Sursa: INS): terms: see README Data sources)."
 
 if gh release view data-latest >/dev/null 2>&1; then
   gh release upload data-latest "$tgz" --clobber

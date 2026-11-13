@@ -1,4 +1,5 @@
-"""JRC EUCROPMAP crop-type maps, 2018 and 2022 (10 m, EPSG:3035, LUCAS codes, CC BY 4.0).
+"""JRC EUCROPMAP crop-type maps, 2018 and 2022 (10 m, EPSG:3035, LUCAS codes).
+EC reuse notice (Commission Decision 2011/833/EU of 12 Dec 2011); acknowledge the source.
 
     from farm_data.cropmap import crop_at, crop_area_ha, sample_points
     crop_at(46.30, 23.75)                 # 'maize' / 'grassland' / ...
