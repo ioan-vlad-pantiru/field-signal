@@ -7,7 +7,8 @@
 Steps (each is cached and skipped when its output exists):
 1. zones + cropland sample points        -> data/cache/zones/
 2. NASA POWER 1981-2025 for every point  -> data/cache/power/
-3. AppEEARS MODIS NDVI + SMAP L4 points  -> data/cache/appeears/   (submit once, then wait)
+3. AppEEARS MODIS NDVI + SMAP L4 points  -> data/cache/appeears/   (submits only points no task
+   covers yet, then waits; --no-wait skips login, submit and fetch)
 4. INS TEMPO county yields               -> data/cache/ins/
 5. feature table                         -> data/cache/features/{field,commune,county}.parquet
    and one real row per zone type        -> contracts/examples/feature_row.example.json
@@ -48,9 +49,8 @@ def main() -> None:
         list(ex.map(lambda r: power.fetch(r.lat, r.lon, *features.POWER_RANGE), pts.itertuples()))
     print("POWER: ok")
 
-    if not appeears.TASKS.exists():
-        print("AppEEARS: submitted", appeears.submit())
-    if not a.no_wait and not (appeears.OUT / "smap.parquet").exists():
+    if not a.no_wait:  # offline (--no-wait) builds read whatever AppEEARS output exists
+        print("AppEEARS: submitted", appeears.submit())  # new batch only for uncovered points
         appeears.fetch()
 
     for t in ins.TABLES:
