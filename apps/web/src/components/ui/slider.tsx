@@ -29,11 +29,11 @@ export function Slider({
         <label htmlFor={id} className="font-medium">
           {label}
         </label>
-        <span className="tabular-nums text-muted" aria-hidden="true">
+        <span className="tabular-nums text-ink-muted" aria-hidden="true">
           {valueText}
         </span>
       </div>
-      {hint ? <p className="text-sm text-muted">{hint}</p> : null}
+      {hint ? <p className="text-sm text-ink-muted">{hint}</p> : null}
       <input
         id={id}
         type="range"

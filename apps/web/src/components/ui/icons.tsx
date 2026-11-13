@@ -93,6 +93,14 @@ export const PlusIcon = (p: IconProps) => (
   </Svg>
 );
 
+export const SatelliteIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M13 7l4 4-6 6-4-4z" />
+    <path d="M6 14l-3 3 4 4 3-3M14 6l3-3 4 4-3 3" />
+    <path d="M15.5 17.5a3 3 0 003-3" />
+  </Svg>
+);
+
 export const ShieldIcon = (p: IconProps) => (
   <Svg {...p}>
     <path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z" />

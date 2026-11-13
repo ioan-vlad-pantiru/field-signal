@@ -22,7 +22,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label={t("label")}
-      className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
+      className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
     >
       <ul className="grid grid-cols-3">
         {ITEMS.map(({ href, key, Icon }) => {
@@ -33,10 +33,10 @@ export function BottomNav() {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={`flex min-h-16 flex-col items-center justify-center gap-0.5 text-sm font-medium ${
-                  active ? "text-primary" : "text-muted"
+                  active ? "text-field" : "text-ink-muted"
                 }`}
               >
-                <span className={`rounded-full px-4 py-1 ${active ? "bg-primary-soft" : ""}`}>
+                <span className={`rounded-full px-4 py-1 ${active ? "bg-field-tint" : ""}`}>
                   <Icon size={22} />
                 </span>
                 {t(key)}
@@ -64,7 +64,7 @@ export function TopNav() {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={`flex min-h-11 items-center gap-2 rounded-full px-4 font-medium ${
-                  active ? "bg-primary-soft text-primary" : "text-muted hover:text-foreground"
+                  active ? "bg-field-tint text-field" : "text-ink-muted hover:text-ink"
                 }`}
               >
                 <Icon size={18} />
@@ -86,7 +86,7 @@ export function LocaleToggle() {
     <Link
       href={pathname}
       locale={other}
-      className="inline-flex min-h-11 items-center rounded-full border border-border px-3 text-sm font-semibold hover:border-primary"
+      className="press inline-flex min-h-11 items-center rounded-full border border-line px-3 text-sm font-semibold hover:border-field"
       aria-label={t("switchLocaleLabel")}
     >
       {t("switchLocale")}

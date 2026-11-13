@@ -55,7 +55,7 @@ export function Sparkline({
           x2={width - pad}
           y1={y(baseline)}
           y2={y(baseline)}
-          stroke="var(--muted)"
+          stroke="var(--ink-muted)"
           strokeDasharray="4 4"
           strokeWidth={1}
           vectorEffect="non-scaling-stroke"
@@ -65,15 +65,24 @@ export function Sparkline({
         <path
           key={d}
           d={d}
+          pathLength={1}
+          className="draw"
           fill="none"
-          stroke="var(--primary)"
+          stroke="var(--field)"
           strokeWidth={2}
           strokeLinejoin="round"
           vectorEffect="non-scaling-stroke"
         />
       ))}
       {last?.value != null ? (
-        <circle cx={x(lastIndex)} cy={y(last.value)} r={3.5} fill="var(--accent)" />
+        <circle
+          cx={x(lastIndex)}
+          cy={y(last.value)}
+          r={3.5}
+          fill="var(--wheat)"
+          className="rise"
+          style={{ animationDelay: "700ms" }}
+        />
       ) : null}
     </svg>
   );
@@ -95,24 +104,27 @@ export function RangeBar({
   const [min, max] = domain;
   const pct = (v: number) => `${Math.min(100, Math.max(0, ((v - min) / (max - min)) * 100))}%`;
   return (
-    <div role="img" aria-label={label} className="relative h-3 w-full rounded-full bg-surface-muted">
+    <div role="img" aria-label={label} className="relative h-3 w-full rounded-full bg-surface-sunken">
       <div
-        className="absolute inset-y-0 rounded-full bg-primary-soft ring-1 ring-primary/40"
+        className="absolute inset-y-0 rounded-full bg-field-tint ring-1 ring-field/40 transition-[left,right] duration-200 ease-settle"
         style={{ left: pct(range.low), right: `calc(100% - ${pct(range.high)})` }}
       />
       <div
-        className="absolute -inset-y-1 w-1 -translate-x-1/2 rounded-full bg-primary"
+        className="absolute -inset-y-1 w-1 -translate-x-1/2 rounded-full bg-field transition-[left] duration-200 ease-settle"
         style={{ left: pct(range.mid) }}
       />
     </div>
   );
 }
 
-/** Horizontal bar for one 0–100 score component. */
-export function ScoreBar({ value }: { value: number }) {
+/** Horizontal bar for one 0–100 score component; grows in, staggered by `index`. */
+export function ScoreBar({ value, index = 0 }: { value: number; index?: number }) {
   return (
-    <div className="h-2 w-full rounded-full bg-surface-muted" aria-hidden="true">
-      <div className="h-2 rounded-full bg-primary" style={{ width: `${Math.max(0, Math.min(100, value))}%` }} />
+    <div className="h-2 w-full rounded-full bg-surface-sunken" aria-hidden="true">
+      <div
+        className="grow-x h-2 rounded-full bg-field"
+        style={{ width: `${Math.max(0, Math.min(100, value))}%`, "--i": index } as React.CSSProperties}
+      />
     </div>
   );
 }

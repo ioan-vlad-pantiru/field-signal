@@ -6,10 +6,10 @@ import { AlertIcon, CheckIcon, CrossIcon, DashIcon } from "./icons";
 export type Tone = "good" | "watch" | "bad" | "nodata";
 
 export const TONE_CLASSES: Record<Tone, { solid: string; soft: string; text: string }> = {
-  good: { solid: "bg-good text-surface", soft: "bg-good-soft", text: "text-good" },
-  watch: { solid: "bg-watch text-surface", soft: "bg-watch-soft", text: "text-watch" },
-  bad: { solid: "bg-bad text-surface", soft: "bg-bad-soft", text: "text-bad" },
-  nodata: { solid: "bg-nodata text-surface", soft: "bg-nodata-soft", text: "text-nodata" },
+  good: { solid: "bg-status-good text-on-status", soft: "bg-status-good-tint", text: "text-status-good" },
+  watch: { solid: "bg-status-watch text-on-status", soft: "bg-status-watch-tint", text: "text-status-watch" },
+  bad: { solid: "bg-status-bad text-on-status", soft: "bg-status-bad-tint", text: "text-status-bad" },
+  nodata: { solid: "bg-status-nodata text-on-status", soft: "bg-status-nodata-tint", text: "text-status-nodata" },
 };
 
 export const TONE_ICONS: Record<Tone, ComponentType<{ size?: number }>> = {

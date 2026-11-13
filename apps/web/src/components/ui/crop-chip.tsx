@@ -5,11 +5,11 @@ import type { Crop } from "@/lib/contracts";
 import { cropGroup, type CropGroup } from "@/lib/crops";
 
 const GROUP_DOT: Record<CropGroup, string> = {
-  cereal: "bg-accent",
-  legume: "bg-good",
-  oilseed: "bg-watch",
-  cover: "bg-primary",
-  fallow: "bg-nodata",
+  cereal: "bg-wheat",
+  legume: "bg-status-good",
+  oilseed: "bg-status-watch",
+  cover: "bg-field",
+  fallow: "bg-status-nodata",
 };
 
 export function CropDot({ crop }: { crop: Crop }) {
@@ -23,7 +23,7 @@ export function CropChip({ crop, size = "md" }: { crop: Crop; size?: "sm" | "md"
   const t = useTranslations("Crops");
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border border-border bg-surface ${
+      className={`inline-flex items-center gap-1.5 rounded-full border border-line bg-surface ${
         size === "sm" ? "px-2 py-0.5 text-sm" : "px-3 py-1"
       }`}
     >
@@ -40,7 +40,7 @@ export function CropSequence({ sequence }: { sequence: readonly Crop[] }) {
       {sequence.map((crop, index) => (
         <li key={index} className="flex items-center gap-1">
           {index > 0 ? (
-            <span aria-hidden="true" className="text-muted">
+            <span aria-hidden="true" className="text-ink-muted">
               →
             </span>
           ) : null}

@@ -8,8 +8,8 @@ import { AlertIcon } from "./icons";
 export function DemoBanner({ origin }: { origin: DataOrigin }) {
   const t = useTranslations("Banner");
   return (
-    <div role="status" className="flex gap-3 rounded-2xl border-2 border-watch bg-watch-soft px-4 py-3">
-      <AlertIcon className="mt-0.5 shrink-0 text-watch" />
+    <div role="status" className="flex gap-3 rounded-2xl border-2 border-status-watch bg-status-watch-tint px-4 py-3">
+      <AlertIcon className="mt-0.5 shrink-0 text-status-watch" />
       <div>
         <p className="font-semibold">{t("title")}</p>
         <p className="text-sm">
@@ -23,13 +23,13 @@ export function DemoBanner({ origin }: { origin: DataOrigin }) {
 export function ErrorState({ onRetry }: { onRetry: () => void }) {
   const t = useTranslations("Common");
   return (
-    <div role="alert" className="flex flex-col items-start gap-3 rounded-2xl border border-bad bg-bad-soft p-4">
+    <div role="alert" className="flex flex-col items-start gap-3 rounded-2xl border border-status-bad bg-status-bad-tint p-4">
       <p className="font-semibold">{t("errorTitle")}</p>
       <p>{t("errorText")}</p>
       <button
         type="button"
         onClick={onRetry}
-        className="min-h-11 rounded-xl bg-primary px-4 font-semibold text-on-primary"
+        className="press min-h-11 rounded-xl bg-field px-4 font-semibold text-on-field"
       >
         {t("retry")}
       </button>
@@ -39,6 +39,6 @@ export function ErrorState({ onRetry }: { onRetry: () => void }) {
 
 export function EmptyState({ children }: { children: React.ReactNode }) {
   return (
-    <p className="rounded-2xl border border-dashed border-border p-6 text-center text-muted">{children}</p>
+    <p className="rounded-2xl border border-dashed border-line p-6 text-center text-ink-muted">{children}</p>
   );
 }
