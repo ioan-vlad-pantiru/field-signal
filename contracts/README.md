@@ -70,11 +70,13 @@ are averaged over the points first, then the season indicators are computed.
 | `smap_rootzone_anomaly` | float? | z-score vs 2015–2025 for the same zone and window | SMAP |
 | `ndvi_peak` | float? | max usable NDVI, sowing → harvest. Cropland greenness at the sample points, not crop-specific (no yearly crop masks) | MODIS MOD13Q1 |
 | `ndvi_peak_anomaly` | float? | z-score vs all seasons of the same zone and crop | MODIS |
-| `ndvi_usable_share` | float | share of composites with reliability 0–1 | MODIS |
+| `ndvi_usable_share` | float? | share of composites with reliability 0–1; null when the source has no reliability layer (MODIS cube) | MODIS |
 | `soc_g_per_kg`, `ph_h2o`, `clay_pct`, `sand_pct` | float? | 0–30 cm | SoilGrids |
 | `yield_t_ha` | float? | official yield (counties only) | INS AGR110A |
 | `yield_anomaly_pct` | float? | % vs a linear trend over the county × crop record (counties only, ≥ 8 years) | derived |
 | `crops_yaml_version` | str | version of the crop windows used | |
+
+A null NDVI or SMAP value (`ndvi_peak`, `ndvi_peak_anomaly`, `ndvi_usable_share`, `smap_*`) means "not measured", never zero.
 
 Required for the pitch minimum: at least three NASA indicators over ≥ 5 seasons for the demo
 field (we have POWER, MODIS, SMAP).
@@ -90,3 +92,16 @@ top_drivers [Reason], model_version, cv_metric_name, cv_metric_value`.
 - `top_drivers`: up to 3 features with the largest contribution, using the feature column name
   as `code`.
 - `cv_metric_*`: leave-one-year-out score, so the app can show how good the model is.
+
+## (3a) Field cells: per-hexagon farmland mask (proposal, #22)
+
+`FieldAnalysis.field_cells` is optional: `null` (the default, and every current mock) means the
+mask was not computed, and the web keeps its OpenStreetMap check. When present, one `FieldCell`
+per 1 ha hexagon of the field plan:
+
+| field | type | description |
+|---|---|---|
+| `id` | str | axial `"q,r"` of a pointy-top 1 ha hexagon, `"0,0"` centred on `location.point`; same ids as `apps/web/src/lib/field-plan.ts` |
+| `cropland_fraction` | float 0–1 | share of the hexagon mapped as cropland |
+
+The map behind the fractions (e.g. EUCROPMAP) and its year go in `FieldAnalysis.sources`.

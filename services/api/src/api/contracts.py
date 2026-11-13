@@ -206,6 +206,17 @@ class Strategy(Contract):
     explanation: Explanation
 
 
+class FieldCell(Contract):
+    """One 1 ha hexagon of the field plan (`apps/web/src/lib/field-plan.ts`)."""
+
+    id: str = Field(
+        description="axial 'q,r' of a pointy-top 1 ha hexagon; '0,0' is centred on location.point"
+    )
+    cropland_fraction: float = Field(
+        ge=0, le=1, description="share of the hexagon mapped as cropland; source in `sources`"
+    )
+
+
 class FieldAnalysis(Contract):
     schema_version: str = SCHEMA_VERSION
     mock: bool = False
@@ -217,6 +228,9 @@ class FieldAnalysis(Contract):
     strategies: list[Strategy] = Field(min_length=3)
     caveats: list[Localized]
     sources: list[DataSource]
+    field_cells: list[FieldCell] | None = Field(
+        default=None, description="per-hexagon farmland mask; null = not computed"
+    )
 
 
 # --------------------------------------------------------------------------- buyer screen
@@ -353,7 +367,9 @@ class FeatureRow(Contract):
     smap_rootzone_anomaly: float | None = Field(default=None, description="z-score, 2015-2025")
     ndvi_peak: float | None = Field(default=None, ge=-1, le=1)
     ndvi_peak_anomaly: float | None = Field(default=None, description="z-score, same zone+crop")
-    ndvi_usable_share: float = Field(ge=0, le=1)
+    ndvi_usable_share: float | None = Field(
+        default=None, ge=0, le=1, description="null when the source has no reliability layer"
+    )
     soc_g_per_kg: float | None = Field(default=None, ge=0)
     ph_h2o: float | None = Field(default=None, ge=0, le=14)
     clay_pct: float | None = Field(default=None, ge=0, le=100)
