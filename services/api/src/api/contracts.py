@@ -367,7 +367,9 @@ class FeatureRow(Contract):
     smap_rootzone_anomaly: float | None = Field(default=None, description="z-score, 2015-2025")
     ndvi_peak: float | None = Field(default=None, ge=-1, le=1)
     ndvi_peak_anomaly: float | None = Field(default=None, description="z-score, same zone+crop")
-    ndvi_usable_share: float = Field(ge=0, le=1)
+    ndvi_usable_share: float | None = Field(
+        default=None, ge=0, le=1, description="null when the source has no reliability layer"
+    )
     soc_g_per_kg: float | None = Field(default=None, ge=0)
     ph_h2o: float | None = Field(default=None, ge=0, le=14)
     clay_pct: float | None = Field(default=None, ge=0, le=100)

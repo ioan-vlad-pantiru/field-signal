@@ -190,10 +190,19 @@
       "title": "Ndvi Peak Anomaly"
     },
     "ndvi_usable_share": {
-      "maximum": 1,
-      "minimum": 0,
-      "title": "Ndvi Usable Share",
-      "type": "number"
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "null when the source has no reliability layer",
+      "title": "Ndvi Usable Share"
     },
     "soc_g_per_kg": {
       "anyOf": [
@@ -299,7 +308,6 @@
     "et0_season_mm",
     "water_deficit_mm",
     "gwetroot_critical",
-    "ndvi_usable_share",
     "crops_yaml_version"
   ],
   "title": "FeatureRow",
