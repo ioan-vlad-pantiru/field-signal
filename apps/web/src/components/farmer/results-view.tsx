@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import type { FieldAnalysis } from "@/lib/contracts";
+import type { FieldAnalysis, LatLon } from "@/lib/contracts";
 import type { DataOrigin } from "@/lib/api";
 import { formatNumber } from "@/lib/format";
 import { useAppLocale, useLocalized } from "@/lib/localized";
@@ -21,10 +21,13 @@ import { VerdictCard } from "./verdict-card";
 export function ResultsView({
   analysis,
   origin,
+  boundary,
   onBack,
 }: {
   analysis: FieldAnalysis;
   origin: DataOrigin;
+  /** The field the farmer drew, if any; the field plan fills it with hexagons. */
+  boundary: LatLon[] | null;
   onBack: () => void;
 }) {
   const t = useTranslations("Results");
@@ -65,7 +68,7 @@ export function ResultsView({
       <VerdictCard strategies={analysis.strategies} />
 
       <SectionTitle hint={t("planHint")}>{t("planTitle")}</SectionTitle>
-      <FieldPlan center={location.point} strategies={analysis.strategies} />
+      <FieldPlan center={location.point} boundary={boundary} strategies={analysis.strategies} />
 
       <SectionTitle hint={t("indicatorsHint")}>{t("indicatorsTitle")}</SectionTitle>
       <div className="grid gap-3 sm:grid-cols-2">

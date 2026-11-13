@@ -1,4 +1,5 @@
 import type { Crop, LatLon } from "@/lib/contracts";
+import { insidePolygon, polygonCentroid, radiusMetres } from "@/lib/geo";
 
 /**
  * ILLUSTRATIVE field layout on a hexagon grid. The contracts carry only a point, not the field
@@ -11,8 +12,10 @@ import type { Crop, LatLon } from "@/lib/contracts";
 /** Side of a regular hexagon of exactly 1 ha: area = (3√3 / 2) · s² = 10 000 m². */
 export const HEX_SIDE_M = Math.sqrt(20_000 / (3 * Math.sqrt(3)));
 export const HEX_AREA_HA = 1;
-/** Rings of hexagons around the pin's hexagon: 3 rings = 37 ha. */
+/** Rings of hexagons around the pin's hexagon when no field is drawn: 3 rings = 37 ha. */
 const FIELD_RINGS = 3;
+/** A drawn field is covered up to this many rings (~1 300 ha), enough for a large farm. */
+const MAX_RINGS = 20;
 /** Plots run across the field along this bearing, like real strips. */
 const PLOT_AXIS_DEG = -24;
 const METRES_PER_DEGREE_LAT = 111_320;
@@ -48,24 +51,33 @@ function toLonLat(origin: LatLon, x: number, y: number): [number, number] {
   return [origin.lon + x / metresPerDegreeLon, origin.lat + y / METRES_PER_DEGREE_LAT];
 }
 
-/** Pointy-top 1 ha hexagons within FIELD_RINGS of the pin. */
-export function hexField(center: LatLon): Hex[] {
+/**
+ * Pointy-top 1 ha hexagons. With a drawn boundary: every hexagon whose centre falls inside it,
+ * so the hexagon count matches the field's area. Without one: FIELD_RINGS around the pin.
+ */
+export function hexField(pin: LatLon, boundary: LatLon[] | null = null): Hex[] {
   const s = HEX_SIDE_M;
   const angle = (PLOT_AXIS_DEG * Math.PI) / 180;
+  const center = boundary ? polygonCentroid(boundary) : pin;
+  const rings = boundary
+    ? Math.min(MAX_RINGS, Math.ceil(radiusMetres(center, boundary) / (s * Math.sqrt(3))) + 1)
+    : FIELD_RINGS;
   const hexes: Hex[] = [];
-  for (let q = -FIELD_RINGS; q <= FIELD_RINGS; q++) {
-    for (let r = -FIELD_RINGS; r <= FIELD_RINGS; r++) {
-      if (Math.abs(q + r) > FIELD_RINGS) continue;
+  for (let q = -rings; q <= rings; q++) {
+    for (let r = -rings; r <= rings; r++) {
+      if (Math.abs(q + r) > rings) continue;
       const x = s * Math.sqrt(3) * (q + r / 2);
       const y = -s * 1.5 * r;
       const corners = Array.from({ length: 6 }, (_, k) => {
         const a = ((60 * k - 30) * Math.PI) / 180;
         return toLonLat(center, x + s * Math.cos(a), y + s * Math.sin(a));
       });
+      const hexCenter = toLonLat(center, x, y);
+      if (boundary && !insidePolygon(hexCenter, boundary)) continue;
       hexes.push({
         id: `${q},${r}`,
         ring: [...corners, corners[0]],
-        center: toLonLat(center, x, y),
+        center: hexCenter,
         axis: x * Math.cos(angle) + y * Math.sin(angle),
       });
     }

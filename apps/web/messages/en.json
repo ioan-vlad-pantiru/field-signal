@@ -66,7 +66,26 @@
     "title": "About your field",
     "intro": "Tell us where your field is and what you grow. We show how three rotations would have done over the last 25 years.",
     "whereTitle": "Where is the field?",
-    "whereHint": "Tap the map to move the pin. You can also drag it.",
+    "whereHint": "Drop a pin on the map, or draw the outline of your field.",
+    "modeLabel": "How to choose your field",
+    "mode": {
+      "pin": "Drop a pin",
+      "draw": "Draw my field"
+    },
+    "draw": {
+      "hint": "Tap the map at each corner of your field, one after another. You need at least 3 corners.",
+      "progress": "{corners, plural, =0 {No corners yet} one {1 corner} other {# corners}} · {ha} ha",
+      "tooSmall": "The field is under {min} ha. Draw it larger: each hexagon is 1 ha.",
+      "tooBig": "The field is over {max} ha. Draw a single field.",
+      "undo": "Undo last corner",
+      "clear": "Clear all",
+      "done": "Done",
+      "yourField": "Your field",
+      "area": "{ha} ha",
+      "corners": "{corners} corners, drawn by you",
+      "edit": "Edit",
+      "remove": "Use a pin only"
+    },
     "mapLabel": "Map for choosing the field",
     "coordinates": "{lat}° N · {lon}° E",
     "resetPin": "Back to Aiud",
@@ -210,6 +229,7 @@
       "plot": "Plot",
       "area": "{ha} ha",
       "note": "Example: {ha} ha of farmland split into {plots} plots. Each hexagon is exactly 1 ha. We left out hexagons on roads, buildings, water or woods, using OpenStreetMap. We drew the boundaries; they are not your field's. Crop heights on the map are exaggerated.",
+      "noteDrawn": "The field you drew is {area} ha. We cover it with {ha} farmable 1 ha hexagons, split into {plots} plots. We left out hexagons on roads, buildings, water or woods, using OpenStreetMap. Crop heights on the map are exaggerated.",
       "notFarmland": "Not farmed: {ha} ha ({reasons})",
       "hexScale": "1 hexagon = 1 ha",
       "reason": {
