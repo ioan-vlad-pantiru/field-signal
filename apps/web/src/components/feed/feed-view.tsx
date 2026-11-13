@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SourceChip } from "@/components/ui/source-chip";
 import { DemoBanner, EmptyState, ErrorState } from "@/components/ui/states";
 import { AdoptionSlider } from "./adoption-slider";
+import { ZoneCompare } from "./zone-compare";
 import { ZoneDetails } from "./zone-sheet";
 import { ZoneMap } from "./zone-map";
 
@@ -165,6 +166,13 @@ function Region({ result }: { result: Loaded<SourcingRegion> }) {
         </>
       )}
 
+      {region.zones.length >= 2 ? (
+        <>
+          <SectionTitle hint={t("compareHint")}>{t("compareTitle")}</SectionTitle>
+          <ZoneCompare zones={region.zones} crop={crop} />
+        </>
+      ) : null}
+
       <SectionTitle>{t("recommendationTitle")}</SectionTitle>
       <Card className="flex flex-col gap-3 border-2 border-field">
         <h3 className="text-xl font-semibold">{l(recommendation.title)}</h3>
@@ -212,7 +220,11 @@ function Region({ result }: { result: Loaded<SourcingRegion> }) {
         onClose={() => setSelected(null)}
         title={selected ? t("sheetTitle", { zone: selected.name, crop: tc(crop) }) : null}
       >
-        {selectedOutlook ? <ZoneDetails outlook={selectedOutlook} /> : <p>{t("noCropData")}</p>}
+        {selected && selectedOutlook ? (
+          <ZoneDetails outlook={selectedOutlook} centroid={selected.centroid} place={selected.name} />
+        ) : (
+          <p>{t("noCropData")}</p>
+        )}
       </Sheet>
     </>
   );
