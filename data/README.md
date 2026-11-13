@@ -27,8 +27,8 @@ Pilot zones: 8 counties (AB, AR, BH, CJ, HD, MS, SB, VL), the 40 Alba communes w
 nearest the Aiud–Sântimbru midpoint, and the demo field: 49 zones, 121 cropland sample points.
 
 NDVI source per zone: AppEEARS MODIS (250 m, QA-screened) for points its task covers, the local
-MODIS cube for every other point. A cube value is one nearest-neighbour MODIS pixel on a 0.01°
-lattice, Terra and Aqua mixed, with no pixel-quality layer: it describes the area, not a field.
+MODIS cube for every other point. A cube value is one MODIS pixel of about 463 m (2× overview),
+nearest pixel, no QA layer, Terra and Aqua mixed: it describes the area, not a field.
 `ndvi_usable_share` null means a cube row or no NDVI at all (not measured). The AppEEARS tasks cover the earlier 81 points and are
 still pending, so today every zone uses the cube.
 `ndvi_peak` is null unless usable composites cover ≥ 75 % of the crop's flowering window. The cube
