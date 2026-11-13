@@ -1,0 +1,238 @@
+# Farm Titans crop knowledge base: SPACE2FEED Direction A (livestock feed), Alba county.
+#
+# STATUS: DRAFT v0.1 (13 Nov 2026). NOT REVIEWED BY AN AGRONOMIST.
+# Every value has a confidence level. Anything marked `review = true` must be checked with a
+# mentor or agronomist on Saturday morning before it is shown to a farmer or a judge.
+#
+# Dates are MM-DD for Alba county (Transylvanian plateau, ~250 m). They shift with hybrid,
+# sowing date and year; the pipeline should treat them as windows, not exact days.
+# Season = harvest year. Winter crops are sown in the previous calendar year.
+#
+# Loaded by data/src/farm_data/crops.py (stdlib tomllib, no extra dependency).
+
+version = "0.1.0-draft"
+region = "Alba county, Romania"
+
+# --------------------------------------------------------------------------- feed crops
+
+[crops.maize]
+name = { ro = "Porumb", en = "Maize" }
+family = "poaceae"
+season_type = "summer"
+sowing = ["04-10", "05-05"]
+flowering = ["07-10", "08-05"]        # silking; heat-critical window
+harvest = ["09-20", "10-31"]
+water_need = "high"
+drought_tolerance = "low"
+heat_watch_tmax_c = 32.0              # seed set starts falling above ~32 °C at flowering
+heat_bad_tmax_c = 35.0                # larger losses above ~35 °C
+nitrogen_fixing = false
+rooting_depth_m = 1.5
+feed_use = "energy (grain), ~60-65% of a typical poultry ration"
+confidence = "medium"
+review = true
+notes = """
+Heat thresholds come from flowering-stage experiments on Chinese hybrids (Tmax 32/35 °C over
+the 15 days around silking); transfer to Romanian hybrids is unverified. Sowing window: early
+April sowing is reported in Transylvania; optimum germination around 10 °C soil temperature.
+"""
+sources = ["researchsquare rs-3388464 (flowering Tmax 32/35 °C)", "usamvcluj.ro thesis summary (soil temp)", "corteva.com/ro (Transylvania sowing from 2 Apr)"]
+
+[crops.wheat]
+name = { ro = "Grâu de toamnă", en = "Winter wheat" }
+family = "poaceae"
+season_type = "winter"
+sowing = ["10-01", "10-25"]           # previous calendar year
+flowering = ["05-25", "06-10"]        # anthesis; fusarium-critical window
+harvest = ["07-10", "08-05"]
+water_need = "medium"
+drought_tolerance = "medium"
+heat_watch_tmax_c = 30.0              # grain-fill heat in June
+heat_bad_tmax_c = 34.0
+frost_kill_tmin_c = -18.0             # hardened plants without snow cover; placeholder
+nitrogen_fixing = false
+rooting_depth_m = 1.2
+feed_use = "energy + some protein"
+confidence = "medium"
+review = true
+notes = "Anthesis dates for Alba are estimates (later than the southern plain). Frost-kill threshold is a placeholder; snow cover is not modelled."
+sources = []
+
+[crops.barley]
+name = { ro = "Orz de toamnă", en = "Winter barley" }
+family = "poaceae"
+season_type = "winter"
+sowing = ["09-25", "10-15"]
+flowering = ["05-10", "05-30"]
+harvest = ["06-25", "07-15"]
+water_need = "medium"
+drought_tolerance = "medium"
+heat_watch_tmax_c = 30.0
+heat_bad_tmax_c = 34.0
+frost_kill_tmin_c = -15.0             # less winter-hardy than wheat; placeholder
+nitrogen_fixing = false
+rooting_depth_m = 1.0
+feed_use = "energy"
+confidence = "low"
+review = true
+notes = "Earlier harvest than wheat frees the field for a summer cover crop."
+sources = []
+
+[crops.soybean]
+name = { ro = "Soia", en = "Soybean" }
+family = "fabaceae"
+season_type = "summer"
+sowing = ["04-25", "05-20"]
+flowering = ["07-01", "07-31"]
+harvest = ["09-15", "10-15"]
+critical_water = ["07-15", "08-25"]   # flowering to pod fill
+water_need = "medium"
+drought_tolerance = "low"
+heat_watch_tmax_c = 32.0
+heat_bad_tmax_c = 35.0
+nitrogen_fixing = true
+rooting_depth_m = 1.2
+protein_pct_as_harvested = [33.0, 35.0]   # ~38% dry basis ≈ 33% at 13% moisture
+yield_t_ha_romania = [1.7, 2.5]           # national average 2024 ≈ 2.0 t/ha (drought year)
+feed_use = "protein (meal), ~30% of Transavia feed is soy"
+confidence = "medium"
+review = true
+notes = """
+Romania's 2024 soybean yield was about 2.0 t/ha; the 2024 drought cut output sharply. Use the
+range, not a single value, in the adoption scenario. Protein: Canadian oilseed soybeans 2025 had
+37.9% dry basis / 33.0% at 13% moisture; Feedipedia average 39.6% of dry matter.
+"""
+sources = ["managementjournal.usamv.ro vol.25_2 Art63 (RO yield 2024)", "canada.ca grain commission soybean quality 2025", "feedipedia.org/node/12625"]
+
+[crops.sunflower]
+name = { ro = "Floarea-soarelui", en = "Sunflower" }
+family = "asteraceae"
+season_type = "summer"
+sowing = ["04-05", "04-30"]
+flowering = ["07-01", "07-25"]
+harvest = ["08-25", "09-30"]
+water_need = "medium"
+drought_tolerance = "high"            # deep roots; still hit in 2024/2025 droughts
+heat_watch_tmax_c = 34.0
+heat_bad_tmax_c = 37.0
+nitrogen_fixing = false
+rooting_depth_m = 2.0
+feed_use = "protein (meal after oil extraction)"
+confidence = "medium"
+review = true
+notes = "Return interval matters (Sclerotinia, broomrape): see [rotation]."
+sources = []
+
+[crops.pea]
+name = { ro = "Mazăre furajeră", en = "Feed pea" }
+family = "fabaceae"
+season_type = "spring"
+sowing = ["03-05", "04-05"]
+flowering = ["05-20", "06-15"]
+harvest = ["06-25", "07-20"]
+water_need = "low"
+drought_tolerance = "medium"          # escapes summer drought by early harvest
+heat_watch_tmax_c = 28.0              # flowering sensitive to heat; placeholder
+heat_bad_tmax_c = 32.0
+nitrogen_fixing = true
+rooting_depth_m = 0.8
+protein_pct_as_harvested = [20.0, 24.0]
+feed_use = "protein"
+confidence = "low"
+review = true
+notes = "Early harvest leaves time for a cover crop or a timely wheat sowing."
+sources = []
+
+# --------------------------------------------------------------------------- cover crops
+
+[crops.cover_mustard]
+name = { ro = "Muștar (cultură de acoperire)", en = "Mustard (cover crop)" }
+family = "brassicaceae"
+season_type = "cover"
+sowing = ["08-01", "09-05"]
+harvest = []                          # winter-killed or incorporated
+nitrogen_fixing = false
+confidence = "low"
+review = true
+notes = "Fast cover after cereal harvest; scavenges nitrate."
+sources = []
+
+[crops.cover_phacelia]
+name = { ro = "Facelia (cultură de acoperire)", en = "Phacelia (cover crop)" }
+family = "boraginaceae"
+season_type = "cover"
+sowing = ["08-01", "09-05"]
+harvest = []
+nitrogen_fixing = false
+confidence = "low"
+review = true
+notes = "Unrelated to the main crop families, so it does not host their diseases."
+sources = []
+
+[crops.cover_vetch]
+name = { ro = "Măzăriche (cultură de acoperire)", en = "Vetch (cover crop)" }
+family = "fabaceae"
+season_type = "cover"
+sowing = ["08-15", "09-20"]
+harvest = []
+nitrogen_fixing = true
+confidence = "low"
+review = true
+notes = "Can overwinter; counts as a legume for return intervals."
+sources = []
+
+# --------------------------------------------------------------------------- quality risks
+
+[quality.aflatoxin_window]
+crop = "maize"
+window = "flowering"
+rule = "count days with Tmax > 33 °C in the window; flag if >= 7 AND window rain below the multi-year mean"
+tmax_c = 33.0
+min_days = 7
+confidence = "medium"
+review = true
+notes = "From the 2015 French outbreak: contaminated samples came only from areas with >33 °C on more than seven days during maize flowering plus a rainfall deficit. Mechanism well established (heat + drought favour Aspergillus flavus); the threshold is borrowed."
+sources = ["Bailly et al. 2018, Toxins (hal.inrae.fr hal-02624195)"]
+
+[quality.fusarium_window]
+crop = "wheat"
+window = ["flowering_minus_7", "flowering_plus_10"]
+rule = "count days with RH2M >= 85% or rain >= 1 mm, 7 days before to 10 days after anthesis"
+rh_pct = 85.0
+rain_mm = 1.0
+confidence = "low"
+review = true
+notes = "Infection is favoured by 48-72 h at >90% RH and 15-30 °C; US risk models use the 7 days before and 10 days after anthesis. POWER gives daily mean RH, which understates night-time humidity, so 85% daily mean is a proxy."
+sources = ["De Wolf, Madden & Lipps 2003, Phytopathology 93:428-435"]
+
+[quality.harvest_rain]
+crop = "all"
+window = "harvest"
+rule = "rain in the harvest window above the 80th percentile of the record"
+confidence = "low"
+review = true
+notes = "Placeholder rule; ask the buyer what they actually reject lots for."
+sources = []
+
+# --------------------------------------------------------------------------- rotation rules
+
+[rotation]
+confidence = "low"
+review = true
+notes = "Minimum years before the same crop (or family) returns to the field. MUST come from the agronomist; values below are common rules of thumb only."
+
+[rotation.min_return_years]
+maize = 1            # monoculture possible but raises western corn rootworm pressure
+wheat = 2            # wheat after wheat raises disease pressure
+barley = 2
+soybean = 3
+sunflower = 5        # Sclerotinia, broomrape
+pea = 4              # root rot
+fabaceae_family = 3  # any legume after any legume
+
+[rotation.good_predecessors]
+wheat = ["soybean", "pea", "sunflower", "cover_vetch"]
+maize = ["soybean", "pea", "wheat", "barley", "cover_vetch"]
+soybean = ["wheat", "barley", "maize"]
+sunflower = ["wheat", "barley"]
+pea = ["wheat", "barley", "maize"]
