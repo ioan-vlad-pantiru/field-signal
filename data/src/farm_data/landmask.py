@@ -5,7 +5,7 @@ arable in EITHER source:
 - APIA 2025 declared farm parcels (LPIS) with `cat_use = 'TA'` (arable land),
   https://data.gov.ro/dataset/parcele_agricole_agionline_apia, CC BY 4.0, (c) APIA;
 - JRC EUCROPMAP 2022 arable classes (`cropmap.ARABLE`, the classes `zones.py` samples on),
-  CC BY 4.0.
+  EC reuse notice (Commission Decision of 12 Dec 2011); acknowledge the source.
 Each pixel stores bit flags (APIA = 1, EUCROPMAP = 2), so either source can be read alone. The
 grid is EPSG:3844 (Stereo 70) over Alba's bounding box (NUTS 2024 RO121), so a field on the county
 border also sees the neighbouring county. Without the APIA zip the mask holds EUCROPMAP alone;
