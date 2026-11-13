@@ -74,7 +74,7 @@ export function SimulatorView() {
         <p className="mt-2 max-w-2xl text-ink-muted">{t("intro")}</p>
       </header>
 
-      <fieldset>
+      <fieldset className="min-w-0">
         <legend className="mb-2 font-medium">{t("strategyLabel")}</legend>
         <div className="flex gap-2 overflow-x-auto pb-1">
           {strategies.map((s) => (
@@ -92,7 +92,7 @@ export function SimulatorView() {
         </div>
       </fieldset>
 
-      <fieldset>
+      <fieldset className="min-w-0">
         <legend className="mb-2 font-medium">{t("shapeLabel")}</legend>
         <div className="flex gap-2">
           {(["rect", "irregular"] as const).map((f) => (
