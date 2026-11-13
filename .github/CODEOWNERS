@@ -4,10 +4,8 @@
 /apps/web/          @ioan-vlad-pantiru
 /services/api/      @ioan-vlad-pantiru
 
-# TODO: replace with Bogdan's GitHub username once known
-/data/              @ioan-vlad-pantiru
-# TODO: replace with Răzvan's GitHub username once known
-/ml/                @ioan-vlad-pantiru
+/data/              @DavidBogdan20
+/ml/                @Razvi103
 
-/contracts/         @ioan-vlad-pantiru
+/contracts/         @ioan-vlad-pantiru @DavidBogdan20 @Razvi103
 /.github/           @ioan-vlad-pantiru
