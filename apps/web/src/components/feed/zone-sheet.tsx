@@ -10,13 +10,29 @@ import { ConfidenceBadge, RiskBadge } from "@/components/ui/badges";
 import { RISK_TONE, TONE_CLASSES, TONE_ICONS } from "@/components/ui/tone";
 
 /** One traffic light: a big icon + level, then the details that explain it. */
-function Light({ title, level, children }: { title: string; level: RiskLevel; children: ReactNode }) {
+function Light({
+  title,
+  level,
+  index,
+  children,
+}: {
+  title: string;
+  level: RiskLevel;
+  index: number;
+  children: ReactNode;
+}) {
   const tone = RISK_TONE[level];
   const Icon = TONE_ICONS[tone];
   return (
-    <section className={`rounded-2xl p-4 ${TONE_CLASSES[tone].soft}`}>
+    <section
+      className={`rise rounded-[20px] p-4 ${TONE_CLASSES[tone].soft}`}
+      style={{ "--i": index + 2 } as React.CSSProperties}
+    >
       <header className="mb-3 flex items-center gap-3">
-        <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${TONE_CLASSES[tone].solid}`}>
+        <span
+          className={`cell-in flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${TONE_CLASSES[tone].solid}`}
+          style={{ "--row": index + 2 } as React.CSSProperties}
+        >
           <Icon size={22} />
         </span>
         <div className="min-w-0 flex-1">
@@ -33,7 +49,7 @@ function Row({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
       <span>{label}</span>
-      <span className="text-right font-semibold tabular-nums">{value}</span>
+      <span className="text-right font-mono font-semibold tabular-nums">{value}</span>
     </div>
   );
 }
@@ -52,10 +68,10 @@ export function ZoneDetails({ outlook }: { outlook: CropOutlook }) {
   return (
     <div className="flex flex-col gap-3">
       {outlook.area_ha != null ? (
-        <p className="text-muted">{t("area", { ha: formatNumber(outlook.area_ha, locale, 0) })}</p>
+        <p className="text-ink-muted">{t("area", { ha: formatNumber(outlook.area_ha, locale, 0) })}</p>
       ) : null}
 
-      <Light title={t("availability")} level={availability.level}>
+      <Light title={t("availability")} level={availability.level} index={0}>
         <Row label={t("riskScore")} value={`${formatNumber(availability.score, locale, 0)}/100`} />
         <Row
           label={t("yieldAnomaly")}
@@ -70,7 +86,7 @@ export function ZoneDetails({ outlook }: { outlook: CropOutlook }) {
         />
         {availability.drivers.length > 0 ? (
           <div>
-            <p className="text-sm text-muted">{t("drivers")}</p>
+            <p className="text-sm text-ink-muted">{t("drivers")}</p>
             <ul className="mt-1 flex flex-col gap-1">
               {availability.drivers.map((d) => (
                 <li key={d.code} className="flex justify-between gap-3">
@@ -85,7 +101,7 @@ export function ZoneDetails({ outlook }: { outlook: CropOutlook }) {
         ) : null}
       </Light>
 
-      <Light title={t("quality")} level={quality.level}>
+      <Light title={t("quality")} level={quality.level} index={1}>
         {quality.flags.length === 0 ? (
           <p>{t("noFlags")}</p>
         ) : (
@@ -99,14 +115,14 @@ export function ZoneDetails({ outlook }: { outlook: CropOutlook }) {
                 <p className="mt-1 text-sm">
                   {t("flagDays", { observed: flag.days_observed, normal: formatNumber(flag.days_normal, locale) })}
                 </p>
-                <p className="text-sm text-muted">{t("window", { window: l(flag.window) })}</p>
+                <p className="text-sm text-ink-muted">{t("window", { window: l(flag.window) })}</p>
               </li>
             ))}
           </ul>
         )}
       </Light>
 
-      <Light title={t("impact")} level={impact.level}>
+      <Light title={t("impact")} level={impact.level} index={2}>
         <Row label={t("waterDeficit")} value={n(impact.water_deficit_mm, "mm")} />
         <Row
           label={t("legumeShare")}
@@ -122,7 +138,7 @@ export function ZoneDetails({ outlook }: { outlook: CropOutlook }) {
 
       <div className="flex flex-wrap items-center gap-2">
         <ConfidenceBadge confidence={outlook.confidence} />
-        <span className="text-sm text-muted">{t("model", { version: outlook.model_version })}</span>
+        <span className="text-sm text-ink-muted">{t("model", { version: outlook.model_version })}</span>
       </div>
     </div>
   );

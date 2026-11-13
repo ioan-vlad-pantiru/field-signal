@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import type { Indicator } from "@/lib/contracts";
 import { formatQuantity, mean } from "@/lib/format";
 import { useAppLocale, useLocalized } from "@/lib/localized";
+import { useCountUp } from "@/lib/use-count-up";
 import { useUnitLabel } from "@/lib/use-unit-label";
 import { Card } from "@/components/ui/card";
 import { Sparkline } from "@/components/ui/charts";
@@ -14,7 +15,7 @@ import { TONE_CLASSES, TONE_ICONS, type Tone } from "@/components/ui/tone";
 /** How far from the mean (as a share of it) still counts as "normal". */
 const NORMAL_BAND = 0.1;
 
-export function IndicatorCard({ indicator }: { indicator: Indicator }) {
+export function IndicatorCard({ indicator, index }: { indicator: Indicator; index: number }) {
   const t = useTranslations("Results");
   const locale = useAppLocale();
   const l = useLocalized();
@@ -24,6 +25,7 @@ export function IndicatorCard({ indicator }: { indicator: Indicator }) {
   const baseline = indicator.baseline_mean ?? mean(indicator.series.map((p) => p.value));
   const yearsWithData = indicator.series.filter((p) => p.value !== null);
   const fmt = (v: number) => formatQuantity(v, indicator.unit, locale, unitLabel);
+  const shownLatest = useCountUp(latest?.value ?? 0);
 
   let tone: Tone = "nodata";
   let comparison = t("noComparison");
@@ -43,7 +45,7 @@ export function IndicatorCard({ indicator }: { indicator: Indicator }) {
   const last = yearsWithData.at(-1)?.year;
 
   return (
-    <Card className="flex flex-col gap-3">
+    <Card className="rise flex flex-col gap-3" style={{ "--i": index } as React.CSSProperties}>
       <div className="flex flex-wrap items-start gap-x-2">
         <h3 className="min-w-0 flex-1 font-semibold">{l(indicator.label)}</h3>
         <InfoTip label={t("whatIs", { term: l(indicator.label) })}>{l(indicator.description)}</InfoTip>
@@ -51,12 +53,12 @@ export function IndicatorCard({ indicator }: { indicator: Indicator }) {
       {latest?.value != null ? (
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
-            <p className="text-sm text-muted">{t("latest", { year: latest.year })}</p>
-            <p className="text-3xl font-semibold tabular-nums">{fmt(latest.value)}</p>
+            <p className="text-sm text-ink-muted">{t("latest", { year: latest.year })}</p>
+            <p className="font-mono text-3xl font-semibold tracking-tight tabular-nums">{fmt(shownLatest)}</p>
           </div>
           <div className="text-right">
-            <p className="text-sm text-muted">{t("mean")}</p>
-            <p className="text-lg tabular-nums">{baseline !== null ? fmt(baseline) : "—"}</p>
+            <p className="text-sm text-ink-muted">{t("mean")}</p>
+            <p className="font-mono text-lg tabular-nums">{baseline !== null ? fmt(baseline) : "—"}</p>
           </div>
         </div>
       ) : null}
@@ -78,10 +80,10 @@ export function IndicatorCard({ indicator }: { indicator: Indicator }) {
             to: last ?? "",
           })}
         />
-        <div className="flex justify-between text-xs text-muted tabular-nums">
+        <div className="flex justify-between text-xs text-ink-muted tabular-nums">
           <span>{first}</span>
           <span className="inline-flex items-center gap-1">
-            <span className="inline-block w-4 border-t border-dashed border-muted" aria-hidden="true" />
+            <span className="inline-block w-4 border-t border-dashed border-ink-muted" aria-hidden="true" />
             {t("meanLegend")}
           </span>
           <span>{last}</span>

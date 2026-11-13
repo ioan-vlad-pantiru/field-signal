@@ -174,7 +174,14 @@
       }
     },
     "caveatsTitle": "Keep in mind",
-    "sourcesTitle": "Data sources"
+    "sourcesTitle": "Data sources",
+    "verdict": {
+      "title": "Best fit for your priorities",
+      "keepTitle": "Your current rotation scores best",
+      "delta": "+{delta} points",
+      "versus": "Your current rotation scores {current} of 100.",
+      "seeYears": "See every year"
+    }
   },
   "Feed": {
     "eyebrow": "Field Signal · Feed",
@@ -270,6 +277,15 @@
       "scale": "Weather data describe an area tens of kilometres wide, not your exact plot."
     },
     "demoTitle": "About the demo data",
-    "demo": "In this version the numbers are for demonstration. We mark them clearly as “Demo data” until the real data are connected."
+    "demo": "In this version the numbers are for demonstration. We mark them clearly as “Demo data” until the real data are connected.",
+    "eyebrow": "How it works",
+    "judgmentDetail": "It shows what would have happened in past years. The decision for your field stays yours.",
+    "whatCards": {
+      "farmer": "For farmers",
+      "buyer": "For feed buyers",
+      "transparency": "Everything in the open"
+    },
+    "nasaNote": "We use free public data published by NASA and other institutions. NASA is not a partner and does not endorse this tool.",
+    "aiHint": "AI does two small, checkable jobs. It does not make decisions for you."
   }
 }

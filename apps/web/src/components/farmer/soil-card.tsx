@@ -35,17 +35,17 @@ export function SoilCard({ soil }: { soil: SoilProfile }) {
     <Card className="flex flex-col gap-3">
       <div>
         <h3 className="font-semibold">{t("title")}</h3>
-        <p className="text-sm text-muted">{t("depth", { depth: soil.depth ?? "0-30cm" })}</p>
+        <p className="text-sm text-ink-muted">{t("depth", { depth: soil.depth ?? "0-30cm" })}</p>
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
         {rows.map((row) => (
-          <div key={row.key} className="flex flex-wrap items-start gap-x-2 rounded-xl bg-surface-muted p-3">
-            <p className="min-w-0 flex-1 text-sm text-muted">{t(`${row.key}.label`)}</p>
+          <div key={row.key} className="flex flex-wrap items-start gap-x-2 rounded-xl bg-surface-sunken p-3">
+            <p className="min-w-0 flex-1 text-sm text-ink-muted">{t(`${row.key}.label`)}</p>
             <InfoTip label={t("whatIs", { term: t(`${row.key}.label`) })}>{t(`${row.key}.help`)}</InfoTip>
             <p className="basis-full text-xl font-semibold">
               {row.value}
               {"detail" in row && row.detail ? (
-                <span className="block text-sm font-normal text-muted">{row.detail}</span>
+                <span className="block text-sm font-normal text-ink-muted">{row.detail}</span>
               ) : null}
             </p>
           </div>

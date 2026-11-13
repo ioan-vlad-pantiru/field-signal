@@ -42,8 +42,8 @@ export function StrategyExplanations({ strategies }: { strategies: Strategy[] })
             onClick={() => setActiveId(s.id)}
             className={`min-h-11 shrink-0 rounded-full border px-4 font-medium ${
               s.id === active.id
-                ? "border-primary bg-primary text-on-primary"
-                : "border-border bg-surface hover:border-primary"
+                ? "border-field bg-field text-on-field"
+                : "border-line bg-surface hover:border-field"
             }`}
           >
             {l(s.name)}
@@ -51,7 +51,13 @@ export function StrategyExplanations({ strategies }: { strategies: Strategy[] })
         ))}
       </div>
 
-      <div id="explanation-panel" role="tabpanel" aria-labelledby={`tab-${active.id}`} className="flex flex-col gap-5">
+      <div
+        key={active.id}
+        id="explanation-panel"
+        role="tabpanel"
+        aria-labelledby={`tab-${active.id}`}
+        className="rise flex flex-col gap-5"
+      >
         <Block title={t("why")}>
           <p>{l(explanation.why)}</p>
         </Block>
@@ -59,7 +65,7 @@ export function StrategyExplanations({ strategies }: { strategies: Strategy[] })
         <Block title={t("evidence")}>
           <ul className="flex flex-col gap-2">
             {explanation.evidence.map((e, i) => (
-              <li key={i} className="rounded-xl bg-surface-muted px-3 py-2">
+              <li key={i} className="rounded-xl bg-surface-sunken px-3 py-2">
                 <div className="flex items-baseline justify-between gap-3">
                   <span>{l(e.text)}</span>
                   {e.value != null ? (
@@ -68,7 +74,7 @@ export function StrategyExplanations({ strategies }: { strategies: Strategy[] })
                     </span>
                   ) : null}
                 </div>
-                <span className="text-xs text-muted">{t("source", { source: e.source })}</span>
+                <span className="text-xs text-ink-muted">{t("source", { source: e.source })}</span>
               </li>
             ))}
           </ul>
@@ -94,7 +100,7 @@ export function StrategyExplanations({ strategies }: { strategies: Strategy[] })
         <Block title={t("risks")}>
           <ul className="flex flex-col gap-2">
             {explanation.risks.map((r, i) => (
-              <li key={i} className="flex flex-col gap-2 rounded-xl border border-accent/40 bg-accent-soft/40 px-3 py-2">
+              <li key={i} className="flex flex-col gap-2 rounded-xl border border-wheat/40 bg-wheat-tint/40 px-3 py-2">
                 <span>{l(r.text)}</span>
                 <AgronomistBadge />
               </li>
@@ -102,7 +108,7 @@ export function StrategyExplanations({ strategies }: { strategies: Strategy[] })
           </ul>
         </Block>
 
-        <p className="text-xs text-muted">{t(`generatedBy.${explanation.generated_by}`)}</p>
+        <p className="text-xs text-ink-muted">{t(`generatedBy.${explanation.generated_by}`)}</p>
       </div>
     </Card>
   );

@@ -47,9 +47,9 @@ export function FarmerFlow() {
       return (
         <div className="flex flex-col gap-4">
           <header>
-            <p className="font-medium text-primary">{t("step")}</p>
+            <p className="font-medium text-field">{t("step")}</p>
             <h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1>
-            <p className="mt-1 text-lg text-muted">{t("intro")}</p>
+            <p className="mt-1 text-lg text-ink-muted">{t("intro")}</p>
           </header>
           <FieldForm initial={lastRequest} onSubmit={run} />
         </div>

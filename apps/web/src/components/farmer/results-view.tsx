@@ -15,6 +15,7 @@ import { ReplayGrid } from "./replay-grid";
 import { SoilCard } from "./soil-card";
 import { StrategyCards } from "./strategy-cards";
 import { StrategyExplanations } from "./strategy-explanations";
+import { VerdictCard } from "./verdict-card";
 
 export function ResultsView({
   analysis,
@@ -37,7 +38,7 @@ export function ResultsView({
       <button
         type="button"
         onClick={onBack}
-        className="inline-flex min-h-11 w-fit items-center gap-2 rounded-xl pr-3 font-medium text-primary"
+        className="press inline-flex min-h-11 w-fit items-center gap-2 rounded-xl pr-3 font-medium text-field"
       >
         <ArrowLeftIcon /> {t("back")}
       </button>
@@ -45,7 +46,7 @@ export function ResultsView({
       {analysis.mock ? <DemoBanner origin={origin} /> : null}
 
       <header className="flex flex-col gap-1">
-        <p className="flex items-center gap-1.5 text-muted">
+        <p className="flex items-center gap-1.5 text-ink-muted">
           <PinIcon size={18} />
           <span className="tabular-nums">
             {tf("coordinates", {
@@ -54,16 +55,18 @@ export function ResultsView({
             })}
           </span>
         </p>
-        <h1 className="text-3xl font-semibold tracking-tight">{place || location.label}</h1>
-        <p className="text-muted">
+        <h1 className="text-4xl font-bold tracking-tight">{place || location.label}</h1>
+        <p className="text-ink-muted">
           {t("period", { start: analysis.period_start, end: analysis.period_end })}
         </p>
       </header>
 
+      <VerdictCard strategies={analysis.strategies} />
+
       <SectionTitle hint={t("indicatorsHint")}>{t("indicatorsTitle")}</SectionTitle>
       <div className="grid gap-3 sm:grid-cols-2">
-        {analysis.indicators.map((indicator) => (
-          <IndicatorCard key={indicator.id} indicator={indicator} />
+        {analysis.indicators.map((indicator, index) => (
+          <IndicatorCard key={indicator.id} indicator={indicator} index={index} />
         ))}
       </div>
 
@@ -72,7 +75,9 @@ export function ResultsView({
       <SectionTitle hint={t("strategiesHint")}>{t("strategiesTitle")}</SectionTitle>
       <StrategyCards strategies={analysis.strategies} />
 
-      <SectionTitle hint={t("replayHint")}>{t("replayTitle")}</SectionTitle>
+      <div id="replay" className="scroll-mt-20">
+        <SectionTitle hint={t("replayHint")}>{t("replayTitle")}</SectionTitle>
+      </div>
       <ReplayGrid strategies={analysis.strategies} />
 
       <SectionTitle hint={t("explainHint")}>{t("explainTitle")}</SectionTitle>
@@ -100,7 +105,7 @@ export function ResultsSkeleton() {
   const t = useTranslations("Results");
   return (
     <div className="flex flex-col gap-4" aria-busy="true">
-      <p role="status" className="text-muted">
+      <p role="status" className="text-ink-muted">
         {t("loading")}
       </p>
       <Skeleton className="h-9 w-2/3" />

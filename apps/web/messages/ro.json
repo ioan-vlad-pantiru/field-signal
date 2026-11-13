@@ -174,7 +174,14 @@
       }
     },
     "caveatsTitle": "De reținut",
-    "sourcesTitle": "Surse de date"
+    "sourcesTitle": "Surse de date",
+    "verdict": {
+      "title": "Se potrivește cel mai bine cu prioritățile dumneavoastră",
+      "keepTitle": "Rotația de acum are cel mai bun scor",
+      "delta": "+{delta} puncte",
+      "versus": "Rotația de acum are {current} din 100.",
+      "seeYears": "Vedeți fiecare an"
+    }
   },
   "Feed": {
     "eyebrow": "Field Signal · Furaje",
@@ -270,6 +277,15 @@
       "scale": "Datele de vreme descriu o zonă de zeci de kilometri, nu exact parcela."
     },
     "demoTitle": "Despre datele din demonstrație",
-    "demo": "În această versiune, cifrele sunt demonstrative. Le marcăm clar cu „Date demonstrative” până când legăm datele reale."
+    "demo": "În această versiune, cifrele sunt demonstrative. Le marcăm clar cu „Date demonstrative” până când legăm datele reale.",
+    "eyebrow": "Cum funcționează",
+    "judgmentDetail": "Arată ce s-ar fi întâmplat în anii trecuți. Decizia pentru câmpul dumneavoastră rămâne a dumneavoastră.",
+    "whatCards": {
+      "farmer": "Pentru fermieri",
+      "buyer": "Pentru cumpărătorii de furaje",
+      "transparency": "Totul la vedere"
+    },
+    "nasaNote": "Folosim date publice, gratuite, publicate de NASA și de alte instituții. NASA nu este partener și nu susține acest instrument.",
+    "aiHint": "Inteligența artificială face două lucruri mici și verificabile. Nu ia decizii în locul dumneavoastră."
   }
 }

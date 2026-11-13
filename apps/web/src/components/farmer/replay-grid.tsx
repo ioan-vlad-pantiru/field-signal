@@ -42,7 +42,7 @@ export function ReplayGrid({ strategies }: { strategies: Strategy[] }) {
     <div className="min-w-0">
       <div
         ref={scroller}
-        className="relative overflow-x-auto rounded-2xl border border-border bg-surface"
+        className="relative overflow-x-auto rounded-2xl border border-line bg-surface"
         role="region"
         aria-label={t("scrollLabel")}
         tabIndex={0}
@@ -56,7 +56,7 @@ export function ReplayGrid({ strategies }: { strategies: Strategy[] }) {
                 <th
                   key={year}
                   scope="col"
-                  className="w-10 text-center text-xs font-medium text-muted tabular-nums"
+                  className="w-10 text-center text-xs font-medium text-ink-muted tabular-nums"
                 >
                   {String(year).slice(2)}
                   <span className="sr-only">{year}</span>
@@ -65,7 +65,7 @@ export function ReplayGrid({ strategies }: { strategies: Strategy[] }) {
             </tr>
           </thead>
           <tbody>
-            {strategies.map((strategy) => {
+            {strategies.map((strategy, row) => {
               const byYear = new Map(strategy.replay.map((r) => [r.year, r]));
               return (
                 <tr key={strategy.id}>
@@ -75,7 +75,7 @@ export function ReplayGrid({ strategies }: { strategies: Strategy[] }) {
                   >
                     {l(strategy.name)}
                   </th>
-                  {years.map((year) => {
+                  {years.map((year, col) => {
                     const outcome = byYear.get(year);
                     if (!outcome) return <td key={year} className="h-10 w-10" />;
                     const tone = STATUS_TONE[outcome.status];
@@ -92,7 +92,8 @@ export function ReplayGrid({ strategies }: { strategies: Strategy[] }) {
                             status: ts(outcome.status),
                             evidence: t(`evidence.${outcome.evidence_level}`),
                           })}
-                          className={`relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-md ${TONE_CLASSES[tone].solid}`}
+                          style={{ "--col": col, "--row": row } as React.CSSProperties}
+                          className={`cell-in relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg ${TONE_CLASSES[tone].solid} transition-shadow hover:ring-2 hover:ring-ink`}
                         >
                           {weak ? <span aria-hidden="true" className="hatch absolute inset-0" /> : null}
                           <Icon size={16} />
@@ -121,7 +122,7 @@ export function ReplayGrid({ strategies }: { strategies: Strategy[] }) {
           );
         })}
         <li className="flex items-center gap-1.5">
-          <span className="hatch h-6 w-6 rounded border border-border" aria-hidden="true" />
+          <span className="hatch h-6 w-6 rounded border border-line" aria-hidden="true" />
           {t("weakEvidence")}
         </li>
       </ul>
@@ -144,24 +145,24 @@ function CellDetails({ strategy, outcome }: Selection) {
   const unitLabel = useUnitLabel();
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-muted">{l(strategy.name)}</p>
+      <p className="text-ink-muted">{l(strategy.name)}</p>
       <div className="flex flex-wrap gap-2">
         <CropChip crop={outcome.crop} />
         <StatusBadge status={outcome.status} />
       </div>
-      <p className="text-sm text-muted">
+      <p className="text-sm text-ink-muted">
         {t("evidenceLine", { level: t(`evidence.${outcome.evidence_level}`) })}
       </p>
       <div>
         <h3 className="mb-2 font-semibold">{t("reasons")}</h3>
         {outcome.reasons.length === 0 ? (
-          <p className="text-muted">{t("noReasons")}</p>
+          <p className="text-ink-muted">{t("noReasons")}</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {outcome.reasons.map((reason) => (
               <li
                 key={reason.code}
-                className="flex items-baseline justify-between gap-3 rounded-xl bg-surface-muted px-3 py-2"
+                className="flex items-baseline justify-between gap-3 rounded-xl bg-surface-sunken px-3 py-2"
               >
                 <span>{l(reason.label)}</span>
                 {reason.value != null ? (

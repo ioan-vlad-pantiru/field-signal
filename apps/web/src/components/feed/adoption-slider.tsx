@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import type { AdoptionScenario, Range } from "@/lib/contracts";
 import { formatNumber, scaleRange } from "@/lib/format";
 import { useAppLocale, useLocalized } from "@/lib/localized";
+import { useCountUp } from "@/lib/use-count-up";
 import { Card } from "@/components/ui/card";
 import { RangeBar } from "@/components/ui/charts";
 import { Slider } from "@/components/ui/slider";
@@ -36,11 +37,11 @@ export function AdoptionSlider({ scenario }: { scenario: AdoptionScenario }) {
   return (
     <Card className="flex flex-col gap-4">
       <div>
-        <span className="inline-block rounded-full bg-accent-soft px-2.5 py-0.5 text-sm font-semibold">
+        <span className="inline-block rounded-full bg-wheat-tint px-2.5 py-0.5 text-sm font-semibold">
           {t("estimate")}
         </span>
         <h2 className="mt-2 text-xl font-semibold">{t("title", { crop: cropName })}</h2>
-        <p className="text-muted">{t("hint")}</p>
+        <p className="text-ink-muted">{t("hint")}</p>
       </div>
       <Slider
         label={t("sliderLabel", { crop: cropName })}
@@ -50,33 +51,19 @@ export function AdoptionSlider({ scenario }: { scenario: AdoptionScenario }) {
         valueText={`${pct}%`}
       />
       <ul className="flex flex-col gap-4" aria-live="polite">
-        {outputs.map(({ key, unit, range }) => {
-          const scaled = scaleRange(range, factor);
-          const n = (v: number) => formatNumber(v, locale, 0);
-          return (
-            <li key={key}>
-              <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-                <span className="font-medium">{t(key)}</span>
-                <span>
-                  <span className="text-2xl font-semibold tabular-nums">+{n(scaled.mid)}</span>{" "}
-                  <span className="text-muted">{unit}</span>
-                </span>
-              </div>
-              <RangeBar
-                range={scaled}
-                domain={[0, range.high * axisFactor || 1]}
-                label={t("rangeLabel", { low: n(scaled.low), mid: n(scaled.mid), high: n(scaled.high), unit })}
-              />
-              <p className="mt-1 text-sm text-muted tabular-nums">
-                {t("range", { low: n(scaled.low), high: n(scaled.high), unit })}
-              </p>
-            </li>
-          );
-        })}
+        {outputs.map(({ key, unit, range }) => (
+          <AdoptionOutput
+            key={key}
+            label={t(key)}
+            unit={unit}
+            range={scaleRange(range, factor)}
+            axisMax={range.high * axisFactor || 1}
+          />
+        ))}
       </ul>
       <div>
         <h3 className="mb-1 text-sm font-semibold">{t("assumptions")}</h3>
-        <ul className="list-disc space-y-1 pl-5 text-sm text-muted">
+        <ul className="list-disc space-y-1 pl-5 text-sm text-ink-muted">
           <li>{t("linear", { base: formatNumber(base, locale, 0) })}</li>
           {scenario.assumptions.map((a, i) => (
             <li key={i}>{l(a)}</li>
@@ -84,5 +71,42 @@ export function AdoptionSlider({ scenario }: { scenario: AdoptionScenario }) {
         </ul>
       </div>
     </Card>
+  );
+}
+
+/** One result row; the central estimate counts towards its new value as the slider moves. */
+function AdoptionOutput({
+  label,
+  unit,
+  range,
+  axisMax,
+}: {
+  label: string;
+  unit: string;
+  range: Range;
+  axisMax: number;
+}) {
+  const t = useTranslations("Feed.adoption");
+  const locale = useAppLocale();
+  const shownMid = useCountUp(range.mid);
+  const n = (v: number) => formatNumber(v, locale, 0);
+  return (
+    <li>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+        <span className="font-medium">{label}</span>
+        <span>
+          <span className="font-mono text-2xl font-semibold tracking-tight tabular-nums">+{n(shownMid)}</span>{" "}
+          <span className="text-ink-muted">{unit}</span>
+        </span>
+      </div>
+      <RangeBar
+        range={range}
+        domain={[0, axisMax]}
+        label={t("rangeLabel", { low: n(range.low), mid: n(range.mid), high: n(range.high), unit })}
+      />
+      <p className="mt-1 font-mono text-sm text-ink-muted tabular-nums">
+        {t("range", { low: n(range.low), high: n(range.high), unit })}
+      </p>
+    </li>
   );
 }

@@ -64,11 +64,11 @@ export function FieldForm({
     <form onSubmit={submit} className="flex flex-col gap-4">
       <Card>
         <h2 className="flex items-center gap-2 text-lg font-semibold">
-          <PinIcon className="text-primary" /> {t("whereTitle")}
+          <PinIcon className="text-field" /> {t("whereTitle")}
         </h2>
-        <p className="mb-3 text-muted">{t("whereHint")}</p>
+        <p className="mb-3 text-ink-muted">{t("whereHint")}</p>
         <FieldMap value={point} onChange={setPoint} label={t("mapLabel")} />
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm text-muted">
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm text-ink-muted">
           <span className="tabular-nums">
             {t("coordinates", {
               lat: formatNumber(point.lat, locale, 3),
@@ -78,7 +78,7 @@ export function FieldForm({
           <button
             type="button"
             onClick={() => setPoint(DEFAULT_POINT)}
-            className="min-h-11 rounded-lg px-2 font-medium text-primary underline-offset-2 hover:underline"
+            className="press min-h-11 rounded-lg px-2 font-medium text-field underline-offset-2 hover:underline"
           >
             {t("resetPin")}
           </button>
@@ -87,12 +87,12 @@ export function FieldForm({
 
       <Card>
         <h2 className="text-lg font-semibold">{t("rotationTitle")}</h2>
-        <p className="mb-3 text-muted">{t("rotationHint")}</p>
+        <p className="mb-3 text-ink-muted">{t("rotationHint")}</p>
         <ol className="flex flex-wrap gap-2" aria-label={t("rotationTitle")}>
           {rotation.map((crop, index) => (
             <li key={index}>
-              <span className="inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-primary bg-primary-soft pl-3 pr-1">
-                <span className="text-sm text-muted">{t("year", { n: index + 1 })}</span>
+              <span className="press inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-field bg-field-tint pl-3 pr-1">
+                <span className="text-sm text-ink-muted">{t("year", { n: index + 1 })}</span>
                 <CropDot crop={crop} />
                 <span className="font-medium">{tc(crop)}</span>
                 <button
@@ -118,9 +118,9 @@ export function FieldForm({
               type="button"
               disabled={!canAdd}
               onClick={() => setRotation((r) => [...r, crop])}
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-border bg-surface px-3 hover:border-primary disabled:opacity-40"
+              className="press inline-flex min-h-11 items-center gap-1.5 rounded-full border border-line bg-surface px-3 hover:border-field disabled:opacity-40"
             >
-              <PlusIcon size={16} className="text-muted" />
+              <PlusIcon size={16} className="text-ink-muted" />
               <CropDot crop={crop} />
               {tc(crop)}
             </button>
@@ -130,7 +130,7 @@ export function FieldForm({
 
       <Card>
         <h2 className="text-lg font-semibold">{t("prioritiesTitle")}</h2>
-        <p className="mb-3 text-muted">{t("prioritiesHint")}</p>
+        <p className="mb-3 text-ink-muted">{t("prioritiesHint")}</p>
         <div className="flex flex-col gap-3">
           {PRIORITIES.map((p) => (
             <Slider
@@ -147,10 +147,10 @@ export function FieldForm({
       </Card>
 
       <Card>
-        <label className="flex min-h-11 cursor-pointer items-center justify-between gap-4">
+        <label className="press flex min-h-11 cursor-pointer items-center justify-between gap-4">
           <span>
             <span className="block text-lg font-semibold">{t("irrigatedTitle")}</span>
-            <span className="text-muted">{t("irrigatedHint")}</span>
+            <span className="text-ink-muted">{t("irrigatedHint")}</span>
           </span>
           <input
             type="checkbox"
@@ -161,7 +161,7 @@ export function FieldForm({
           />
           <span
             aria-hidden="true"
-            className="relative h-8 w-14 shrink-0 rounded-full bg-border transition-colors peer-checked:bg-primary peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--focus)] after:absolute after:left-1 after:top-1 after:h-6 after:w-6 after:rounded-full after:bg-surface after:shadow after:transition-transform peer-checked:after:translate-x-6"
+            className="relative h-8 w-14 shrink-0 rounded-full bg-line transition-colors peer-checked:bg-field peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--focus)] after:absolute after:left-1 after:top-1 after:h-6 after:w-6 after:rounded-full after:bg-surface after:shadow after:transition-transform peer-checked:after:translate-x-6"
           />
         </label>
       </Card>
@@ -169,7 +169,7 @@ export function FieldForm({
       <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 sm:bottom-4">
         <button
           type="submit"
-          className="min-h-14 w-full rounded-2xl bg-primary px-6 text-lg font-semibold text-on-primary shadow-lg hover:bg-primary-strong"
+          className="press min-h-14 w-full rounded-2xl bg-field px-6 text-lg font-semibold text-on-field shadow-lg hover:bg-field-strong"
         >
           {t("analyze")}
         </button>

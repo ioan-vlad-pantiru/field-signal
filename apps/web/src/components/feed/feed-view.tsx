@@ -46,9 +46,9 @@ export function FeedView() {
   return (
     <div className="flex flex-col gap-4">
       <header>
-        <p className="font-medium text-primary">{t("eyebrow")}</p>
+        <p className="font-medium text-field">{t("eyebrow")}</p>
         <h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="mt-1 text-lg text-muted">{t("intro")}</p>
+        <p className="mt-1 text-lg text-ink-muted">{t("intro")}</p>
       </header>
       {state.status === "loading" ? <FeedSkeleton /> : null}
       {state.status === "error" ? <ErrorState onRetry={retry} /> : null}
@@ -61,7 +61,7 @@ function FeedSkeleton() {
   const t = useTranslations("Feed");
   return (
     <div className="flex flex-col gap-4" aria-busy="true">
-      <p role="status" className="text-muted">
+      <p role="status" className="text-ink-muted">
         {t("loading")}
       </p>
       <Skeleton className="h-11 w-64" />
@@ -100,7 +100,7 @@ function Region({ result }: { result: Loaded<SourcingRegion> }) {
   return (
     <>
       {region.mock ? <DemoBanner origin={result.origin} /> : null}
-      <p className="text-muted">
+      <p className="text-ink-muted">
         {t("regionLine", { region: region.region_name, season: region.season, count: region.zones.length })}
       </p>
 
@@ -113,7 +113,7 @@ function Region({ result }: { result: Loaded<SourcingRegion> }) {
             aria-checked={c === crop}
             onClick={() => setCrop(c)}
             className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-4 font-medium ${
-              c === crop ? "border-primary bg-primary text-on-primary" : "border-border bg-surface hover:border-primary"
+              c === crop ? "border-field bg-field text-on-field" : "border-line bg-surface hover:border-field"
             }`}
           >
             <CropDot crop={c} />
@@ -133,20 +133,20 @@ function Region({ result }: { result: Loaded<SourcingRegion> }) {
             onSelect={setSelected}
             label={t("mapLabel", { crop: tc(crop).toLocaleLowerCase(locale) })}
           />
-          <p className="text-sm text-muted">{t("mapHint")}</p>
+          <p className="text-sm text-ink-muted">{t("mapHint")}</p>
           <ul className="grid gap-2 sm:grid-cols-2" aria-label={t("zoneList")}>
-            {region.zones.map((zone) => {
+            {region.zones.map((zone, index) => {
               const outlook = outlookFor(zone);
               return (
-                <li key={zone.id}>
+                <li key={zone.id} className="rise" style={{ "--i": index } as React.CSSProperties}>
                   <button
                     type="button"
                     onClick={() => setSelected(zone)}
-                    className="flex min-h-14 w-full items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-2 text-left hover:border-primary"
+                    className="press flex min-h-14 w-full items-center justify-between gap-3 rounded-2xl border border-line bg-surface px-4 py-2 text-left hover:border-field"
                   >
                     <span>
                       <span className="block font-semibold">{zone.name}</span>
-                      <span className="text-sm text-muted">
+                      <span className="text-sm text-ink-muted">
                         {outlook?.area_ha != null
                           ? t("zone.area", { ha: formatNumber(outlook.area_ha, locale, 0) })
                           : zone.county}
@@ -155,7 +155,7 @@ function Region({ result }: { result: Loaded<SourcingRegion> }) {
                     {outlook ? (
                       <RiskBadge level={outlook.availability.level} prefix={t("riskShort")} />
                     ) : (
-                      <span className="text-sm text-muted">{t("noCropData")}</span>
+                      <span className="text-sm text-ink-muted">{t("noCropData")}</span>
                     )}
                   </button>
                 </li>
@@ -166,13 +166,13 @@ function Region({ result }: { result: Loaded<SourcingRegion> }) {
       )}
 
       <SectionTitle>{t("recommendationTitle")}</SectionTitle>
-      <Card className="flex flex-col gap-3 border-2 border-primary">
+      <Card className="flex flex-col gap-3 border-2 border-field">
         <h3 className="text-xl font-semibold">{l(recommendation.title)}</h3>
         <p>{l(recommendation.text)}</p>
         <ul className="flex flex-col gap-2">
           {recommendation.actions.map((a, i) => (
-            <li key={i} className="flex gap-2 rounded-xl bg-primary-soft px-3 py-2">
-              <span aria-hidden="true" className="font-semibold text-primary">
+            <li key={i} className="flex gap-2 rounded-xl bg-field-tint px-3 py-2">
+              <span aria-hidden="true" className="font-semibold text-field">
                 {i + 1}.
               </span>
               {l(a)}
@@ -182,7 +182,7 @@ function Region({ result }: { result: Loaded<SourcingRegion> }) {
         <ConfidenceBadge confidence={recommendation.confidence} />
         <div>
           <h4 className="mb-1 text-sm font-semibold">{t("assumptions")}</h4>
-          <ul className="list-disc space-y-1 pl-5 text-sm text-muted">
+          <ul className="list-disc space-y-1 pl-5 text-sm text-ink-muted">
             {recommendation.assumptions.map((a, i) => (
               <li key={i}>{l(a)}</li>
             ))}
