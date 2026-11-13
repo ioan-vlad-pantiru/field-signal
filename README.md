@@ -55,14 +55,17 @@ Lint / format everything: `pnpm lint`, `pnpm format` (or `make lint`, `make form
 
 ## Data sources
 
-| Source | What we use it for | Notes |
-|---|---|---|
-| NASA POWER | Daily weather / agroclimate | TBD |
-| SMAP | Soil moisture | TBD |
-| MODIS MOD13Q1 | NDVI / EVI vegetation indices | TBD |
-| SoilGrids | Soil properties | TBD |
-| EUCROPMAP | Crop type map (EU) | TBD |
-| INS TEMPO | Romanian agricultural statistics | TBD |
+| Source | What we use it for | Resolution, period | Licence / attribution | Code |
+|---|---|---|---|---|
+| NASA POWER (daily, AG community) | T2M, T2M_MAX/MIN, PRECTOTCORR, RH2M, ALLSKY_SFC_SW_DWN, WS2M, GWETROOT; FAO-56 ET0 | 0.5° × 0.625° (solar 1°), 1981–2025 | NASA open data; "data obtained from the NASA Langley Research Center POWER Project" | `farm_data.power` |
+| NASA SMAP L4 `SPL4SMGP.008` | Root-zone soil moisture in each crop's critical window | 9 km, 3-hourly → daily, 2015-03-31 onward | NASA open data, via AppEEARS (Earthdata login) | `farm_data.appeears` |
+| NASA MODIS `MOD13Q1.061` + `MYD13Q1.061` | NDVI/EVI peak and anomaly, pixel reliability | 250 m, 16-day (8-day combined), 2000–2025 | NASA open data, via AppEEARS | `farm_data.appeears` |
+| ISRIC SoilGrids 2.0 | SOC, pH(H₂O), clay, sand at 0–30 cm (depth-weighted 0–5/5–15/15–30) | 250 m | CC BY 4.0 | `farm_data.soil` (WCS) |
+| JRC EUCROPMAP 2018, 2022 | Cropland sample points; commune crop areas | 10 m; 2018 is Sentinel-1 only; 2022 overall accuracy 70.6 % (19 crops) | CC BY 4.0 | `farm_data.cropmap` |
+| INS TEMPO AGR108A, AGR109A, AGR110A | County area (ha), production (t), yield (kg/ha → t/ha) for 6 feed crops | County, yearly, 1990–2025 | Free reuse with attribution: "Sursa: INS" | `farm_data.ins` |
+| Eurostat GISCO NUTS 2024, LAU 2024 | County and commune boundaries | 1:1M (NUTS), LAU 2024 | © EuroGeographics for the administrative boundaries | `farm_data.zones` |
+
+How to rebuild everything: [`data/README.md`](data/README.md).
 
 ## License
 

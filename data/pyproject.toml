@@ -11,6 +11,8 @@ dependencies = [
   "pyarrow>=18",
   "scikit-learn>=1.5",
   "jupyter>=1.1",
+  "rasterio>=1.5.2",
+  "geopandas>=1.2.0",
 ]
 
 [build-system]

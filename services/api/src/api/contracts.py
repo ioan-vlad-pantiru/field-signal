@@ -320,9 +320,55 @@ class ModelPrediction(Contract):
     cv_metric_value: float | None = None
 
 
+class FeatureRow(Contract):
+    """One row of the feature table `data/cache/features/<zone_type>.parquet` (handoff 1),
+    built by `data/scripts/build_features.py`. Zone values are means over the zone's cropland
+    sample points. Missing = null."""
+
+    zone_id: str = Field(description="SIRUTA, 'field:46.30,23.75' or 'county:AB'")
+    zone_type: Literal["field", "commune", "county"]
+    crop: Crop
+    season: int = Field(description="harvest year")
+    lat: float
+    lon: float
+    crop_area_ha: float | None = Field(
+        default=None, ge=0, description="INS AGR108A (counties) or EUCROPMAP (communes, 2018+)"
+    )
+    hot_days_flowering: int = Field(ge=0, description="POWER T2M_MAX >= crop heat threshold")
+    max_tmax_flowering_c: float
+    rain_flowering_mm: float = Field(ge=0)
+    rain_season_mm: float = Field(ge=0, description="sowing -> harvest")
+    rh_flowering_pct: float = Field(ge=0, le=100)
+    wet_days_flowering: int = Field(ge=0, description="days with rain >= 1 mm")
+    rain_harvest_mm: float = Field(ge=0)
+    frost_days_winter: int | None = Field(
+        default=None, ge=0, description="T2M_MIN <= -15 °C, Dec-Feb; winter crops only"
+    )
+    et0_season_mm: float = Field(ge=0, description="FAO-56 Penman-Monteith from POWER")
+    water_deficit_mm: float = Field(description="et0_season_mm - rain_season_mm")
+    gwetroot_critical: float = Field(ge=0, le=1, description="POWER root-zone wetness")
+    smap_rootzone_critical: float | None = Field(
+        default=None, ge=0, le=1, description="SMAP L4 m³/m³; null before 2015"
+    )
+    smap_rootzone_anomaly: float | None = Field(default=None, description="z-score, 2015-2025")
+    ndvi_peak: float | None = Field(default=None, ge=-1, le=1)
+    ndvi_peak_anomaly: float | None = Field(default=None, description="z-score, same zone+crop")
+    ndvi_usable_share: float = Field(ge=0, le=1)
+    soc_g_per_kg: float | None = Field(default=None, ge=0)
+    ph_h2o: float | None = Field(default=None, ge=0, le=14)
+    clay_pct: float | None = Field(default=None, ge=0, le=100)
+    sand_pct: float | None = Field(default=None, ge=0, le=100)
+    yield_t_ha: float | None = Field(default=None, ge=0, description="INS AGR110A, counties")
+    yield_anomaly_pct: float | None = Field(
+        default=None, description="vs linear trend of the county x crop record"
+    )
+    crops_yaml_version: str
+
+
 EXPORTED: dict[str, type[Contract]] = {
     "field_request": FieldRequest,
     "field_analysis": FieldAnalysis,
     "sourcing_region": SourcingRegion,
     "model_prediction": ModelPrediction,
+    "feature_row": FeatureRow,
 }

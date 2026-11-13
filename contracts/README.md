@@ -41,7 +41,11 @@ the schemas (see `services/api/tests/test_contracts.py`). Never present mock num
 ## (1) Feature table: `data/cache/features/<zone_type>.parquet`
 
 One row per `zone_id × crop × season`. Window dates come from `data/crops.toml`
-(placeholder windows until the agronomist review; record the version used).
+(placeholder windows until the agronomist review; record the version used). Validated by
+`FeatureRow` (`feature_row.schema.json`); real example rows in `examples/feature_row.example.json`.
+Built by `data/scripts/build_features.py`. Point sources (POWER, MODIS, SMAP) are sampled at
+cropland points inside the zone (5 per county, 2 per commune, 1 for the field); daily values
+are averaged over the points first, then the season indicators are computed.
 
 | column | type | description | source |
 |---|---|---|---|
@@ -49,8 +53,8 @@ One row per `zone_id × crop × season`. Window dates come from `data/crops.toml
 | `zone_type` | str | `field` \| `commune` \| `county` | |
 | `crop` | str | crop id | |
 | `season` | int | harvest year | |
-| `lat`, `lon` | float | centroid used for the point queries | |
-| `crop_area_ha` | float? | area of this crop in the zone | EUCROPMAP / INS |
+| `lat`, `lon` | float | zone representative point (field: the clicked point) | |
+| `crop_area_ha` | float? | area of this crop in the zone: counties from INS (per year); communes from EUCROPMAP 2018 (seasons 2018–21) / 2022 (2022+), null before | INS AGR108A / EUCROPMAP |
 | `hot_days_flowering` | int | days with T2M_MAX ≥ threshold inside the crop's flowering window | POWER |
 | `max_tmax_flowering_c` | float | hottest day in the flowering window | POWER |
 | `rain_flowering_mm` | float | rain in the flowering window | POWER |
@@ -58,18 +62,18 @@ One row per `zone_id × crop × season`. Window dates come from `data/crops.toml
 | `rh_flowering_pct` | float | mean RH2M in the flowering window (fusarium proxy for wheat) | POWER |
 | `wet_days_flowering` | int | days with rain ≥ 1 mm in the flowering window | POWER |
 | `rain_harvest_mm` | float | rain in the harvest window | POWER |
-| `frost_days_winter` | int | days with T2M_MIN ≤ −15 °C (winter crops only; snow cover not modelled) | POWER |
+| `frost_days_winter` | int | days with T2M_MIN ≤ −15 °C, 1 Dec – end Feb (winter crops only; snow cover not modelled) | POWER |
 | `et0_season_mm` | float | FAO-56 reference ET, sowing → harvest | POWER |
 | `water_deficit_mm` | float | `et0_season_mm − rain_season_mm` (crude, no Kc yet) | POWER |
 | `gwetroot_critical` | float | POWER root-zone wetness (0–1, model) in the critical month | POWER |
 | `smap_rootzone_critical` | float? | SMAP L4 root-zone soil moisture (m³/m³), critical months; null before 2015 | SMAP |
 | `smap_rootzone_anomaly` | float? | z-score vs 2015–2025 for the same zone and window | SMAP |
-| `ndvi_peak` | float? | max usable NDVI in the season | MODIS MOD13Q1 |
+| `ndvi_peak` | float? | max usable NDVI, sowing → harvest. Cropland greenness at the sample points, not crop-specific (no yearly crop masks) | MODIS MOD13Q1 |
 | `ndvi_peak_anomaly` | float? | z-score vs all seasons of the same zone and crop | MODIS |
 | `ndvi_usable_share` | float | share of composites with reliability 0–1 | MODIS |
 | `soc_g_per_kg`, `ph_h2o`, `clay_pct`, `sand_pct` | float? | 0–30 cm | SoilGrids |
 | `yield_t_ha` | float? | official yield (counties only) | INS AGR110A |
-| `yield_anomaly_pct` | float? | detrended yield anomaly (counties only); method in `ml/README.md` | derived |
+| `yield_anomaly_pct` | float? | % vs a linear trend over the county × crop record (counties only, ≥ 8 years) | derived |
 | `crops_yaml_version` | str | version of the crop windows used | |
 
 Required for the pitch minimum: at least three NASA indicators over ≥ 5 seasons for the demo

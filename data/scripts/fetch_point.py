@@ -3,12 +3,14 @@
 Field Signal — data-access check for one point.
 
 Pulls, for a single lat/lon:
-  1. NASA POWER daily agroclimate (no account)          -> power_daily.csv
-  2. MODIS MOD13Q1 NDVI/EVI via ORNL DAAC web service   -> modis_vi.csv
+  1. NASA POWER daily agroclimate + FAO-56 ET0          -> power_daily.parquet
+     (no account; `farm_data.power`, cached in data/cache/power/)
+  2. MODIS MOD13Q1 NDVI/EVI via ORNL DAAC web service   -> modis_vi.parquet
      (no account)
-  3. SMAP L4 root-zone + surface soil moisture via      -> smap_daily.csv
+  3. SMAP L4 root-zone + surface soil moisture via      -> smap_daily.parquet
      NASA AppEEARS (needs Earthdata login)
-  4. SoilGrids 2.0 soil properties (ISRIC, no account)  -> soilgrids.csv
+  4. SoilGrids 2.0, 0-30 cm (`farm_data.soil`; local    -> soilgrids.parquet
+     rasters, pilot area only: run `python -m farm_data.soil` once)
 and prints a per-year summary proving we have >=3 NASA indicators over >=5 years.
 
 Earthdata credentials (for SMAP only), first match wins:
@@ -16,12 +18,13 @@ Earthdata credentials (for SMAP only), first match wins:
   - ~/.netrc entry:  machine urs.earthdata.nasa.gov login <user> password <pass>
 
 Usage (from the repo root):
-  uv run python data/scripts/fetch_point.py --name aiud --lat 46.30 --lon 23.75
+  uv run python data/scripts/fetch_point.py --lat 46.30 --lon 23.75 \
+      --start 2001-01-01 --end 2025-12-31
   uv run python data/scripts/fetch_point.py --name aiud --lat 46.30 --lon 23.75 --skip-smap
   uv run python data/scripts/fetch_point.py --name aiud --lat 46.30 --lon 23.75 \
       --smap-task-id <id>   # resume a queued AppEEARS task
 
-Outputs go to data/cache/<name>/ (gitignored).
+Outputs go to data/cache/<name>/ (gitignored; <name> defaults to "<lat>_<lon>").
 
 AppEEARS tasks are queued server-side and can take from minutes to an hour.
 If polling times out, the script prints the task id; rerun with --smap-task-id.
@@ -46,21 +49,10 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-log = logging.getLogger("fetch_point")
+import farm_data.power
+import farm_data.soil
 
-POWER_URL = "https://power.larc.nasa.gov/api/temporal/daily/point"
-POWER_PARAMS = [
-    "T2M",  # mean air temp at 2 m (°C)
-    "T2M_MAX",  # max air temp (°C)
-    "T2M_MIN",  # min air temp (°C)
-    "PRECTOTCORR",  # bias-corrected precipitation (mm/day)
-    "RH2M",  # relative humidity at 2 m (%)
-    "ALLSKY_SFC_SW_DWN",  # solar radiation (MJ/m²/day with AG community)
-    "WS2M",  # wind speed at 2 m (m/s)
-    "GWETROOT",  # root-zone soil wetness (0-1, model-based, MERRA-2)
-    "GWETTOP",  # surface soil wetness (0-1, model-based)
-]
-POWER_FILL = -999.0
+log = logging.getLogger("fetch_point")
 
 MODIS_BASE = "https://modis.ornl.gov/rst/api/v1"
 MODIS_PRODUCT = "MOD13Q1"
@@ -74,10 +66,6 @@ MODIS_MAX_DATES_PER_CALL = 10  # service limit
 APPEEARS_BASE = "https://appeears.earthdatacloud.nasa.gov/api"
 SMAP_PRODUCT_PREFIX = "SPL4SMGP"  # SMAP L4 global 3-hourly 9 km
 SMAP_LAYER_KEYS = {"sm_rootzone": "smap_rootzone", "sm_surface": "smap_surface"}
-
-SOILGRIDS_URL = "https://rest.isric.org/soilgrids/v2.0/properties/query"
-SOILGRIDS_PROPS = ["soc", "phh2o", "clay", "sand", "silt", "bdod", "nitrogen", "cec"]
-SOILGRIDS_DEPTHS = ["0-5cm", "5-15cm", "15-30cm", "30-60cm"]
 
 DEFAULT_OUT = Path(__file__).resolve().parents[1] / "cache"
 
@@ -117,35 +105,6 @@ def earthdata_credentials() -> tuple[str, str] | None:
     if auth and auth[0] and auth[2]:
         return auth[0], auth[2]
     return None
-
-
-# --------------------------------------------------------------------------- 1. POWER
-
-
-def fetch_power(s: requests.Session, p: Point, start: date, end: date) -> pd.DataFrame:
-    params = {
-        "parameters": ",".join(POWER_PARAMS),
-        "community": "AG",
-        "latitude": p.lat,
-        "longitude": p.lon,
-        "start": start.strftime("%Y%m%d"),
-        "end": end.strftime("%Y%m%d"),
-        "format": "JSON",
-        "time-standard": "UTC",
-    }
-    r = s.get(POWER_URL, params=params, timeout=180)
-    r.raise_for_status()
-    payload = r.json()
-    series = payload["properties"]["parameter"]
-    df = pd.DataFrame(series)
-    df.index = pd.to_datetime(df.index, format="%Y%m%d")
-    df.index.name = "date"
-    df = df.replace(POWER_FILL, pd.NA).astype("Float64")
-    missing = [c for c in POWER_PARAMS if c not in df.columns]
-    if missing:
-        log.warning("POWER did not return: %s", missing)
-    log.info("POWER: %d days, %s → %s", len(df), df.index.min().date(), df.index.max().date())
-    return df
 
 
 # --------------------------------------------------------------------------- 2. MODIS
@@ -346,34 +305,6 @@ def fetch_smap(
     return daily
 
 
-# --------------------------------------------------------------------------- 4. SoilGrids
-
-
-def fetch_soilgrids(s: requests.Session, p: Point) -> pd.DataFrame:
-    params: list[tuple[str, Any]] = [("lat", p.lat), ("lon", p.lon), ("value", "mean")]
-    params += [("property", x) for x in SOILGRIDS_PROPS]
-    params += [("depth", d) for d in SOILGRIDS_DEPTHS]
-    r = s.get(SOILGRIDS_URL, params=params, timeout=120)
-    r.raise_for_status()
-    rows = []
-    for layer in r.json()["properties"]["layers"]:
-        um = layer["unit_measure"]
-        factor = float(um.get("d_factor") or 1)
-        for d in layer["depths"]:
-            v = d["values"].get("mean")
-            rows.append(
-                {
-                    "property": layer["name"],
-                    "depth": d["label"],
-                    "value": None if v is None else v / factor,
-                    "unit": um.get("target_units"),
-                }
-            )
-    df = pd.DataFrame(rows)
-    log.info("SoilGrids: %d values", df["value"].notna().sum())
-    return df
-
-
 # --------------------------------------------------------------------------- summary
 
 
@@ -423,11 +354,11 @@ def main() -> int:
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    ap.add_argument("--name", required=True, help="short id, used for the output folder")
+    ap.add_argument("--name", help="short id for the output folder (default: <lat>_<lon>)")
     ap.add_argument("--lat", type=float, required=True)
     ap.add_argument("--lon", type=float, required=True)
-    ap.add_argument("--start-year", type=int, default=2001)
-    ap.add_argument("--end-year", type=int, default=2025)
+    ap.add_argument("--start", type=date.fromisoformat, default=date(2001, 1, 1))
+    ap.add_argument("--end", type=date.fromisoformat, default=date(2025, 12, 31))
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
     ap.add_argument("--skip-power", action="store_true")
     ap.add_argument("--skip-modis", action="store_true")
@@ -450,8 +381,8 @@ def main() -> int:
         datefmt="%H:%M:%S",
     )
 
-    p = Point(a.name, a.lat, a.lon)
-    start, end = date(a.start_year, 1, 1), date(a.end_year, 12, 31)
+    p = Point(a.name or f"{a.lat:.2f}_{a.lon:.2f}", a.lat, a.lon)
+    start, end = a.start, a.end
     out_dir = a.out / p.name
     out_dir.mkdir(parents=True, exist_ok=True)
     s = make_session()
@@ -461,8 +392,8 @@ def main() -> int:
 
     if not a.skip_power:
         try:
-            power = fetch_power(s, p, start, end)
-            power.to_csv(out_dir / "power_daily.csv")
+            power = farm_data.power.fetch(p.lat, p.lon, start, end)
+            power.to_parquet(out_dir / "power_daily.parquet")
             status["NASA POWER"] = "ok"
         except Exception as e:
             log.exception("POWER failed")
@@ -471,7 +402,7 @@ def main() -> int:
     if not a.skip_modis:
         try:
             modis = fetch_modis(s, p, start, end)
-            modis.to_csv(out_dir / "modis_vi.csv")
+            modis.to_parquet(out_dir / "modis_vi.parquet")
             status["MODIS MOD13Q1"] = "ok"
         except Exception as e:
             log.exception("MODIS failed")
@@ -485,7 +416,7 @@ def main() -> int:
             try:
                 smap = fetch_smap(s, p, start, end, creds, a.smap_task_id, a.smap_timeout)
                 if smap is not None:
-                    smap.to_csv(out_dir / "smap_daily.csv")
+                    smap.to_parquet(out_dir / "smap_daily.parquet")
                     status["SMAP L4"] = "ok"
                 else:
                     status["SMAP L4"] = "PENDING: rerun with --smap-task-id (see log)"
@@ -495,8 +426,10 @@ def main() -> int:
 
     if not a.skip_soil:
         try:
-            soil = fetch_soilgrids(s, p)
-            soil.to_csv(out_dir / "soilgrids.csv", index=False)
+            soil = pd.DataFrame([farm_data.soil.at(p.lat, p.lon)]).assign(depth="0-30cm")
+            if soil.drop(columns="depth").isna().all(axis=None):
+                raise ValueError("no SoilGrids raster here; pilot area only (farm_data.soil)")
+            soil.to_parquet(out_dir / "soilgrids.parquet", index=False)
             status["SoilGrids"] = "ok"
         except Exception as e:
             log.exception("SoilGrids failed")
