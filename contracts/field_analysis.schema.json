@@ -172,6 +172,30 @@
       "title": "Explanation",
       "type": "object"
     },
+    "FieldCell": {
+      "additionalProperties": false,
+      "description": "One 1 ha hexagon of the field plan (`apps/web/src/lib/field-plan.ts`).",
+      "properties": {
+        "id": {
+          "description": "axial 'q,r' of a pointy-top 1 ha hexagon; '0,0' is centred on location.point",
+          "title": "Id",
+          "type": "string"
+        },
+        "cropland_fraction": {
+          "description": "share of the hexagon mapped as cropland; source in `sources`",
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Cropland Fraction",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "cropland_fraction"
+      ],
+      "title": "FieldCell",
+      "type": "object"
+    },
     "Indicator": {
       "additionalProperties": false,
       "properties": {
@@ -731,6 +755,22 @@
       },
       "title": "Sources",
       "type": "array"
+    },
+    "field_cells": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/FieldCell"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "per-hexagon farmland mask; null = not computed",
+      "title": "Field Cells"
     }
   },
   "required": [

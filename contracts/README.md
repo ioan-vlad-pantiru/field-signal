@@ -90,3 +90,16 @@ top_drivers [Reason], model_version, cv_metric_name, cv_metric_value`.
 - `top_drivers`: up to 3 features with the largest contribution, using the feature column name
   as `code`.
 - `cv_metric_*`: leave-one-year-out score, so the app can show how good the model is.
+
+## (3a) Field cells: per-hexagon farmland mask (proposal, #22)
+
+`FieldAnalysis.field_cells` is optional: `null` (the default, and every current mock) means the
+mask was not computed, and the web keeps its OpenStreetMap check. When present, one `FieldCell`
+per 1 ha hexagon of the field plan:
+
+| field | type | description |
+|---|---|---|
+| `id` | str | axial `"q,r"` of a pointy-top 1 ha hexagon, `"0,0"` centred on `location.point`; same ids as `apps/web/src/lib/field-plan.ts` |
+| `cropland_fraction` | float 0–1 | share of the hexagon mapped as cropland |
+
+The map behind the fractions (e.g. EUCROPMAP) and its year go in `FieldAnalysis.sources`.
