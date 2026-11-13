@@ -8,7 +8,9 @@ arable in EITHER source:
   CC BY 4.0.
 Each pixel stores bit flags (APIA = 1, EUCROPMAP = 2), so either source can be read alone. The
 grid is EPSG:3844 (Stereo 70) over Alba's bounding box (NUTS 2024 RO121), so a field on the county
-border also sees the neighbouring county. Without the APIA zip the mask holds EUCROPMAP alone.
+border also sees the neighbouring county. Without the APIA zip the mask holds EUCROPMAP alone;
+the GeoTIFF tag SOURCES records which bits were built, and asking for an unbuilt source gives
+None (unknown), never 0.
 
 Why both: APIA holds only land declared for 2025 subsidies (undeclared arable land reads 0), and
 EUCROPMAP is a classifier (79.3 % accurate at 7 classes). At the demo field (46.30, 23.75) APIA
@@ -17,9 +19,9 @@ EUCROPMAP is a classifier (79.3 % accurate at 7 classes). At the demo field (46.
 is good to about +-0.01.
 
     from farm_data.landmask import hex_fractions, APIA
-    hex_fractions(46.30, 23.75)                # {"0,0": 0.97, ...}; None outside the mask
+    hex_fractions(46.30, 23.75)                # {"0,0": 0.97, ...}: every built source
     hex_fractions(lat, lon, rings=12)          # a drawn field: pass the web's centroid and rings
-    hex_fractions(46.30, 23.75, sources=APIA)  # one source only
+    hex_fractions(46.30, 23.75, sources=APIA)  # one source; None if APIA was not built
 
 Build the mask (the 1.5 GB zip is read in place, never unzipped) and run the self-check:
 
@@ -30,6 +32,7 @@ from __future__ import annotations
 
 import math
 import sys
+import tempfile
 from pathlib import Path
 
 import geopandas as gpd
@@ -84,12 +87,22 @@ def hexes(lat: float, lon: float, rings: int = FIELD_RINGS) -> dict[str, Polygon
     return out
 
 
-def hex_fractions(
-    lat: float, lon: float, rings: int = FIELD_RINGS, sources: int = APIA | EUCROPMAP
-) -> dict[str, float] | None:
-    """Share of each hexagon's pixels that `sources` mark arable (default: either source), 0-1;
-    None if the field is not fully inside the mask (or the mask is not built)."""
+def built_sources() -> int:
+    """Source bits the mask was built from (APIA | EUCROPMAP); 0 if not built."""
     if not MASK.exists():
+        return 0
+    with rasterio.open(MASK) as src:
+        return int(src.tags().get("SOURCES", 0))
+
+
+def hex_fractions(
+    lat: float, lon: float, rings: int = FIELD_RINGS, sources: int | None = None
+) -> dict[str, float] | None:
+    """Share of each hexagon's pixels that `sources` mark arable (default: every built source),
+    0-1; None if the field is not fully inside the mask or a requested source was not built."""
+    built = built_sources()
+    sources = built if sources is None else sources
+    if not built or sources & ~built:
         return None
     hx = hexes(lat, lon, rings)
     minx, miny, maxx, maxy = shapely.total_bounds(list(hx.values()))
@@ -114,7 +127,8 @@ def hex_fractions(
 
 def build(zip_path: Path = APIA_ZIP) -> Path:
     """Write MASK over Alba's bounding box: bit APIA = a 'TA' parcel, bit EUCROPMAP = an arable
-    class in EUCROPMAP 2022 (uint8, deflate). Without the APIA zip only the EUCROPMAP bit is set."""
+    class in EUCROPMAP 2022 (uint8, deflate). Without the APIA zip only the EUCROPMAP bit is set;
+    the tag SOURCES records the bits built."""
     nuts = RAW / "boundaries" / "NUTS_2024.gpkg"
     alba = gpd.read_file(nuts, where=f"NUTS_ID = '{COUNTIES['AB']}'").to_crs(CRS)
     minx, miny, maxx, maxy = alba.total_bounds
@@ -122,6 +136,7 @@ def build(zip_path: Path = APIA_ZIP) -> Path:
     w, h = math.ceil((maxx - x0) / RES), math.ceil((y1 - miny) / RES)
     tf = Affine(RES, 0, x0, 0, -RES, y1)
     arr = np.zeros((h, w), "uint8")
+    built = EUCROPMAP
     if Path(zip_path).exists():
         parcels = pyogrio.read_dataframe(
             f"/vsizip/{zip_path}/ipa_2025_f.shp",
@@ -130,6 +145,7 @@ def build(zip_path: Path = APIA_ZIP) -> Path:
             columns=["cat_use"],
         )
         rasterize(((g, APIA) for g in parcels.geometry), out=arr, transform=tf)
+        built |= APIA
         print(f"APIA: {len(parcels)} TA parcels")
     else:
         print(f"APIA zip not found ({zip_path}): mask from EUCROPMAP 2022 alone")
@@ -160,6 +176,7 @@ def build(zip_path: Path = APIA_ZIP) -> Path:
     }
     with rasterio.open(part, "w", **prof) as dst:
         dst.write(arr, 1)
+        dst.update_tags(SOURCES=built)
     part.rename(MASK)
     shares = {s: f"{((arr & b) > 0).mean():.1%}" for s, b in [("APIA", 1), ("EUCROPMAP", 2)]}
     print(f"{MASK} ({w}x{h}), arable share of the box: {shares}, either {(arr > 0).mean():.1%}")
@@ -167,16 +184,16 @@ def build(zip_path: Path = APIA_ZIP) -> Path:
 
 
 if __name__ == "__main__":
-    if not MASK.exists():
-        build(Path(sys.argv[1]) if len(sys.argv) > 1 else APIA_ZIP)
+    zip_path = Path(sys.argv[1]) if len(sys.argv) > 1 else APIA_ZIP
+    if not built_sources() or (zip_path.exists() and not built_sources() & APIA):
+        build(zip_path)  # missing, untagged, or built before the APIA zip arrived
     lat, lon = DEMO_FIELD
-    by = {s: hex_fractions(lat, lon, sources=s) for s in (APIA, EUCROPMAP, APIA | EUCROPMAP)}
-    a, e, fr = by[APIA], by[EUCROPMAP], by[APIA | EUCROPMAP]
-    assert a is not None and e is not None and fr is not None, "demo field outside the mask"
+    fr, e, a = (hex_fractions(lat, lon, sources=s) for s in (None, EUCROPMAP, APIA))
+    assert fr is not None and e is not None, "demo field outside the mask"
     assert len(fr) == 37 == len(set(fr)), len(fr)
     assert all(0 <= v <= 1 for v in fr.values()), fr
-    # union: at least either source, at most their sum (+0.01 for rounding)
-    assert all(max(a[i], e[i]) <= fr[i] <= a[i] + e[i] + 0.01 for i in fr), (a, e, fr)
+    if a is not None:  # union: at least either source, at most their sum (+0.01 for rounding)
+        assert all(max(a[i], e[i]) <= fr[i] <= a[i] + e[i] + 0.01 for i in fr), (a, e, fr)
     area_ha = sum(p.area for p in hexes(lat, lon).values()) / 10_000
     assert abs(area_ha - 37) <= 0.37, area_ha
     # rings: the 20-ring grid holds the 3-ring grid unchanged; area 1261 ha +-1 %
@@ -191,8 +208,16 @@ if __name__ == "__main__":
     except ValueError:
         pass
     assert hex_fractions(44.0, 26.0) is None  # Bucharest: outside the Alba mask
+    # a mask built without APIA answers None (unknown) for APIA, not 0, and still serves EUCROPMAP
+    full = MASK
+    with tempfile.TemporaryDirectory() as d:
+        MASK = Path(d) / "no_apia.tif"
+        build(Path(d) / "missing.zip")
+        assert hex_fractions(lat, lon, sources=APIA) is None, "APIA-less mask gave an APIA value"
+        assert hex_fractions(lat, lon) == e
+    MASK = full
     means = {
-        k: round(float(np.mean(list(v.values()))), 2)
+        k: None if v is None else round(float(np.mean(list(v.values()))), 2)
         for k, v in zip(("APIA", "EUCROPMAP", "either"), (a, e, fr), strict=True)
     }
     print(f"demo field {lat},{lon}: 37 hexes, {area_ha:.2f} ha; mean cropland {means}")
