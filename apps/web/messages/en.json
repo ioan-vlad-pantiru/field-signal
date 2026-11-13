@@ -70,6 +70,7 @@
     "mapLabel": "Map for choosing the field",
     "coordinates": "{lat}° N · {lon}° E",
     "resetPin": "Back to Aiud",
+    "pinnedFromFeed": "Pinned from the feed screen: {place}",
     "rotationTitle": "Your current rotation",
     "rotationHint": "What you grow on this field, year after year. Between 2 and 4 crops.",
     "year": "Year {n}",
@@ -250,7 +251,29 @@
       "waterDeficit": "Water shortfall in the season",
       "legumeShare": "Legumes in the rotation",
       "winterCover": "Soil covered in winter",
-      "model": "Model version: {version}"
+      "model": "Model version: {version}",
+      "lowerRiskTitle": "What can lower this risk",
+      "lowerRiskMaize": "Rotations with soybean or sunflower usually lower this risk over 3 years. Compare them for a field in this commune.",
+      "lowerRiskOther": "Not growing the same crop two years in a row usually lowers this risk over 3 years. Compare rotations for a field in this commune.",
+      "compareHere": "Compare rotations here"
+    },
+    "compareTitle": "Compare two zones",
+    "compareHint": "Pick two communes and see which is safer for the chosen crop: quantity, quality and water.",
+    "compare": {
+      "zoneA": "First zone",
+      "zoneB": "Second zone",
+      "swap": "Swap the zones",
+      "summary": "For {crop}, {a} is better on {winsA} of {total} measures, {b} on {winsB}.",
+      "sameZone": "Pick two different zones.",
+      "caption": "{a} compared with {b}, for {crop}",
+      "supplyRisk": "Supply risk",
+      "riskScore": "Risk score (lower is better)",
+      "anomaly": "{mid}% ({low}% to {high}%)",
+      "area": "Area grown",
+      "flagDays": "{observed} risky days, versus {normal} usually",
+      "confidence": "Confidence",
+      "better": "better",
+      "note": "\"Better\" only compares these two zones, measure by measure. All numbers are estimates with a range; check each zone's confidence."
     },
     "recommendationTitle": "Recommendation",
     "assumptions": "Assumptions",
@@ -266,7 +289,19 @@
       "rangeLabel": "Between {low} and {high} {unit}, most likely {mid} {unit}",
       "range": "between {low} and {high} {unit}",
       "assumptions": "Assumptions",
-      "linear": "Results grow in proportion to the adoption share, starting from the scenario computed for {base}%."
+      "linear": "Results grow in proportion to the adoption share, starting from the scenario computed for {base}%.",
+      "cropLabel": "Which crop to add",
+      "choice": {
+        "soy": "Soybean",
+        "pea": "Feed pea",
+        "both": "Both"
+      },
+      "bothName": "{a} and {b}",
+      "peaArea": "Feed pea: the same extra area as the soybean scenario (the same share of land changes crop).",
+      "peaYield": "Feed pea yield: {low} to {high} t/ha, most likely {mid} t/ha. Placeholder value, to verify with an agronomist.",
+      "peaProtein": "Feed pea protein as harvested: {low} to {high}% (crop table, low confidence). To verify with an agronomist.",
+      "bothSum": "Both: the same extra area, half soybean and half feed pea. Harvest and protein are the sum of the two halves.",
+      "soyScenario": "Soybean values come from the scenario computed by the model."
     },
     "caveatsTitle": "Keep in mind"
   },

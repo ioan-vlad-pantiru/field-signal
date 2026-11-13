@@ -25,16 +25,19 @@ const DEFAULT_PRIORITIES: Record<Priority, number> = { yield: 60, water: 50, soi
 
 export function FieldForm({
   initial,
+  startPoint,
   onSubmit,
 }: {
   initial: FieldRequest | null;
+  /** Where the pin starts when there is no earlier request (e.g. a pin passed from the feed screen). */
+  startPoint?: LatLon | null;
   onSubmit: (request: FieldRequest) => void;
 }) {
   const t = useTranslations("Field");
   const tc = useTranslations("Crops");
   const locale = useAppLocale();
 
-  const [point, setPoint] = useState<LatLon>(initial?.location ?? DEFAULT_POINT);
+  const [point, setPoint] = useState<LatLon>(initial?.location ?? startPoint ?? DEFAULT_POINT);
   const [rotation, setRotation] = useState<Crop[]>(
     initial ? [...initial.current_rotation] : DEFAULT_ROTATION,
   );

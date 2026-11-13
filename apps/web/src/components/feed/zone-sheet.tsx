@@ -2,11 +2,13 @@
 
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import type { CropOutlook, RiskLevel } from "@/lib/contracts";
+import { Link } from "@/i18n/navigation";
+import type { CropOutlook, LatLon, RiskLevel } from "@/lib/contracts";
 import { formatNumber, formatQuantity } from "@/lib/format";
 import { useAppLocale, useLocalized } from "@/lib/localized";
 import { useUnitLabel } from "@/lib/use-unit-label";
-import { ConfidenceBadge, RiskBadge } from "@/components/ui/badges";
+import { AgronomistBadge, ConfidenceBadge, RiskBadge } from "@/components/ui/badges";
+import { FieldIcon } from "@/components/ui/icons";
 import { RISK_TONE, TONE_CLASSES, TONE_ICONS } from "@/components/ui/tone";
 
 /** One traffic light: a big icon + level, then the details that explain it. */
@@ -54,7 +56,48 @@ function Row({ label, value }: { label: string; value: ReactNode }) {
   );
 }
 
-export function ZoneDetails({ outlook }: { outlook: CropOutlook }) {
+/**
+ * Guidance under a medium or high availability risk: which rotations usually lower it, and a link that
+ * opens the farmer screen pinned on this commune. Worded as guidance, not a computed number.
+ */
+function LowerRisk({ crop, centroid, place }: { crop: CropOutlook["crop"]; centroid?: LatLon; place?: string }) {
+  const t = useTranslations("Feed.zone");
+  return (
+    <div className="mt-1 flex flex-col gap-2 rounded-xl bg-surface p-3">
+      <p className="font-medium">{t("lowerRiskTitle")}</p>
+      <p>{crop === "maize" ? t("lowerRiskMaize") : t("lowerRiskOther")}</p>
+      <AgronomistBadge />
+      {centroid ? (
+        <Link
+          href={{
+            pathname: "/",
+            query: {
+              lat: centroid.lat.toFixed(4),
+              lon: centroid.lon.toFixed(4),
+              ...(place ? { place } : {}),
+            },
+          }}
+          className="press mt-1 inline-flex min-h-11 w-fit items-center gap-2 rounded-full bg-field px-4 font-semibold text-on-field hover:bg-field-strong"
+        >
+          <FieldIcon size={18} />
+          {t("compareHere")}
+        </Link>
+      ) : null}
+    </div>
+  );
+}
+
+export function ZoneDetails({
+  outlook,
+  centroid,
+  place,
+}: {
+  outlook: CropOutlook;
+  /** The zone's centroid; when given, the guidance block links to the farmer screen pinned here. */
+  centroid?: LatLon;
+  /** The commune's name, shown on the farmer screen as where the pin came from. */
+  place?: string;
+}) {
   const t = useTranslations("Feed.zone");
   const locale = useAppLocale();
   const l = useLocalized();
@@ -98,6 +141,9 @@ export function ZoneDetails({ outlook }: { outlook: CropOutlook }) {
               ))}
             </ul>
           </div>
+        ) : null}
+        {availability.level !== "low" ? (
+          <LowerRisk crop={outlook.crop} centroid={centroid} place={place} />
         ) : null}
       </Light>
 

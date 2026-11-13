@@ -70,6 +70,7 @@
     "mapLabel": "Hartă pentru alegerea câmpului",
     "coordinates": "{lat}° N · {lon}° E",
     "resetPin": "Înapoi la Aiud",
+    "pinnedFromFeed": "Acul a fost pus din ecranul Furaje: {place}",
     "rotationTitle": "Rotația de acum",
     "rotationHint": "Ce cultivați an de an pe acest câmp. Între 2 și 4 culturi.",
     "year": "Anul {n}",
@@ -250,7 +251,29 @@
       "waterDeficit": "Lipsă de apă în sezon",
       "legumeShare": "Leguminoase în rotație",
       "winterCover": "Sol acoperit iarna",
-      "model": "Versiunea modelului: {version}"
+      "model": "Versiunea modelului: {version}",
+      "lowerRiskTitle": "Ce poate reduce riscul",
+      "lowerRiskMaize": "Rotațiile cu soia sau floarea-soarelui reduc de obicei acest risc în 3 ani. Comparați-le pentru un câmp din această comună.",
+      "lowerRiskOther": "Dacă nu cultivați aceeași plantă doi ani la rând, riscul scade de obicei în 3 ani. Comparați rotațiile pentru un câmp din această comună.",
+      "compareHere": "Comparați rotațiile aici"
+    },
+    "compareTitle": "Comparați două zone",
+    "compareHint": "Alegeți două comune și vedeți care e mai sigură pentru cultura aleasă: cantitate, calitate și apă.",
+    "compare": {
+      "zoneA": "Prima zonă",
+      "zoneB": "A doua zonă",
+      "swap": "Inversează zonele",
+      "summary": "La {crop}, {a} e mai bună la {winsA} din {total} indicatori, {b} la {winsB}.",
+      "sameZone": "Alegeți două zone diferite.",
+      "caption": "{a} comparată cu {b}, pentru {crop}",
+      "supplyRisk": "Risc de aprovizionare",
+      "riskScore": "Scor de risc (mai mic e mai bine)",
+      "anomaly": "{mid}% (între {low}% și {high}%)",
+      "area": "Suprafață cultivată",
+      "flagDays": "{observed} zile cu risc, față de {normal} de obicei",
+      "confidence": "Încredere",
+      "better": "mai bine",
+      "note": "„Mai bine” compară doar cele două zone, indicator cu indicator. Toate cifrele sunt estimări cu interval; verificați încrederea fiecărei zone."
     },
     "recommendationTitle": "Recomandare",
     "assumptions": "Presupuneri",
@@ -266,7 +289,19 @@
       "rangeLabel": "Între {low} și {high} {unit}, cel mai probabil {mid} {unit}",
       "range": "între {low} și {high} {unit}",
       "assumptions": "Presupuneri",
-      "linear": "Rezultatele cresc proporțional cu procentul de adoptare, pornind de la scenariul calculat pentru {base}%."
+      "linear": "Rezultatele cresc proporțional cu procentul de adoptare, pornind de la scenariul calculat pentru {base}%.",
+      "cropLabel": "Ce cultură se adaugă",
+      "choice": {
+        "soy": "Soia",
+        "pea": "Mazăre furajeră",
+        "both": "Amândouă"
+      },
+      "bothName": "{a} și {b}",
+      "peaArea": "Mazăre furajeră: aceeași suprafață în plus ca în scenariul cu soia (aceeași parte din teren își schimbă cultura).",
+      "peaYield": "Producția la mazărea furajeră: între {low} și {high} t/ha, cel mai probabil {mid} t/ha. Valoare provizorie, de verificat cu un agronom.",
+      "peaProtein": "Proteina din mazărea furajeră la recoltare: între {low} și {high}% (tabelul culturilor, încredere scăzută). De verificat cu un agronom.",
+      "bothSum": "Amândouă: aceeași suprafață în plus, jumătate soia și jumătate mazăre furajeră. Producția și proteina sunt suma celor două jumătăți.",
+      "soyScenario": "Valorile pentru soia vin din scenariul calculat de model."
     },
     "caveatsTitle": "De reținut"
   },
