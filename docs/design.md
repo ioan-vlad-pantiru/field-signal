@@ -26,7 +26,7 @@ same token names and values: change both together.
 | 4 | Map | Terrain, hillshade, sky, 3D buildings, tilt on zoom, fly-in on load | done |
 | 5 | Data provenance | Source chips in signal blue with a satellite icon | done |
 | 6 | About | Cards for what it does, the AI role and its limits, plus a NASA non-endorsement note | done |
-| 7 | Pitch deck | 16:9 deck built from the design system | in progress |
+| 7 | Pitch deck | [16:9 deck](https://claude.ai/artifact/FDMuFNM8vkRnrydZriN9X4) built from the design system (private until shared) | done |
 | 8 | Field step | Larger map on phones, with search by commune name | next |
 | 9 | Results | Compare two strategies side by side on the replay grid, with the cell difference highlighted | next |
 | 10 | Feed | Zone heat layer from the NDVI ramp instead of markers only, plus a legend | next |
