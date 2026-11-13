@@ -2,7 +2,9 @@
 
 Zones (contract ids, see contracts/README.md):
 - 8 counties: Alba and its neighbours, `county:AB` ...
-- 20 Alba communes nearest the Aiud-Sântimbru midpoint, keyed by SIRUTA
+- 40 Alba communes nearest the Aiud-Sântimbru midpoint, keyed by SIRUTA, counting only communes
+  with at least one EUCROPMAP 2022 arable pixel (no arable land, nothing to source); this skips
+  Ponor (6397) and Mogoş (5826)
 - the demo field near Aiud, `field:46.30,23.75`
 
 Point-based sources (POWER, SMAP, MODIS) are sampled at K points per zone on EUCROPMAP arable
@@ -13,6 +15,7 @@ pixels (K = 5 county, 2 commune, 1 field); zone features are the mean over its p
 
 from __future__ import annotations
 
+from itertools import islice
 from typing import Any
 
 import geopandas as gpd
@@ -32,7 +35,7 @@ COUNTIES = {  # contract code -> NUTS3 id (GISCO NUTS 2024)
 }
 DEMO_FIELD = (46.30, 23.75)  # arable land east of Aiud
 COMMUNE_CENTRE = (46.22, 23.69)  # midpoint of Aiud (46.31, 23.72) and Sântimbru (46.13, 23.65)
-N_COMMUNES = 20
+N_COMMUNES = 40
 K = {"county": 5, "commune": 2, "field": 1}
 OUT = CACHE / "zones"
 
@@ -63,7 +66,9 @@ def communes(cty: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     alba = cty[cty["county"] == "AB"].to_crs(3035).geometry.iloc[0]
     lau = lau[lau.representative_point().within(alba)]
     c = gpd.GeoSeries.from_xy([COMMUNE_CENTRE[1]], [COMMUNE_CENTRE[0]], crs=4326).to_crs(3035)
-    lau = lau.assign(d=lau.centroid.distance(c.iloc[0])).nsmallest(N_COMMUNES, "d")
+    lau = lau.assign(d=lau.centroid.distance(c.iloc[0])).sort_values("d").to_crs(4326)
+    arable = (i for i, g in lau.geometry.items() if cropmap.sample_points(g.__geo_interface__, 1))
+    lau = lau.loc[list(islice(arable, N_COMMUNES))]
     return gpd.GeoDataFrame(
         {
             "zone_id": lau["GISCO_ID"].str.removeprefix("RO_"),
@@ -73,7 +78,7 @@ def communes(cty: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
         },
         geometry=lau.geometry.values,
         crs=lau.crs,
-    ).to_crs(4326)
+    )
 
 
 def _zones() -> gpd.GeoDataFrame:
