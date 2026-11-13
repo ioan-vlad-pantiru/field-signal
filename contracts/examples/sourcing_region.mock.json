@@ -1,0 +1,1659 @@
+{
+  "schema_version": "0.1.0",
+  "mock": true,
+  "region_name": "Sântimbru-Aiud (mock)",
+  "season": 2025,
+  "reference_crops": [
+    "maize",
+    "wheat",
+    "soybean"
+  ],
+  "zones": [
+    {
+      "id": "mock-00",
+      "name": "Aiud",
+      "county": "Alba",
+      "centroid": {
+        "lat": 46.31,
+        "lon": 23.72
+      },
+      "crops": [
+        {
+          "crop": "maize",
+          "area_ha": 1464.0,
+          "availability": {
+            "level": "medium",
+            "score": 54.6,
+            "expected_yield_anomaly_pct": {
+              "low": -18.7,
+              "mid": -10.7,
+              "high": -4.699999999999999
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.137,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "low",
+            "flags": [
+              {
+                "code": "aflatoxin_window",
+                "label": {
+                  "ro": "Risc aflatoxine",
+                  "en": "Aflatoxin risk"
+                },
+                "level": "low",
+                "days_observed": 4,
+                "days_normal": 6.5,
+                "window": {
+                  "ro": "înflorirea porumbului (iulie)",
+                  "en": "maize flowering (July)"
+                }
+              }
+            ]
+          },
+          "impact": {
+            "level": "medium",
+            "water_deficit_mm": 108.0,
+            "legume_share_pct": 5.0,
+            "winter_cover_days": 88,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        },
+        {
+          "crop": "wheat",
+          "area_ha": 561.0,
+          "availability": {
+            "level": "medium",
+            "score": 42.1,
+            "expected_yield_anomaly_pct": {
+              "low": -16.2,
+              "mid": -8.2,
+              "high": -2.1999999999999993
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.105,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "low",
+            "flags": [
+              {
+                "code": "fusarium_window",
+                "label": {
+                  "ro": "Risc fuzarioză",
+                  "en": "Fusarium risk"
+                },
+                "level": "low",
+                "days_observed": 1,
+                "days_normal": 4.0,
+                "window": {
+                  "ro": "înflorirea grâului (sf. mai)",
+                  "en": "wheat flowering (late May)"
+                }
+              }
+            ]
+          },
+          "impact": {
+            "level": "low",
+            "water_deficit_mm": 108.0,
+            "legume_share_pct": 7.3,
+            "winter_cover_days": 118,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        },
+        {
+          "crop": "soybean",
+          "area_ha": 727.0,
+          "availability": {
+            "level": "low",
+            "score": 12.2,
+            "expected_yield_anomaly_pct": {
+              "low": -11.3,
+              "mid": -3.3,
+              "high": 2.7
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.03,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "low",
+            "flags": []
+          },
+          "impact": {
+            "level": "low",
+            "water_deficit_mm": 167.0,
+            "legume_share_pct": 14.8,
+            "winter_cover_days": 160,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        }
+      ]
+    },
+    {
+      "id": "mock-01",
+      "name": "Sântimbru",
+      "county": "Alba",
+      "centroid": {
+        "lat": 46.14,
+        "lon": 23.64
+      },
+      "crops": [
+        {
+          "crop": "maize",
+          "area_ha": 2327.0,
+          "availability": {
+            "level": "high",
+            "score": 72.5,
+            "expected_yield_anomaly_pct": {
+              "low": -21.5,
+              "mid": -13.5,
+              "high": -7.5
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.181,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "medium",
+            "flags": [
+              {
+                "code": "aflatoxin_window",
+                "label": {
+                  "ro": "Risc aflatoxine",
+                  "en": "Aflatoxin risk"
+                },
+                "level": "medium",
+                "days_observed": 8,
+                "days_normal": 6.5,
+                "window": {
+                  "ro": "înflorirea porumbului (iulie)",
+                  "en": "maize flowering (July)"
+                }
+              }
+            ]
+          },
+          "impact": {
+            "level": "medium",
+            "water_deficit_mm": 204.0,
+            "legume_share_pct": 9.7,
+            "winter_cover_days": 109,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        },
+        {
+          "crop": "wheat",
+          "area_ha": 2026.0,
+          "availability": {
+            "level": "low",
+            "score": 25.8,
+            "expected_yield_anomaly_pct": {
+              "low": -6.5,
+              "mid": 1.5,
+              "high": 7.5
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.065,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "low",
+            "flags": [
+              {
+                "code": "fusarium_window",
+                "label": {
+                  "ro": "Risc fuzarioză",
+                  "en": "Fusarium risk"
+                },
+                "level": "low",
+                "days_observed": 2,
+                "days_normal": 4.0,
+                "window": {
+                  "ro": "înflorirea grâului (sf. mai)",
+                  "en": "wheat flowering (late May)"
+                }
+              }
+            ]
+          },
+          "impact": {
+            "level": "medium",
+            "water_deficit_mm": 106.0,
+            "legume_share_pct": 14.8,
+            "winter_cover_days": 98,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        },
+        {
+          "crop": "soybean",
+          "area_ha": 1274.0,
+          "availability": {
+            "level": "high",
+            "score": 71.2,
+            "expected_yield_anomaly_pct": {
+              "low": -18.0,
+              "mid": -10.0,
+              "high": -4.0
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.178,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "low",
+            "flags": []
+          },
+          "impact": {
+            "level": "high",
+            "water_deficit_mm": 72.0,
+            "legume_share_pct": 11.5,
+            "winter_cover_days": 107,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        }
+      ]
+    },
+    {
+      "id": "mock-02",
+      "name": "Teiuș",
+      "county": "Alba",
+      "centroid": {
+        "lat": 46.2,
+        "lon": 23.68
+      },
+      "crops": [
+        {
+          "crop": "maize",
+          "area_ha": 459.0,
+          "availability": {
+            "level": "medium",
+            "score": 45.7,
+            "expected_yield_anomaly_pct": {
+              "low": -13.4,
+              "mid": -5.4,
+              "high": 0.5999999999999996
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.114,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "high",
+            "flags": [
+              {
+                "code": "aflatoxin_window",
+                "label": {
+                  "ro": "Risc aflatoxine",
+                  "en": "Aflatoxin risk"
+                },
+                "level": "high",
+                "days_observed": 13,
+                "days_normal": 6.5,
+                "window": {
+                  "ro": "înflorirea porumbului (iulie)",
+                  "en": "maize flowering (July)"
+                }
+              }
+            ]
+          },
+          "impact": {
+            "level": "medium",
+            "water_deficit_mm": 118.0,
+            "legume_share_pct": 13.6,
+            "winter_cover_days": 43,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        },
+        {
+          "crop": "wheat",
+          "area_ha": 2148.0,
+          "availability": {
+            "level": "high",
+            "score": 70.6,
+            "expected_yield_anomaly_pct": {
+              "low": -23.8,
+              "mid": -15.8,
+              "high": -9.8
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.176,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "high",
+            "flags": [
+              {
+                "code": "fusarium_window",
+                "label": {
+                  "ro": "Risc fuzarioză",
+                  "en": "Fusarium risk"
+                },
+                "level": "high",
+                "days_observed": 10,
+                "days_normal": 4.0,
+                "window": {
+                  "ro": "înflorirea grâului (sf. mai)",
+                  "en": "wheat flowering (late May)"
+                }
+              }
+            ]
+          },
+          "impact": {
+            "level": "medium",
+            "water_deficit_mm": 138.0,
+            "legume_share_pct": 9.8,
+            "winter_cover_days": 60,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        },
+        {
+          "crop": "soybean",
+          "area_ha": 466.0,
+          "availability": {
+            "level": "high",
+            "score": 78.3,
+            "expected_yield_anomaly_pct": {
+              "low": -20.1,
+              "mid": -12.1,
+              "high": -6.1
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.196,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "low",
+            "flags": []
+          },
+          "impact": {
+            "level": "low",
+            "water_deficit_mm": 189.0,
+            "legume_share_pct": 9.1,
+            "winter_cover_days": 112,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        }
+      ]
+    },
+    {
+      "id": "mock-03",
+      "name": "Mirăslău",
+      "county": "Alba",
+      "centroid": {
+        "lat": 46.37,
+        "lon": 23.71
+      },
+      "crops": [
+        {
+          "crop": "maize",
+          "area_ha": 301.0,
+          "availability": {
+            "level": "medium",
+            "score": 61.1,
+            "expected_yield_anomaly_pct": {
+              "low": -18.3,
+              "mid": -10.3,
+              "high": -4.300000000000001
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.153,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "low",
+            "flags": [
+              {
+                "code": "aflatoxin_window",
+                "label": {
+                  "ro": "Risc aflatoxine",
+                  "en": "Aflatoxin risk"
+                },
+                "level": "low",
+                "days_observed": 4,
+                "days_normal": 6.5,
+                "window": {
+                  "ro": "înflorirea porumbului (iulie)",
+                  "en": "maize flowering (July)"
+                }
+              }
+            ]
+          },
+          "impact": {
+            "level": "high",
+            "water_deficit_mm": 215.0,
+            "legume_share_pct": 9.1,
+            "winter_cover_days": 115,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        },
+        {
+          "crop": "wheat",
+          "area_ha": 2116.0,
+          "availability": {
+            "level": "medium",
+            "score": 53.1,
+            "expected_yield_anomaly_pct": {
+              "low": -19.5,
+              "mid": -11.5,
+              "high": -5.5
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.133,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "medium",
+            "flags": [
+              {
+                "code": "fusarium_window",
+                "label": {
+                  "ro": "Risc fuzarioză",
+                  "en": "Fusarium risk"
+                },
+                "level": "medium",
+                "days_observed": 7,
+                "days_normal": 4.0,
+                "window": {
+                  "ro": "înflorirea grâului (sf. mai)",
+                  "en": "wheat flowering (late May)"
+                }
+              }
+            ]
+          },
+          "impact": {
+            "level": "medium",
+            "water_deficit_mm": 95.0,
+            "legume_share_pct": 2.3,
+            "winter_cover_days": 154,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        },
+        {
+          "crop": "soybean",
+          "area_ha": 1812.0,
+          "availability": {
+            "level": "medium",
+            "score": 55.9,
+            "expected_yield_anomaly_pct": {
+              "low": -18.5,
+              "mid": -10.5,
+              "high": -4.5
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.14,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "low",
+            "flags": []
+          },
+          "impact": {
+            "level": "low",
+            "water_deficit_mm": 77.0,
+            "legume_share_pct": 3.9,
+            "winter_cover_days": 96,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        }
+      ]
+    },
+    {
+      "id": "mock-04",
+      "name": "Lopadea Nouă",
+      "county": "Alba",
+      "centroid": {
+        "lat": 46.28,
+        "lon": 23.82
+      },
+      "crops": [
+        {
+          "crop": "maize",
+          "area_ha": 325.0,
+          "availability": {
+            "level": "high",
+            "score": 78.4,
+            "expected_yield_anomaly_pct": {
+              "low": -20.9,
+              "mid": -12.9,
+              "high": -6.9
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.196,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "medium",
+            "flags": [
+              {
+                "code": "aflatoxin_window",
+                "label": {
+                  "ro": "Risc aflatoxine",
+                  "en": "Aflatoxin risk"
+                },
+                "level": "medium",
+                "days_observed": 10,
+                "days_normal": 6.5,
+                "window": {
+                  "ro": "înflorirea porumbului (iulie)",
+                  "en": "maize flowering (July)"
+                }
+              }
+            ]
+          },
+          "impact": {
+            "level": "medium",
+            "water_deficit_mm": 75.0,
+            "legume_share_pct": 3.8,
+            "winter_cover_days": 62,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        },
+        {
+          "crop": "wheat",
+          "area_ha": 1909.0,
+          "availability": {
+            "level": "high",
+            "score": 78.6,
+            "expected_yield_anomaly_pct": {
+              "low": -23.1,
+              "mid": -15.1,
+              "high": -9.1
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.196,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "low",
+            "flags": [
+              {
+                "code": "fusarium_window",
+                "label": {
+                  "ro": "Risc fuzarioză",
+                  "en": "Fusarium risk"
+                },
+                "level": "low",
+                "days_observed": 4,
+                "days_normal": 4.0,
+                "window": {
+                  "ro": "înflorirea grâului (sf. mai)",
+                  "en": "wheat flowering (late May)"
+                }
+              }
+            ]
+          },
+          "impact": {
+            "level": "low",
+            "water_deficit_mm": 203.0,
+            "legume_share_pct": 3.8,
+            "winter_cover_days": 120,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        },
+        {
+          "crop": "soybean",
+          "area_ha": 2237.0,
+          "availability": {
+            "level": "medium",
+            "score": 35.6,
+            "expected_yield_anomaly_pct": {
+              "low": -13.9,
+              "mid": -5.9,
+              "high": 0.09999999999999964
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.089,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "low",
+            "flags": []
+          },
+          "impact": {
+            "level": "medium",
+            "water_deficit_mm": 121.0,
+            "legume_share_pct": 4.4,
+            "winter_cover_days": 159,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        }
+      ]
+    },
+    {
+      "id": "mock-05",
+      "name": "Rădești",
+      "county": "Alba",
+      "centroid": {
+        "lat": 46.26,
+        "lon": 23.73
+      },
+      "crops": [
+        {
+          "crop": "maize",
+          "area_ha": 1771.0,
+          "availability": {
+            "level": "medium",
+            "score": 50.8,
+            "expected_yield_anomaly_pct": {
+              "low": -13.4,
+              "mid": -5.4,
+              "high": 0.5999999999999996
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.127,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "low",
+            "flags": [
+              {
+                "code": "aflatoxin_window",
+                "label": {
+                  "ro": "Risc aflatoxine",
+                  "en": "Aflatoxin risk"
+                },
+                "level": "low",
+                "days_observed": 5,
+                "days_normal": 6.5,
+                "window": {
+                  "ro": "înflorirea porumbului (iulie)",
+                  "en": "maize flowering (July)"
+                }
+              }
+            ]
+          },
+          "impact": {
+            "level": "low",
+            "water_deficit_mm": 167.0,
+            "legume_share_pct": 13.3,
+            "winter_cover_days": 123,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        },
+        {
+          "crop": "wheat",
+          "area_ha": 1897.0,
+          "availability": {
+            "level": "medium",
+            "score": 57.1,
+            "expected_yield_anomaly_pct": {
+              "low": -16.4,
+              "mid": -8.4,
+              "high": -2.4000000000000004
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.143,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "medium",
+            "flags": [
+              {
+                "code": "fusarium_window",
+                "label": {
+                  "ro": "Risc fuzarioză",
+                  "en": "Fusarium risk"
+                },
+                "level": "medium",
+                "days_observed": 6,
+                "days_normal": 4.0,
+                "window": {
+                  "ro": "înflorirea grâului (sf. mai)",
+                  "en": "wheat flowering (late May)"
+                }
+              }
+            ]
+          },
+          "impact": {
+            "level": "high",
+            "water_deficit_mm": 104.0,
+            "legume_share_pct": 8.7,
+            "winter_cover_days": 81,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        },
+        {
+          "crop": "soybean",
+          "area_ha": 447.0,
+          "availability": {
+            "level": "low",
+            "score": 30.8,
+            "expected_yield_anomaly_pct": {
+              "low": -4.5,
+              "mid": 3.5,
+              "high": 9.5
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.077,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "low",
+            "flags": []
+          },
+          "impact": {
+            "level": "high",
+            "water_deficit_mm": 95.0,
+            "legume_share_pct": 8.6,
+            "winter_cover_days": 118,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        }
+      ]
+    },
+    {
+      "id": "mock-06",
+      "name": "Unirea",
+      "county": "Alba",
+      "centroid": {
+        "lat": 46.4,
+        "lon": 23.8
+      },
+      "crops": [
+        {
+          "crop": "maize",
+          "area_ha": 2014.0,
+          "availability": {
+            "level": "medium",
+            "score": 44.1,
+            "expected_yield_anomaly_pct": {
+              "low": -16.0,
+              "mid": -8.0,
+              "high": -2.0
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.11,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "low",
+            "flags": [
+              {
+                "code": "aflatoxin_window",
+                "label": {
+                  "ro": "Risc aflatoxine",
+                  "en": "Aflatoxin risk"
+                },
+                "level": "low",
+                "days_observed": 3,
+                "days_normal": 6.5,
+                "window": {
+                  "ro": "înflorirea porumbului (iulie)",
+                  "en": "maize flowering (July)"
+                }
+              }
+            ]
+          },
+          "impact": {
+            "level": "high",
+            "water_deficit_mm": 213.0,
+            "legume_share_pct": 13.8,
+            "winter_cover_days": 59,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        },
+        {
+          "crop": "wheat",
+          "area_ha": 1035.0,
+          "availability": {
+            "level": "low",
+            "score": 30.6,
+            "expected_yield_anomaly_pct": {
+              "low": -12.5,
+              "mid": -4.5,
+              "high": 1.5
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.076,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "low",
+            "flags": [
+              {
+                "code": "fusarium_window",
+                "label": {
+                  "ro": "Risc fuzarioză",
+                  "en": "Fusarium risk"
+                },
+                "level": "low",
+                "days_observed": 2,
+                "days_normal": 4.0,
+                "window": {
+                  "ro": "înflorirea grâului (sf. mai)",
+                  "en": "wheat flowering (late May)"
+                }
+              }
+            ]
+          },
+          "impact": {
+            "level": "medium",
+            "water_deficit_mm": 129.0,
+            "legume_share_pct": 4.4,
+            "winter_cover_days": 105,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        },
+        {
+          "crop": "soybean",
+          "area_ha": 2151.0,
+          "availability": {
+            "level": "medium",
+            "score": 60.1,
+            "expected_yield_anomaly_pct": {
+              "low": -16.1,
+              "mid": -8.1,
+              "high": -2.0999999999999996
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.15,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "low",
+            "flags": []
+          },
+          "impact": {
+            "level": "medium",
+            "water_deficit_mm": 194.0,
+            "legume_share_pct": 2.1,
+            "winter_cover_days": 114,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        }
+      ]
+    },
+    {
+      "id": "mock-07",
+      "name": "Mihalț",
+      "county": "Alba",
+      "centroid": {
+        "lat": 46.15,
+        "lon": 23.73
+      },
+      "crops": [
+        {
+          "crop": "maize",
+          "area_ha": 1601.0,
+          "availability": {
+            "level": "low",
+            "score": 19.7,
+            "expected_yield_anomaly_pct": {
+              "low": -6.5,
+              "mid": 1.5,
+              "high": 7.5
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.049,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "high",
+            "flags": [
+              {
+                "code": "aflatoxin_window",
+                "label": {
+                  "ro": "Risc aflatoxine",
+                  "en": "Aflatoxin risk"
+                },
+                "level": "high",
+                "days_observed": 12,
+                "days_normal": 6.5,
+                "window": {
+                  "ro": "înflorirea porumbului (iulie)",
+                  "en": "maize flowering (July)"
+                }
+              }
+            ]
+          },
+          "impact": {
+            "level": "high",
+            "water_deficit_mm": 176.0,
+            "legume_share_pct": 4.9,
+            "winter_cover_days": 73,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        },
+        {
+          "crop": "wheat",
+          "area_ha": 1525.0,
+          "availability": {
+            "level": "medium",
+            "score": 58.6,
+            "expected_yield_anomaly_pct": {
+              "low": -17.3,
+              "mid": -9.3,
+              "high": -3.3000000000000007
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.146,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "medium",
+            "flags": [
+              {
+                "code": "fusarium_window",
+                "label": {
+                  "ro": "Risc fuzarioză",
+                  "en": "Fusarium risk"
+                },
+                "level": "medium",
+                "days_observed": 7,
+                "days_normal": 4.0,
+                "window": {
+                  "ro": "înflorirea grâului (sf. mai)",
+                  "en": "wheat flowering (late May)"
+                }
+              }
+            ]
+          },
+          "impact": {
+            "level": "medium",
+            "water_deficit_mm": 179.0,
+            "legume_share_pct": 9.3,
+            "winter_cover_days": 125,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        },
+        {
+          "crop": "soybean",
+          "area_ha": 2284.0,
+          "availability": {
+            "level": "medium",
+            "score": 35.4,
+            "expected_yield_anomaly_pct": {
+              "low": -10.9,
+              "mid": -2.9,
+              "high": 3.1
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.088,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "low",
+            "flags": []
+          },
+          "impact": {
+            "level": "medium",
+            "water_deficit_mm": 202.0,
+            "legume_share_pct": 14.9,
+            "winter_cover_days": 46,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        }
+      ]
+    },
+    {
+      "id": "mock-08",
+      "name": "Ciugud",
+      "county": "Alba",
+      "centroid": {
+        "lat": 46.06,
+        "lon": 23.62
+      },
+      "crops": [
+        {
+          "crop": "maize",
+          "area_ha": 1585.0,
+          "availability": {
+            "level": "medium",
+            "score": 38.6,
+            "expected_yield_anomaly_pct": {
+              "low": -12.5,
+              "mid": -4.5,
+              "high": 1.5
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.097,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "high",
+            "flags": [
+              {
+                "code": "aflatoxin_window",
+                "label": {
+                  "ro": "Risc aflatoxine",
+                  "en": "Aflatoxin risk"
+                },
+                "level": "high",
+                "days_observed": 13,
+                "days_normal": 6.5,
+                "window": {
+                  "ro": "înflorirea porumbului (iulie)",
+                  "en": "maize flowering (July)"
+                }
+              }
+            ]
+          },
+          "impact": {
+            "level": "medium",
+            "water_deficit_mm": 165.0,
+            "legume_share_pct": 11.1,
+            "winter_cover_days": 52,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        },
+        {
+          "crop": "wheat",
+          "area_ha": 1180.0,
+          "availability": {
+            "level": "high",
+            "score": 76.3,
+            "expected_yield_anomaly_pct": {
+              "low": -27.0,
+              "mid": -19.0,
+              "high": -13.0
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.191,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "medium",
+            "flags": [
+              {
+                "code": "fusarium_window",
+                "label": {
+                  "ro": "Risc fuzarioză",
+                  "en": "Fusarium risk"
+                },
+                "level": "medium",
+                "days_observed": 7,
+                "days_normal": 4.0,
+                "window": {
+                  "ro": "înflorirea grâului (sf. mai)",
+                  "en": "wheat flowering (late May)"
+                }
+              }
+            ]
+          },
+          "impact": {
+            "level": "medium",
+            "water_deficit_mm": 49.0,
+            "legume_share_pct": 3.2,
+            "winter_cover_days": 148,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        },
+        {
+          "crop": "soybean",
+          "area_ha": 2323.0,
+          "availability": {
+            "level": "high",
+            "score": 72.4,
+            "expected_yield_anomaly_pct": {
+              "low": -19.9,
+              "mid": -11.9,
+              "high": -5.9
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.181,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "low",
+            "flags": []
+          },
+          "impact": {
+            "level": "medium",
+            "water_deficit_mm": 128.0,
+            "legume_share_pct": 6.8,
+            "winter_cover_days": 51,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        }
+      ]
+    },
+    {
+      "id": "mock-09",
+      "name": "Galda de Jos",
+      "county": "Alba",
+      "centroid": {
+        "lat": 46.17,
+        "lon": 23.62
+      },
+      "crops": [
+        {
+          "crop": "maize",
+          "area_ha": 1878.0,
+          "availability": {
+            "level": "low",
+            "score": 30.3,
+            "expected_yield_anomaly_pct": {
+              "low": -9.8,
+              "mid": -1.8,
+              "high": 4.2
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.076,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "medium",
+            "flags": [
+              {
+                "code": "aflatoxin_window",
+                "label": {
+                  "ro": "Risc aflatoxine",
+                  "en": "Aflatoxin risk"
+                },
+                "level": "medium",
+                "days_observed": 7,
+                "days_normal": 6.5,
+                "window": {
+                  "ro": "înflorirea porumbului (iulie)",
+                  "en": "maize flowering (July)"
+                }
+              }
+            ]
+          },
+          "impact": {
+            "level": "high",
+            "water_deficit_mm": 133.0,
+            "legume_share_pct": 12.7,
+            "winter_cover_days": 56,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        },
+        {
+          "crop": "wheat",
+          "area_ha": 867.0,
+          "availability": {
+            "level": "medium",
+            "score": 53.6,
+            "expected_yield_anomaly_pct": {
+              "low": -18.9,
+              "mid": -10.9,
+              "high": -4.9
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.134,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "medium",
+            "flags": [
+              {
+                "code": "fusarium_window",
+                "label": {
+                  "ro": "Risc fuzarioză",
+                  "en": "Fusarium risk"
+                },
+                "level": "medium",
+                "days_observed": 6,
+                "days_normal": 4.0,
+                "window": {
+                  "ro": "înflorirea grâului (sf. mai)",
+                  "en": "wheat flowering (late May)"
+                }
+              }
+            ]
+          },
+          "impact": {
+            "level": "low",
+            "water_deficit_mm": 128.0,
+            "legume_share_pct": 11.4,
+            "winter_cover_days": 136,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        },
+        {
+          "crop": "soybean",
+          "area_ha": 1729.0,
+          "availability": {
+            "level": "medium",
+            "score": 35.3,
+            "expected_yield_anomaly_pct": {
+              "low": -11.2,
+              "mid": -3.2,
+              "high": 2.8
+            },
+            "drivers": [
+              {
+                "code": "ndvi_below_normal",
+                "label": {
+                  "ro": "Vegetație sub normal",
+                  "en": "Vegetation below normal"
+                },
+                "value": -0.088,
+                "unit": "NDVI"
+              }
+            ]
+          },
+          "quality": {
+            "level": "low",
+            "flags": []
+          },
+          "impact": {
+            "level": "low",
+            "water_deficit_mm": 160.0,
+            "legume_share_pct": 14.6,
+            "winter_cover_days": 78,
+            "emissions_kg_co2e_per_t": null,
+            "notes": []
+          },
+          "confidence": "medium",
+          "model_version": "mock-0"
+        }
+      ]
+    }
+  ],
+  "recommendation": {
+    "title": {
+      "ro": "Împărțiți achiziția de porumb",
+      "en": "Split the maize purchase"
+    },
+    "text": {
+      "ro": "[MOCK] Zonele din nord au risc mare la porumb; cumpărați mai mult din sud.",
+      "en": "[MOCK] Northern zones carry high maize risk; buy more from the south."
+    },
+    "actions": [
+      {
+        "ro": "Contracte cu fermieri care introduc soia",
+        "en": "Contract soy adopters"
+      },
+      {
+        "ro": "Testați loturile pentru aflatoxine",
+        "en": "Test lots for aflatoxins"
+      }
+    ],
+    "confidence": "low",
+    "assumptions": [
+      {
+        "ro": "Date demonstrative.",
+        "en": "Demo data."
+      }
+    ]
+  },
+  "scenario": {
+    "crop": "soybean",
+    "adoption_pct": 25.0,
+    "added_area_ha": {
+      "low": 915.0,
+      "mid": 1144.0,
+      "high": 1258.0
+    },
+    "added_production_t": {
+      "low": 1556.0,
+      "mid": 2402.0,
+      "high": 3145.0
+    },
+    "added_protein_t": {
+      "low": 513.0,
+      "mid": 817.0,
+      "high": 1101.0
+    },
+    "assumptions": [
+      {
+        "ro": "Soia o dată la 3 ani pe terenul fermierilor care adoptă rotația.",
+        "en": "Soybean once every 3 years on adopting farmers' land."
+      },
+      {
+        "ro": "Randament 1,7-2,5 t/ha; proteină 33-35% la recoltare (de verificat).",
+        "en": "Yield 1.7-2.5 t/ha; protein 33-35% as harvested (to verify)."
+      }
+    ]
+  },
+  "caveats": [
+    {
+      "ro": "DATE DEMONSTRATIVE (mock).",
+      "en": "DEMO DATA (mock)."
+    }
+  ],
+  "sources": [
+    {
+      "dataset": "NASA POWER",
+      "product": "T2M_MAX, PRECTOTCORR, RH2M (daily, AG community)",
+      "resolution": "0.5° x 0.625°",
+      "period": "2001-2025",
+      "is_nasa": true,
+      "url": "https://power.larc.nasa.gov/"
+    },
+    {
+      "dataset": "MODIS MOD13Q1",
+      "product": "NDVI, 16-day composite",
+      "resolution": "250 m",
+      "period": "2001-2025",
+      "is_nasa": true,
+      "url": "https://lpdaac.usgs.gov/products/mod13q1v061/"
+    },
+    {
+      "dataset": "SMAP L4",
+      "product": "Root-zone soil moisture (SPL4SMGP)",
+      "resolution": "9 km",
+      "period": "2015-2025",
+      "is_nasa": true,
+      "url": "https://nsidc.org/data/spl4smgp"
+    },
+    {
+      "dataset": "EUCROPMAP 2018",
+      "product": "Crop type map",
+      "resolution": "10 m",
+      "period": "2018",
+      "is_nasa": false,
+      "url": "https://data.jrc.ec.europa.eu/"
+    }
+  ]
+}

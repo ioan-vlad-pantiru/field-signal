@@ -1,0 +1,1639 @@
+{
+  "schema_version": "0.1.0",
+  "mock": true,
+  "location": {
+    "point": {
+      "lat": 46.3,
+      "lon": 23.75
+    },
+    "label": "Aiud (mock)",
+    "commune": "Aiud",
+    "county": "Alba",
+    "siruta": null
+  },
+  "period_start": 2001,
+  "period_end": 2025,
+  "indicators": [
+    {
+      "id": "jul_hot_days",
+      "label": {
+        "ro": "Zile caniculare în iulie",
+        "en": "Hot days in July"
+      },
+      "description": {
+        "ro": "Zile cu maxima ≥ 30 °C în iulie, când înflorește porumbul.",
+        "en": "Days with max ≥ 30 °C in July, when maize flowers."
+      },
+      "unit": "days",
+      "higher_is_worse": true,
+      "source": {
+        "dataset": "NASA POWER",
+        "product": "T2M_MAX, PRECTOTCORR, RH2M (daily, AG community)",
+        "resolution": "0.5° x 0.625°",
+        "period": "2001-2025",
+        "is_nasa": true,
+        "url": "https://power.larc.nasa.gov/"
+      },
+      "series": [
+        {
+          "year": 2001,
+          "value": 3.0
+        },
+        {
+          "year": 2002,
+          "value": 5.0
+        },
+        {
+          "year": 2003,
+          "value": 0.0
+        },
+        {
+          "year": 2004,
+          "value": 13.0
+        },
+        {
+          "year": 2005,
+          "value": 3.0
+        },
+        {
+          "year": 2006,
+          "value": 8.0
+        },
+        {
+          "year": 2007,
+          "value": 8.0
+        },
+        {
+          "year": 2008,
+          "value": 10.0
+        },
+        {
+          "year": 2009,
+          "value": 9.0
+        },
+        {
+          "year": 2010,
+          "value": 8.0
+        },
+        {
+          "year": 2011,
+          "value": 6.0
+        },
+        {
+          "year": 2012,
+          "value": 11.0
+        },
+        {
+          "year": 2013,
+          "value": 5.0
+        },
+        {
+          "year": 2014,
+          "value": 16.0
+        },
+        {
+          "year": 2015,
+          "value": 6.0
+        },
+        {
+          "year": 2016,
+          "value": 10.0
+        },
+        {
+          "year": 2017,
+          "value": 14.0
+        },
+        {
+          "year": 2018,
+          "value": 3.0
+        },
+        {
+          "year": 2019,
+          "value": 10.0
+        },
+        {
+          "year": 2020,
+          "value": 19.0
+        },
+        {
+          "year": 2021,
+          "value": 8.0
+        },
+        {
+          "year": 2022,
+          "value": 17.0
+        },
+        {
+          "year": 2023,
+          "value": 11.0
+        },
+        {
+          "year": 2024,
+          "value": 20.0
+        },
+        {
+          "year": 2025,
+          "value": 15.0
+        }
+      ],
+      "baseline_mean": 9.52
+    },
+    {
+      "id": "jja_rain_mm",
+      "label": {
+        "ro": "Ploaie iunie-august",
+        "en": "Rain June-August"
+      },
+      "description": {
+        "ro": "Precipitații totale vara.",
+        "en": "Total summer rainfall."
+      },
+      "unit": "mm",
+      "higher_is_worse": false,
+      "source": {
+        "dataset": "NASA POWER",
+        "product": "T2M_MAX, PRECTOTCORR, RH2M (daily, AG community)",
+        "resolution": "0.5° x 0.625°",
+        "period": "2001-2025",
+        "is_nasa": true,
+        "url": "https://power.larc.nasa.gov/"
+      },
+      "series": [
+        {
+          "year": 2001,
+          "value": 325.0
+        },
+        {
+          "year": 2002,
+          "value": 224.0
+        },
+        {
+          "year": 2003,
+          "value": 241.0
+        },
+        {
+          "year": 2004,
+          "value": 281.0
+        },
+        {
+          "year": 2005,
+          "value": 286.0
+        },
+        {
+          "year": 2006,
+          "value": 231.0
+        },
+        {
+          "year": 2007,
+          "value": 177.0
+        },
+        {
+          "year": 2008,
+          "value": 282.0
+        },
+        {
+          "year": 2009,
+          "value": 192.0
+        },
+        {
+          "year": 2010,
+          "value": 215.0
+        },
+        {
+          "year": 2011,
+          "value": 303.0
+        },
+        {
+          "year": 2012,
+          "value": 147.0
+        },
+        {
+          "year": 2013,
+          "value": 146.0
+        },
+        {
+          "year": 2014,
+          "value": 136.0
+        },
+        {
+          "year": 2015,
+          "value": 265.0
+        },
+        {
+          "year": 2016,
+          "value": 202.0
+        },
+        {
+          "year": 2017,
+          "value": 198.0
+        },
+        {
+          "year": 2018,
+          "value": 229.0
+        },
+        {
+          "year": 2019,
+          "value": 235.0
+        },
+        {
+          "year": 2020,
+          "value": 221.0
+        },
+        {
+          "year": 2021,
+          "value": 256.0
+        },
+        {
+          "year": 2022,
+          "value": 62.0
+        },
+        {
+          "year": 2023,
+          "value": 156.0
+        },
+        {
+          "year": 2024,
+          "value": 157.0
+        },
+        {
+          "year": 2025,
+          "value": 150.0
+        }
+      ],
+      "baseline_mean": 212.68
+    },
+    {
+      "id": "ndvi_peak",
+      "label": {
+        "ro": "Vigoarea vegetației (NDVI maxim)",
+        "en": "Peak vegetation (NDVI)"
+      },
+      "description": {
+        "ro": "Cât de verde a fost câmpul în vârful sezonului.",
+        "en": "How green the field was at the peak of the season."
+      },
+      "unit": "NDVI",
+      "higher_is_worse": false,
+      "source": {
+        "dataset": "MODIS MOD13Q1",
+        "product": "NDVI, 16-day composite",
+        "resolution": "250 m",
+        "period": "2001-2025",
+        "is_nasa": true,
+        "url": "https://lpdaac.usgs.gov/products/mod13q1v061/"
+      },
+      "series": [
+        {
+          "year": 2001,
+          "value": 0.819
+        },
+        {
+          "year": 2002,
+          "value": 0.761
+        },
+        {
+          "year": 2003,
+          "value": 0.827
+        },
+        {
+          "year": 2004,
+          "value": 0.684
+        },
+        {
+          "year": 2005,
+          "value": 0.806
+        },
+        {
+          "year": 2006,
+          "value": 0.728
+        },
+        {
+          "year": 2007,
+          "value": 0.71
+        },
+        {
+          "year": 2008,
+          "value": 0.721
+        },
+        {
+          "year": 2009,
+          "value": 0.703
+        },
+        {
+          "year": 2010,
+          "value": 0.722
+        },
+        {
+          "year": 2011,
+          "value": 0.776
+        },
+        {
+          "year": 2012,
+          "value": 0.72
+        },
+        {
+          "year": 2013,
+          "value": 0.735
+        },
+        {
+          "year": 2014,
+          "value": 0.6
+        },
+        {
+          "year": 2015,
+          "value": 0.763
+        },
+        {
+          "year": 2016,
+          "value": 0.694
+        },
+        {
+          "year": 2017,
+          "value": 0.645
+        },
+        {
+          "year": 2018,
+          "value": 0.787
+        },
+        {
+          "year": 2019,
+          "value": 0.705
+        },
+        {
+          "year": 2020,
+          "value": 0.592
+        },
+        {
+          "year": 2021,
+          "value": 0.736
+        },
+        {
+          "year": 2022,
+          "value": 0.596
+        },
+        {
+          "year": 2023,
+          "value": 0.667
+        },
+        {
+          "year": 2024,
+          "value": 0.618
+        },
+        {
+          "year": 2025,
+          "value": 0.617
+        }
+      ],
+      "baseline_mean": 0.709
+    },
+    {
+      "id": "smap_rootzone_jul_aug",
+      "label": {
+        "ro": "Umiditatea solului (rădăcini)",
+        "en": "Root-zone soil moisture"
+      },
+      "description": {
+        "ro": "Apa din sol la 0-1 m în iulie-august.",
+        "en": "Water in the top 1 m of soil in July-August."
+      },
+      "unit": "m³/m³",
+      "higher_is_worse": false,
+      "source": {
+        "dataset": "SMAP L4",
+        "product": "Root-zone soil moisture (SPL4SMGP)",
+        "resolution": "9 km",
+        "period": "2015-2025",
+        "is_nasa": true,
+        "url": "https://nsidc.org/data/spl4smgp"
+      },
+      "series": [
+        {
+          "year": 2001,
+          "value": null
+        },
+        {
+          "year": 2002,
+          "value": null
+        },
+        {
+          "year": 2003,
+          "value": null
+        },
+        {
+          "year": 2004,
+          "value": null
+        },
+        {
+          "year": 2005,
+          "value": null
+        },
+        {
+          "year": 2006,
+          "value": null
+        },
+        {
+          "year": 2007,
+          "value": null
+        },
+        {
+          "year": 2008,
+          "value": null
+        },
+        {
+          "year": 2009,
+          "value": null
+        },
+        {
+          "year": 2010,
+          "value": null
+        },
+        {
+          "year": 2011,
+          "value": null
+        },
+        {
+          "year": 2012,
+          "value": null
+        },
+        {
+          "year": 2013,
+          "value": null
+        },
+        {
+          "year": 2014,
+          "value": null
+        },
+        {
+          "year": 2015,
+          "value": 0.32
+        },
+        {
+          "year": 2016,
+          "value": 0.281
+        },
+        {
+          "year": 2017,
+          "value": 0.29
+        },
+        {
+          "year": 2018,
+          "value": 0.291
+        },
+        {
+          "year": 2019,
+          "value": 0.296
+        },
+        {
+          "year": 2020,
+          "value": 0.296
+        },
+        {
+          "year": 2021,
+          "value": 0.325
+        },
+        {
+          "year": 2022,
+          "value": 0.212
+        },
+        {
+          "year": 2023,
+          "value": 0.264
+        },
+        {
+          "year": 2024,
+          "value": 0.272
+        },
+        {
+          "year": 2025,
+          "value": 0.249
+        }
+      ],
+      "baseline_mean": 0.281
+    }
+  ],
+  "soil": {
+    "depth": "0-30cm",
+    "soc_g_per_kg": 14.2,
+    "ph_h2o": 6.9,
+    "clay_pct": 31.0,
+    "sand_pct": 24.0,
+    "silt_pct": 45.0,
+    "texture_class": {
+      "ro": "Lut argilos",
+      "en": "Clay loam"
+    },
+    "source": {
+      "dataset": "SoilGrids 2.0",
+      "product": "soc, phh2o, clay, sand, silt",
+      "resolution": "250 m",
+      "period": "static",
+      "is_nasa": false,
+      "url": "https://soilgrids.org/"
+    }
+  },
+  "strategies": [
+    {
+      "id": "current",
+      "name": {
+        "ro": "Rotația actuală",
+        "en": "Current rotation"
+      },
+      "is_current": true,
+      "sequence": [
+        "maize",
+        "wheat",
+        "maize"
+      ],
+      "score": {
+        "total": 52.1,
+        "yield_stability": 52.0,
+        "water": 55.0,
+        "soil_health": 50.0,
+        "low_risk": 52.0
+      },
+      "score_range": {
+        "low": 44.1,
+        "mid": 52.1,
+        "high": 58.1
+      },
+      "confidence": "medium",
+      "replay": [
+        {
+          "year": 2001,
+          "crop": "maize",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2002,
+          "crop": "wheat",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2003,
+          "crop": "maize",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2004,
+          "crop": "maize",
+          "status": "watch",
+          "reasons": [
+            {
+              "code": "heat_at_flowering",
+              "label": {
+                "ro": "Caniculă la înflorire",
+                "en": "Heat at flowering"
+              },
+              "value": 13.0,
+              "unit": "days"
+            }
+          ],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2005,
+          "crop": "wheat",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2006,
+          "crop": "maize",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2007,
+          "crop": "maize",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2008,
+          "crop": "wheat",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2009,
+          "crop": "maize",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2010,
+          "crop": "maize",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2011,
+          "crop": "wheat",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2012,
+          "crop": "maize",
+          "status": "bad",
+          "reasons": [
+            {
+              "code": "heat_at_flowering",
+              "label": {
+                "ro": "Caniculă la înflorire",
+                "en": "Heat at flowering"
+              },
+              "value": 11.0,
+              "unit": "days"
+            },
+            {
+              "code": "summer_dry",
+              "label": {
+                "ro": "Vară secetoasă",
+                "en": "Dry summer"
+              },
+              "value": 147.0,
+              "unit": "mm"
+            }
+          ],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2013,
+          "crop": "maize",
+          "status": "watch",
+          "reasons": [
+            {
+              "code": "summer_dry",
+              "label": {
+                "ro": "Vară secetoasă",
+                "en": "Dry summer"
+              },
+              "value": 146.0,
+              "unit": "mm"
+            }
+          ],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2014,
+          "crop": "wheat",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2015,
+          "crop": "maize",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2016,
+          "crop": "maize",
+          "status": "watch",
+          "reasons": [
+            {
+              "code": "heat_at_flowering",
+              "label": {
+                "ro": "Caniculă la înflorire",
+                "en": "Heat at flowering"
+              },
+              "value": 10.0,
+              "unit": "days"
+            }
+          ],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2017,
+          "crop": "wheat",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2018,
+          "crop": "maize",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2019,
+          "crop": "maize",
+          "status": "watch",
+          "reasons": [
+            {
+              "code": "heat_at_flowering",
+              "label": {
+                "ro": "Caniculă la înflorire",
+                "en": "Heat at flowering"
+              },
+              "value": 10.0,
+              "unit": "days"
+            }
+          ],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2020,
+          "crop": "wheat",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2021,
+          "crop": "maize",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2022,
+          "crop": "maize",
+          "status": "bad",
+          "reasons": [
+            {
+              "code": "heat_at_flowering",
+              "label": {
+                "ro": "Caniculă la înflorire",
+                "en": "Heat at flowering"
+              },
+              "value": 17.0,
+              "unit": "days"
+            },
+            {
+              "code": "summer_dry",
+              "label": {
+                "ro": "Vară secetoasă",
+                "en": "Dry summer"
+              },
+              "value": 62.0,
+              "unit": "mm"
+            }
+          ],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2023,
+          "crop": "wheat",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2024,
+          "crop": "maize",
+          "status": "bad",
+          "reasons": [
+            {
+              "code": "heat_at_flowering",
+              "label": {
+                "ro": "Caniculă la înflorire",
+                "en": "Heat at flowering"
+              },
+              "value": 20.0,
+              "unit": "days"
+            },
+            {
+              "code": "summer_dry",
+              "label": {
+                "ro": "Vară secetoasă",
+                "en": "Dry summer"
+              },
+              "value": 157.0,
+              "unit": "mm"
+            }
+          ],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2025,
+          "crop": "maize",
+          "status": "bad",
+          "reasons": [
+            {
+              "code": "heat_at_flowering",
+              "label": {
+                "ro": "Caniculă la înflorire",
+                "en": "Heat at flowering"
+              },
+              "value": 15.0,
+              "unit": "days"
+            },
+            {
+              "code": "summer_dry",
+              "label": {
+                "ro": "Vară secetoasă",
+                "en": "Dry summer"
+              },
+              "value": 150.0,
+              "unit": "mm"
+            }
+          ],
+          "evidence_level": "medium"
+        }
+      ],
+      "explanation": {
+        "why": {
+          "ro": "[MOCK] Current rotation: comparată pe 25 de sezoane cu datele NASA ale zonei.",
+          "en": "[MOCK] Current rotation: compared over 25 seasons of NASA data for this area."
+        },
+        "evidence": [
+          {
+            "text": {
+              "ro": "Sezoane slabe în reluare",
+              "en": "Poor seasons in the replay"
+            },
+            "value": 4.0,
+            "unit": "seasons",
+            "source": "NASA POWER"
+          },
+          {
+            "text": {
+              "ro": "Ultimul sezon slab",
+              "en": "Most recent poor season"
+            },
+            "value": 2025.0,
+            "unit": "year",
+            "source": "NASA POWER"
+          }
+        ],
+        "benefits": [
+          {
+            "ro": "Rotație cunoscută, fără investiții noi",
+            "en": "Familiar, no new investment"
+          }
+        ],
+        "gaps": [
+          {
+            "ro": "Datele meteo descriu zona (~50 km), nu exact parcela.",
+            "en": "Weather data describe the area (~50 km), not this exact field."
+          }
+        ],
+        "risks": [
+          {
+            "text": {
+              "ro": "Verificați cu un agronom pragurile de căldură pentru hibridul folosit.",
+              "en": "Check heat thresholds for your hybrid with an agronomist."
+            },
+            "needs_local_review": true
+          }
+        ],
+        "generated_by": "template"
+      }
+    },
+    {
+      "id": "soy-break",
+      "name": {
+        "ro": "Cu soia",
+        "en": "With soybean"
+      },
+      "is_current": false,
+      "sequence": [
+        "maize",
+        "soybean",
+        "wheat"
+      ],
+      "score": {
+        "total": 55.4,
+        "yield_stability": 43.0,
+        "water": 62.0,
+        "soil_health": 70.0,
+        "low_risk": 52.0
+      },
+      "score_range": {
+        "low": 47.4,
+        "mid": 55.4,
+        "high": 61.4
+      },
+      "confidence": "medium",
+      "replay": [
+        {
+          "year": 2001,
+          "crop": "maize",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2002,
+          "crop": "soybean",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2003,
+          "crop": "wheat",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2004,
+          "crop": "maize",
+          "status": "watch",
+          "reasons": [
+            {
+              "code": "heat_at_flowering",
+              "label": {
+                "ro": "Caniculă la înflorire",
+                "en": "Heat at flowering"
+              },
+              "value": 13.0,
+              "unit": "days"
+            }
+          ],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2005,
+          "crop": "soybean",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2006,
+          "crop": "wheat",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2007,
+          "crop": "maize",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2008,
+          "crop": "soybean",
+          "status": "watch",
+          "reasons": [
+            {
+              "code": "heat_at_flowering",
+              "label": {
+                "ro": "Caniculă la înflorire",
+                "en": "Heat at flowering"
+              },
+              "value": 10.0,
+              "unit": "days"
+            }
+          ],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2009,
+          "crop": "wheat",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2010,
+          "crop": "maize",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2011,
+          "crop": "soybean",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2012,
+          "crop": "wheat",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2013,
+          "crop": "maize",
+          "status": "watch",
+          "reasons": [
+            {
+              "code": "summer_dry",
+              "label": {
+                "ro": "Vară secetoasă",
+                "en": "Dry summer"
+              },
+              "value": 146.0,
+              "unit": "mm"
+            }
+          ],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2014,
+          "crop": "soybean",
+          "status": "bad",
+          "reasons": [
+            {
+              "code": "heat_at_flowering",
+              "label": {
+                "ro": "Caniculă la înflorire",
+                "en": "Heat at flowering"
+              },
+              "value": 16.0,
+              "unit": "days"
+            },
+            {
+              "code": "summer_dry",
+              "label": {
+                "ro": "Vară secetoasă",
+                "en": "Dry summer"
+              },
+              "value": 136.0,
+              "unit": "mm"
+            }
+          ],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2015,
+          "crop": "wheat",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2016,
+          "crop": "maize",
+          "status": "watch",
+          "reasons": [
+            {
+              "code": "heat_at_flowering",
+              "label": {
+                "ro": "Caniculă la înflorire",
+                "en": "Heat at flowering"
+              },
+              "value": 10.0,
+              "unit": "days"
+            }
+          ],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2017,
+          "crop": "soybean",
+          "status": "watch",
+          "reasons": [
+            {
+              "code": "heat_at_flowering",
+              "label": {
+                "ro": "Caniculă la înflorire",
+                "en": "Heat at flowering"
+              },
+              "value": 14.0,
+              "unit": "days"
+            }
+          ],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2018,
+          "crop": "wheat",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2019,
+          "crop": "maize",
+          "status": "watch",
+          "reasons": [
+            {
+              "code": "heat_at_flowering",
+              "label": {
+                "ro": "Caniculă la înflorire",
+                "en": "Heat at flowering"
+              },
+              "value": 10.0,
+              "unit": "days"
+            }
+          ],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2020,
+          "crop": "soybean",
+          "status": "watch",
+          "reasons": [
+            {
+              "code": "heat_at_flowering",
+              "label": {
+                "ro": "Caniculă la înflorire",
+                "en": "Heat at flowering"
+              },
+              "value": 19.0,
+              "unit": "days"
+            }
+          ],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2021,
+          "crop": "wheat",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2022,
+          "crop": "maize",
+          "status": "bad",
+          "reasons": [
+            {
+              "code": "heat_at_flowering",
+              "label": {
+                "ro": "Caniculă la înflorire",
+                "en": "Heat at flowering"
+              },
+              "value": 17.0,
+              "unit": "days"
+            },
+            {
+              "code": "summer_dry",
+              "label": {
+                "ro": "Vară secetoasă",
+                "en": "Dry summer"
+              },
+              "value": 62.0,
+              "unit": "mm"
+            }
+          ],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2023,
+          "crop": "soybean",
+          "status": "bad",
+          "reasons": [
+            {
+              "code": "heat_at_flowering",
+              "label": {
+                "ro": "Caniculă la înflorire",
+                "en": "Heat at flowering"
+              },
+              "value": 11.0,
+              "unit": "days"
+            },
+            {
+              "code": "summer_dry",
+              "label": {
+                "ro": "Vară secetoasă",
+                "en": "Dry summer"
+              },
+              "value": 156.0,
+              "unit": "mm"
+            }
+          ],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2024,
+          "crop": "wheat",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2025,
+          "crop": "maize",
+          "status": "bad",
+          "reasons": [
+            {
+              "code": "heat_at_flowering",
+              "label": {
+                "ro": "Caniculă la înflorire",
+                "en": "Heat at flowering"
+              },
+              "value": 15.0,
+              "unit": "days"
+            },
+            {
+              "code": "summer_dry",
+              "label": {
+                "ro": "Vară secetoasă",
+                "en": "Dry summer"
+              },
+              "value": 150.0,
+              "unit": "mm"
+            }
+          ],
+          "evidence_level": "medium"
+        }
+      ],
+      "explanation": {
+        "why": {
+          "ro": "[MOCK] With soybean: comparată pe 25 de sezoane cu datele NASA ale zonei.",
+          "en": "[MOCK] With soybean: compared over 25 seasons of NASA data for this area."
+        },
+        "evidence": [
+          {
+            "text": {
+              "ro": "Sezoane slabe în reluare",
+              "en": "Poor seasons in the replay"
+            },
+            "value": 4.0,
+            "unit": "seasons",
+            "source": "NASA POWER"
+          },
+          {
+            "text": {
+              "ro": "Ultimul sezon slab",
+              "en": "Most recent poor season"
+            },
+            "value": 2025.0,
+            "unit": "year",
+            "source": "NASA POWER"
+          }
+        ],
+        "benefits": [
+          {
+            "ro": "Fixează azot pentru cultura următoare",
+            "en": "Fixes nitrogen for the next crop"
+          }
+        ],
+        "gaps": [
+          {
+            "ro": "Datele meteo descriu zona (~50 km), nu exact parcela.",
+            "en": "Weather data describe the area (~50 km), not this exact field."
+          }
+        ],
+        "risks": [
+          {
+            "text": {
+              "ro": "Verificați cu un agronom pragurile de căldură pentru hibridul folosit.",
+              "en": "Check heat thresholds for your hybrid with an agronomist."
+            },
+            "needs_local_review": true
+          }
+        ],
+        "generated_by": "template"
+      }
+    },
+    {
+      "id": "dry-safe",
+      "name": {
+        "ro": "Rezistentă la secetă",
+        "en": "Drought-safe"
+      },
+      "is_current": false,
+      "sequence": [
+        "sunflower",
+        "pea",
+        "wheat",
+        "cover_vetch"
+      ],
+      "score": {
+        "total": 87.5,
+        "yield_stability": 97.0,
+        "water": 74.0,
+        "soil_health": 75.0,
+        "low_risk": 100.0
+      },
+      "score_range": {
+        "low": 79.5,
+        "mid": 87.5,
+        "high": 93.5
+      },
+      "confidence": "medium",
+      "replay": [
+        {
+          "year": 2001,
+          "crop": "sunflower",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2002,
+          "crop": "pea",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2003,
+          "crop": "wheat",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2004,
+          "crop": "cover_vetch",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2005,
+          "crop": "sunflower",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2006,
+          "crop": "pea",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2007,
+          "crop": "wheat",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2008,
+          "crop": "cover_vetch",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2009,
+          "crop": "sunflower",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2010,
+          "crop": "pea",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2011,
+          "crop": "wheat",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2012,
+          "crop": "cover_vetch",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2013,
+          "crop": "sunflower",
+          "status": "good",
+          "reasons": [
+            {
+              "code": "summer_dry",
+              "label": {
+                "ro": "Vară secetoasă",
+                "en": "Dry summer"
+              },
+              "value": 146.0,
+              "unit": "mm"
+            }
+          ],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2014,
+          "crop": "pea",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "low"
+        },
+        {
+          "year": 2015,
+          "crop": "wheat",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2016,
+          "crop": "cover_vetch",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2017,
+          "crop": "sunflower",
+          "status": "good",
+          "reasons": [
+            {
+              "code": "heat_at_flowering",
+              "label": {
+                "ro": "Caniculă la înflorire",
+                "en": "Heat at flowering"
+              },
+              "value": 14.0,
+              "unit": "days"
+            }
+          ],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2018,
+          "crop": "pea",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2019,
+          "crop": "wheat",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2020,
+          "crop": "cover_vetch",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2021,
+          "crop": "sunflower",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2022,
+          "crop": "pea",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2023,
+          "crop": "wheat",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2024,
+          "crop": "cover_vetch",
+          "status": "good",
+          "reasons": [],
+          "evidence_level": "medium"
+        },
+        {
+          "year": 2025,
+          "crop": "sunflower",
+          "status": "watch",
+          "reasons": [
+            {
+              "code": "heat_at_flowering",
+              "label": {
+                "ro": "Caniculă la înflorire",
+                "en": "Heat at flowering"
+              },
+              "value": 15.0,
+              "unit": "days"
+            },
+            {
+              "code": "summer_dry",
+              "label": {
+                "ro": "Vară secetoasă",
+                "en": "Dry summer"
+              },
+              "value": 150.0,
+              "unit": "mm"
+            }
+          ],
+          "evidence_level": "medium"
+        }
+      ],
+      "explanation": {
+        "why": {
+          "ro": "[MOCK] Drought-safe: comparată pe 25 de sezoane cu datele NASA ale zonei.",
+          "en": "[MOCK] Drought-safe: compared over 25 seasons of NASA data for this area."
+        },
+        "evidence": [
+          {
+            "text": {
+              "ro": "Sezoane slabe în reluare",
+              "en": "Poor seasons in the replay"
+            },
+            "value": 0.0,
+            "unit": "seasons",
+            "source": "NASA POWER"
+          },
+          {
+            "text": {
+              "ro": "Ultimul sezon slab",
+              "en": "Most recent poor season"
+            },
+            "value": null,
+            "unit": "year",
+            "source": "NASA POWER"
+          }
+        ],
+        "benefits": [
+          {
+            "ro": "Fixează azot pentru cultura următoare",
+            "en": "Fixes nitrogen for the next crop"
+          }
+        ],
+        "gaps": [
+          {
+            "ro": "Datele meteo descriu zona (~50 km), nu exact parcela.",
+            "en": "Weather data describe the area (~50 km), not this exact field."
+          }
+        ],
+        "risks": [
+          {
+            "text": {
+              "ro": "Verificați cu un agronom pragurile de căldură pentru hibridul folosit.",
+              "en": "Check heat thresholds for your hybrid with an agronomist."
+            },
+            "needs_local_review": true
+          }
+        ],
+        "generated_by": "template"
+      }
+    }
+  ],
+  "caveats": [
+    {
+      "ro": "DATE DEMONSTRATIVE (mock).",
+      "en": "DEMO DATA (mock)."
+    },
+    {
+      "ro": "Înainte de 2015 nu există date SMAP: dovezile sunt mai slabe.",
+      "en": "No SMAP data before 2015: evidence is weaker for those years."
+    },
+    {
+      "ro": "Instrumentul sprijină decizia fermierului, nu o înlocuiește.",
+      "en": "This tool supports the farmer's judgment; it does not replace it."
+    }
+  ],
+  "sources": [
+    {
+      "dataset": "NASA POWER",
+      "product": "T2M_MAX, PRECTOTCORR, RH2M (daily, AG community)",
+      "resolution": "0.5° x 0.625°",
+      "period": "2001-2025",
+      "is_nasa": true,
+      "url": "https://power.larc.nasa.gov/"
+    },
+    {
+      "dataset": "MODIS MOD13Q1",
+      "product": "NDVI, 16-day composite",
+      "resolution": "250 m",
+      "period": "2001-2025",
+      "is_nasa": true,
+      "url": "https://lpdaac.usgs.gov/products/mod13q1v061/"
+    },
+    {
+      "dataset": "SMAP L4",
+      "product": "Root-zone soil moisture (SPL4SMGP)",
+      "resolution": "9 km",
+      "period": "2015-2025",
+      "is_nasa": true,
+      "url": "https://nsidc.org/data/spl4smgp"
+    },
+    {
+      "dataset": "SoilGrids 2.0",
+      "product": "soc, phh2o, clay, sand, silt",
+      "resolution": "250 m",
+      "period": "static",
+      "is_nasa": false,
+      "url": "https://soilgrids.org/"
+    }
+  ]
+}

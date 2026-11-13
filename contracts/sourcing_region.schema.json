@@ -1,0 +1,600 @@
+{
+  "$defs": {
+    "AdoptionScenario": {
+      "additionalProperties": false,
+      "properties": {
+        "crop": {
+          "$ref": "#/$defs/Crop"
+        },
+        "adoption_pct": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Adoption Pct",
+          "type": "number"
+        },
+        "added_area_ha": {
+          "$ref": "#/$defs/Range"
+        },
+        "added_production_t": {
+          "$ref": "#/$defs/Range"
+        },
+        "added_protein_t": {
+          "$ref": "#/$defs/Range"
+        },
+        "assumptions": {
+          "items": {
+            "$ref": "#/$defs/Localized"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "crop",
+        "adoption_pct",
+        "added_area_ha",
+        "added_production_t",
+        "added_protein_t",
+        "assumptions"
+      ],
+      "title": "AdoptionScenario",
+      "type": "object"
+    },
+    "AvailabilityRisk": {
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "$ref": "#/$defs/RiskLevel"
+        },
+        "score": {
+          "description": "higher = riskier",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Score",
+          "type": "number"
+        },
+        "expected_yield_anomaly_pct": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Range"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "drivers": {
+          "items": {
+            "$ref": "#/$defs/Reason"
+          },
+          "title": "Drivers",
+          "type": "array"
+        }
+      },
+      "required": [
+        "level",
+        "score",
+        "drivers"
+      ],
+      "title": "AvailabilityRisk",
+      "type": "object"
+    },
+    "Confidence": {
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "title": "Confidence",
+      "type": "string"
+    },
+    "Crop": {
+      "enum": [
+        "maize",
+        "wheat",
+        "barley",
+        "soybean",
+        "sunflower",
+        "pea",
+        "cover_mustard",
+        "cover_phacelia",
+        "cover_vetch",
+        "fallow"
+      ],
+      "title": "Crop",
+      "type": "string"
+    },
+    "CropOutlook": {
+      "additionalProperties": false,
+      "properties": {
+        "crop": {
+          "$ref": "#/$defs/Crop"
+        },
+        "area_ha": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Area Ha"
+        },
+        "availability": {
+          "$ref": "#/$defs/AvailabilityRisk"
+        },
+        "quality": {
+          "$ref": "#/$defs/QualityRisk"
+        },
+        "impact": {
+          "$ref": "#/$defs/EnvironmentalImpact"
+        },
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        },
+        "model_version": {
+          "title": "Model Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "crop",
+        "availability",
+        "quality",
+        "impact",
+        "confidence",
+        "model_version"
+      ],
+      "title": "CropOutlook",
+      "type": "object"
+    },
+    "DataSource": {
+      "additionalProperties": false,
+      "properties": {
+        "dataset": {
+          "description": "e.g. 'NASA POWER'",
+          "title": "Dataset",
+          "type": "string"
+        },
+        "product": {
+          "description": "e.g. 'T2M_MAX, daily'",
+          "title": "Product",
+          "type": "string"
+        },
+        "resolution": {
+          "description": "e.g. '0.5° x 0.625°' or '250 m'",
+          "title": "Resolution",
+          "type": "string"
+        },
+        "period": {
+          "description": "e.g. '2001-2025'",
+          "title": "Period",
+          "type": "string"
+        },
+        "is_nasa": {
+          "title": "Is Nasa",
+          "type": "boolean"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        }
+      },
+      "required": [
+        "dataset",
+        "product",
+        "resolution",
+        "period",
+        "is_nasa"
+      ],
+      "title": "DataSource",
+      "type": "object"
+    },
+    "EnvironmentalImpact": {
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "$ref": "#/$defs/RiskLevel"
+        },
+        "water_deficit_mm": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Water Deficit Mm"
+        },
+        "legume_share_pct": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Legume Share Pct"
+        },
+        "winter_cover_days": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Winter Cover Days"
+        },
+        "emissions_kg_co2e_per_t": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Range"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "only from published factors; leave null otherwise"
+        },
+        "notes": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Localized"
+          },
+          "title": "Notes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "level"
+      ],
+      "title": "EnvironmentalImpact",
+      "type": "object"
+    },
+    "LatLon": {
+      "additionalProperties": false,
+      "properties": {
+        "lat": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Lat",
+          "type": "number"
+        },
+        "lon": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Lon",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lat",
+        "lon"
+      ],
+      "title": "LatLon",
+      "type": "object"
+    },
+    "Localized": {
+      "additionalProperties": false,
+      "properties": {
+        "ro": {
+          "title": "Ro",
+          "type": "string"
+        },
+        "en": {
+          "title": "En",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ro",
+        "en"
+      ],
+      "title": "Localized",
+      "type": "object"
+    },
+    "QualityFlag": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "enum": [
+            "aflatoxin_window",
+            "fusarium_window",
+            "harvest_rain"
+          ],
+          "title": "Code",
+          "type": "string"
+        },
+        "label": {
+          "$ref": "#/$defs/Localized"
+        },
+        "level": {
+          "$ref": "#/$defs/RiskLevel"
+        },
+        "days_observed": {
+          "title": "Days Observed",
+          "type": "integer"
+        },
+        "days_normal": {
+          "description": "multi-year mean for the same window",
+          "title": "Days Normal",
+          "type": "number"
+        },
+        "window": {
+          "$ref": "#/$defs/Localized",
+          "description": "e.g. 'maize flowering, ~10 Jul-10 Aug'"
+        }
+      },
+      "required": [
+        "code",
+        "label",
+        "level",
+        "days_observed",
+        "days_normal",
+        "window"
+      ],
+      "title": "QualityFlag",
+      "type": "object"
+    },
+    "QualityRisk": {
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "$ref": "#/$defs/RiskLevel"
+        },
+        "flags": {
+          "items": {
+            "$ref": "#/$defs/QualityFlag"
+          },
+          "title": "Flags",
+          "type": "array"
+        }
+      },
+      "required": [
+        "level",
+        "flags"
+      ],
+      "title": "QualityRisk",
+      "type": "object"
+    },
+    "Range": {
+      "additionalProperties": false,
+      "description": "An estimate with its uncertainty. `low <= mid <= high`.",
+      "properties": {
+        "low": {
+          "title": "Low",
+          "type": "number"
+        },
+        "mid": {
+          "title": "Mid",
+          "type": "number"
+        },
+        "high": {
+          "title": "High",
+          "type": "number"
+        }
+      },
+      "required": [
+        "low",
+        "mid",
+        "high"
+      ],
+      "title": "Range",
+      "type": "object"
+    },
+    "Reason": {
+      "additionalProperties": false,
+      "description": "One machine-readable driver behind a status or score.",
+      "properties": {
+        "code": {
+          "description": "stable id, e.g. 'heat_at_flowering'",
+          "title": "Code",
+          "type": "string"
+        },
+        "label": {
+          "$ref": "#/$defs/Localized"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit"
+        }
+      },
+      "required": [
+        "code",
+        "label"
+      ],
+      "title": "Reason",
+      "type": "object"
+    },
+    "RiskLevel": {
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "title": "RiskLevel",
+      "type": "string"
+    },
+    "SourcingRecommendation": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "$ref": "#/$defs/Localized"
+        },
+        "text": {
+          "$ref": "#/$defs/Localized"
+        },
+        "actions": {
+          "items": {
+            "$ref": "#/$defs/Localized"
+          },
+          "title": "Actions",
+          "type": "array"
+        },
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        },
+        "assumptions": {
+          "items": {
+            "$ref": "#/$defs/Localized"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "title",
+        "text",
+        "actions",
+        "confidence",
+        "assumptions"
+      ],
+      "title": "SourcingRecommendation",
+      "type": "object"
+    },
+    "Zone": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "SIRUTA code",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "county": {
+          "title": "County",
+          "type": "string"
+        },
+        "centroid": {
+          "$ref": "#/$defs/LatLon"
+        },
+        "crops": {
+          "items": {
+            "$ref": "#/$defs/CropOutlook"
+          },
+          "title": "Crops",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "county",
+        "centroid",
+        "crops"
+      ],
+      "title": "Zone",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "mock": {
+      "default": false,
+      "title": "Mock",
+      "type": "boolean"
+    },
+    "region_name": {
+      "title": "Region Name",
+      "type": "string"
+    },
+    "season": {
+      "title": "Season",
+      "type": "integer"
+    },
+    "reference_crops": {
+      "items": {
+        "$ref": "#/$defs/Crop"
+      },
+      "title": "Reference Crops",
+      "type": "array"
+    },
+    "zones": {
+      "items": {
+        "$ref": "#/$defs/Zone"
+      },
+      "title": "Zones",
+      "type": "array"
+    },
+    "recommendation": {
+      "$ref": "#/$defs/SourcingRecommendation"
+    },
+    "scenario": {
+      "$ref": "#/$defs/AdoptionScenario"
+    },
+    "caveats": {
+      "items": {
+        "$ref": "#/$defs/Localized"
+      },
+      "title": "Caveats",
+      "type": "array"
+    },
+    "sources": {
+      "items": {
+        "$ref": "#/$defs/DataSource"
+      },
+      "title": "Sources",
+      "type": "array"
+    }
+  },
+  "required": [
+    "region_name",
+    "season",
+    "reference_crops",
+    "zones",
+    "recommendation",
+    "scenario",
+    "caveats",
+    "sources"
+  ],
+  "title": "SourcingRegion",
+  "type": "object",
+  "$id": "https://farm-titans/contracts/sourcing_region/0.1.0"
+}

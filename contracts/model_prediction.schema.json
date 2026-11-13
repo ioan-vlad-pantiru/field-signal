@@ -1,0 +1,190 @@
+{
+  "$defs": {
+    "Crop": {
+      "enum": [
+        "maize",
+        "wheat",
+        "barley",
+        "soybean",
+        "sunflower",
+        "pea",
+        "cover_mustard",
+        "cover_phacelia",
+        "cover_vetch",
+        "fallow"
+      ],
+      "title": "Crop",
+      "type": "string"
+    },
+    "Localized": {
+      "additionalProperties": false,
+      "properties": {
+        "ro": {
+          "title": "Ro",
+          "type": "string"
+        },
+        "en": {
+          "title": "En",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ro",
+        "en"
+      ],
+      "title": "Localized",
+      "type": "object"
+    },
+    "Range": {
+      "additionalProperties": false,
+      "description": "An estimate with its uncertainty. `low <= mid <= high`.",
+      "properties": {
+        "low": {
+          "title": "Low",
+          "type": "number"
+        },
+        "mid": {
+          "title": "Mid",
+          "type": "number"
+        },
+        "high": {
+          "title": "High",
+          "type": "number"
+        }
+      },
+      "required": [
+        "low",
+        "mid",
+        "high"
+      ],
+      "title": "Range",
+      "type": "object"
+    },
+    "Reason": {
+      "additionalProperties": false,
+      "description": "One machine-readable driver behind a status or score.",
+      "properties": {
+        "code": {
+          "description": "stable id, e.g. 'heat_at_flowering'",
+          "title": "Code",
+          "type": "string"
+        },
+        "label": {
+          "$ref": "#/$defs/Localized"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit"
+        }
+      },
+      "required": [
+        "code",
+        "label"
+      ],
+      "title": "Reason",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One row of `ml` output (JSON Lines or Parquet), consumed by the API.",
+  "properties": {
+    "zone_id": {
+      "title": "Zone Id",
+      "type": "string"
+    },
+    "zone_type": {
+      "enum": [
+        "field",
+        "commune",
+        "county"
+      ],
+      "title": "Zone Type",
+      "type": "string"
+    },
+    "crop": {
+      "$ref": "#/$defs/Crop"
+    },
+    "season": {
+      "title": "Season",
+      "type": "integer"
+    },
+    "p_bad_year": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "P Bad Year",
+      "type": "number"
+    },
+    "yield_anomaly_pct": {
+      "$ref": "#/$defs/Range"
+    },
+    "top_drivers": {
+      "items": {
+        "$ref": "#/$defs/Reason"
+      },
+      "title": "Top Drivers",
+      "type": "array"
+    },
+    "model_version": {
+      "title": "Model Version",
+      "type": "string"
+    },
+    "cv_metric_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "e.g. 'roc_auc_loyo'",
+      "title": "Cv Metric Name"
+    },
+    "cv_metric_value": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Cv Metric Value"
+    }
+  },
+  "required": [
+    "zone_id",
+    "zone_type",
+    "crop",
+    "season",
+    "p_bad_year",
+    "yield_anomaly_pct",
+    "top_drivers",
+    "model_version"
+  ],
+  "title": "ModelPrediction",
+  "type": "object",
+  "$id": "https://farm-titans/contracts/model_prediction/0.1.0"
+}
