@@ -105,7 +105,7 @@ def ndvi_features(vi: pd.DataFrame | None, c: Crop, season: int) -> dict[str, An
     ok = v[rel.between(0, 1) | rel.isna()]
     zone = ok.groupby(level=0)["ndvi"].mean().dropna()
     # NDVI peaks around flowering: null the peak unless usable 16-day composites cover >= 75 % of
-    # the flowering window's days (e.g. the 2025 cube has none from 2025-06-26 to 2025-11-17)
+    # the flowering window's days (e.g. the 2025 cube has no composite starting 2025-07-04..11-09)
     flo = c.window("flowering", season)
     assert flo
     cover = {d.date() + timedelta(days=k) for d in zone.index for k in range(16)}
