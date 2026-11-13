@@ -3,6 +3,15 @@
 Datasets and fetch pipelines (`farm_data`). `raw/` (downloaded inputs) and `cache/` (derived
 outputs) are gitignored. Sources and licences: README "Data sources".
 
+**Just want the data?** The built outputs (feature table, zones, INS yields, POWER daily) are on
+the rolling `data-latest` pre-release. From the repo root:
+
+```bash
+gh release download data-latest -p field-signal-data.tar.gz -O - | tar -xz -C data
+```
+
+Republish after a rebuild with `sh data/scripts/pack.sh`.
+
 ```bash
 uv sync --all-packages
 

@@ -1,0 +1,38 @@
+#!/bin/sh
+# Pack the derived pilot data and publish it as the rolling `data-latest` GitHub pre-release.
+#
+#   sh data/scripts/pack.sh                 # after build_features.py
+#
+# Teammates, from the repo root (restores data/cache/ so the code finds it):
+#   gh release download data-latest -p field-signal-data.tar.gz -O - | tar -xz -C data
+set -eu
+cd "$(dirname "$0")/.."
+tgz="$(mktemp -d)/field-signal-data.tar.gz"
+tar -czf "$tgz" cache/features cache/zones cache/ins cache/power $(ls cache/appeears/*.parquet 2>/dev/null)
+
+modis=$([ -f cache/appeears/modis.parquet ] && echo yes || echo "pending (ndvi_* columns null)")
+smap=$([ -f cache/appeears/smap.parquet ] && echo yes || echo "pending (smap_* columns null)")
+notes="Derived pilot data, built $(date -u +%Y-%m-%dT%H:%MZ) from $(git rev-parse --short HEAD).
+
+| Path | What |
+|---|---|
+| cache/features/{field,commune,county}.parquet | Feature table, one row per zone x crop x season (contracts/README.md §1, FeatureRow) |
+| cache/zones/{zones,points}.parquet | 29 pilot zones and their 81 cropland sample points |
+| cache/ins/county_yields.parquet | INS TEMPO county area, production, yield, 6 crops, 1990-2025 |
+| cache/power/*.parquet | NASA POWER daily + FAO-56 ET0 per sample point, 1981-2025 |
+| cache/appeears/*.parquet | MODIS NDVI/EVI and SMAP L4 root-zone per point (when ready) |
+
+MODIS: $modis. SMAP: $smap. This release is replaced as the AppEEARS tasks finish.
+
+Install: \`gh release download data-latest -p field-signal-data.tar.gz -O - | tar -xz -C data\`
+
+Sources and attribution: README \"Data sources\" (NASA POWER, MODIS, SMAP: NASA open data; SoilGrids, EUCROPMAP: CC BY 4.0; Sursa: INS)."
+
+if gh release view data-latest >/dev/null 2>&1; then
+  gh release upload data-latest "$tgz" --clobber
+  gh release edit data-latest --notes "$notes"
+else
+  gh release create data-latest "$tgz" --prerelease --target "$(git rev-parse --abbrev-ref HEAD)" \
+    --title "Pilot data (rolling)" --notes "$notes"
+fi
+ls -l "$tgz"

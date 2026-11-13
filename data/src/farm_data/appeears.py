@@ -197,15 +197,21 @@ def tidy_smap(raw: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def fetch() -> None:
+def fetch(wait: bool = True) -> None:
+    """Download + tidy each finished task once. `wait=False` skips tasks still queued."""
     api, tasks = AppEEARS(), json.loads(TASKS.read_text())
     for name, tidy in (
         ("field-signal-modis-ndvi", tidy_modis),
         ("field-signal-smap-rootzone", tidy_smap),
     ):
+        out = OUT / ("modis.parquet" if "modis" in name else "smap.parquet")
+        if out.exists():
+            continue
+        if not wait and (st := api.status(tasks[name])) != "done":
+            print(f"{name}: {st}")
+            continue
         api.wait(tasks[name])
         raw = api.results(tasks[name])
-        out = OUT / ("modis.parquet" if "modis" in name else "smap.parquet")
         tidy(raw).to_parquet(out, index=False)
         print(f"{name}: {len(raw)} raw rows -> {out}")
 
@@ -219,4 +225,4 @@ if __name__ == "__main__":
         for n, t in json.loads(TASKS.read_text()).items():
             print(n, t, api.status(t))
     else:
-        fetch()
+        fetch(wait=cmd != "poll")  # `fetch` waits for both tasks; `poll` takes what is done
