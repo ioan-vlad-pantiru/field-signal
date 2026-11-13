@@ -371,5 +371,80 @@
     "cover_phacelia": "Facelia",
     "cover_vetch": "Măzăriche",
     "fallow": "Pârloagă"
+  },
+  "Simulator": {
+    "eyebrow": "Simulator de câmp",
+    "title": "Vezi rotația pe un câmp",
+    "intro": "Un tractor mic seamănă fiecare cultură din rotație, câmpul crește și se recoltează, apoi urmează cultura următoare. Maroniul înseamnă sol gol; verdele înseamnă câmp acoperit.",
+    "banner": "Ilustrație — nu este un plan de lucru pentru utilaj.",
+    "demoNote": "Rotații demo și un câmp demo lângă Aiud. Lunile de semănat și recoltat sunt cele obișnuite în județul Alba; ale tale pot fi altele.",
+    "strategyLabel": "Rotația",
+    "shapeLabel": "Forma câmpului",
+    "shape": {
+      "rect": "Dreptunghi",
+      "irregular": "Neregulată"
+    },
+    "loading": "Se încarcă câmpul 3D…",
+    "noWebgl": "3D nu merge pe acest dispozitiv, așa că vezi același câmp de sus, în plan.",
+    "year": "Anul {n}",
+    "valueText": "{year}, {crop}: {phase}, {month}",
+    "phase": {
+      "bare": "Sol gol",
+      "sow": "Semănat",
+      "grow": "Creștere",
+      "harvest": "Recoltare",
+      "harvestCover": "Cultura de acoperire încorporată în sol",
+      "fallow": "Pârloagă",
+      "stubble": "Miriște după recoltare"
+    },
+    "controls": {
+      "play": "Pornește",
+      "pause": "Pauză",
+      "restart": "De la început",
+      "prev": "Pasul anterior",
+      "next": "Pasul următor",
+      "prevShort": "Înapoi",
+      "nextShort": "Înainte",
+      "speed": "Viteză",
+      "scrub": "Cronologie",
+      "camera": "Cameră",
+      "keys": "Taste: Spațiu pornește sau oprește · ← → pas · 1 2 4 viteză · R de la început · C cameră"
+    },
+    "camera": {
+      "overview": "Ansamblu",
+      "follow": "După tractor",
+      "top": "De sus"
+    },
+    "legend": {
+      "title": "Legendă",
+      "bare": "Sol gol",
+      "drilled": "Rânduri proaspăt semănate",
+      "covered": "Cultură pe câmp",
+      "stubble": "Miriște",
+      "headland": "Zona de întoarcere, lucrată la final"
+    },
+    "timeline": {
+      "bare": "Sol gol",
+      "covered": "Cultură pe câmp",
+      "bareGap": "{months} luni sol gol înainte",
+      "months": "{months} luni",
+      "scale": "Lunile la scară"
+    },
+    "stats": {
+      "title": "Lucrul pe câmp, la o operațiune",
+      "illustrative": "Estimări ilustrative pentru acest câmp demo, nu un plan de lucru.",
+      "area": "Suprafața",
+      "passes": "Treceri",
+      "passesHint": "semănătoare de {width} m, plus {laps} ture pe zona de întoarcere",
+      "distance": "Distanță parcursă",
+      "time": "Timp de lucru",
+      "timeHint": "{work} km/h la lucru, {turn} km/h la întoarceri",
+      "bare": "Luni de sol gol între culturi",
+      "seasons": "Cultura în fiecare an"
+    },
+    "seasonRow": "semănat în {sow}, recoltat în {harvest}",
+    "seasonRowCover": "semănat în {sow}, încorporat în sol în {harvest}",
+    "reducedMotion": "Ai cerut mai puțină mișcare, deci câmpul nu se animă. Folosește Înapoi și Înainte ca să treci prin fiecare sezon.",
+    "openLink": "Vezi pe un câmp"
   }
 }

@@ -371,5 +371,80 @@
     "cover_phacelia": "Phacelia",
     "cover_vetch": "Vetch",
     "fallow": "Fallow"
+  },
+  "Simulator": {
+    "eyebrow": "Field simulator",
+    "title": "See your rotation on a field",
+    "intro": "A small tractor sows each crop of the rotation, the field grows and is harvested, then the next crop follows. Brown means bare soil; green means the field is covered.",
+    "banner": "Illustration — not a machine work plan.",
+    "demoNote": "Demo rotations and a demo field near Aiud. Sowing and harvest months are typical for Alba county; yours will differ.",
+    "strategyLabel": "Rotation",
+    "shapeLabel": "Field shape",
+    "shape": {
+      "rect": "Rectangle",
+      "irregular": "Irregular"
+    },
+    "loading": "Loading the 3D field…",
+    "noWebgl": "3D is not available on this device, so here is a flat view of the same field.",
+    "year": "Year {n}",
+    "valueText": "{year}, {crop}: {phase}, {month}",
+    "phase": {
+      "bare": "Bare soil",
+      "sow": "Sowing",
+      "grow": "Growing",
+      "harvest": "Harvest",
+      "harvestCover": "Cover crop worked into the soil",
+      "fallow": "Fallow",
+      "stubble": "Stubble after harvest"
+    },
+    "controls": {
+      "play": "Play",
+      "pause": "Pause",
+      "restart": "Restart",
+      "prev": "Previous step",
+      "next": "Next step",
+      "prevShort": "Back",
+      "nextShort": "Next",
+      "speed": "Speed",
+      "scrub": "Timeline",
+      "camera": "Camera",
+      "keys": "Keys: Space play or pause · ← → step · 1 2 4 speed · R restart · C camera"
+    },
+    "camera": {
+      "overview": "Overview",
+      "follow": "Follow tractor",
+      "top": "Top-down"
+    },
+    "legend": {
+      "title": "Legend",
+      "bare": "Bare soil",
+      "drilled": "Freshly sown rows",
+      "covered": "Crop cover",
+      "stubble": "Stubble",
+      "headland": "Headland, worked last"
+    },
+    "timeline": {
+      "bare": "Bare soil",
+      "covered": "Crop on the field",
+      "bareGap": "{months} months bare before",
+      "months": "{months} mo",
+      "scale": "Drawn to scale in months"
+    },
+    "stats": {
+      "title": "Field work, per operation",
+      "illustrative": "Illustrative estimates for this demo field, not a work plan.",
+      "area": "Field area",
+      "passes": "Passes",
+      "passesHint": "{width} m drill, plus {laps} headland laps",
+      "distance": "Distance driven",
+      "time": "Working time",
+      "timeHint": "{work} km/h working, {turn} km/h on turns",
+      "bare": "Months of bare soil between crops",
+      "seasons": "Crop by season"
+    },
+    "seasonRow": "sown in {sow}, harvested in {harvest}",
+    "seasonRowCover": "sown in {sow}, worked into the soil in {harvest}",
+    "reducedMotion": "Reduced motion is on, so the field does not animate. Use Back and Next to step through each season.",
+    "openLink": "See it on a field"
   }
 }
