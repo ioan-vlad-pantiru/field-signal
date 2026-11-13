@@ -156,13 +156,8 @@ def build(kb: KnowledgeBase | None = None) -> pd.DataFrame:
             for z, g in df.groupby("zone_id")
         }
 
-    def appeears_out(stem: str) -> pd.DataFrame | None:
-        """All finished AppEEARS batches (modis.parquet, modis-2.parquet, ...); disjoint points."""
-        fs = sorted(appeears.OUT.glob(f"{stem}*.parquet"))
-        return pd.concat([pd.read_parquet(f) for f in fs], ignore_index=True) if fs else None
-
     # AppEEARS outputs are optional so the table can be built before the tasks finish
-    vi, sm = appeears_out("modis"), appeears_out("smap")
+    vi, sm = appeears.load("modis"), appeears.load("smap")
     cube_path = modis_cube.OUT / "modis.parquet"
     if cube_path.exists():  # AppEEARS rows where a point has them, cube rows for the other points
         cube = pd.read_parquet(cube_path)

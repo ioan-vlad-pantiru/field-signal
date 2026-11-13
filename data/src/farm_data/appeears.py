@@ -26,6 +26,7 @@ import os
 import sys
 import time
 from datetime import date
+from typing import Any
 
 import pandas as pd
 import requests
@@ -37,6 +38,7 @@ from farm_data import CACHE, DATA_DIR
 API = "https://appeears.earthdatacloud.nasa.gov/api"
 OUT = CACHE / "appeears"
 TASKS = OUT / "tasks.json"  # task name -> id, so `fetch` finds what `submit` queued
+FAILED = {"error", "expired", "deleted"}  # terminal: points count as uncovered, never fetched
 MODIS = {
     "MOD13Q1.061": ["_250m_16_days_NDVI", "_250m_16_days_EVI", "_250m_16_days_pixel_reliability"],
     "MYD13Q1.061": ["_250m_16_days_NDVI", "_250m_16_days_EVI", "_250m_16_days_pixel_reliability"],
@@ -121,20 +123,18 @@ class AppEEARS:
             raise RuntimeError(f"AppEEARS rejected {name}: {r.status_code} {r.text[:300]}")
         return str(r.json()["task_id"])
 
-    def status(self, task_id: str) -> str:
+    def task(self, task_id: str) -> dict[str, Any]:
         r = self.s.get(f"{API}/task/{task_id}", timeout=60)
         r.raise_for_status()
-        return str(r.json()["status"])
+        return dict(r.json())
 
-    def task_point_ids(self, task_id: str) -> set[str]:
-        r = self.s.get(f"{API}/task/{task_id}", timeout=60)
-        r.raise_for_status()
-        return {str(c["id"]) for c in r.json()["params"]["coordinates"]}
+    def status(self, task_id: str) -> str:
+        return str(self.task(task_id)["status"])
 
     def wait(self, task_id: str, timeout_s: int = 6 * 3600, poll_s: int = 60) -> None:
         t0 = time.monotonic()
         while (st := self.status(task_id)) != "done":
-            if st in {"error", "expired", "deleted"}:
+            if st in FAILED:
                 raise RuntimeError(f"AppEEARS task {task_id}: {st}")
             if time.monotonic() - t0 > timeout_s:
                 raise TimeoutError(f"AppEEARS task {task_id} still {st}")
@@ -174,10 +174,12 @@ def _batch(name: str) -> tuple[str, int]:
 
 
 def missing_points(api: AppEEARS, tasks: dict[str, str]) -> dict[str, pd.DataFrame]:
-    """Per base name: the sample points that no task of that base covers yet."""
+    """Per base name: the sample points that no live task of that base covers yet."""
     pts, covered = _points(), {b: set[str]() for b in BASES}
     for name, tid in tasks.items():
-        covered[_batch(name)[0]] |= api.task_point_ids(tid)
+        t = api.task(tid)
+        if t["status"] not in FAILED:
+            covered[_batch(name)[0]] |= {str(c["id"]) for c in t["params"]["coordinates"]}
     return {b: pts[~pts["id"].isin(ids)] for b, ids in covered.items()}
 
 
@@ -187,7 +189,8 @@ def submit() -> dict[str, str]:
     api = AppEEARS()
     old = json.loads(TASKS.read_text()) if TASKS.exists() else {}
     todo = missing_points(api, old) if old else {b: _points() for b in BASES}
-    new = {}
+    new: dict[str, str] = {}
+    OUT.mkdir(parents=True, exist_ok=True)
     for base, pts in todo.items():
         if pts.empty:
             continue
@@ -195,8 +198,9 @@ def submit() -> dict[str, str]:
         name = base if n == 1 else f"{base}-{n}"
         layers, dates = BASES[base]
         new[name] = api.submit_points(name, layers, pts, *dates)
-    OUT.mkdir(parents=True, exist_ok=True)
-    TASKS.write_text(json.dumps({**old, **new}, indent=2))
+        part = TASKS.with_name(TASKS.name + ".part")  # save each task id at once: a later POST
+        part.write_text(json.dumps({**old, **new}, indent=2))  # failing must not orphan it
+        part.rename(TASKS)
     return new
 
 
@@ -242,7 +246,8 @@ def fetch(wait: bool = True) -> None:
         out = OUT / (f"{stem}.parquet" if n == 1 else f"{stem}-{n}.parquet")
         if out.exists():
             continue
-        if not wait and (st := api.status(tid)) != "done":
+        st = api.status(tid)
+        if st in FAILED or (not wait and st != "done"):
             print(f"{name}: {st}")
             continue
         api.wait(tid)
@@ -251,6 +256,17 @@ def fetch(wait: bool = True) -> None:
         (tidy_modis if stem == "modis" else tidy_smap)(raw).to_parquet(part, index=False)
         part.rename(out)
         print(f"{name}: {len(raw)} raw rows -> {out}")
+
+
+def load(stem: str) -> pd.DataFrame | None:
+    """All finished batches of `stem` ("modis" or "smap"), batch 1 first; a point/date found in
+    two batches is kept once."""
+    fs = sorted(OUT.glob(f"{stem}*.parquet"), key=lambda f: int(f.stem.partition("-")[2] or 1))
+    if not fs:
+        return None
+    df = pd.concat([pd.read_parquet(f) for f in fs], ignore_index=True)
+    key = [c for c in ("zone_id", "point", "date", "satellite") if c in df]
+    return df.drop_duplicates(key, ignore_index=True)
 
 
 if __name__ == "__main__":
