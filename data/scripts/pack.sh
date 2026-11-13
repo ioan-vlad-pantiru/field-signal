@@ -8,18 +8,21 @@
 set -eu
 cd "$(dirname "$0")/.."
 tgz="$(mktemp -d)/field-signal-data.tar.gz"
-tar -czf "$tgz" cache/features cache/zones cache/ins cache/power $(ls cache/appeears/*.parquet 2>/dev/null)
+# -L: real files, never symlinks; no owner names, extended attributes or macOS metadata
+tar -czLf "$tgz" --no-xattrs --no-mac-metadata --uname '' --gname '' \
+  cache/features cache/zones cache/ins cache/power cache/modis_cube $(ls cache/appeears/*.parquet 2>/dev/null)
 
-modis=$([ -f cache/appeears/modis.parquet ] && echo yes || echo "pending (ndvi_* columns null)")
+modis=$([ -f cache/appeears/modis.parquet ] && echo yes || echo "pending (ndvi_* from the local MODIS cube)")
 smap=$([ -f cache/appeears/smap.parquet ] && echo yes || echo "pending (smap_* columns null)")
 notes="Derived pilot data, built $(date -u +%Y-%m-%dT%H:%MZ) from $(git rev-parse --short HEAD).
 
 | Path | What |
 |---|---|
 | cache/features/{field,commune,county}.parquet | Feature table, one row per zone x crop x season (contracts/README.md §1, FeatureRow) |
-| cache/zones/{zones,points}.parquet | 29 pilot zones and their 81 cropland sample points |
+| cache/zones/{zones,points}.parquet | 49 pilot zones (8 counties, 40 Alba communes, demo field) and their 121 cropland sample points |
 | cache/ins/county_yields.parquet | INS TEMPO county area, production, yield, 6 crops, 1990-2025 |
 | cache/power/*.parquet | NASA POWER daily + FAO-56 ET0 per sample point, 1981-2025 |
+| cache/modis_cube/modis.parquet | MODIS MOD13Q1/MYD13Q1 v061 NDVI/EVI per point from a 0.01 deg cube (Planetary Computer modis-13Q1-061), 2001-2026; used where AppEEARS has no rows |
 | cache/appeears/*.parquet | MODIS NDVI/EVI and SMAP L4 root-zone per point (when ready) |
 
 MODIS: $modis. SMAP: $smap. This release is replaced as the AppEEARS tasks finish.
