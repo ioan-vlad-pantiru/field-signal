@@ -97,13 +97,21 @@ def ndvi_features(vi: pd.DataFrame | None, c: Crop, season: int) -> dict[str, An
     sow, har = c.window("sowing", season), c.window("harvest", season)
     assert sow and har
     if vi is None:
-        return {"ndvi_peak": None, "ndvi_usable_share": 0.0}
+        return {"ndvi_peak": None, "ndvi_usable_share": None}  # no data: not measured
     v = vi.loc[pd.Timestamp(sow[0]) : pd.Timestamp(har[1])]
     if v.empty:
-        return {"ndvi_peak": None, "ndvi_usable_share": 0.0}
+        return {"ndvi_peak": None, "ndvi_usable_share": None}  # no data: not measured
     rel = v["reliability"].astype("float64")  # NaN = local cube row, no QA layer to screen with
     ok = v[rel.between(0, 1) | rel.isna()]
-    peak = ok.groupby(level=0)["ndvi"].mean().max() if len(ok) else np.nan
+    zone = ok.groupby(level=0)["ndvi"].mean().dropna()
+    # NDVI peaks around flowering: null the peak unless usable 16-day composites cover >= 75 % of
+    # the flowering window's days (e.g. the 2025 cube has none from 2025-06-26 to 2025-11-17)
+    flo = c.window("flowering", season)
+    assert flo
+    cover = {d.date() + timedelta(days=k) for d in zone.index for k in range(16)}
+    n = (flo[1] - flo[0]).days + 1
+    covered = sum(flo[0] + timedelta(days=k) in cover for k in range(n)) / n
+    peak = zone.max() if covered >= 0.75 else np.nan
     return {
         "ndvi_peak": None if pd.isna(peak) else round(float(peak), 4),
         "ndvi_usable_share": None if rel.isna().any() else round(len(ok) / len(v), 3),
@@ -223,3 +231,14 @@ def write(df: pd.DataFrame) -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     for zt, g in df.groupby("zone_type"):
         g.astype({"frost_days_winter": "Int64"}).to_parquet(OUT / f"{zt}.parquet", index=False)
+
+
+if __name__ == "__main__":  # self-check: a gap over flowering must null the peak
+    maize = load_crops().crops["maize"]
+    t = pd.date_range("2025-01-01", "2025-12-31", freq="8D")
+    full = pd.DataFrame({"ndvi": 0.8, "reliability": pd.array([pd.NA] * len(t), "Int8")}, index=t)
+    assert ndvi_features(full, maize, 2025)["ndvi_peak"] == 0.8
+    gap = full[(full.index < "2025-06-27") | (full.index > "2025-11-16")]
+    assert ndvi_features(gap, maize, 2025)["ndvi_peak"] is None
+    assert ndvi_features(None, maize, 2025)["ndvi_usable_share"] is None
+    print("ndvi_features self-check ok")
