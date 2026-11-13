@@ -5,6 +5,7 @@ import { Marker, type GeoJSONSource, type Map as MapLibreMap } from "maplibre-gl
 import type { Crop, LatLon } from "@/lib/contracts";
 import { CROP_COLORS, CROP_HEIGHT_M } from "@/lib/crops";
 import type { FieldLayout, Hex } from "@/lib/field-plan";
+import { polygonCentroid, radiusMetres } from "@/lib/geo";
 import { findNonFarmland, type NonFarmland } from "@/lib/land-cover";
 import { useMap } from "@/components/map/use-map";
 
@@ -13,6 +14,8 @@ const HEIGHT_EXAGGERATION = 12;
 /** Hexagons are drawn slightly inset so the gaps show the grid between extruded cells. */
 const INSET = 0.92;
 const GROW_MS = 700;
+/** Plots smaller than this many hectares get letter-only labels. */
+const COMPACT_BELOW = 6;
 const HEXES = "fs-hexes";
 const BLOCKED_COLOR = "#8d958c";
 
@@ -48,6 +51,12 @@ function hexData(layout: FieldLayout, plots: PlotView[]): HexData {
   };
 }
 
+/** Zoom that fits a drawn field of this size in the plan map, with room for the 3D tilt. */
+function zoomFor(boundary: LatLon[]): number {
+  const radius = radiusMetres(polygonCentroid(boundary), boundary);
+  return Math.max(12, Math.min(16.5, 14.6 - Math.log2(Math.max(radius, 1) / 370)));
+}
+
 function whenStyleReady(map: MapLibreMap, run: () => void) {
   if (map.isStyleLoaded()) run();
   else map.once("load", run);
@@ -61,16 +70,20 @@ export function FieldPlanMap({
   center,
   layout,
   plots,
+  boundary,
   onNonFarmland,
   label,
 }: {
   center: LatLon;
   layout: FieldLayout;
   plots: PlotView[];
+  /** The farmer's drawn field, outlined on top of the hexagons. */
+  boundary: LatLon[] | null;
   onNonFarmland: (found: Map<string, NonFarmland>) => void;
   label: string;
 }) {
-  const { container, map } = useMap([center.lon, center.lat], 14.6);
+  const focus = boundary ? polygonCentroid(boundary) : center;
+  const { container, map } = useMap([focus.lon, focus.lat], boundary ? zoomFor(boundary) : 14.6);
   const markers = useRef<Marker[]>([]);
   const report = useRef(onNonFarmland);
 
@@ -114,6 +127,19 @@ export function FieldPlanMap({
           "fill-extrusion-opacity": 0.92,
         },
       });
+      if (boundary) {
+        const ring = boundary.map((c): [number, number] => [c.lon, c.lat]);
+        map.addSource("fs-boundary", {
+          type: "geojson",
+          data: { type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: [...ring, ring[0]] } },
+        });
+        map.addLayer({
+          id: "fs-boundary",
+          type: "line",
+          source: "fs-boundary",
+          paint: { "line-color": "#ffffff", "line-width": 3, "line-dasharray": [2, 1] },
+        });
+      }
       map.on("idle", check);
     });
     return () => {
@@ -135,6 +161,8 @@ export function FieldPlanMap({
       source.setData(hexData(layout, plots));
 
       markers.current.forEach((m) => m.remove());
+      // Small plots sit close together: label them with the letter only (the legend names the crop).
+      const compact = layout.plots.some((plot) => plot.hexIds.length > 0 && plot.hexIds.length < COMPACT_BELOW);
       markers.current = layout.plots
         .filter((plot) => plot.hexIds.length > 0)
         .map((plot) => {
@@ -142,7 +170,7 @@ export function FieldPlanMap({
           el.className = "plot-label";
           el.setAttribute("aria-hidden", "true");
           const view = plots.find((p) => p.id === plot.id);
-          el.textContent = view ? `${plot.id} · ${view.label}` : plot.id;
+          el.textContent = view && !compact ? `${plot.id} · ${view.label}` : plot.id;
           return new Marker({ element: el }).setLngLat(plot.centroid).addTo(map);
         });
 

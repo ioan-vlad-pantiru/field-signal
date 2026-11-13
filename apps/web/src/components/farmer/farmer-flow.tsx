@@ -58,9 +58,11 @@ function Flow({ pin }: { pin: UrlPin | null }) {
   const locale = useAppLocale();
   const [state, setState] = useState<State>({ step: "form" });
   const [lastRequest, setLastRequest] = useState<FieldRequest | null>(null);
+  const [boundary, setBoundary] = useState<LatLon[] | null>(null);
 
-  async function run(request: FieldRequest) {
+  async function run(request: FieldRequest, drawn: LatLon[] | null) {
     setLastRequest(request);
+    setBoundary(drawn);
     setState({ step: "loading" });
     window.scrollTo({ top: 0 });
     try {
@@ -79,9 +81,16 @@ function Flow({ pin }: { pin: UrlPin | null }) {
     case "loading":
       return <ResultsSkeleton />;
     case "error":
-      return <ErrorState onRetry={() => (lastRequest ? run(lastRequest) : back())} />;
+      return <ErrorState onRetry={() => (lastRequest ? run(lastRequest, boundary) : back())} />;
     case "results":
-      return <ResultsView analysis={state.result.data} origin={state.result.origin} onBack={back} />;
+      return (
+        <ResultsView
+          analysis={state.result.data}
+          origin={state.result.origin}
+          boundary={boundary}
+          onBack={back}
+        />
+      );
     case "form":
       return (
         <div className="flex flex-col gap-4">
@@ -105,7 +114,12 @@ function Flow({ pin }: { pin: UrlPin | null }) {
               </span>
             </p>
           ) : null}
-          <FieldForm initial={lastRequest} startPoint={pin?.point} onSubmit={run} />
+          <FieldForm
+            initial={lastRequest}
+            initialBoundary={boundary}
+            startPoint={pin?.point}
+            onSubmit={run}
+          />
         </div>
       );
   }

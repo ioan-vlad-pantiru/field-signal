@@ -7,6 +7,7 @@ import { CROP_COLORS } from "@/lib/crops";
 import { cropFor, hexField, layoutField } from "@/lib/field-plan";
 import type { NonFarmland } from "@/lib/land-cover";
 import { formatNumber } from "@/lib/format";
+import { polygonAreaHa } from "@/lib/geo";
 import { useAppLocale, useLocalized } from "@/lib/localized";
 import { Card } from "@/components/ui/card";
 import { CropDot } from "@/components/ui/crop-chip";
@@ -18,7 +19,15 @@ const STEP_MS = 1800;
  * "Which crop goes where": the chosen rotation laid out on the farmer's field, season by
  * season. The field outline is illustrative until farmers can draw their own.
  */
-export function FieldPlan({ center, strategies }: { center: LatLon; strategies: Strategy[] }) {
+export function FieldPlan({
+  center,
+  boundary,
+  strategies,
+}: {
+  center: LatLon;
+  boundary: LatLon[] | null;
+  strategies: Strategy[];
+}) {
   const t = useTranslations("Results.plan");
   const tc = useTranslations("Crops");
   const ts = useTranslations("CropsShort");
@@ -34,7 +43,7 @@ export function FieldPlan({ center, strategies }: { center: LatLon; strategies: 
 
   const [season, setSeason] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const hexes = useMemo(() => hexField(center), [center]);
+  const hexes = useMemo(() => hexField(center, boundary), [center, boundary]);
   const [nonFarmland, setNonFarmland] = useState<Map<string, NonFarmland>>(() => new Map());
   const layout = useMemo(
     () => layoutField(hexes, new Set(nonFarmland.keys()), seasons),
@@ -121,6 +130,7 @@ export function FieldPlan({ center, strategies }: { center: LatLon; strategies: 
         center={center}
         layout={layout}
         plots={plots}
+        boundary={boundary}
         onNonFarmland={setNonFarmland}
         label={t("mapLabel", {
           year,
@@ -204,7 +214,13 @@ export function FieldPlan({ center, strategies }: { center: LatLon; strategies: 
       </div>
 
       <p className="text-sm text-ink-muted">
-        {t("note", { ha: formatNumber(layout.farmedHa, locale, 0), plots: seasons })}
+        {boundary
+          ? t("noteDrawn", {
+              area: formatNumber(polygonAreaHa(boundary), locale, 1),
+              ha: formatNumber(layout.farmedHa, locale, 0),
+              plots: seasons,
+            })
+          : t("note", { ha: formatNumber(layout.farmedHa, locale, 0), plots: seasons })}
       </p>
     </Card>
   );

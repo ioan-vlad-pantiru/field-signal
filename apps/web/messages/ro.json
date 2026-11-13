@@ -66,7 +66,26 @@
     "title": "Despre câmpul dumneavoastră",
     "intro": "Spuneți-ne unde este câmpul și ce cultivați. Vă arătăm cum ar fi mers trei rotații în ultimii 25 de ani.",
     "whereTitle": "Unde este câmpul?",
-    "whereHint": "Atingeți harta pentru a muta acul. Puteți și să-l trageți.",
+    "whereHint": "Puneți un ac pe hartă sau desenați conturul câmpului dumneavoastră.",
+    "modeLabel": "Cum alegeți câmpul",
+    "mode": {
+      "pin": "Pun un ac",
+      "draw": "Desenez câmpul"
+    },
+    "draw": {
+      "hint": "Atingeți harta în fiecare colț al câmpului, pe rând. Sunt necesare cel puțin 3 colțuri.",
+      "progress": "{corners, plural, =0 {Niciun colț încă} one {1 colț} few {# colțuri} other {# de colțuri}} · {ha} ha",
+      "tooSmall": "Câmpul are sub {min} ha. Desenați-l mai mare: fiecare hexagon are 1 ha.",
+      "tooBig": "Câmpul are peste {max} ha. Desenați o singură parcelă.",
+      "undo": "Anulează ultimul colț",
+      "clear": "Șterge tot",
+      "done": "Gata",
+      "yourField": "Câmpul dumneavoastră",
+      "area": "{ha} ha",
+      "corners": "{corners} colțuri, desenat de dumneavoastră",
+      "edit": "Modifică",
+      "remove": "Folosesc doar acul"
+    },
     "mapLabel": "Hartă pentru alegerea câmpului",
     "coordinates": "{lat}° N · {lon}° E",
     "resetPin": "Înapoi la Aiud",
@@ -210,6 +229,7 @@
       "plot": "Parcela",
       "area": "{ha} ha",
       "note": "Exemplu: {ha} ha cultivabili împărțiți în {plots} parcele. Fiecare hexagon are exact 1 ha. Am scos hexagoanele de pe drumuri, clădiri, ape sau păduri, după OpenStreetMap. Granițele sunt desenate de noi, nu sunt ale câmpului dumneavoastră. Înălțimea culturilor pe hartă este exagerată.",
+      "noteDrawn": "Câmpul desenat de dumneavoastră are {area} ha. Îl acoperim cu {ha} hexagoane de 1 ha cultivabile, împărțite în {plots} parcele. Am scos hexagoanele de pe drumuri, clădiri, ape sau păduri, după OpenStreetMap. Înălțimea culturilor pe hartă este exagerată.",
       "notFarmland": "Nu se cultivă: {ha} ha ({reasons})",
       "hexScale": "1 hexagon = 1 ha",
       "reason": {

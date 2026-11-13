@@ -150,15 +150,18 @@ export function ZoneCompare({ zones, crop }: { zones: Zone[]; crop: Crop }) {
 
   return (
     <Card className="flex flex-col gap-4">
-      <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
+      {/* Phones stack the pickers so long commune names fit; side by side from sm up. */}
+      <div className="grid grid-cols-1 items-end gap-2 sm:grid-cols-[1fr_auto_1fr]">
         <ZonePicker label={t("zoneA")} zones={zones} value={idA} onChange={(id) => setIds([id, idB])} />
         <button
           type="button"
           onClick={() => setIds([idB, idA])}
           aria-label={t("swap")}
-          className="press mb-0.5 inline-flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface text-lg hover:border-field"
+          className="press inline-flex h-11 w-11 items-center justify-center justify-self-center rounded-full border border-line bg-surface text-lg hover:border-field sm:mb-0.5"
         >
-          ⇄
+          <span aria-hidden="true" className="rotate-90 sm:rotate-0">
+            ⇄
+          </span>
         </button>
         <ZonePicker label={t("zoneB")} zones={zones} value={idB} onChange={(id) => setIds([idA, id])} />
       </div>
@@ -179,8 +182,8 @@ export function ZoneCompare({ zones, crop }: { zones: Zone[]; crop: Crop }) {
       {/* One measure per row: its name on top, the two zones side by side (fits 390 px). */}
       <div className="overflow-hidden rounded-2xl border border-line">
         <div className="grid grid-cols-2 bg-surface-sunken" aria-hidden="true">
-          <p className="truncate px-3 py-2 font-semibold">{zoneA.name}</p>
-          <p className="truncate border-l border-line px-3 py-2 font-semibold">{zoneB.name}</p>
+          <p className="min-w-0 break-words px-3 py-2 font-semibold">{zoneA.name}</p>
+          <p className="min-w-0 break-words border-l border-line px-3 py-2 font-semibold">{zoneB.name}</p>
         </div>
         <ul aria-label={t("caption", { a: zoneA.name, b: zoneB.name, crop: tc(crop) })}>
           {rows.map((row, index) => (
