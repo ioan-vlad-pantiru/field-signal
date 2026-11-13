@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { Crop, LatLon, Strategy } from "@/lib/contracts";
 import { CROP_COLORS } from "@/lib/crops";
-import { cropFor, layoutField } from "@/lib/field-plan";
+import { cropFor, hexField, layoutField } from "@/lib/field-plan";
+import type { NonFarmland } from "@/lib/land-cover";
 import { formatNumber } from "@/lib/format";
 import { useAppLocale, useLocalized } from "@/lib/localized";
 import { Card } from "@/components/ui/card";
@@ -33,7 +34,13 @@ export function FieldPlan({ center, strategies }: { center: LatLon; strategies: 
 
   const [season, setSeason] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const layout = useMemo(() => layoutField(center, seasons), [center, seasons]);
+  const hexes = useMemo(() => hexField(center), [center]);
+  const [nonFarmland, setNonFarmland] = useState<Map<string, NonFarmland>>(() => new Map());
+  const layout = useMemo(
+    () => layoutField(hexes, new Set(nonFarmland.keys()), seasons),
+    [hexes, nonFarmland, seasons],
+  );
+  const reasons = [...new Set(nonFarmland.values())];
 
   useEffect(() => {
     if (!playing) return;
@@ -114,6 +121,7 @@ export function FieldPlan({ center, strategies }: { center: LatLon; strategies: 
         center={center}
         layout={layout}
         plots={plots}
+        onNonFarmland={setNonFarmland}
         label={t("mapLabel", {
           year,
           plots: plots.map((p) => `${p.id}: ${p.label}`).join(", "),
@@ -123,10 +131,23 @@ export function FieldPlan({ center, strategies }: { center: LatLon; strategies: 
       <ul className="flex flex-wrap gap-x-4 gap-y-2 text-sm" aria-label={t("legend")}>
         {cropsThisSeason.map((crop) => (
           <li key={crop} className="flex items-center gap-1.5">
-            <span className="h-4 w-4 rounded" style={{ background: CROP_COLORS[crop] }} aria-hidden="true" />
+            <Hexagon fill={CROP_COLORS[crop]} />
             {tc(crop)}
           </li>
         ))}
+        {nonFarmland.size > 0 ? (
+          <li className="flex items-center gap-1.5">
+            <Hexagon fill="var(--status-nodata)" dashed />
+            {t("notFarmland", {
+              ha: nonFarmland.size,
+              reasons: reasons.map((r) => t(`reason.${r}`)).join(", "),
+            })}
+          </li>
+        ) : null}
+        <li className="flex items-center gap-1.5 text-ink-muted">
+          <Hexagon fill="none" />
+          {t("hexScale")}
+        </li>
       </ul>
 
       <div className="relative overflow-x-auto rounded-2xl border border-line">
@@ -159,7 +180,7 @@ export function FieldPlan({ center, strategies }: { center: LatLon; strategies: 
                 <th scope="row" className="whitespace-nowrap px-3 py-2 font-semibold">
                   {plot.id}
                   <span className="block font-mono text-xs font-normal text-ink-muted">
-                    {t("area", { ha: formatNumber(plot.areaHa, locale, 1) })}
+                    {t("area", { ha: formatNumber(plot.areaHa, locale, 0) })}
                   </span>
                 </th>
                 {Array.from({ length: seasons }, (_, i) => {
@@ -183,8 +204,24 @@ export function FieldPlan({ center, strategies }: { center: LatLon; strategies: 
       </div>
 
       <p className="text-sm text-ink-muted">
-        {t("note", { ha: formatNumber(layout.totalHa, locale, 1), plots: seasons })}
+        {t("note", { ha: formatNumber(layout.farmedHa, locale, 0), plots: seasons })}
       </p>
     </Card>
+  );
+}
+
+/** Legend swatch in the map's own shape. */
+function Hexagon({ fill, dashed = false }: { fill: string; dashed?: boolean }) {
+  return (
+    <svg viewBox="0 0 20 22" className="h-5 w-5 shrink-0" aria-hidden="true">
+      <path
+        d="M10 1l8.66 5v10L10 21l-8.66-5V6z"
+        fill={fill}
+        fillOpacity={dashed ? 0.45 : 1}
+        stroke={fill === "none" ? "var(--ink-muted)" : dashed ? "var(--status-nodata)" : "none"}
+        strokeWidth={1.5}
+        strokeDasharray={dashed ? "3 2" : undefined}
+      />
+    </svg>
   );
 }

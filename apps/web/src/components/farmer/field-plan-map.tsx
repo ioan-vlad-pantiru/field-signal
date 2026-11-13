@@ -4,14 +4,17 @@ import { useEffect, useRef } from "react";
 import { Marker, type GeoJSONSource, type Map as MapLibreMap } from "maplibre-gl";
 import type { Crop, LatLon } from "@/lib/contracts";
 import { CROP_COLORS, CROP_HEIGHT_M } from "@/lib/crops";
-import type { FieldLayout } from "@/lib/field-plan";
+import type { FieldLayout, Hex } from "@/lib/field-plan";
+import { findNonFarmland, type NonFarmland } from "@/lib/land-cover";
 import { useMap } from "@/components/map/use-map";
 
 /** Crops are a few metres tall at most; exaggerate so the difference reads from above. */
 const HEIGHT_EXAGGERATION = 12;
+/** Hexagons are drawn slightly inset so the gaps show the grid between extruded cells. */
+const INSET = 0.92;
 const GROW_MS = 700;
-const PLOTS = "fs-plots";
-const OUTLINE = "fs-field-outline";
+const HEXES = "fs-hexes";
+const BLOCKED_COLOR = "#8d958c";
 
 export interface PlotView {
   id: string;
@@ -19,19 +22,29 @@ export interface PlotView {
   label: string;
 }
 
-type PlotsData = Extract<Parameters<GeoJSONSource["setData"]>[0], { type: "FeatureCollection" }>;
+type HexData = Extract<Parameters<GeoJSONSource["setData"]>[0], { type: "FeatureCollection" }>;
 
-function plotsGeoJSON(layout: FieldLayout, plots: PlotView[]): PlotsData {
+function inset(hex: Hex): [number, number][] {
+  const [cx, cy] = hex.center;
+  return hex.ring.map(([x, y]) => [cx + (x - cx) * INSET, cy + (y - cy) * INSET]);
+}
+
+function hexData(layout: FieldLayout, plots: PlotView[]): HexData {
+  const plotOf = new Map<string, number>();
+  layout.plots.forEach((plot, i) => plot.hexIds.forEach((id) => plotOf.set(id, i)));
   return {
     type: "FeatureCollection",
-    features: layout.plots.map((plot, i) => ({
-      type: "Feature",
-      properties: {
-        color: CROP_COLORS[plots[i].crop],
-        h: CROP_HEIGHT_M[plots[i].crop] * HEIGHT_EXAGGERATION,
-      },
-      geometry: { type: "Polygon", coordinates: [plot.ring] },
-    })),
+    features: layout.hexes.map((hex) => {
+      const plot = plotOf.get(hex.id);
+      const crop = plot === undefined ? null : plots[plot].crop;
+      return {
+        type: "Feature",
+        properties: crop
+          ? { kind: "crop", color: CROP_COLORS[crop], h: CROP_HEIGHT_M[crop] * HEIGHT_EXAGGERATION }
+          : { kind: "blocked", color: BLOCKED_COLOR, h: 0 },
+        geometry: { type: "Polygon", coordinates: [inset(hex)] },
+      };
+    }),
   };
 }
 
@@ -40,78 +53,105 @@ function whenStyleReady(map: MapLibreMap, run: () => void) {
   else map.once("load", run);
 }
 
-/** The farmer's field on the 3D map, one coloured, extruded plot per rotation strip. */
+/**
+ * The farmer's field as 1 ha hexagons on the 3D map: crop hexagons coloured and raised by crop,
+ * hexagons on roads, buildings, water or woods flat and grey. Reports those once tiles are in.
+ */
 export function FieldPlanMap({
   center,
   layout,
   plots,
+  onNonFarmland,
   label,
 }: {
   center: LatLon;
   layout: FieldLayout;
   plots: PlotView[];
+  onNonFarmland: (found: Map<string, NonFarmland>) => void;
   label: string;
 }) {
-  const { container, map } = useMap([center.lon, center.lat], 14.7);
+  const { container, map } = useMap([center.lon, center.lat], 14.6);
   const markers = useRef<Marker[]>([]);
+  const report = useRef(onNonFarmland);
 
-  // Layers and plot labels, once per map.
+  useEffect(() => {
+    report.current = onNonFarmland;
+  }, [onNonFarmland]);
+
+  // Layers once per map, then one land-cover pass when the camera has settled.
   useEffect(() => {
     if (!map) return;
+    let checked = false;
+    const check = () => {
+      if (checked || map.isMoving()) return;
+      checked = true;
+      report.current(findNonFarmland(map, layout.hexes, [HEXES]));
+    };
     whenStyleReady(map, () => {
-      map.addSource(PLOTS, { type: "geojson", data: plotsGeoJSON(layout, plots) });
-      map.addSource(OUTLINE, {
-        type: "geojson",
-        data: { type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: layout.outline } },
+      map.addSource(HEXES, { type: "geojson", data: hexData(layout, plots) });
+      map.addLayer({
+        id: "fs-hex-blocked",
+        type: "fill",
+        source: HEXES,
+        filter: ["==", ["get", "kind"], "blocked"],
+        paint: { "fill-color": ["get", "color"], "fill-opacity": 0.35 },
       });
       map.addLayer({
-        id: PLOTS,
+        id: "fs-hex-blocked-line",
+        type: "line",
+        source: HEXES,
+        filter: ["==", ["get", "kind"], "blocked"],
+        paint: { "line-color": BLOCKED_COLOR, "line-width": 1.5, "line-dasharray": [2, 1.5] },
+      });
+      map.addLayer({
+        id: "fs-hex-crop",
         type: "fill-extrusion",
-        source: PLOTS,
+        source: HEXES,
+        filter: ["==", ["get", "kind"], "crop"],
         paint: {
           "fill-extrusion-color": ["get", "color"],
           "fill-extrusion-height": ["get", "h"],
           "fill-extrusion-opacity": 0.92,
         },
       });
-      map.addLayer({
-        id: OUTLINE,
-        type: "line",
-        source: OUTLINE,
-        paint: { "line-color": "#ffffff", "line-width": 3 },
-      });
-      markers.current = layout.plots.map((plot) => {
-        const el = document.createElement("div");
-        el.className = "plot-label";
-        el.setAttribute("aria-hidden", "true");
-        return new Marker({ element: el }).setLngLat(plot.centroid).addTo(map);
-      });
+      map.on("idle", check);
     });
     return () => {
+      map.off("idle", check);
       markers.current.forEach((m) => m.remove());
       markers.current = [];
     };
-    // The layout only changes with a new analysis, which remounts this component.
+    // Layers are set up once; data updates happen in the effect below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map]);
 
-  // New season or strategy: recolour the plots and let them grow up from the ground.
+  // New season, strategy or land cover: recolour, move the plot labels, and grow the crops in.
   useEffect(() => {
     if (!map) return;
     let frame = 0;
     whenStyleReady(map, () => {
-      const source = map.getSource<GeoJSONSource>(PLOTS);
+      const source = map.getSource<GeoJSONSource>(HEXES);
       if (!source) return;
-      source.setData(plotsGeoJSON(layout, plots));
-      markers.current.forEach((marker, i) => {
-        marker.getElement().textContent = `${plots[i].id} · ${plots[i].label}`;
-      });
+      source.setData(hexData(layout, plots));
+
+      markers.current.forEach((m) => m.remove());
+      markers.current = layout.plots
+        .filter((plot) => plot.hexIds.length > 0)
+        .map((plot) => {
+          const el = document.createElement("div");
+          el.className = "plot-label";
+          el.setAttribute("aria-hidden", "true");
+          const view = plots.find((p) => p.id === plot.id);
+          el.textContent = view ? `${plot.id} · ${view.label}` : plot.id;
+          return new Marker({ element: el }).setLngLat(plot.centroid).addTo(map);
+        });
+
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const start = performance.now();
       const grow = (now: number) => {
         const t = reduced ? 1 : Math.min(1, (now - start) / GROW_MS);
         const eased = 1 - Math.pow(1 - t, 3);
-        map.setPaintProperty(PLOTS, "fill-extrusion-height", ["*", ["get", "h"], eased]);
+        map.setPaintProperty("fs-hex-crop", "fill-extrusion-height", ["*", ["get", "h"], eased]);
         if (t < 1) frame = requestAnimationFrame(grow);
       };
       frame = requestAnimationFrame(grow);

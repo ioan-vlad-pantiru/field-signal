@@ -208,7 +208,16 @@
       "tableCaption": "Ce cultură are fiecare parcelă în fiecare sezon",
       "plot": "Parcela",
       "area": "{ha} ha",
-      "note": "Exemplu: un câmp de {ha} ha împărțit în {plots} parcele egale. Granițele sunt desenate de noi, nu sunt ale câmpului dumneavoastră. Înălțimea culturilor pe hartă este exagerată."
+      "note": "Exemplu: {ha} ha cultivabili împărțiți în {plots} parcele. Fiecare hexagon are exact 1 ha. Am scos hexagoanele de pe drumuri, clădiri, ape sau păduri, după OpenStreetMap. Granițele sunt desenate de noi, nu sunt ale câmpului dumneavoastră. Înălțimea culturilor pe hartă este exagerată.",
+      "notFarmland": "Nu se cultivă: {ha} ha ({reasons})",
+      "hexScale": "1 hexagon = 1 ha",
+      "reason": {
+        "road": "drum",
+        "building": "clădiri",
+        "water": "apă",
+        "woods": "pădure",
+        "built_up": "zonă construită"
+      }
     }
   },
   "Feed": {

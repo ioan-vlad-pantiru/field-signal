@@ -208,7 +208,16 @@
       "tableCaption": "Which crop each plot has in each season",
       "plot": "Plot",
       "area": "{ha} ha",
-      "note": "Example: a {ha} ha field split into {plots} equal plots. We drew the boundaries; they are not your field's. Crop heights on the map are exaggerated."
+      "note": "Example: {ha} ha of farmland split into {plots} plots. Each hexagon is exactly 1 ha. We left out hexagons on roads, buildings, water or woods, using OpenStreetMap. We drew the boundaries; they are not your field's. Crop heights on the map are exaggerated.",
+      "notFarmland": "Not farmed: {ha} ha ({reasons})",
+      "hexScale": "1 hexagon = 1 ha",
+      "reason": {
+        "road": "road",
+        "building": "buildings",
+        "water": "water",
+        "woods": "woods",
+        "built_up": "built-up land"
+      }
     }
   },
   "Feed": {

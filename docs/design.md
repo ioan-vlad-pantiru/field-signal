@@ -27,7 +27,8 @@ same token names and values: change both together.
 | 5 | Data provenance | Source chips in signal blue with a satellite icon | done |
 | 6 | About | Cards for what it does, the AI role and its limits, plus a NASA non-endorsement note | done |
 | 7 | Pitch deck | [16:9 deck](https://claude.ai/artifact/FDMuFNM8vkRnrydZriN9X4) built from the design system (private until shared) | done |
-| 12 | Field plan | "What to grow where": the field split into one plot per rotation year on the 3D map, crops coloured and extruded by height, a season stepper with play, and a plot × season table (illustrative boundaries) | done |
+| 12 | Field plan | "What to grow where" on a grid of 1 ha hexagons: hexagons on roads, buildings, water or woods (from OpenStreetMap) are left out, the rest are split into one plot per rotation year, coloured and extruded by crop, with a season stepper and a plot × season table (illustrative boundaries) | done |
+| 13 | Farmland mask | Replace the OpenStreetMap check with real parcel data: LPIS/IACS parcels (APIA), or a cropland mask (ESA WorldCover 10 m, EUCROPMAP 10 m), or field boundaries traced from Sentinel-2 | next |
 | 8 | Field step | Larger map on phones, with search by commune name; let the farmer draw the real field boundary for the field plan | next |
 | 9 | Results | Compare two strategies side by side on the replay grid, with the cell difference highlighted | next |
 | 10 | Feed | Zone heat layer from the NDVI ramp instead of markers only, plus a legend | next |
