@@ -1,9 +1,375 @@
 {
-  "Home": {
-    "title": "Field Signal",
-    "tagline": "Crop-rotation decision support built on NASA Earth observation data.",
-    "status": "Project scaffold — features coming soon.",
-    "switchLocale": "Română",
-    "mapLabel": "Map of Romania"
+  "App": {
+    "name": "Field Signal",
+    "description": "Help choosing a crop rotation, based on 25 years of satellite and weather data."
+  },
+  "Nav": {
+    "label": "Main navigation",
+    "field": "Field",
+    "feed": "Feed buyer",
+    "about": "About",
+    "switchLocale": "RO",
+    "switchLocaleLabel": "Schimbă în română"
+  },
+  "Footer": {
+    "credit": "Created at NASA Space Apps Challenge 2026 · Data: NASA POWER, MODIS, SMAP, SoilGrids",
+    "team": "Team Farm Titans"
+  },
+  "Banner": {
+    "title": "Demo data",
+    "text": "The numbers below are made up for this demo. Do not make decisions based on them.",
+    "offline": "The server is not responding, so we are showing the data built into the app."
+  },
+  "Common": {
+    "verifyAgronomist": "Verify with an agronomist",
+    "close": "Close",
+    "sequence": "Crop order",
+    "errorTitle": "We could not load the results",
+    "errorText": "The request was not accepted. Check what you entered and try again.",
+    "retry": "Try again"
+  },
+  "Status": {
+    "good": "Good",
+    "watch": "Watch",
+    "bad": "Poor",
+    "no_data": "No data"
+  },
+  "Risk": {
+    "low": "Low risk",
+    "medium": "Medium risk",
+    "high": "High risk"
+  },
+  "Confidence": {
+    "label": "Confidence: {level}",
+    "low": "low",
+    "medium": "medium",
+    "high": "high"
+  },
+  "Crops": {
+    "maize": "Maize",
+    "wheat": "Wheat",
+    "barley": "Barley",
+    "soybean": "Soybean",
+    "sunflower": "Sunflower",
+    "pea": "Feed pea",
+    "cover_mustard": "Mustard (cover crop)",
+    "cover_phacelia": "Phacelia (cover crop)",
+    "cover_vetch": "Vetch (cover crop)",
+    "fallow": "Fallow"
+  },
+  "Units": {
+    "days": "days",
+    "seasons": "seasons"
+  },
+  "Field": {
+    "step": "Step 1 of 2",
+    "title": "About your field",
+    "intro": "Tell us where your field is and what you grow. We show how three rotations would have done over the last 25 years.",
+    "whereTitle": "Where is the field?",
+    "whereHint": "Tap the map to move the pin. You can also drag it.",
+    "mapLabel": "Map for choosing the field",
+    "coordinates": "{lat}° N · {lon}° E",
+    "resetPin": "Back to Aiud",
+    "pinnedFromFeed": "Pinned from the feed screen: {place}",
+    "rotationTitle": "Your current rotation",
+    "rotationHint": "What you grow on this field, year after year. Between 2 and 4 crops.",
+    "year": "Year {n}",
+    "removeCrop": "Remove {crop} from year {n}",
+    "addCrop": "Add the next year:",
+    "rotationFull": "The rotation already has {max} years. Remove a crop to add another.",
+    "prioritiesTitle": "What matters to you?",
+    "prioritiesHint": "Move the sliders. The further right, the more it matters.",
+    "priority": {
+      "yield": {
+        "label": "Reliable harvest",
+        "hint": "A harvest that stays steady from year to year"
+      },
+      "water": {
+        "label": "Water",
+        "hint": "Crops that cope with dry summers"
+      },
+      "soil": {
+        "label": "Soil health",
+        "hint": "More organic matter, soil covered in winter"
+      },
+      "risk": {
+        "label": "Low risk",
+        "hint": "As few poor years as possible"
+      }
+    },
+    "importance": "{value} of 100",
+    "irrigatedTitle": "The field is irrigated",
+    "irrigatedHint": "Turn on if you can water the crops in summer.",
+    "analyze": "Analyse"
+  },
+  "Results": {
+    "back": "Change field or rotation",
+    "period": "Period analysed: {start}–{end}",
+    "loading": "Analysing 25 years of data for this place…",
+    "indicatorsTitle": "What the data show for this place",
+    "indicatorsHint": "Latest year compared with the average of all years. The dashed line is the average.",
+    "noComparison": "Not enough data to compare",
+    "nearNormal": "Close to average",
+    "aboveNormal": "Above average",
+    "belowNormal": "Below average",
+    "whatIs": "What this means: {term}",
+    "latest": "In {year}",
+    "mean": "Average",
+    "meanLegend": "average",
+    "sparklineLabel": "Trend for {name}, {from}–{to}",
+    "soil": {
+      "title": "Soil",
+      "depth": "Top layer ({depth})",
+      "whatIs": "What this means: {term}",
+      "mix": "{clay}% clay · {sand}% sand · {silt}% silt",
+      "carbon": {
+        "label": "Organic carbon",
+        "help": "How rich the soil is in organic matter. More carbon usually means soil that holds water and nutrients better."
+      },
+      "ph": {
+        "label": "pH",
+        "help": "How acidic or alkaline the soil is. Between 6 and 7.5 suits most field crops."
+      },
+      "texture": {
+        "label": "Texture",
+        "help": "The mix of clay, sand and silt. Clay soils hold water longer; sandy soils dry out quickly."
+      }
+    },
+    "strategiesTitle": "Three rotations, compared",
+    "strategiesHint": "The score shows how well each rotation fits your priorities. 100 is best.",
+    "strategy": {
+      "listLabel": "Rotations compared",
+      "current": "Your rotation now",
+      "best": "Best score",
+      "score": "Total score",
+      "rangeLabel": "Likely score between {low} and {high}, most likely {mid}",
+      "low": "min {value}",
+      "mid": "likely {value}",
+      "high": "max {value}",
+      "breakdown": {
+        "yield_stability": "Steady harvest",
+        "water": "Water",
+        "soil_health": "Soil health",
+        "low_risk": "Low risk"
+      }
+    },
+    "replayTitle": "How each year would have gone",
+    "replayHint": "Each square is one season. Tap a square to see why.",
+    "replay": {
+      "scrollLabel": "Table by year, scrolls sideways",
+      "caption": "Outcome of each rotation in each season",
+      "cellLabel": "{year}, {crop}: {status}, {evidence} evidence",
+      "evidence": {
+        "high": "strong",
+        "medium": "medium",
+        "low": "weak"
+      },
+      "legend": "Legend",
+      "weakEvidence": "Weak evidence (before 2015)",
+      "sheetTitle": "Season {year}",
+      "evidenceLine": "Evidence for this year: {level}.",
+      "reasons": "Why",
+      "noReasons": "Nothing unusual in this season's data."
+    },
+    "explainTitle": "Why these scores",
+    "explainHint": "Pick a rotation to read the explanation.",
+    "explain": {
+      "tabsLabel": "Pick a rotation",
+      "why": "In short",
+      "evidence": "What the data show",
+      "source": "Source: {source}",
+      "benefits": "Benefits",
+      "gaps": "What we don't know",
+      "risks": "Risks to check locally",
+      "generatedBy": {
+        "template": "Text built from a template, using only the values computed above.",
+        "llm": "Text written by an AI model, using only the values computed above."
+      }
+    },
+    "caveatsTitle": "Keep in mind",
+    "sourcesTitle": "Data sources",
+    "verdict": {
+      "title": "Best fit for your priorities",
+      "keepTitle": "Your current rotation scores best",
+      "delta": "+{delta} points",
+      "versus": "Your current rotation scores {current} of 100.",
+      "seeYears": "See every year"
+    },
+    "planTitle": "What to grow where",
+    "planHint": "Your field split into plots, one for each year of the rotation, so every crop in the plan is on the farm each year.",
+    "plan": {
+      "strategyLabel": "Choose the rotation",
+      "season": "Season (harvest year)",
+      "previous": "Previous season",
+      "next": "Next season",
+      "play": "Play the years",
+      "pause": "Pause",
+      "mapLabel": "Field map for {year}: {plots}",
+      "legend": "Crops this season",
+      "tableCaption": "Which crop each plot has in each season",
+      "plot": "Plot",
+      "area": "{ha} ha",
+      "note": "Example: {ha} ha of farmland split into {plots} plots. Each hexagon is exactly 1 ha. We left out hexagons on roads, buildings, water or woods, using OpenStreetMap. We drew the boundaries; they are not your field's. Crop heights on the map are exaggerated.",
+      "notFarmland": "Not farmed: {ha} ha ({reasons})",
+      "hexScale": "1 hexagon = 1 ha",
+      "reason": {
+        "road": "road",
+        "building": "buildings",
+        "water": "water",
+        "woods": "woods",
+        "built_up": "built-up land"
+      }
+    }
+  },
+  "Feed": {
+    "eyebrow": "Field Signal · Feed",
+    "title": "Where to buy feed this year?",
+    "intro": "For each commune: whether there will be enough harvest, what quality risks there are, and how kind to the environment the farming is.",
+    "loading": "Loading zones…",
+    "regionLine": "{region} · season {season} · {count} communes",
+    "cropToggle": "Choose the crop",
+    "mapLabel": "Map of supply risk for {crop}",
+    "mapHint": "Colour and symbol show the risk of not finding enough harvest. Tap a commune for details.",
+    "markerLabel": "{zone}: {risk}",
+    "zoneList": "Communes",
+    "riskShort": "Supply",
+    "noCropData": "No data for this crop",
+    "noZones": "We have no zones for this region yet.",
+    "sheetTitle": "{zone} · {crop}",
+    "zone": {
+      "area": "{ha} ha grown",
+      "availability": "Availability",
+      "riskScore": "Risk score",
+      "yieldAnomaly": "Harvest vs normal",
+      "anomalyRange": "{low}% to {high}%",
+      "drivers": "Why",
+      "quality": "Quality",
+      "noFlags": "No quality warning signs.",
+      "flagDays": "{observed} risky days this year, versus {normal} in a normal year",
+      "window": "Period watched: {window}",
+      "impact": "Environment",
+      "waterDeficit": "Water shortfall in the season",
+      "legumeShare": "Legumes in the rotation",
+      "winterCover": "Soil covered in winter",
+      "model": "Model version: {version}",
+      "lowerRiskTitle": "What can lower this risk",
+      "lowerRiskMaize": "Rotations with soybean or sunflower usually lower this risk over 3 years. Compare them for a field in this commune.",
+      "lowerRiskOther": "Not growing the same crop two years in a row usually lowers this risk over 3 years. Compare rotations for a field in this commune.",
+      "compareHere": "Compare rotations here"
+    },
+    "compareTitle": "Compare two zones",
+    "compareHint": "Pick two communes and see which is safer for the chosen crop: quantity, quality and water.",
+    "compare": {
+      "zoneA": "First zone",
+      "zoneB": "Second zone",
+      "swap": "Swap the zones",
+      "summary": "For {crop}, {a} is better on {winsA} of {total} measures, {b} on {winsB}.",
+      "sameZone": "Pick two different zones.",
+      "caption": "{a} compared with {b}, for {crop}",
+      "supplyRisk": "Supply risk",
+      "riskScore": "Risk score (lower is better)",
+      "anomaly": "{mid}% ({low}% to {high}%)",
+      "area": "Area grown",
+      "flagDays": "{observed} risky days, versus {normal} usually",
+      "confidence": "Confidence",
+      "better": "better",
+      "note": "\"Better\" only compares these two zones, measure by measure. All numbers are estimates with a range; check each zone's confidence."
+    },
+    "recommendationTitle": "Recommendation",
+    "assumptions": "Assumptions",
+    "scenarioTitle": "If more farmers grew soybean",
+    "adoption": {
+      "estimate": "Estimate",
+      "title": "How much more {crop} the area could supply",
+      "hint": "Move the slider: the share of suppliers who add the crop to their rotation.",
+      "sliderLabel": "Suppliers adding {crop}",
+      "area": "Extra area",
+      "production": "Extra production",
+      "protein": "Extra protein",
+      "rangeLabel": "Between {low} and {high} {unit}, most likely {mid} {unit}",
+      "range": "between {low} and {high} {unit}",
+      "assumptions": "Assumptions",
+      "linear": "Results grow in proportion to the adoption share, starting from the scenario computed for {base}%.",
+      "cropLabel": "Which crop to add",
+      "choice": {
+        "soy": "Soybean",
+        "pea": "Feed pea",
+        "both": "Both"
+      },
+      "bothName": "{a} and {b}",
+      "peaArea": "Feed pea: the same extra area as the soybean scenario (the same share of land changes crop).",
+      "peaYield": "Feed pea yield: {low} to {high} t/ha, most likely {mid} t/ha. Placeholder value, to verify with an agronomist.",
+      "peaProtein": "Feed pea protein as harvested: {low} to {high}% (crop table, low confidence). To verify with an agronomist.",
+      "bothSum": "Both: the same extra area, half soybean and half feed pea. Harvest and protein are the sum of the two halves.",
+      "soyScenario": "Soybean values come from the scenario computed by the model."
+    },
+    "caveatsTitle": "Keep in mind"
+  },
+  "About": {
+    "title": "About Field Signal",
+    "intro": "Field Signal brings together 25 years of data on weather, soil moisture and plant health, so you can see how different rotations would have done on your field.",
+    "judgment": "The tool supports the farmer's judgment. It does not replace it.",
+    "whatTitle": "What it does",
+    "what": {
+      "farmer": "For farmers: compares your current rotation with two alternatives (at least one with soybean or peas) and shows, year by year, how each would have done.",
+      "buyer": "For feed buyers: shows, by commune, the risk of not finding enough harvest, quality risks (aflatoxins, fusarium, harvest rain) and environmental impact.",
+      "transparency": "Every number shows its source, period, assumptions and confidence next to it."
+    },
+    "sourcesTitle": "Data we use",
+    "sourcesHint": "Public data. Resolution shows how big each source's “pixel” is.",
+    "table": {
+      "dataset": "Source",
+      "use": "What we use it for",
+      "resolution": "Resolution",
+      "period": "Period",
+      "nasaData": "NASA data",
+      "otherData": "Other public source"
+    },
+    "sources": {
+      "power": "Heat, rain and air humidity, day by day",
+      "modis": "How green and vigorous the vegetation is (NDVI)",
+      "smap": "Water in the soil, around the roots",
+      "soilgrids": "Organic carbon, pH and soil texture",
+      "eucropmap": "Which crops grow where, for areas per commune",
+      "ins": "Official county yields, to check the model"
+    },
+    "aiTitle": "The role of AI",
+    "ai": {
+      "modelTitle": "The risk model",
+      "model": "A small model estimates the chance of a poor year for each zone and crop, from weather and vegetation signals in the critical periods. We test it by leaving out one year at a time and publish both hits and misses.",
+      "textTitle": "The explanations",
+      "text": "A language model turns the computed numbers into plain text. It may only use values we computed, in a fixed format."
+    },
+    "limitsTitle": "What it cannot see",
+    "limits": {
+      "hail": "Hail and other short, local weather events.",
+      "pests": "Pests and diseases in your field.",
+      "markets": "Prices and markets.",
+      "management": "Your field work, hybrids and fertiliser.",
+      "scale": "Weather data describe an area tens of kilometres wide, not your exact plot."
+    },
+    "demoTitle": "About the demo data",
+    "demo": "In this version the numbers are for demonstration. We mark them clearly as “Demo data” until the real data are connected.",
+    "eyebrow": "How it works",
+    "judgmentDetail": "It shows what would have happened in past years. The decision for your field stays yours.",
+    "whatCards": {
+      "farmer": "For farmers",
+      "buyer": "For feed buyers",
+      "transparency": "Everything in the open"
+    },
+    "nasaNote": "We use free public data published by NASA and other institutions. NASA is not a partner and does not endorse this tool.",
+    "aiHint": "AI does two small, checkable jobs. It does not make decisions for you."
+  },
+  "CropsShort": {
+    "maize": "Maize",
+    "wheat": "Wheat",
+    "barley": "Barley",
+    "soybean": "Soybean",
+    "sunflower": "Sunflower",
+    "pea": "Pea",
+    "cover_mustard": "Mustard",
+    "cover_phacelia": "Phacelia",
+    "cover_vetch": "Vetch",
+    "fallow": "Fallow"
   }
 }

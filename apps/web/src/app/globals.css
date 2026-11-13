@@ -1,25 +1,407 @@
 @import "tailwindcss";
 
+/*
+ * Field Signal design tokens. Names and values mirror the Field Signal design system
+ * (tokens.json); change them there and here together.
+ * Status colours are always paired with an icon and a word in the UI.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --ground: #f2f4ee;
+  --surface: #ffffff;
+  --surface-sunken: #e8ece3;
+  --line: #cfd8cb;
+  --ink: #14201a;
+  --ink-muted: #4c5a51;
+  --field: #1f6b45;
+  --field-strong: #165335;
+  --field-tint: #dcefe2;
+  --on-field: #ffffff;
+  --wheat: #d99a2b;
+  --wheat-ink: #8a5600;
+  --wheat-tint: #f7e9cc;
+  --on-wheat: #14201a;
+  --signal: #1d6fb8;
+  --signal-tint: #dceaf7;
+  --status-good: #2e7a45;
+  --status-good-tint: #d8ecdc;
+  --status-watch: #a35f00;
+  --status-watch-tint: #f6e4c4;
+  --status-bad: #b23a2e;
+  --status-bad-tint: #f5d9d4;
+  --status-nodata: #737b72;
+  --status-nodata-tint: #e3e6df;
+  --on-status: #ffffff;
+  --focus: #1d6fb8;
+  --shadow-1: 0 1px 2px rgb(20 32 26 / 0.06), 0 1px 1px rgb(20 32 26 / 0.04);
+  --shadow-2: 0 8px 24px rgb(20 32 26 / 0.1), 0 2px 6px rgb(20 32 26 / 0.06);
+  --shadow-3: 0 -12px 40px rgb(20 32 26 / 0.18);
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  /* Motion: one vocabulary for the app, slides and the site. */
+  --duration-fast: 120ms;
+  --duration-base: 220ms;
+  --duration-slow: 420ms;
+  --duration-hero: 900ms;
+  --ease-settle: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-standard: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --stagger: 40ms;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --ground: #0d1310;
+    --surface: #151d18;
+    --surface-sunken: #1c2620;
+    --line: #2c3a31;
+    --ink: #e9efe7;
+    --ink-muted: #a2b0a6;
+    --field: #5fcf8f;
+    --field-strong: #86e0aa;
+    --field-tint: #173223;
+    --on-field: #06140c;
+    --wheat: #e9b456;
+    --wheat-ink: #efc277;
+    --wheat-tint: #3a2e17;
+    --signal: #6fb3f0;
+    --signal-tint: #16283a;
+    --status-good: #6cc488;
+    --status-good-tint: #1b3a25;
+    --status-watch: #f0b54d;
+    --status-watch-tint: #40311a;
+    --status-bad: #f28b7d;
+    --status-bad-tint: #47231f;
+    --status-nodata: #8d958c;
+    --status-nodata-tint: #273029;
+    --on-status: #0d1310;
+    --focus: #8cc4f5;
+    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-2: 0 8px 28px rgb(0 0 0 / 0.55);
+    --shadow-3: 0 -12px 40px rgb(0 0 0 / 0.6);
   }
 }
 
+@theme inline {
+  --color-ground: var(--ground);
+  --color-surface: var(--surface);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-field: var(--field);
+  --color-field-strong: var(--field-strong);
+  --color-field-tint: var(--field-tint);
+  --color-on-field: var(--on-field);
+  --color-wheat: var(--wheat);
+  --color-wheat-ink: var(--wheat-ink);
+  --color-wheat-tint: var(--wheat-tint);
+  --color-on-wheat: var(--on-wheat);
+  --color-signal: var(--signal);
+  --color-signal-tint: var(--signal-tint);
+  --color-status-good: var(--status-good);
+  --color-status-good-tint: var(--status-good-tint);
+  --color-status-watch: var(--status-watch);
+  --color-status-watch-tint: var(--status-watch-tint);
+  --color-status-bad: var(--status-bad);
+  --color-status-bad-tint: var(--status-bad-tint);
+  --color-status-nodata: var(--status-nodata);
+  --color-status-nodata-tint: var(--status-nodata-tint);
+  --color-on-status: var(--on-status);
+  --shadow-1: var(--shadow-1);
+  --shadow-2: var(--shadow-2);
+  --shadow-3: var(--shadow-3);
+  --font-sans: var(--font-geist), system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-geist), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --ease-settle: var(--ease-settle);
+  --ease-pop: var(--ease-pop);
+}
+
+html {
+  color-scheme: light dark;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font-geist), system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-bricolage), var(--font-geist), system-ui, sans-serif;
+  text-wrap: balance;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ---------- Motion ---------- */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+@keyframes pin-drop {
+  0% {
+    transform: translateY(-18px);
+  }
+  60% {
+    transform: translateY(2px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* Entering content: set --i on siblings for a 40ms stagger. */
+.rise {
+  animation: rise var(--duration-slow) var(--ease-settle) both;
+  animation-delay: calc(var(--i, 0) * var(--stagger));
+}
+.grow-x {
+  transform-origin: left;
+  animation: grow-x var(--duration-slow) var(--ease-settle) both;
+  animation-delay: calc(var(--i, 0) * var(--stagger) + 120ms);
+}
+.draw {
+  stroke-dasharray: 1;
+  animation: draw var(--duration-hero) var(--ease-settle) both;
+}
+/* Replay cells cascade across the seasons: the screen's one orchestrated moment. */
+.cell-in {
+  animation: pop var(--duration-slow) var(--ease-pop) both;
+  animation-delay: calc(var(--col, 0) * 18ms + var(--row, 0) * 70ms);
+}
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-sunken) 0%,
+    color-mix(in srgb, var(--surface-sunken) 55%, var(--surface)) 50%,
+    var(--surface-sunken) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+.press {
+  transition:
+    transform var(--duration-fast) var(--ease-settle),
+    background-color var(--duration-base) var(--ease-settle),
+    border-color var(--duration-base) var(--ease-settle),
+    color var(--duration-base) var(--ease-settle),
+    box-shadow var(--duration-base) var(--ease-settle);
+}
+.press:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* Bottom sheet: slides up, backdrop fades; reverses on close. */
+dialog.sheet {
+  transform: translateY(100%);
+  opacity: 0;
+  transition:
+    transform var(--duration-slow) var(--ease-settle),
+    opacity var(--duration-base) var(--ease-settle),
+    overlay var(--duration-slow) allow-discrete,
+    display var(--duration-slow) allow-discrete;
+}
+dialog.sheet[open] {
+  transform: translateY(0);
+  opacity: 1;
+}
+@starting-style {
+  dialog.sheet[open] {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+@media (min-width: 640px) {
+  dialog.sheet {
+    transform: translateY(24px) scale(0.98);
+  }
+  @starting-style {
+    dialog.sheet[open] {
+      transform: translateY(24px) scale(0.98);
+    }
+  }
+}
+dialog.sheet::backdrop {
+  background: rgb(5 12 8 / 0);
+  transition:
+    background-color var(--duration-slow) var(--ease-settle),
+    overlay var(--duration-slow) allow-discrete,
+    display var(--duration-slow) allow-discrete;
+}
+dialog.sheet[open]::backdrop {
+  background: rgb(5 12 8 / 0.5);
+}
+@starting-style {
+  dialog.sheet[open]::backdrop {
+    background: rgb(5 12 8 / 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after,
+  ::backdrop {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+/* ---------- Components that need plain CSS ---------- */
+
+/* Low-evidence replay cells. */
+.hatch {
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 4px,
+    color-mix(in srgb, var(--ink) 24%, transparent) 4px 6px
+  );
+}
+
+/* Range inputs: large thumb for outdoor, gloved use. */
+input[type="range"].slider {
+  appearance: none;
+  height: 44px;
+  background: transparent;
+  cursor: pointer;
+}
+input[type="range"].slider::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--field) var(--fill, 50%),
+    var(--line) var(--fill, 50%)
+  );
+}
+input[type="range"].slider::-moz-range-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--line);
+}
+input[type="range"].slider::-moz-range-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--field);
+}
+input[type="range"].slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  margin-top: -10px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 3px solid var(--field);
+  box-shadow: var(--shadow-2);
+  transition: transform var(--duration-fast) var(--ease-settle);
+}
+input[type="range"].slider:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+input[type="range"].slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 3px solid var(--field);
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.maplibregl-ctrl-attrib {
+  font-size: 11px;
+}
+
+
+/* Zone markers on the buyer map (DOM markers so they are real, focusable buttons). */
+.zone-marker {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 3px solid var(--surface);
+  box-shadow: var(--shadow-2);
+  color: var(--on-status);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+.zone-marker > span {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  animation: pop var(--duration-slow) var(--ease-pop) both;
+  animation-delay: calc(var(--i, 0) * 60ms + 300ms);
+  transition: transform var(--duration-fast) var(--ease-settle);
+}
+.zone-marker:hover > span {
+  transform: scale(1.12);
+}
+.zone-marker--good {
+  background: var(--status-good);
+}
+.zone-marker--watch {
+  background: var(--status-watch);
+}
+.zone-marker--bad {
+  background: var(--status-bad);
+}
+.zone-marker--nodata {
+  background: var(--status-nodata);
+}
+/* Field pin: drops in each time it moves (the marker root is positioned by MapLibre). */
+.field-pin > svg {
+  animation: pin-drop var(--duration-slow) var(--ease-pop);
+}
+
+/* Plot labels on the field-plan map. */
+.plot-label {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-2);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
 }
