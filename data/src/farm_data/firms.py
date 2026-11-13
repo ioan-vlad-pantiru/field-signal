@@ -14,7 +14,13 @@ Assumptions (also stored on every output row):
   (375 m / 1 km) is far larger than the 10 m map pixel, so a burn on a field edge can count on
   either side of it;
 - seasons MAM, JJA, SON, DJF; DJF belongs to the year of its January (as in features.py).
-  A season is kept only when its whole span is covered by the files read.
+  A season is kept only when its whole span is covered by the files read;
+- sensor uptime is not checked, so 0 means "no detection in the file", not a checked clear
+  season. The VIIRS 2022 file has no detections from 2022-07-27 to 2022-08-10 (16-day gap,
+  the S-NPP outage), so VIIRS JJA 2022 is an undercount. MODIS is Terra only until Aqua's first
+  row on 2002-07-04, so MODIS 2001 to mid-2002 sees fewer overpasses;
+- MODIS and VIIRS rows count the same fires seen by two sensors: never sum across sensors;
+  counts are not comparable across sensors or across years with different uptime.
 
     FIRMS_DIR=/path/to/firms uv run --package farm-data python -m farm_data.firms
     # -> data/cache/firms/cropland_fires.parquet: zone_id (SIRUTA), year, season, sensor,
@@ -112,7 +118,10 @@ def build() -> pd.DataFrame:
         counts = hits.assign(year=y, season=s).groupby(["zone_id", "year", "season"]).size()
         seasons = [
             (yr, se) for yr in years for se in START if se != "DJF" or yr - 1 in years
-        ]  # whole span read; a missing row means "not covered", 0 means "no detection"
+        ]  # missing row = season not in the files read; 0 = no detection in the files, not a
+        # checked clear season (uptime unchecked: VIIRS gap 2022-07-27..08-10, MODIS Terra-only
+        # before 2002-07-04). Never sum across sensors; counts are not comparable across sensors
+        # or across years with different uptime.
         grid = pd.MultiIndex.from_tuples(
             [(z, yr, se) for z in communes["zone_id"] for yr, se in seasons],
             names=["zone_id", "year", "season"],
