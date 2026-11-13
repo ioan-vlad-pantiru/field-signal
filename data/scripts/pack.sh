@@ -8,8 +8,9 @@
 set -eu
 cd "$(dirname "$0")/.."
 tgz="$(mktemp -d)/field-signal-data.tar.gz"
-# -L: real files, never symlinks; no owner names, extended attributes or macOS metadata
-tar -czLf "$tgz" --no-xattrs --no-mac-metadata --uname '' --gname '' \
+# BSD (macOS) and GNU tar >= 1.27: -h follows symlinks (real files only); no owner names,
+# extended attributes or macOS AppleDouble metadata (COPYFILE_DISABLE)
+COPYFILE_DISABLE=1 tar -czhf "$tgz" --no-xattrs --numeric-owner \
   cache/features cache/zones cache/ins cache/power cache/modis_cube $(ls cache/appeears/*.parquet 2>/dev/null)
 
 modis=$([ -f cache/appeears/modis.parquet ] && echo yes || echo "pending (ndvi_* from the local MODIS cube)")

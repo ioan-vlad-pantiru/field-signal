@@ -10,7 +10,7 @@ cube NDVI) are on the rolling `data-latest` pre-release. From the repo root:
 gh release download data-latest -p field-signal-data.tar.gz -O - | tar -xz -C data
 ```
 
-Republish after a rebuild with `sh data/scripts/pack.sh`.
+Republish after a rebuild with `sh data/scripts/pack.sh` (BSD or GNU tar ≥ 1.27).
 
 ```bash
 uv sync --all-packages
@@ -29,10 +29,10 @@ nearest the Aiud–Sântimbru midpoint, and the demo field: 49 zones, 121 cropla
 NDVI source per zone: AppEEARS MODIS (250 m, QA-screened) for points its task covers, the local
 MODIS cube for every other point. A cube value is one nearest-neighbour MODIS pixel on a 0.01°
 lattice, Terra and Aqua mixed, with no pixel-quality layer: it describes the area, not a field.
-`ndvi_usable_share` null marks a cube row. The AppEEARS tasks cover the earlier 81 points and are
+`ndvi_usable_share` null means a cube row or no NDVI at all (not measured). The AppEEARS tasks cover the earlier 81 points and are
 still pending, so today every zone uses the cube.
 `ndvi_peak` is null unless usable composites cover ≥ 75 % of the crop's flowering window. The cube
-has no composites for tile h19v04 from 2025-06-26 to 2025-11-17, so 2025 maize, soybean and
+has no composites for tile h19v04 starting 2025-07-04 to 2025-11-09, so 2025 maize, soybean and
 sunflower peaks are null.
 
 SMAP (`smap_rootzone_critical`) is null until the AppEEARS task lands; the soil-moisture fallback is
