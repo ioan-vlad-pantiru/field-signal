@@ -1,0 +1,11 @@
+{
+  "name": "farm-titans-field-shift",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "dev:web": "pnpm --filter web dev",
+    "dev:api": "uv run --package api uvicorn api.main:app --reload --app-dir services/api/src",
+    "lint": "pnpm --filter web lint && pnpm --filter web typecheck && uv run ruff check . && uv run ruff format --check . && uv run mypy services/api",
+    "format": "uv run ruff format . && uv run ruff check --fix ."
+  }
+}

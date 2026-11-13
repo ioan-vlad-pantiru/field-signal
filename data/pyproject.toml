@@ -1,0 +1,21 @@
+[project]
+name = "farm-data"
+version = "0.1.0"
+description = "Farm Titans — Datasets and fetch pipelines"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "pandas>=2.2",
+  "xarray>=2024.10",
+  "requests>=2.32",
+  "earthaccess>=0.11",
+  "pyarrow>=18",
+  "scikit-learn>=1.5",
+  "jupyter>=1.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/farm_data"]
