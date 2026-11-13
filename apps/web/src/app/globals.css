@@ -1,25 +1,191 @@
 @import "tailwindcss";
 
+/*
+ * Field Signal palette: calm field greens, wheat accent, soil neutrals.
+ * Status colours are always paired with an icon and text in the UI.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --background: #f6f5ef;
+  --surface: #ffffff;
+  --surface-muted: #eeede4;
+  --foreground: #1b231d;
+  --muted: #56615a;
+  --border: #d9d8cc;
+  --primary: #24603f;
+  --primary-strong: #1a4a30;
+  --primary-soft: #dcebdf;
+  --on-primary: #ffffff;
+  --accent: #b7791f;
+  --accent-soft: #f6e7c8;
+  --good: #2f7d46;
+  --good-soft: #d7ecdc;
+  --watch: #b26b00;
+  --watch-soft: #f8e5c2;
+  --bad: #b3372b;
+  --bad-soft: #f6d8d3;
+  --nodata: #8a8f87;
+  --nodata-soft: #e6e6df;
+  --focus: #1d6fd1;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #101512;
+    --surface: #18201b;
+    --surface-muted: #212b24;
+    --foreground: #eef1ea;
+    --muted: #a9b3aa;
+    --border: #334036;
+    --primary: #6fc18b;
+    --primary-strong: #8fd6a6;
+    --primary-soft: #1f3a2a;
+    --on-primary: #0d1a12;
+    --accent: #e3b15a;
+    --accent-soft: #3d311b;
+    --good: #6cc488;
+    --good-soft: #1d3a26;
+    --watch: #f0b54d;
+    --watch-soft: #42331a;
+    --bad: #f08a7c;
+    --bad-soft: #472420;
+    --nodata: #8d958c;
+    --nodata-soft: #2a322c;
+    --focus: #7fb5ff;
   }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-strong: var(--primary-strong);
+  --color-primary-soft: var(--primary-soft);
+  --color-on-primary: var(--on-primary);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-good: var(--good);
+  --color-good-soft: var(--good-soft);
+  --color-watch: var(--watch);
+  --color-watch-soft: var(--watch-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-nodata: var(--nodata);
+  --color-nodata-soft: var(--nodata-soft);
+  --font-sans: var(--font-geist-sans);
+}
+
+html {
+  color-scheme: light dark;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Low-evidence replay cells. */
+.hatch {
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 4px,
+    color-mix(in srgb, var(--foreground) 22%, transparent) 4px 6px
+  );
+}
+
+/* Range inputs: large thumb for outdoor, gloved use. */
+input[type="range"].slider {
+  appearance: none;
+  height: 44px;
+  background: transparent;
+  cursor: pointer;
+}
+input[type="range"].slider::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--primary) var(--fill, 50%),
+    var(--border) var(--fill, 50%)
+  );
+}
+input[type="range"].slider::-moz-range-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border);
+}
+input[type="range"].slider::-moz-range-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--primary);
+}
+input[type="range"].slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  margin-top: -10px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 3px solid var(--primary);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+}
+input[type="range"].slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 3px solid var(--primary);
+}
+
+dialog.sheet::backdrop {
+  background: rgb(0 0 0 / 0.45);
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.maplibregl-ctrl-attrib {
+  font-size: 11px;
+}
+
+/* Zone markers on the buyer map (DOM markers so they are real, focusable buttons). */
+.zone-marker {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 3px solid var(--surface);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.35);
+  color: var(--surface);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+.zone-marker--good {
+  background: var(--good);
+}
+.zone-marker--watch {
+  background: var(--watch);
+}
+.zone-marker--bad {
+  background: var(--bad);
+}
+.zone-marker--nodata {
+  background: var(--nodata);
 }
