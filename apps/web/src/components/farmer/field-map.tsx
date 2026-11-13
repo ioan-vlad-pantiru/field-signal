@@ -25,7 +25,7 @@ export function FieldMap({
 
   useEffect(() => {
     if (!map) return;
-    const pin = new Marker({ color: "#24603f", draggable: true })
+    const pin = new Marker({ color: "#1f6b45", draggable: true, className: "field-pin" })
       .setLngLat([value.lon, value.lat])
       .addTo(map);
     const emit = (lng: number, lat: number) =>
@@ -45,7 +45,16 @@ export function FieldMap({
   }, [map]);
 
   useEffect(() => {
-    marker.current?.setLngLat([value.lon, value.lat]);
+    const pin = marker.current;
+    if (!pin) return;
+    pin.setLngLat([value.lon, value.lat]);
+    // Replay the drop animation on the pin's icon each time it moves.
+    const icon = pin.getElement().firstElementChild as HTMLElement | null;
+    if (icon) {
+      icon.style.animation = "none";
+      void icon.offsetWidth;
+      icon.style.animation = "";
+    }
   }, [value]);
 
   return (
@@ -53,7 +62,7 @@ export function FieldMap({
       ref={container}
       role="region"
       aria-label={label}
-      className="h-64 w-full overflow-hidden rounded-2xl border border-border bg-surface-muted sm:h-80"
+      className="h-64 w-full overflow-hidden rounded-2xl border border-line bg-surface-sunken sm:h-80"
     />
   );
 }

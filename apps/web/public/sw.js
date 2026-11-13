@@ -1,6 +1,6 @@
 // Field Signal service worker: keeps the app shell (and the mock data bundled in its JS)
 // available offline so the demo runs without a network. Bump VERSION to drop old caches.
-const VERSION = "v1";
+const VERSION = "v2";
 const SHELL_CACHE = `field-signal-shell-${VERSION}`;
 const RUNTIME_CACHE = `field-signal-runtime-${VERSION}`;
 const TILE_CACHE = `field-signal-tiles-${VERSION}`;
@@ -14,7 +14,7 @@ const STATIC_FILES = [
   "/icons/apple-touch-icon.png",
   "/vendor/maplibre-gl-worker.mjs",
 ];
-const TILE_HOST = "tiles.openfreemap.org";
+const TILE_HOSTS = new Set(["tiles.openfreemap.org", "elevation-tiles-prod.s3.amazonaws.com"]);
 
 /** Fetches a page and also caches every /_next/static asset it references. */
 async function precachePage(cache, path) {
@@ -95,8 +95,8 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
   const url = new URL(request.url);
 
-  // Map tiles, styles and fonts: reuse what was seen online, so the map still draws offline.
-  if (url.hostname === TILE_HOST) {
+  // Map tiles, styles, fonts and terrain: reuse what was seen online, so the map still draws offline.
+  if (TILE_HOSTS.has(url.hostname)) {
     event.respondWith(staleWhileRevalidate(request, TILE_CACHE));
     return;
   }
