@@ -96,8 +96,14 @@ top_drivers [Reason], model_version, cv_metric_name, cv_metric_value`.
 ## (3a) Field cells: per-hexagon farmland mask (proposal, #22)
 
 `FieldAnalysis.field_cells` is optional: `null` (the default, and every current mock) means the
-mask was not computed, and the web keeps its OpenStreetMap check. When present, one `FieldCell`
-per 1 ha hexagon of the field plan:
+mask was not computed, and the web keeps its OpenStreetMap check. When present, the cells are
+centred on `location.point` and cover the 3-ring pin layout (37 hexagons of 1 ha). A hexagon
+without a cell means unknown, never 0.
+
+Open decision for the three contract owners: for a drawn field, the web centres its grid on the
+exact polygon centroid, while `location` is that centroid rounded (about 6 m off), and the field
+can extend beyond ring 3. Serving drawn fields needs either the web to centre its grid on
+`location.point`, or a ring count or boundary in `FieldRequest`.
 
 | field | type | description |
 |---|---|---|
