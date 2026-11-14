@@ -22,14 +22,13 @@ class BotSettings(BaseSettings):
         frozen=True,
     )
 
-    # Twilio
-    twilio_account_sid: str = ""
-    twilio_auth_token: str = ""
-    twilio_whatsapp_from: str = "whatsapp:+14155238886"  # sandbox sender
-    validate_signature: bool = Field(True, validation_alias="TWILIO_VALIDATE_SIGNATURE")
-    # Exact public URL Twilio calls. Signature validation is computed over it,
-    # so it must match the sandbox "When a message comes in" field.
-    public_webhook_url: str | None = None
+    # Meta WhatsApp Cloud API (developers.facebook.com → your app → WhatsApp → API Setup)
+    whatsapp_token: str = ""  # System User token (the console's test token expires in 24 h)
+    whatsapp_phone_number_id: str = ""  # sender number's ID, not the phone number itself
+    whatsapp_app_secret: str = ""  # App settings → Basic; signs every webhook call
+    whatsapp_verify_token: str = ""  # any string; must match the webhook config in Meta
+    whatsapp_graph_version: str = "v23.0"
+    validate_signature: bool = Field(True, validation_alias="WHATSAPP_VALIDATE_SIGNATURE")
 
     # Web app, for the "Full results" link.
     results_base_url: str = Field(

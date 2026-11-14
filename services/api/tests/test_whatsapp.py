@@ -1,23 +1,31 @@
-"""Webhook tests: run with `pytest -q` (no network, no Twilio or LLM account needed)."""
+"""Webhook tests: run with `pytest -q` (no network, no Meta or LLM account needed)."""
 
 from __future__ import annotations
 
+import hashlib
+import hmac
+import itertools
+import json
 from typing import Any
 
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from twilio.request_validator import RequestValidator
 
 import api.whatsapp.analysis_client as ac
 import api.whatsapp.router as wr
 from api.whatsapp.config import get_settings
 from api.whatsapp.sender import split_body
 
-TOKEN = "test-token"
-URL = "https://example.ngrok.app/v1/whatsapp/webhook"
-FARMER = "whatsapp:+40700000000"
-PIN = {"From": FARMER, "Latitude": "46.07", "Longitude": "23.66", "Label": "Câmp test"}
+SECRET = "test-app-secret"
+VERIFY = "test-verify-token"
+FARMER = "40700000000"
+PIN = {"type": "location", "location": {"latitude": 46.07, "longitude": 23.66, "name": "Câmp test"}}
+_ids = itertools.count()
+
+
+def text(body: str) -> dict[str, Any]:
+    return {"type": "text", "text": {"body": body}}
 
 
 class FakeLLM:
@@ -45,57 +53,117 @@ class FakeSender:
 
 @pytest.fixture
 def env(monkeypatch: pytest.MonkeyPatch) -> Any:
-    monkeypatch.setenv("TWILIO_AUTH_TOKEN", TOKEN)
-    monkeypatch.setenv("PUBLIC_WEBHOOK_URL", URL)
-    monkeypatch.setenv("TWILIO_VALIDATE_SIGNATURE", "true")
+    monkeypatch.setenv("WHATSAPP_APP_SECRET", SECRET)
+    monkeypatch.setenv("WHATSAPP_VERIFY_TOKEN", VERIFY)
+    monkeypatch.setenv("WHATSAPP_VALIDATE_SIGNATURE", "true")
     monkeypatch.setenv("BOT_DEFAULT_LANG", "ro")
     get_settings.cache_clear()
     wr._store = None
+    wr._seen.clear()
     yield
     get_settings.cache_clear()
 
 
-def make_client(llm: Any = None, sender: Any = None) -> TestClient:
-    app = FastAPI()
-    app.include_router(wr.router)
-    app.dependency_overrides[wr.get_llm] = lambda: llm
-    app.dependency_overrides[wr.get_sender] = lambda: sender or FakeSender()
-    return TestClient(app)
+class Bot:
+    """Test client that posts Cloud API payloads and returns what the bot sent back."""
 
+    def __init__(self, llm: Any = None, sender: Any = None) -> None:
+        self.sender = sender or FakeSender()
+        app = FastAPI()
+        app.include_router(wr.router)
+        app.dependency_overrides[wr.get_llm] = lambda: llm
+        app.dependency_overrides[wr.get_sender] = lambda: self.sender
+        self.client = TestClient(app)
 
-def post(client: TestClient, data: dict[str, str], sign: bool = True) -> Any:
-    headers = (
-        {"X-Twilio-Signature": RequestValidator(TOKEN).compute_signature(URL, data)} if sign else {}
-    )
-    return client.post("/v1/whatsapp/webhook", data=data, headers=headers)
+    def raw(self, message: dict[str, Any], sign: bool = True, msg_id: str | None = None) -> Any:
+        msg = {"from": FARMER, "id": msg_id or f"wamid.{next(_ids)}", "timestamp": "0", **message}
+        payload = {
+            "object": "whatsapp_business_account",
+            "entry": [
+                {
+                    "id": "1",
+                    "changes": [
+                        {
+                            "field": "messages",
+                            "value": {
+                                "messaging_product": "whatsapp",
+                                "metadata": {"phone_number_id": "123"},
+                                "messages": [msg],
+                            },
+                        }
+                    ],
+                }
+            ],
+        }
+        body = json.dumps(payload).encode()
+        sig = "sha256=" + hmac.new(SECRET.encode(), body, hashlib.sha256).hexdigest()
+        headers = {"Content-Type": "application/json"}
+        if sign:
+            headers["X-Hub-Signature-256"] = sig
+        return self.client.post("/v1/whatsapp/webhook", content=body, headers=headers)
+
+    def send(self, message: dict[str, Any], **kw: Any) -> str:
+        """Post one message; return the bot's reply ('' if none)."""
+        before = len(self.sender.sent)
+        r = self.raw(message, **kw)
+        assert r.status_code == 200
+        return "\n".join(b for _, b in self.sender.sent[before:])
 
 
 def test_rejects_unsigned(env: None) -> None:
-    assert post(make_client(), PIN, sign=False).status_code == 403
+    assert Bot().raw(PIN, sign=False).status_code == 403
 
 
-def test_greeting_is_instant_welcome(env: None) -> None:
+def test_verify_handshake(env: None) -> None:
+    c = Bot().client
+    q = {"hub.mode": "subscribe", "hub.verify_token": VERIFY, "hub.challenge": "42"}
+    r = c.get("/v1/whatsapp/webhook", params=q)
+    assert r.status_code == 200 and r.text == "42"
+    q["hub.verify_token"] = "wrong"
+    assert c.get("/v1/whatsapp/webhook", params=q).status_code == 403
+
+
+def test_status_updates_are_ignored(env: None) -> None:
+    bot = Bot()
+    body = json.dumps({"entry": [{"changes": [{"value": {"statuses": [{"id": "x"}]}}]}]}).encode()
+    sig = "sha256=" + hmac.new(SECRET.encode(), body, hashlib.sha256).hexdigest()
+    r = bot.client.post("/v1/whatsapp/webhook", content=body, headers={"X-Hub-Signature-256": sig})
+    assert r.status_code == 200 and bot.sender.sent == []
+
+
+def test_retried_message_is_answered_once(env: None) -> None:
+    bot = Bot()
+    bot.send(text("Bună!"), msg_id="wamid.same")
+    bot.send(text("Bună!"), msg_id="wamid.same")
+    assert len(bot.sender.sent) == 1
+
+
+def test_greeting_is_welcome_without_llm(env: None) -> None:
     llm = FakeLLM()
-    r = post(make_client(llm), {"From": FARMER, "Body": "Bună!"})
-    assert "Sunt Field Signal" in r.text and not llm.calls
+    bot = Bot(llm)
+    assert "Sunt Field Signal" in bot.send(text("Bună!")) and not llm.calls
+    assert bot.sender.sent[0][0] == FARMER
+
+
+def test_unsupported_media_gets_welcome(env: None) -> None:
+    assert "Sunt Field Signal" in Bot().send({"type": "audio", "audio": {"id": "1"}})
 
 
 def test_pin_then_why(env: None) -> None:
-    c = make_client(FakeLLM())
-    r = post(c, PIN)
-    assert r.status_code == 200 and "application/xml" in r.headers["content-type"]
-    assert "Rotații" in r.text and "de ce 2" in r.text and "agronom" in r.text
-    r = post(c, {"From": FARMER, "Body": "De ce 2?"})
-    assert "porumb → soia → grâu" in r.text and "Fixează azot" in r.text
-    assert "Încredere: medie" in r.text
-    assert "Am 3 rotații" in post(c, {"From": FARMER, "Body": "de ce 9"}).text
+    bot = Bot(FakeLLM())
+    r = bot.send(PIN)
+    assert "Rotații" in r and "de ce 2" in r and "agronom" in r
+    r = bot.send(text("De ce 2?"))
+    assert "porumb → soia → grâu" in r and "Fixează azot" in r
+    assert "Încredere: medie" in r
+    assert "Am 3 rotații" in bot.send(text("de ce 9"))
 
 
 def test_summary_uses_api_analysis(env: None) -> None:
-    r = post(make_client(), PIN)
-    assert "Aiud (mock) (date demo)" in r.text
-    assert "1. porumb → grâu → porumb (actuală)" in r.text
-    assert "/ro/field?lat=46.07000&amp;lon=23.66000&amp;place=C%C3%A2mp+test" in r.text
+    r = Bot().send(PIN)
+    assert "Aiud (mock) (date demo)" in r
+    assert "1. porumb → grâu → porumb (actuală)" in r
+    assert "/ro/field?lat=46.07000&lon=23.66000&place=C%C3%A2mp+test" in r
 
 
 def test_demo_fallback_when_analysis_fails(env: None, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -103,22 +171,19 @@ def test_demo_fallback_when_analysis_fails(env: None, monkeypatch: pytest.Monkey
         raise RuntimeError("pipeline down")
 
     monkeypatch.setattr(ac, "run_field_analysis", boom)
-    r = post(make_client(), PIN)
-    assert "Sântimbru" in r.text and "(date demo)" in r.text
+    r = Bot().send(PIN)
+    assert "Sântimbru" in r and "(date demo)" in r
 
 
 def test_why_without_pin(env: None) -> None:
-    r = post(make_client(), {"From": FARMER, "Body": "de ce 1"})
-    assert "Trimiteți mai întâi locația" in r.text
+    assert "Trimiteți mai întâi locația" in Bot().send(text("de ce 1"))
 
 
 def test_free_chat_goes_to_llm_with_grounding(env: None) -> None:
-    llm, sender = FakeLLM(), FakeSender()
-    c = make_client(llm, sender)
-    post(c, PIN)
-    r = post(c, {"From": FARMER, "Body": "Ce înseamnă NDVI?"})
-    assert "<Message>" not in r.text  # empty TwiML, answer sent separately
-    assert sender.sent == [(FARMER, llm.answer)]
+    llm = FakeLLM()
+    bot = Bot(llm)
+    bot.send(PIN)
+    assert bot.send(text("Ce înseamnă NDVI?")) == llm.answer
     system, history = llm.calls[0]
     assert "KNOWLEDGE" in system and "Never invent numbers" in system
     assert "Aiud" in system  # field results are in context
@@ -128,27 +193,24 @@ def test_free_chat_goes_to_llm_with_grounding(env: None) -> None:
 
 def test_chat_without_pin_says_no_results(env: None) -> None:
     llm = FakeLLM()
-    post(make_client(llm), {"From": FARMER, "Body": "Ce face aplicația voastră?"})
+    Bot(llm).send(text("Ce face aplicația voastră?"))
     assert "has not sent a field location" in llm.calls[0][0]
 
 
 def test_llm_failure_sends_fallback(env: None) -> None:
-    sender = FakeSender()
-    post(make_client(BrokenLLM(), sender), {"From": FARMER, "Body": "Cum funcționează?"})
-    assert "Nu pot răspunde" in sender.sent[0][1]
+    assert "Nu pot răspunde" in Bot(BrokenLLM()).send(text("Cum funcționează?"))
 
 
 def test_no_llm_configured(env: None) -> None:
-    r = post(make_client(None), {"From": FARMER, "Body": "Cum funcționează?"})
-    assert "Nu pot răspunde" in r.text
+    assert "Nu pot răspunde" in Bot(None).send(text("Cum funcționează?"))
 
 
 def test_english(env: None) -> None:
     llm = FakeLLM("NDVI shows how green plants are.")
-    c = make_client(llm)
-    assert "English" in post(c, {"From": FARMER, "Body": "en"}).text
-    assert "Rotations" in post(c, PIN).text
-    post(c, {"From": FARMER, "Body": "what is NDVI"})
+    bot = Bot(llm)
+    assert "English" in bot.send(text("en"))
+    assert "Rotations" in bot.send(PIN)
+    bot.send(text("what is NDVI"))
     assert "Default: English" in llm.calls[0][0]
 
 
@@ -156,9 +218,9 @@ def test_history_is_capped(env: None, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("BOT_HISTORY_TURNS", "2")
     get_settings.cache_clear()
     llm = FakeLLM()
-    c = make_client(llm)
+    bot = Bot(llm)
     for i in range(6):
-        post(c, {"From": FARMER, "Body": f"întrebarea {i}"})
+        bot.send(text(f"întrebarea {i}"))
     assert len(llm.calls[-1][1]) <= 4
 
 

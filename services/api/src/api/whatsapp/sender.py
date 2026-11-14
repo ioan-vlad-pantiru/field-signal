@@ -1,19 +1,21 @@
-"""Outbound WhatsApp messages through the Twilio REST API.
+"""Outbound WhatsApp messages through the Meta WhatsApp Cloud API.
 
-Chat replies are sent this way (not as the webhook's TwiML answer) so a slow
-LLM call can never hit Twilio's 15-second webhook timeout.
+Every reply is sent this way, from a background task, so the webhook can answer Meta
+with 200 straight away; slow analyses or LLM calls never cause Meta to retry.
+Replies inside the 24-hour window after the farmer's last message are free.
 """
 
 from __future__ import annotations
 
-from functools import partial
+import logging
 from typing import Protocol
 
-import anyio
-from twilio.rest import Client
+import httpx
 
 from .config import BotSettings
 from .messages import MAX_BODY
+
+log = logging.getLogger(__name__)
 
 
 class Sender(Protocol):
@@ -36,12 +38,29 @@ def split_body(body: str, limit: int = MAX_BODY) -> list[str]:
     return chunks
 
 
-class TwilioSender:
+class CloudApiSender:
     def __init__(self, s: BotSettings) -> None:
-        self._client = Client(s.twilio_account_sid, s.twilio_auth_token)
-        self._from = s.twilio_whatsapp_from
+        self._url = (
+            f"https://graph.facebook.com/{s.whatsapp_graph_version}"
+            f"/{s.whatsapp_phone_number_id}/messages"
+        )
+        self._client = httpx.AsyncClient(
+            headers={"Authorization": f"Bearer {s.whatsapp_token}"}, timeout=15
+        )
 
     async def send(self, to: str, body: str) -> None:
         for chunk in split_body(body):
-            create = partial(self._client.messages.create, from_=self._from, to=to, body=chunk)
-            await anyio.to_thread.run_sync(create)
+            r = await self._client.post(
+                self._url,
+                json={
+                    "messaging_product": "whatsapp",
+                    "recipient_type": "individual",
+                    "to": to,
+                    "type": "text",
+                    "text": {"body": chunk, "preview_url": True},
+                },
+            )
+            if r.is_error:
+                # Meta's error JSON says what is wrong (expired token, number not allowed, ...).
+                log.error("WhatsApp send failed: %s %s", r.status_code, r.text[:500])
+                r.raise_for_status()
