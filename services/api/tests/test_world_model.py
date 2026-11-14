@@ -39,3 +39,16 @@ def test_outcomes_are_physical_and_respond_to_the_crop():
         [wm.outcomes(AIUD, ("maize", "pea"), ("wheat",), y)[0].ndvi_monthly for y in s]
     )
     assert wheat[:, 3:5].mean() > ndvi[:, 3:5].mean()  # wheat is green in April-May
+
+
+def test_shared_warm_up_gives_the_same_states():
+    """The first SHARED steps read only the previous crops: a run that starts from another
+    crop's warm-up state with the same history equals a full run."""
+    f = np.load(FIXTURE)
+    net = wm._stack(wm._nets())
+    full = wm._rollout(net, f["w"], f["crops"], f["static"], None)
+    other = f["crops"].copy()
+    other[1, 0] = wm.CLASS_OF["wheat"]  # another planned crop, same history (year 0)
+    warm = wm._rollout(net, f["w"], other, f["static"], None, stop_shared=True)
+    shared = wm._rollout(net, f["w"], f["crops"], f["static"], None, (warm[0], warm[1]))
+    assert np.array_equal(full, shared)

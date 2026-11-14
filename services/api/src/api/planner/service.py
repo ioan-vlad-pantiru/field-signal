@@ -37,7 +37,7 @@ from api.contracts import (
     YearAreas,
 )
 from api.planner import candidates as cand
-from api.planner import grid, models, optimizer, scoring, weather
+from api.planner import cpus, grid, models, optimizer, scoring, weather
 from api.planner.crops import CROPS, LEGUMES, RULE_LEGUMES
 
 log = logging.getLogger(__name__)
@@ -189,6 +189,7 @@ def plan_farm(request: OptimizerRequest, max_time_s: float = 3.0) -> OptimizerRe
         practice,
         request.risk_aversion,
         max_time_s=max_time_s,
+        num_workers=cpus.solver_workers(),  # CP-SAT's default (0) uses every host core it sees
         farm_ha=farm_ha,
     )
     for i, s in enumerate(solve.times_s):

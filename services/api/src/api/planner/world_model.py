@@ -47,8 +47,13 @@ import csv
 import gzip
 import hashlib
 import json
+import logging
+import multiprocessing as mp
 import os
-from collections.abc import Sequence
+from collections import OrderedDict
+from collections.abc import Iterable, Sequence
+from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures.process import BrokenProcessPool
 from functools import cache, lru_cache
 from pathlib import Path
 from typing import Any
@@ -57,11 +62,12 @@ import numpy as np
 from numpy.typing import NDArray
 
 from api.contracts import Crop, Range, RotationOutcome
-from api.planner import grid
+from api.planner import cpus, grid
 from api.planner import water_balance as wb
 from api.planner.crops import CROPS, crop_months
 
 Array = NDArray[np.float32]
+log = logging.getLogger(__name__)
 
 DATA = Path(__file__).with_name("data")
 MODEL_DIR = DATA / "world_model"
@@ -90,6 +96,8 @@ STATIC_STEP = 0.5
 MEMBERS = 4  # Monte Carlo dropout passes when only one run is exported
 WARMUP, SPAN = 12, 27  # months of warm-up, months simulated (Oct two years back .. Dec)
 JAN = 15  # index of January of the harvest year in the simulated span
+# Steps 0-10 read crop year 0 only (step t reads month t + 1; month 12 opens crop year 1).
+SHARED = 11
 
 
 def _version() -> str:
@@ -254,9 +262,13 @@ def _rollout(
     crops: NDArray[np.int64],
     static: Array,
     rng: np.random.Generator | None,
+    warm: tuple[Array, Array] | None = None,
+    stop_shared: bool = False,
 ) -> Array:
     """Standardised states [run, B, SPAN - WARMUP, 2] for months WARMUP..SPAN-1, every run of
-    the stacked `net` (`_stack`) on the same inputs.
+    the stacked `net` (`_stack`) on the same inputs. `warm`: the LSTM state (h, c) after the
+    first SHARED steps (`_warm`), which only depend on the previous crops, weather and soil, so
+    every planned crop with the same history starts from it.
 
     w [B, SPAN, 10] standardised weather by calendar month of the span; crops [3 crop years, 3]
     (crop, previous, two back) class ids; static [6]. Step t's input carries the weather, time
@@ -279,8 +291,13 @@ def _rollout(
     fixed = np.concatenate([emb, np.broadcast_to(static, (k, SPAN, len(static)))], -1)
     pre = shared + (fixed @ wi[:, 16:])[:, None] + net["b"][:, None, None]
     sc = net["gate_scale"]
-    h: NDArray[Any] = np.zeros((k, b, hid), np.float32)
-    c: NDArray[Any] = np.zeros((k, b, hid), np.float32)
+    if warm is None:
+        h: NDArray[Any] = np.zeros((k, b, hid), np.float32)
+        c: NDArray[Any] = np.zeros((k, b, hid), np.float32)
+        first = 0
+    else:
+        h, c = warm
+        first = SHARED
 
     def step(x: Array) -> None:
         nonlocal h, c
@@ -289,8 +306,10 @@ def _rollout(
         c = (0.5 + 0.5 * f) * c + (0.5 + 0.5 * i) * g
         h = (0.5 + 0.5 * o) * np.tanh(c)
 
-    for t in range(WARMUP):  # state 0, flag 0
+    for t in range(first, WARMUP):  # state 0, flag 0
         step(pre[:, :, t])
+        if t == SHARED - 1 and stop_shared:
+            return np.stack([h, c])
     state: NDArray[Any] = np.zeros((k, b, 2), np.float32)
     flag = (wi[:, 2] + wi[:, 3])[:, None]  # observed flag = 1 for fed-back predictions
     out = []
@@ -318,6 +337,27 @@ def _seed(*parts: str) -> int:
     return int.from_bytes(hashlib.blake2b("|".join(parts).encode(), digest_size=8).digest())
 
 
+def _rows(cell: str) -> Array:
+    """Standardised weather rows of the batch: one per season, or MEMBERS per season for Monte
+    Carlo dropout."""
+    w = _season_weather(cell)[0]
+    return w if len(_nets()) > 1 else np.repeat(w, MEMBERS, axis=0)
+
+
+# ponytail: about 200 KB per entry (5 runs x 40 seasons x 128 x 2); one per soil group and history.
+@lru_cache(maxsize=256)
+def _warm(cell: str, static: tuple[float, ...], prev2: str, prev1: str) -> Array:
+    """LSTM state [h/c, run, B, H] after the first SHARED steps, for any planned crop after
+    (prev2, prev1). Read-only: `_rollout` replaces h and c, it never writes into them."""
+    year0 = [_cls(prev1), _cls(prev2), MISSING]
+    crops = np.array([year0, year0, year0])  # rows 1-2 are not read before step SHARED
+    out = _rollout(
+        _stacked(), _rows(cell), crops, np.asarray(static, np.float32), None, stop_shared=True
+    )
+    out.setflags(write=False)
+    return out
+
+
 def simulate(cell: str, static: tuple[float, ...], crop: str, prev2: str, prev1: str) -> Array:
     """[season, member, month Jan-Dec, (ndvi, sm_rootzone)] of the harvest years for a POWER
     cell and standardised static features."""
@@ -328,16 +368,16 @@ def simulate(cell: str, static: tuple[float, ...], crop: str, prev2: str, prev1:
             [MISSING, _cls(crop), _cls(prev1)],
         ]
     )
-    w, _ = _season_weather(cell)
+    w = _rows(cell)
     st = np.asarray(static, np.float32)
-    nets = _nets()
-    n_s = w.shape[0]
-    if len(nets) > 1:  # one member per run
-        z = _rollout(_stacked(), w, crops, st, None).transpose(1, 0, 2, 3)
+    n_s = _season_weather(cell)[0].shape[0]
+    warm = _warm(cell, static, prev2, prev1)
+    if len(_nets()) > 1:  # one member per run
+        z = _rollout(_stacked(), w, crops, st, None, (warm[0], warm[1])).transpose(1, 0, 2, 3)
     else:  # Monte Carlo dropout members
         rng = np.random.default_rng(_seed(cell, repr(static), prev2, prev1, crop))
-        wm = np.repeat(w, MEMBERS, axis=0)
-        z = _rollout(_stacked(), wm, crops, st, rng)[0].reshape(n_s, MEMBERS, SPAN - WARMUP, 2)
+        z = _rollout(_stacked(), w, crops, st, rng, (warm[0], warm[1]))[0]
+        z = z.reshape(n_s, MEMBERS, SPAN - WARMUP, 2)
     phys = _destandardise(z.reshape(-1, SPAN - WARMUP, 2), crops).reshape(z.shape)
     return phys[:, :, JAN - WARMUP :]
 
@@ -365,9 +405,85 @@ def _season_summaries(point: str, crop: str, prev2: str, prev1: str) -> tuple[Ar
     return _summaries(_power_cell(point), _static(point), crop, prev2, prev1)
 
 
-# ponytail: bounded LRU, about 2.5 KB per entry.
-@lru_cache(maxsize=8192)
+Key = tuple[str, tuple[float, ...], str, str, str]  # cell, static, crop, two back, last year
+# ponytail: bounded, oldest first out, about 2.5 KB per entry.
+CACHE_SIZE = 8192
+_cache: OrderedDict[Key, tuple[Array, Array]] = OrderedDict()
+
+
 def _summaries(
+    cell: str, static: tuple[float, ...], crop: str, prev2: str, prev1: str
+) -> tuple[Array, Array]:
+    key = (cell, static, crop, prev2, prev1)
+    if (hit := _cache.get(key)) is not None:
+        _cache.move_to_end(key)
+        return hit
+    out = _compute(*key)
+    _store(key, out)
+    return out
+
+
+def _store(key: Key, out: tuple[Array, Array]) -> None:
+    for a in out:
+        a.setflags(write=False)
+    _cache[key] = out
+    while len(_cache) > CACHE_SIZE:
+        _cache.popitem(last=False)
+
+
+def cache_clear() -> None:
+    _cache.clear()
+
+
+# ------------------------------------------------------------------ parallel prefetch
+
+PARALLEL_MIN = 24  # fewer missing simulations than this run in this process
+_pool: ProcessPoolExecutor | None = None
+
+
+def _compute_many(keys: list[Key]) -> list[tuple[Array, Array]]:
+    return [_compute(*k) for k in keys]
+
+
+def prefetch(items: Iterable[tuple[str, Sequence[str], Sequence[str]]]) -> None:
+    """Run every simulation that (grid point, last two crops, rotation) items will need, across
+    `cpus.budget()` worker processes, and keep the results in this process's cache. Scoring then
+    finds them all cached. Includes each crop's unknown-history run (the water score's reference
+    curve). With one CPU, or few missing runs, it does nothing and scoring computes them lazily."""
+    global _pool
+    keys: set[Key] = set()
+    for point, last_two, rotation in items:
+        cell, static = _power_cell(point), _static(point)
+        for crop, p2, p1 in _years(last_two, rotation):
+            if crop in CROPS:
+                keys.add((cell, static, crop, p2, p1))
+                keys.add((cell, static, crop, "", ""))
+    missing = sorted(k for k in keys if k not in _cache)
+    n = cpus.budget()
+    if n < 2 or len(missing) < PARALLEL_MIN:
+        return
+    if _pool is None:
+        _pool = ProcessPoolExecutor(n, mp_context=mp.get_context("spawn"))
+    # whole (soil group, history) groups per worker, so each reuses its shared warm-up states
+    groups: dict[tuple[str, tuple[float, ...], str, str], list[Key]] = {}
+    for k in missing:
+        groups.setdefault((k[0], k[1], k[3], k[4]), []).append(k)
+    chunks: list[list[Key]] = [[] for _ in range(n)]
+    for g in sorted(groups.values(), key=len, reverse=True):
+        min(chunks, key=len).extend(g)
+    try:
+        results = list(_pool.map(_compute_many, chunks))
+    except BrokenProcessPool:
+        log.warning("world model prefetch: worker pool broke, computing in-process")
+        _pool = None
+        return  # scoring computes them lazily
+    log.info("world model prefetch: %d simulations on %d processes", len(missing), n)
+    for chunk, outs in zip(chunks, results, strict=True):
+        for k, out in zip(chunk, outs, strict=True):
+            _store(k, out)
+
+
+def _compute(
     cell: str, static: tuple[float, ...], crop: str, prev2: str, prev1: str
 ) -> tuple[Array, Array]:
     """([season, summary, (P10, P50, P90)], [season, 12] NDVI P50), summaries in RotationOutcome
@@ -389,13 +505,10 @@ def _summaries(
         ],
         -1,
     )
-    out = (
-        np.percentile(x, (10, 50, 90), axis=1).transpose(1, 2, 0),
-        np.percentile(ndvi, 50, axis=1),
+    return (
+        np.percentile(x, (10, 50, 90), axis=1).transpose(1, 2, 0).astype(np.float32),
+        np.percentile(ndvi, 50, axis=1).astype(np.float32),
     )
-    for a in out:
-        a.setflags(write=False)
-    return out
 
 
 def _years(last_two: Sequence[str], rotation: Sequence[str]) -> list[tuple[str, str, str]]:

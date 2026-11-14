@@ -217,6 +217,13 @@ def farm_scores(
 ) -> dict[tuple[str, str], Array]:
     """(piece_id, rotation_id) -> [scenario, COLUMNS] for every piece and its field's rotations."""
     w = weight_vector(weights)
+    wm = models.active()
+    if hasattr(wm, "prefetch"):  # the trained model runs every simulation the farm needs at once
+        wm.prefetch(
+            (p.grid_point_id, ("", "", *histories.get(p.field_id, ()))[-2:], rid.split(">"))
+            for p in pieces
+            for rid in rotations[p.field_id]
+        )
     memo: dict[tuple[str, tuple[str, str], str], Array | None] = {}
     table: dict[tuple[str, str], Array] = {}
     for p in pieces:
