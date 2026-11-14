@@ -42,10 +42,14 @@ the farmer's current rotation (call `rule_checks` with `eco_practice=None`: noth
 Rule rows are a provisional rule check, never a statement of compliance. GAEC 7 figures are
 reported with `applies = False` and never enforced; PD-04 enforces exactly one practice, and only
 when the caller selects it. Soil cover (GAEC 6, PD-04 cover) and eligibility are not modelled.
+
+Every solve logs one INFO line (logger `api.planner.optimizer`). A model CP-SAT rejects
+(MODEL_INVALID) raises RuntimeError, a 500 at the API, never "no plan" and never the retry.
 """
 
 from __future__ import annotations
 
+import logging
 from collections import Counter, defaultdict
 from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass, field
@@ -56,6 +60,7 @@ from ortools.sat.python import cp_model
 from api.planner.candidates import crops_of
 
 Key = tuple[str, str]  # (piece_id or field_id, rotation_id)
+log = logging.getLogger(__name__)  # one INFO line per solve; an invalid model is logged, raised
 
 # Product choice (owner, 14 Nov 2026), no regulatory source: below it a farm may split fields.
 SPLIT_BELOW_HA: float = 75
@@ -76,6 +81,9 @@ SPLIT_PRESOLVE = {"cp_model_probing_level": 0, "find_big_linear_overlap": False}
 # 2940 pairs (4 fields, 5 years) stop FEASIBLE, while the pruned models reach OPTIMAL with the same
 # objectives in under 1 s. CP-SAT's default presolve is kept: turning probing off sped up the
 # unpruned models but left a pruned 10-field farm FEASIBLE where the default proves it OPTIMAL.
+# Both modes keep pruning (re-measured on the service's scores with SPLIT_PRESOLVE): unpruned,
+# parcel mode stopped UNKNOWN on a 74 ha 5-year farm with diversification and split mode stopped
+# UNKNOWN or FEASIBLE on most farms above the threshold, where the pruned solves reach a plan.
 PRUNE_ABOVE = 500
 MAX_CANDIDATES = 40  # per field when pruned
 # ponytail: ceiling of roughly 800 ha; merge cells into coarser pieces when larger farms matter.
@@ -183,7 +191,17 @@ def solve_farm(
     times: list[float] = []
     for practice in dict.fromkeys((eco_practice, None)):  # no plan: retry once without it
         plans, status, t = _rank(
-            pieces, kept, legumes, practice, lam, top, max_time_s, num_workers, pruned, split
+            pieces,
+            kept,
+            legumes,
+            practice,
+            lam,
+            top,
+            max_time_s,
+            num_workers,
+            pruned,
+            split,
+            len(by_field),
         )
         times += t
         if plans:
@@ -203,6 +221,7 @@ def _rank(
     num_workers: int,
     pruned: bool,
     split: bool,
+    candidates: int,  # (field, rotation) pairs before pruning, for the log
 ) -> tuple[list[Plan], str, list[float]]:
     m = cp_model.CpModel()
     field_area: dict[str, int] = defaultdict(int)
@@ -283,9 +302,31 @@ def _rank(
     status_name = "INFEASIBLE"
     for i in range(top):
         status = solver.solve(m)
+        if status == cp_model.MODEL_INVALID:  # a bug in this model: never "no plan", no retry
+            why = m.validate()
+            log.error("farm solve: CP-SAT rejected the model: %s", why)
+            raise RuntimeError(f"CP-SAT rejected the farm model: {why}")
         times.append(solver.wall_time)
         status_name = solver.status_name(status)
-        if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+        found = status in (cp_model.OPTIMAL, cp_model.FEASIBLE)
+        obj, bound = solver.objective_value, solver.best_objective_bound
+        log.info(
+            "farm solve %d: mode=%s practice=%s status=%s objective=%s bound=%.0f gap=%s "
+            "wall=%.2fs candidates=%d/%d fields=%d pieces=%d",
+            i + 1,
+            "split" if split else "parcel",
+            practice,
+            status_name,
+            f"{obj:.0f}" if found else "-",
+            bound,
+            f"{abs(bound - obj) / max(1.0, abs(obj)):.4%}" if found else "-",
+            solver.wall_time,
+            candidates,
+            len(use),
+            len(field_area),
+            len(pieces),
+        )
+        if not found:
             break  # INFEASIBLE: no further alternative (or no plan); UNKNOWN: out of time
         vals = {k: n for k, v in x.items() if (n := solver.value(v))}
         alloc = vals if split else {(p, r): a for f, r in vals for p, a in of_field[f]}
