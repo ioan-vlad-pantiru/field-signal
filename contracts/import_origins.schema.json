@@ -111,6 +111,39 @@
         "harvest": {
           "$ref": "#/$defs/Localized"
         },
+        "window_start": {
+          "description": "MM-DD, first day of the deciding weeks",
+          "title": "Window Start",
+          "type": "string"
+        },
+        "window_end": {
+          "description": "MM-DD, last day of the deciding weeks",
+          "title": "Window End",
+          "type": "string"
+        },
+        "harvest_start": {
+          "description": "MM-DD",
+          "title": "Harvest Start",
+          "type": "string"
+        },
+        "harvest_end": {
+          "description": "MM-DD",
+          "title": "Harvest End",
+          "type": "string"
+        },
+        "next_reading": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ISO date of the next scheduled reading; None once the season is over",
+          "title": "Next Reading"
+        },
         "points": {
           "items": {
             "$ref": "#/$defs/OriginPoint"
@@ -162,6 +195,10 @@
         "confidence",
         "window",
         "harvest",
+        "window_start",
+        "window_end",
+        "harvest_start",
+        "harvest_end",
         "points",
         "stage",
         "current_season",

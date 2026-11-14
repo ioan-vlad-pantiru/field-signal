@@ -103,6 +103,7 @@ class Origin:
     window: tuple[str, str]  # MM-DD, MM-DD
     checkpoints: tuple[str, ...]  # MM-DD, the last one is the window end
     harvest: Localized
+    harvest_md: tuple[str, str]  # MM-DD, MM-DD
     window_text: Localized
     points: tuple[tuple[str, float, float, float], ...]
     truth: str  # "psd:<country>" or "ibge:<state ids>"
@@ -123,6 +124,7 @@ ORIGINS = [
         window=("12-15", "03-15"),
         checkpoints=("01-15", "02-01", "02-15", "03-01", "03-15"),
         harvest=L(ro="aprilie-mai", en="April-May"),
+        harvest_md=("04-01", "05-31"),
         window_text=L(
             ro="15 dec - 15 mar: înflorire și umplerea boabelor",
             en="15 Dec - 15 Mar: flowering and pod fill",
@@ -153,6 +155,7 @@ ORIGINS = [
         window=("12-15", "03-15"),
         checkpoints=("01-15", "02-01", "02-15", "03-01", "03-15"),
         harvest=L(ro="martie-mai", en="March-May"),
+        harvest_md=("03-01", "05-31"),
         window_text=L(
             ro="15 dec - 15 mar: înflorire și umplerea boabelor",
             en="15 Dec - 15 Mar: flowering and pod fill",
@@ -186,6 +189,7 @@ ORIGINS = [
         window=("11-15", "02-15"),
         checkpoints=("12-15", "01-01", "01-15", "02-01", "02-15"),
         harvest=L(ro="ianuarie-aprilie", en="January-April"),
+        harvest_md=("01-15", "04-30"),
         window_text=L(
             ro="15 nov - 15 feb: înflorire și umplerea boabelor",
             en="15 Nov - 15 Feb: flowering and pod fill",
@@ -221,6 +225,7 @@ ORIGINS = [
         window=("07-01", "08-31"),
         checkpoints=("07-15", "08-01", "08-15", "08-31"),
         harvest=L(ro="septembrie-octombrie", en="September-October"),
+        harvest_md=("09-01", "10-31"),
         window_text=L(
             ro="1 iul - 31 aug: înflorire și umplerea boabelor",
             en="1 Jul - 31 Aug: flowering and pod fill",
@@ -526,6 +531,18 @@ def build_origin(o: Origin, psd, end: date) -> Built:
         confidence=confidence(r_final),
         window=o.window_text,
         harvest=o.harvest,
+        window_start=o.window[0],
+        window_end=o.window[1],
+        harvest_start=o.harvest_md[0],
+        harvest_end=o.harvest_md[1],
+        next_reading=next(
+            (
+                d.isoformat()
+                for d in (span(o, current, md)[1] for md in o.checkpoints)
+                if d > last_day
+            ),
+            None,
+        ),
         points=[OriginPoint(name=n, lat=la, lon=lo, weight=wt) for n, la, lo, wt in pts],
         stage=stage,
         current_season=season_label(o, current),
@@ -551,18 +568,18 @@ def lead_text(o: Origin, corr_at: dict[str, float]) -> Localized:
     r_final = corr_at[final_md]
     if r_final > -0.35:
         return L(
-            ro=f"Vremea explică puțin din recolta de aici (r = {r_final:.2f}). Citiți scorul ca "
-            "pe o notă, nu ca pe un semnal.",
-            en=f"Weather explains little of the harvest here (r = {r_final:.2f}). Read the score "
-            "as a note, not a signal.",
+            ro="Vremea explică puțin din recolta de aici. Citiți scorul ca pe o notă, nu ca pe "
+            "un semnal.",
+            en="Weather explains little of the harvest here. Read the score as a note, not a "
+            "signal.",
         )
     useful = next(md for md in o.checkpoints if corr_at[md] <= 0.85 * r_final)
     ro_d, en_d = day_text(date(2001, *map(int, useful.split("-"))))
     return L(
-        ro=f"Din {ro_d} citirea urmărește deja recolta (r = {corr_at[useful]:.2f}); la final "
-        f"r = {r_final:.2f}. Recoltatul: {o.harvest.ro}, cifrele oficiale vin după.",
-        en=f"From {en_d} the reading already tracks the harvest (r = {corr_at[useful]:.2f}); "
-        f"at the end r = {r_final:.2f}. Harvest: {o.harvest.en}, official figures come after.",
+        ro=f"Citirea e de încredere din {ro_d}, înainte de recoltare ({o.harvest.ro}) și de "
+        "cifrele oficiale.",
+        en=f"The reading can be trusted from {en_d}, before the harvest ({o.harvest.en}) and "
+        "the official figures.",
     )
 
 
@@ -618,9 +635,7 @@ def note(o, stage, current, reading, truth, o_seasons) -> Localized:
     label = season_label(o, current)
     if stage == OriginStage.BEFORE:
         start, _ = span(o, current, o.window[1])
-        first = span(o, current, o.checkpoints[0])[1]
         ro_s, en_s = day_text(start)
-        ro_f, en_f = day_text(first)
         prev = next((x for x in o_seasons if x.season == season_label(o, current - 1)), None)
         last_ro = last_en = ""
         if prev is not None:
@@ -630,17 +645,17 @@ def note(o, stage, current, reading, truth, o_seasons) -> Localized:
                 ("", "")
                 if prev.yield_anomaly_pct is None
                 else (
-                    f", randament {prev.yield_anomaly_pct:+.0f}% față de tendință",
-                    f", yield {prev.yield_anomaly_pct:+.0f}% vs trend",
+                    f", randament cu {abs(prev.yield_anomaly_pct):.0f}% "
+                    f"{'sub' if prev.yield_anomaly_pct < 0 else 'peste'} normal",
+                    f", yield {abs(prev.yield_anomaly_pct):.0f}% "
+                    f"{'below' if prev.yield_anomaly_pct < 0 else 'above'} normal",
                 )
             )
             last_ro = f" Sezonul trecut ({prev.season}): risc {lv_ro}{anom[0]}{outcome_ro}."
             last_en = f" Last season ({prev.season}): {lv_en} risk{anom[1]}{outcome_en}."
         return L(
-            ro=f"Sezonul {label} se seamănă acum. Săptămânile decisive încep pe {ro_s}; prima "
-            f"citire pe {ro_f}.{last_ro}",
-            en=f"The {label} crop is being planted. The weeks that decide it start on {en_s}; "
-            f"first reading on {en_f}.{last_en}",
+            ro=f"Săptămânile decisive încep pe {ro_s}.{last_ro}",
+            en=f"The deciding weeks begin on {en_s}.{last_en}",
         )
     assert reading is not None
     lv_ro, lv_en = LEVEL[reading.level]
@@ -649,11 +664,19 @@ def note(o, stage, current, reading, truth, o_seasons) -> Localized:
         usda = ""
         usda_ro = ""
         if anom is not None:
-            usda = f" USDA's current estimate puts the yield {anom:+.0f}% vs trend."
-            usda_ro = f" Estimarea actuală USDA: randament {anom:+.0f}% față de tendință."
+            side = "below" if anom < 0 else "above"
+            usda = f" USDA now puts the yield {abs(anom):.0f}% {side} normal."
+            usda_ro = (
+                f" USDA estimează acum randamentul cu {abs(anom):.0f}% "
+                f"{'sub' if anom < 0 else 'peste'} normal."
+            )
         return L(
-            ro=f"Sezonul {label} s-a încheiat: risc {lv_ro} ({reading.score:.0f}/100).{usda_ro}",
-            en=f"The {label} season is over: {lv_en} risk ({reading.score:.0f}/100).{usda}",
+            ro=f"Vara care a decis recolta a fost printre cele mai grele din 2001.{usda_ro}"
+            if reading.level == "high"
+            else f"Sezonul {label} s-a încheiat cu risc {lv_ro}.{usda_ro}",
+            en=f"The summer that decided the crop was among the hardest since 2001.{usda}"
+            if reading.level == "high"
+            else f"The {label} season ended at {lv_en} risk.{usda}",
         )
     ro_l, en_l = day_text(date.fromisoformat(reading.as_of))
     return L(

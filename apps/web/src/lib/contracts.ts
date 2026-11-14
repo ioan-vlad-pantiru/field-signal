@@ -397,6 +397,26 @@ export interface ImportOrigin {
   confidence: Confidence;
   window: Localized2;
   harvest: Localized;
+  /**
+   * MM-DD, first day of the deciding weeks
+   */
+  window_start: string;
+  /**
+   * MM-DD, last day of the deciding weeks
+   */
+  window_end: string;
+  /**
+   * MM-DD
+   */
+  harvest_start: string;
+  /**
+   * MM-DD
+   */
+  harvest_end: string;
+  /**
+   * ISO date of the next scheduled reading; None once the season is over
+   */
+  next_reading?: string | null;
   points: OriginPoint[];
   stage: OriginStage;
   current_season: string;

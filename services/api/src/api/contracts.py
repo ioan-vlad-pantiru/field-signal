@@ -418,6 +418,14 @@ class ImportOrigin(Contract):
     confidence: Confidence
     window: Localized = Field(description="the weeks that decide the crop, e.g. pod fill")
     harvest: Localized
+    window_start: str = Field(description="MM-DD, first day of the deciding weeks")
+    window_end: str = Field(description="MM-DD, last day of the deciding weeks")
+    harvest_start: str = Field(description="MM-DD")
+    harvest_end: str = Field(description="MM-DD")
+    next_reading: str | None = Field(
+        default=None,
+        description="ISO date of the next scheduled reading; None once the season is over",
+    )
     points: list[OriginPoint]
     stage: OriginStage
     current_season: str
