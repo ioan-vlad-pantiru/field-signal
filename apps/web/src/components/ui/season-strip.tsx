@@ -18,7 +18,7 @@ const FAINT: Partial<Record<Status, string>> = {
   bad: "bg-status-bad-tint text-status-bad",
 };
 
-const HEIGHT = { sm: "h-4 text-[10px]", md: "h-6 text-xs", lg: "h-9 text-sm" } as const;
+const HEIGHT = { sm: "h-4 text-[10px]", md: "h-6 text-xs", lg: "h-11 text-sm" } as const;
 
 function columns(count: number): CSSProperties {
   return { gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` };

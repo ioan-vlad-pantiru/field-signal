@@ -53,7 +53,7 @@ export function ConfidenceBadge({ confidence }: { confidence: Confidence }) {
 export function AgronomistBadge() {
   const t = useTranslations("Common");
   return (
-    <span className="inline-flex w-fit items-center gap-1 rounded-full bg-wheat-tint px-2.5 py-1 text-sm font-medium text-ink">
+    <span className="inline-flex w-fit items-center gap-1 rounded-full border border-line px-2.5 py-1 text-sm font-medium text-ink">
       <ShieldIcon size={16} />
       {t("verifyAgronomist")}
     </span>

@@ -26,7 +26,7 @@
     "sequence": "Ordinea culturilor",
     "errorTitle": "Nu am putut încărca rezultatele",
     "errorText": "Cererea nu a fost acceptată. Verificați datele introduse și încercați din nou.",
-    "retry": "Încearcă din nou"
+    "retry": "Încercați din nou"
   },
   "Status": {
     "good": "Bun",

@@ -1,5 +1,7 @@
 "use client";
 
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { BarnIcon, BookIcon, FieldIcon } from "@/components/ui/icons";
@@ -78,13 +80,27 @@ export function TopNav() {
   );
 }
 
+/** Keeps the query (e.g. a pinned commune from the feed screen) when the language changes. */
 export function LocaleToggle() {
+  return (
+    <Suspense fallback={<LocaleLink query={null} />}>
+      <LocaleLinkWithQuery />
+    </Suspense>
+  );
+}
+
+function LocaleLinkWithQuery() {
+  const params = useSearchParams();
+  return <LocaleLink query={Object.fromEntries(params.entries())} />;
+}
+
+function LocaleLink({ query }: { query: Record<string, string> | null }) {
   const t = useTranslations("Nav");
   const pathname = usePathname();
   const other = useLocale() === "ro" ? "en" : "ro";
   return (
     <Link
-      href={pathname}
+      href={query && Object.keys(query).length > 0 ? { pathname, query } : pathname}
       locale={other}
       className="press inline-flex min-h-11 items-center rounded-full border border-line px-3 text-sm font-semibold hover:border-field"
       aria-label={t("switchLocaleLabel")}
