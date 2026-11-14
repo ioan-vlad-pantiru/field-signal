@@ -1,7 +1,8 @@
 """Farmer accounts: email + password sign-in and the fields each farmer keeps.
 
-Storage is a single SQLite file (`DATABASE_PATH`). In production it lives on an Azure Files volume
-so it survives redeploys; the API runs as one replica, so SQLite's single writer is enough.
+Storage is Postgres when `DATABASE_URL` is set (production: Azure Database for PostgreSQL), else a
+local SQLite file at `DATABASE_PATH` (development and tests). The SQL is written once, with `?`
+placeholders, and runs on both.
 
 Sessions are random tokens in an httpOnly cookie. Only a SHA-256 of the token is stored, so a
 leaked database cannot be replayed as sessions. Passwords are hashed with scrypt (stdlib).
@@ -16,13 +17,16 @@ import secrets
 import sqlite3
 import threading
 import uuid
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any, Protocol
 
+import psycopg
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
+from psycopg.rows import dict_row
+from psycopg_pool import ConnectionPool
 
 from api.contracts import Account, SavedField, SavedFieldInput, SignIn, SignUp
 from api.settings import get_settings
@@ -54,8 +58,39 @@ CREATE TABLE IF NOT EXISTS fields (
 CREATE INDEX IF NOT EXISTS fields_by_account ON fields(account_id, updated_at);
 """
 
+Row = Mapping[str, Any]
+UNIQUE_VIOLATION = (sqlite3.IntegrityError, psycopg.errors.UniqueViolation)
+
 _lock = threading.Lock()
 _ready: set[str] = set()
+_pools: dict[str, ConnectionPool] = {}
+
+
+class Result(Protocol):
+    rowcount: int
+
+    def fetchone(self) -> Any: ...
+    def fetchall(self) -> Any: ...
+
+
+class Db:
+    """The few calls the routes need, the same on SQLite and Postgres."""
+
+    def __init__(self, conn: sqlite3.Connection | psycopg.Connection[Any]) -> None:
+        self._conn = conn
+        self._postgres = isinstance(conn, psycopg.Connection)
+
+    def execute(self, sql: str, params: Sequence[object] = ()) -> Result:
+        if self._postgres:
+            sql = sql.replace("?", "%s")
+        return self._conn.execute(sql, params)  # type: ignore[return-value]
+
+    def one(self, sql: str, params: Sequence[object] = ()) -> Row | None:
+        row: Row | None = self.execute(sql, params).fetchone()
+        return row
+
+    def all(self, sql: str, params: Sequence[object] = ()) -> list[Row]:
+        return list(self.execute(sql, params).fetchall())
 
 
 def _now() -> datetime:
@@ -66,10 +101,37 @@ def _iso(moment: datetime) -> str:
     return moment.isoformat(timespec="milliseconds").replace("+00:00", "Z")
 
 
+def _statements() -> list[str]:
+    return [part.strip() for part in SCHEMA.split(";") if part.strip()]
+
+
 @contextmanager
-def connect() -> Iterator[sqlite3.Connection]:
-    """One short-lived connection per request; writes are serialised by a process lock."""
-    path = get_settings().database_path
+def _postgres(url: str) -> Iterator[Db]:
+    with _lock:
+        pool = _pools.get(url)
+        if pool is None:
+            pool = ConnectionPool(
+                url, min_size=1, max_size=4, kwargs={"row_factory": dict_row}, open=True
+            )
+            with pool.connection() as setup:
+                for statement in _statements():
+                    setup.execute(statement)
+            _pools[url] = pool
+    # Commits on success, rolls back on an exception.
+    with pool.connection() as conn:
+        yield Db(conn)
+
+
+@contextmanager
+def connect() -> Iterator[Db]:
+    """A transaction per block: pooled Postgres, or a short-lived SQLite connection."""
+    settings = get_settings()
+    if settings.database_url is not None:
+        with _postgres(settings.database_url.get_secret_value()) as db:
+            yield db
+        return
+    path = settings.database_path
+    # SQLite has one writer; a process lock keeps requests from tripping over each other.
     with _lock:
         if str(path) not in _ready:
             Path(path).parent.mkdir(parents=True, exist_ok=True)
@@ -81,7 +143,7 @@ def connect() -> Iterator[sqlite3.Connection]:
         conn.execute("PRAGMA foreign_keys = ON")
         try:
             with conn:
-                yield conn
+                yield Db(conn)
         finally:
             conn.close()
 
@@ -122,16 +184,16 @@ def _normalise_email(email: str) -> str:
     return email
 
 
-def _account(row: sqlite3.Row) -> Account:
+def _account(row: Row) -> Account:
     return Account(id=row["id"], email=row["email"], name=row["name"], created_at=row["created_at"])
 
 
 def _start_session(response: Response, account_id: str) -> None:
     token = secrets.token_urlsafe(32)
     expires = _now() + timedelta(days=SESSION_DAYS)
-    with connect() as conn:
-        conn.execute("DELETE FROM sessions WHERE expires_at < ?", (_iso(_now()),))
-        conn.execute(
+    with connect() as db:
+        db.execute("DELETE FROM sessions WHERE expires_at < ?", (_iso(_now()),))
+        db.execute(
             "INSERT INTO sessions (token_hash, account_id, expires_at) VALUES (?, ?, ?)",
             (_token_hash(token), account_id, _iso(expires)),
         )
@@ -149,8 +211,8 @@ def _start_session(response: Response, account_id: str) -> None:
 def current_account(fs_session: Annotated[str | None, Cookie()] = None) -> Account:
     if not fs_session:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "signed_out")
-    with connect() as conn:
-        row = conn.execute(
+    with connect() as db:
+        row = db.execute(
             """SELECT a.* FROM sessions s JOIN accounts a ON a.id = s.account_id
                WHERE s.token_hash = ? AND s.expires_at > ?""",
             (_token_hash(fs_session), _iso(_now())),
@@ -174,13 +236,13 @@ def sign_up(body: SignUp, response: Response) -> Account:
     name = (body.name or "").strip() or None
     account = Account(id=uuid.uuid4().hex, email=email, name=name, created_at=_iso(_now()))
     try:
-        with connect() as conn:
-            conn.execute(
+        with connect() as db:
+            db.execute(
                 """INSERT INTO accounts (id, email, name, password_hash, created_at)
                    VALUES (?, ?, ?, ?, ?)""",
                 (account.id, email, name, hash_password(body.password), account.created_at),
             )
-    except sqlite3.IntegrityError as exc:
+    except UNIQUE_VIOLATION as exc:
         raise HTTPException(status.HTTP_409_CONFLICT, "email_taken") from exc
     _start_session(response, account.id)
     return account
@@ -189,8 +251,8 @@ def sign_up(body: SignUp, response: Response) -> Account:
 @router.post("/auth/login")
 def sign_in(body: SignIn, response: Response) -> Account:
     email = body.email.strip().lower()
-    with connect() as conn:
-        row = conn.execute("SELECT * FROM accounts WHERE email = ?", (email,)).fetchone()
+    with connect() as db:
+        row = db.execute("SELECT * FROM accounts WHERE email = ?", (email,)).fetchone()
     ok = verify_password(body.password, row["password_hash"] if row else _DUMMY_HASH)
     if row is None or not ok:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "wrong_credentials")
@@ -201,8 +263,8 @@ def sign_in(body: SignIn, response: Response) -> Account:
 @router.post("/auth/logout", status_code=status.HTTP_204_NO_CONTENT)
 def sign_out(response: Response, fs_session: Annotated[str | None, Cookie()] = None) -> None:
     if fs_session:
-        with connect() as conn:
-            conn.execute("DELETE FROM sessions WHERE token_hash = ?", (_token_hash(fs_session),))
+        with connect() as db:
+            db.execute("DELETE FROM sessions WHERE token_hash = ?", (_token_hash(fs_session),))
     response.delete_cookie(COOKIE, path="/")
 
 
@@ -214,7 +276,7 @@ def me(account: CurrentAccount) -> Account:
 # --------------------------------------------------------------------------- saved fields
 
 
-def _field(row: sqlite3.Row) -> SavedField:
+def _field(row: Row) -> SavedField:
     body = json.loads(row["body"])
     return SavedField(
         id=row["id"], created_at=row["created_at"], updated_at=row["updated_at"], **body
@@ -223,8 +285,8 @@ def _field(row: sqlite3.Row) -> SavedField:
 
 @router.get("/me/fields")
 def list_fields(account: CurrentAccount) -> list[SavedField]:
-    with connect() as conn:
-        rows = conn.execute(
+    with connect() as db:
+        rows = db.execute(
             "SELECT * FROM fields WHERE account_id = ? ORDER BY updated_at DESC, created_at DESC",
             (account.id,),
         ).fetchall()
@@ -235,13 +297,11 @@ def list_fields(account: CurrentAccount) -> list[SavedField]:
 def create_field(body: SavedFieldInput, account: CurrentAccount) -> SavedField:
     now = _iso(_now())
     field_id = uuid.uuid4().hex
-    with connect() as conn:
-        (count,) = conn.execute(
-            "SELECT COUNT(*) FROM fields WHERE account_id = ?", (account.id,)
-        ).fetchone()
-        if count >= MAX_FIELDS:
+    with connect() as db:
+        row = db.one("SELECT COUNT(*) AS n FROM fields WHERE account_id = ?", (account.id,))
+        if row is not None and row["n"] >= MAX_FIELDS:
             raise HTTPException(status.HTTP_409_CONFLICT, "too_many_fields")
-        conn.execute(
+        db.execute(
             """INSERT INTO fields (id, account_id, body, created_at, updated_at)
                VALUES (?, ?, ?, ?, ?)""",
             (field_id, account.id, body.model_dump_json(), now, now),
@@ -251,8 +311,8 @@ def create_field(body: SavedFieldInput, account: CurrentAccount) -> SavedField:
 
 @router.get("/me/fields/{field_id}")
 def get_field(field_id: str, account: CurrentAccount) -> SavedField:
-    with connect() as conn:
-        row = conn.execute(
+    with connect() as db:
+        row = db.execute(
             "SELECT * FROM fields WHERE id = ? AND account_id = ?", (field_id, account.id)
         ).fetchone()
     if row is None:
@@ -263,21 +323,21 @@ def get_field(field_id: str, account: CurrentAccount) -> SavedField:
 @router.put("/me/fields/{field_id}")
 def update_field(field_id: str, body: SavedFieldInput, account: CurrentAccount) -> SavedField:
     now = _iso(_now())
-    with connect() as conn:
-        updated = conn.execute(
+    with connect() as db:
+        updated = db.execute(
             "UPDATE fields SET body = ?, updated_at = ? WHERE id = ? AND account_id = ?",
             (body.model_dump_json(), now, field_id, account.id),
         )
         if updated.rowcount == 0:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "field_not_found")
-        row = conn.execute("SELECT * FROM fields WHERE id = ?", (field_id,)).fetchone()
+        row = db.execute("SELECT * FROM fields WHERE id = ?", (field_id,)).fetchone()
     return _field(row)
 
 
 @router.delete("/me/fields/{field_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_field(field_id: str, account: CurrentAccount) -> None:
-    with connect() as conn:
-        deleted = conn.execute(
+    with connect() as db:
+        deleted = db.execute(
             "DELETE FROM fields WHERE id = ? AND account_id = ?", (field_id, account.id)
         )
     if deleted.rowcount == 0:

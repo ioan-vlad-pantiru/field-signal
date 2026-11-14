@@ -1,9 +1,12 @@
+import os
 from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import SecretStr
 
+from api import accounts
 from api.main import app
 from api.settings import get_settings
 
@@ -24,9 +27,26 @@ FIELD = {
 }
 
 
-@pytest.fixture
-def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClient]:
-    monkeypatch.setattr(get_settings(), "database_path", tmp_path / "test.db")
+# Postgres runs too when TEST_POSTGRES_URL points at a disposable database (it is wiped).
+BACKENDS = ["sqlite", *(["postgres"] if os.environ.get("TEST_POSTGRES_URL") else [])]
+
+
+@pytest.fixture(params=BACKENDS)
+def client(
+    request: pytest.FixtureRequest, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> Iterator[TestClient]:
+    settings = get_settings()
+    if request.param == "postgres":
+        import psycopg
+
+        url = os.environ["TEST_POSTGRES_URL"]
+        with psycopg.connect(url, autocommit=True) as conn:
+            conn.execute("DROP TABLE IF EXISTS fields, sessions, accounts")
+        accounts._pools.clear()
+        monkeypatch.setattr(settings, "database_url", SecretStr(url))
+    else:
+        monkeypatch.setattr(settings, "database_url", None)
+        monkeypatch.setattr(settings, "database_path", tmp_path / "test.db")
     with TestClient(app) as test_client:
         yield test_client
 

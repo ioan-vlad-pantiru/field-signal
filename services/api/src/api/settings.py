@@ -25,8 +25,10 @@ class Settings(BaseSettings):
     app_name: str = "Field Signal API"
     environment: str = "development"
     cors_origins: list[str] = ["http://localhost:3000"]
-    # SQLite file for farmer accounts and saved fields. Production points it at a mounted volume.
+    # SQLite file for farmer accounts and saved fields, used when DATABASE_URL is not set.
     database_path: Path = REPO_ROOT / "data" / "cache" / "field-signal.db"
+    # Postgres connection string (production). When set, it is used instead of the SQLite file.
+    database_url: SecretStr | None = None
 
     earthdata_username: str | None = None
     earthdata_password: SecretStr | None = None
