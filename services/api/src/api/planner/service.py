@@ -1,11 +1,11 @@
 """Farm plan service (plan §3.9): OptimizerRequest -> OptimizerResponse.
 
-fields -> pieces -> candidates -> mock outcomes and scores -> CP-SAT optimizer -> response.
+fields -> pieces -> candidates -> world-model outcomes and scores -> CP-SAT optimizer -> response.
 Mode (plan §10, decided by `optimizer.splits`): a farm under 75 ha may divide a field of 10 ha or
 more between up to 3 rotations; at 75 ha or more a drawn field is a parcel with exactly one
 rotation. The service only words the caveats for the mode; farm rules span the fields.
-Scoring calls the mock world model itself (cached per grid point, crop and last two crops), so
-outcomes and scores are timed as one stage. Every stage time is logged at INFO.
+Scoring calls the world model itself (`models.active()`: the trained LSTM or the mock, cached per
+grid point, crop and last two crops), so outcomes and scores are timed as one stage. Every stage time is logged at INFO.
 
     plan_farm(request, max_time_s=3.0) -> OptimizerResponse   # raises PlanRejected (-> 422)
 """
@@ -37,7 +37,7 @@ from api.contracts import (
 )
 from api.planner import candidates as cand
 from api.planner import grid, optimizer, scoring, weather
-from api.planner import mock_world_model as wm
+from api.planner import models
 from api.planner.crops import CROPS, LEGUMES, RULE_LEGUMES
 
 log = logging.getLogger(__name__)
@@ -145,7 +145,8 @@ def _plan(
             )
             for r in optimizer.rule_checks(allocation, RULE_LEGUMES, eco_practice)
         ],
-        confidence=Confidence.LOW,  # mock world model
+        # low on both: the mock is no model, the LSTM is not yet checked against yields
+        confidence=Confidence.LOW,
         proven_optimal=proven_optimal,
     )
 
@@ -194,6 +195,7 @@ def plan_farm(request: OptimizerRequest, max_time_s: float = 3.0) -> OptimizerRe
         log.info("farm plan stage solve %d: %.3f s (%s)", i + 1, s, solve.status)
     t = _stage("optimizer", t)
 
+    wm = models.active()
     scen = wm.scenarios(request.plan_years)
     plans = [
         _plan(
@@ -215,7 +217,7 @@ def plan_farm(request: OptimizerRequest, max_time_s: float = 3.0) -> OptimizerRe
         else None
     )
     response = OptimizerResponse(
-        mock=True,
+        mock=models.is_mock(),
         model_version=wm.MODEL_VERSION,
         plan_years=request.plan_years,
         total_area_ha=sum(p.area_tenths_ha for p in pieces) / 10,
@@ -261,6 +263,27 @@ SOURCES = [
 ]
 
 
+def _model_caveat() -> Localized:
+    if models.is_mock():
+        return _l(
+            "Scorurile vin dintr-un model MOCK al lumii (mock-0), nu dintr-un model antrenat: "
+            "sunt valori provizorii, nu predicții.",
+            "Scores come from a MOCK world model (mock-0), not a trained model: they are "
+            "placeholders, not predictions.",
+        )
+    return _l(
+        "Scorurile vin din modelul antrenat al lumii (o rețea LSTM antrenată pe NDVI din satelit "
+        "și umiditatea solului 2016-2024 în România și Bulgaria): prezice NDVI și apa din sol "
+        "lună de lună pentru vremea fiecărui an, cultură, culturile anterioare și sol. "
+        "Randamentul este un indicator din NDVI, nu tone la hectar, și nu a fost încă verificat "
+        "pe recolte.",
+        "Scores come from the trained world model (an LSTM trained on 2016-2024 satellite NDVI "
+        "and soil moisture in Romania and Bulgaria): it predicts NDVI and soil water month by "
+        "month for each year's weather, the crop, the previous crops and the soil. Yield is an "
+        "NDVI proxy, not tonnes per hectare, and is not yet checked against harvests.",
+    )
+
+
 def _caveats(
     request: OptimizerRequest,
     solve: optimizer.FarmSolve,
@@ -273,12 +296,7 @@ def _caveats(
 ) -> list[Localized]:
     first, last = scen[0], scen[-1] + request.plan_years - 1
     out = [
-        _l(
-            "Scorurile vin dintr-un model MOCK al lumii (mock-0), nu dintr-un model antrenat: "
-            "sunt valori provizorii, nu predicții.",
-            "Scores come from a MOCK world model (mock-0), not a trained model: they are "
-            "placeholders, not predictions.",
-        ),
+        _model_caveat(),
         _l(
             "Câmpurile sunt tăiate pe o grilă grosieră de 0,0025° (celule de circa 280 m x 190 m); "
             "fiecare bucată primește valorile celulei sale.",

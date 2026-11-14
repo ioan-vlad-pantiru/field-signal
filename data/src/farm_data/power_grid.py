@@ -16,6 +16,7 @@ a placeholder. The longest dry spell is counted inside the month. Romania outlin
 from __future__ import annotations
 
 import time
+from collections.abc import Iterable
 from datetime import date
 
 import geopandas as gpd
@@ -33,15 +34,18 @@ OUT = DATA_DIR.parent / "services/api/src/api/planner/data/weather_monthly.csv.g
 BBOX = (20.2, 43.6, 29.8, 48.3)  # west, south, east, north: Romania
 FIRST_YEAR = 1981  # start of the POWER record
 NAMES = {"T2M_MAX": "tmax", "T2M_MIN": "tmin", "PRECTOTCORR": "rain", "GWETROOT": "gwetroot"}
+# Extra daily variables the trained world model reads (`farm_data.world_weather`); the planner's
+# table above does not use them. POWER solar starts in 1984: earlier years are fill values.
+MODEL_NAMES = {"RH2M": "rh", "WS2M": "ws", "ALLSKY_SFC_SW_DWN": "solar"}
 DLAT, DLON = 0.5, 0.625
 # ponytail: the 30 °C hot-day cut-off is a placeholder for the world-model owner, not a crop value.
 HOT_C, FROST_C, DRY_MM = 30.0, 0.0, 1.0
 KEYS = ["cell_id", "year", "month"]
 
 
-def download(last_year: int) -> None:
+def download(last_year: int, params: Iterable[str] = (*NAMES, *MODEL_NAMES)) -> None:
     w, s, e, n = BBOX
-    for p in NAMES:
+    for p in params:
         for y in range(FIRST_YEAR, last_year + 1):
             f = SRC / p / f"{p}_{y}.nc"
             if f.exists():
