@@ -70,9 +70,7 @@ def _pieces(request: FarmPlanRequest) -> list[grid.Piece]:
         except weather.OutsideCoverage as e:
             raise PlanRejected(f"Field {f.id}: {e}") from e
         except ValueError as e:
-            raise PlanRejected(
-                f"Field {f.id}: degenerate or too small polygon ({e}); draw at least 0.05 ha."
-            ) from e
+            raise PlanRejected(f"Field {f.id}: {e}.") from e  # grid.py states the reason
         out += ps
     if len(out) > optimizer.MAX_PIECES:
         raise PlanRejected(

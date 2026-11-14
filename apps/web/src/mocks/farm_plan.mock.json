@@ -636,8 +636,12 @@
       "en": "Fields are cut by a coarse 0.0025° grid (cells of about 280 m x 190 m); each piece takes the values of its cell."
     },
     {
-      "ro": "Vremea vine dintr-o singură celulă NASA POWER de circa 50 km, comună întregii ferme; umiditatea din zona rădăcinilor este o valoare de model MERRA-2, nu o măsurătoare în câmp.",
-      "en": "Weather comes from one NASA POWER cell of about 50 km shared by the whole farm; root-zone wetness is a MERRA-2 model value, not a field measurement."
+      "ro": "Fiecare câmp primește vremea celulei sale NASA POWER (circa 50 km), comună tuturor câmpurilor din aceeași celulă; umiditatea din zona rădăcinilor este o valoare de model MERRA-2, nu o măsurătoare în câmp.",
+      "en": "Each field takes the weather of its NASA POWER cell (about 50 km), shared by every field in that cell; root-zone wetness is a MERRA-2 model value, not a field measurement."
+    },
+    {
+      "ro": "Acoperirea este grila NASA POWER peste România: un câmp aflat chiar dincolo de graniță, într-o celulă acoperită, este planificat cu aceleași date.",
+      "en": "Coverage is the NASA POWER grid over Romania: a field just across the border that falls in a covered cell is planned with the same data."
     },
     {
       "ro": "Scenariile sunt un test de stres pe istoric (1982-2025), nu o prognoză; cel mai rău caz este cea mai rea fereastră înregistrată, nu o limită inferioară.",
@@ -664,8 +668,8 @@
       "en": "No eco-scheme (PD-04) rule was enforced; the PD-04 rows are for information only."
     },
     {
-      "ro": "Locul 1 este cea mai bună soluție găsită; este optimă pentru acest model doar când optimalitatea este dovedită (proven_optimal).",
-      "en": "Rank 1 is the best solution found; it is optimal for this model only when proven (proven_optimal)."
+      "ro": "Locul 1 este cea mai bună soluție găsită; este afișată ca optimă doar când solverul o dovedește.",
+      "en": "Rank 1 is the best solution found; it is shown as optimal only when the solver proves it."
     },
     {
       "ro": "Locurile 2 și 3 sunt alternative care diferă prin cel puțin două alegeri de rotație, nu următoarele cele mai bune soluții.",

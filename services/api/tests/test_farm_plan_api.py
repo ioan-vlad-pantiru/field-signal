@@ -138,10 +138,13 @@ def test_soybean_rotation_has_no_baseline_and_history_is_used() -> None:
     [
         ([(47.50, 19.00), (47.50, 19.01), (47.49, 19.01)], "outside"),  # Budapest: off the grid
         ([(47.50, 20.60), (47.50, 20.61), (47.49, 20.61)], "No NASA POWER"),  # Hungary, on grid
-        ([(46.30, 23.75), (46.30, 23.76), (46.30, 23.77)], "degenerate"),  # a line
+        ([(46.30, 23.75), (46.30, 23.76), (46.30, 23.77)], "crosses or touches"),  # a line
+        ([(46.3, 23.75), (46.3, 23.7501), (46.2999, 23.7501)], "area rounds to 0 ha"),  # ~0.04 ha
+        ([(46.30, 23.75), (46.29, 23.76), (46.30, 23.76), (46.29, 23.75)], "crosses or touches"),
         ([(46.30, 23.70), (46.30, 23.80), (46.20, 23.80), (46.20, 23.70)], "pieces"),  # ~860 ha
+        ([(46.30, 23.40), (46.30, 23.80), (46.00, 23.80), (46.00, 23.40)], "bounding box spans"),
     ],
-    ids=["outside-grid", "no-weather-cell", "degenerate", "too-many-pieces"],
+    ids=["outside-grid", "no-weather", "line", "tiny", "bow-tie", "too-many-pieces", "huge-box"],
 )
 def test_unplannable_field_is_422(boundary: list[tuple[float, float]], message: str) -> None:
     body = _body()
