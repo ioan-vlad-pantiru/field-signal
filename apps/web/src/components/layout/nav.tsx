@@ -4,12 +4,13 @@ import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
-import { BarnIcon, BookIcon, FieldIcon } from "@/components/ui/icons";
+import { BarnIcon, BookIcon, FieldIcon, UserIcon } from "@/components/ui/icons";
 
 const ITEMS = [
   { href: "/field", key: "field", Icon: FieldIcon },
   { href: "/feed", key: "feed", Icon: BarnIcon },
   { href: "/about", key: "about", Icon: BookIcon },
+  { href: "/account", key: "account", Icon: UserIcon },
 ] as const;
 
 function useIsActive() {
@@ -26,7 +27,7 @@ export function BottomNav() {
       aria-label={t("label")}
       className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
     >
-      <ul className="grid grid-cols-3">
+      <ul className="grid grid-cols-4">
         {ITEMS.map(({ href, key, Icon }) => {
           const active = isActive(href);
           return (
@@ -65,11 +66,11 @@ export function TopNav() {
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={`flex min-h-11 items-center gap-2 rounded-full px-4 font-medium ${
+                className={`flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full px-3 font-medium lg:px-4 ${
                   active ? "bg-field-tint text-field" : "text-ink-muted hover:text-ink"
                 }`}
               >
-                <Icon size={18} />
+                <Icon size={18} className="hidden md:block" />
                 {t(key)}
               </Link>
             </li>

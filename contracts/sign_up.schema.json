@@ -1,0 +1,37 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "email": {
+      "maxLength": 254,
+      "minLength": 3,
+      "title": "Email",
+      "type": "string"
+    },
+    "password": {
+      "maxLength": 200,
+      "minLength": 8,
+      "title": "Password",
+      "type": "string"
+    },
+    "name": {
+      "anyOf": [
+        {
+          "maxLength": 80,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Name"
+    }
+  },
+  "required": [
+    "email",
+    "password"
+  ],
+  "title": "SignUp",
+  "type": "object",
+  "$id": "https://field-signal/contracts/sign_up/0.1.0"
+}

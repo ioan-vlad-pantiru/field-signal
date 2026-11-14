@@ -10,7 +10,7 @@ export async function SiteHeader() {
       <div className="mx-auto flex h-16 w-full max-w-[1200px] items-center justify-between gap-3 px-4">
         <Link href="/" className="press flex min-h-11 items-center gap-2.5 rounded-lg">
           <LogoMark size={32} />
-          <span className="text-lg font-semibold tracking-tight">{t("name")}</span>
+          <span className="whitespace-nowrap text-lg font-semibold tracking-tight">{t("name")}</span>
         </Link>
         <TopNav />
         <LocaleToggle />

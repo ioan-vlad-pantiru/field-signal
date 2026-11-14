@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import type { FieldAnalysis, LatLon } from "@/lib/contracts";
 import { formatNumber } from "@/lib/format";
@@ -15,11 +15,14 @@ export function ResultsHeader({
   boundary,
   placeName,
   onBack,
+  save,
 }: {
   analysis: FieldAnalysis;
   boundary: LatLon[] | null;
   placeName: string | null;
   onBack: () => void;
+  /** "Save field" control, when the farmer drew a field. */
+  save?: ReactNode;
 }) {
   const t = useTranslations("Results");
   const locale = useAppLocale();
@@ -64,6 +67,7 @@ export function ResultsHeader({
           <ArrowLeftIcon size={18} />
           {t("back")}
         </Button>
+        {save}
         <Button variant="quiet" onClick={() => window.print()}>
           {t("print")}
         </Button>
