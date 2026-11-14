@@ -1,8 +1,9 @@
-"""CP-SAT farm rotation optimizer (plan §3.7): an area split per field over candidate rotations.
+"""CP-SAT farm rotation optimizer (plan §3.7, §9): one candidate rotation per field.
 
 Plain data in and out; imports no FastAPI, contracts, weather or mock (plan §5a). Areas are
 integers in 0.1 ha, scores integers 0-1000 (the 0-100 total x 10), one value per weather scenario
-in one fixed order. The result is an area split, not a planting map: contiguity is not modelled.
+in one fixed order. A drawn field is a parcel: it carries exactly one rotation on its whole area,
+one crop per year. Diversity is a farm-level matter only (the rule rows below).
 
 Signatures (T5 builds on these):
 
@@ -21,13 +22,15 @@ Signatures (T5 builds on these):
     area_mean(allocation: Mapping[tuple[str, str], int],
               values: Mapping[tuple[str, str], Sequence[float]]) -> list[float]
 
-`scores` holds, per piece, the candidates valid for its field (crop history applied). Above
-`prune_above` (piece, rotation) pairs, `solve_farm` keeps `MAX_CANDIDATES` per field itself;
-`FarmSolve.pruned` is true only when that removed a pair.
-An allocation is `{(piece_id, rotation_id): area_tenths_ha}`; the helpers work for any
-allocation, including the farmer's current rotation (call `rule_checks` with
-`eco_practice=None`: nothing applies). `area_mean(allocation, scores)` gives the farm score per
-scenario on the 0-1000 scale; divide by 10 for 0-100.
+`scores` holds, per piece, the candidates valid for its field (crop history applied). A field's
+score for a rotation is the sum of its pieces' score x area; only rotations every piece of the
+field has are offered. Above `prune_above` (field, rotation) pairs, `solve_farm` keeps
+`MAX_CANDIDATES` per field itself; `FarmSolve.pruned` is true only when that removed a pair.
+An allocation is `{(piece_id, rotation_id): area_tenths_ha}`, every piece on its full area under
+its field's rotation; the helpers work for any allocation, including the farmer's current
+rotation (call `rule_checks` with `eco_practice=None`: nothing applies).
+`area_mean(allocation, scores)` gives the farm score per scenario on the 0-1000 scale; divide by
+10 for 0-100.
 
 Rule rows are a provisional rule check, never a statement of compliance. GAEC 7 figures are
 reported with `applies = False` and never enforced; PD-04 enforces exactly one practice, and only
@@ -36,7 +39,7 @@ when the caller selects it. Soil cover (GAEC 6, PD-04 cover) and eligibility are
 
 from __future__ import annotations
 
-from collections import defaultdict
+from collections import Counter, defaultdict
 from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass, field
 from itertools import chain, combinations
@@ -45,17 +48,15 @@ from ortools.sat.python import cp_model
 
 from api.planner.candidates import crops_of
 
-Key = tuple[str, str]  # (piece_id, rotation_id)
+Key = tuple[str, str]  # (piece_id or field_id, rotation_id)
 
-MIN_BLOCK = 50  # 0.1 ha: a rotation takes 0 or at least 5 ha of a field (placeholder)
-MAX_ROTATIONS = 3  # rotations per field (placeholder)
-WHOLE_FIELD_BELOW = 100  # 0.1 ha: a field under 10 ha carries one rotation (placeholder)
-# Pruning threshold in (piece, rotation) pairs, measured 14 Nov 2026 (15-core Mac, 3 s per
-# solve, structured test scores): the 7-piece demo farm at 4 years (1638 pairs) solves to OPTIMAL
-# unpruned at the default risk; at 5 years (5145 pairs) unpruned solves stop FEASIBLE with gaps
-# of 2-5 % at risk 1, while the pruned model reaches the same or better objectives.
-# ponytail: pruning by pair count; aggregate identical pieces if large farms need proofs.
-PRUNE_ABOVE = 2000
+# Pruning threshold in (field, rotation) pairs, measured 14 Nov 2026 (15-core Mac, 3 s per solve,
+# structured test scores, top 3): 468 pairs (2 fields, 4 years) solve to OPTIMAL unpruned in
+# 0.5-0.9 s per solve; 1470 pairs (5 years) take up to 3 s and can stop FEASIBLE at risk 1, and
+# 2940 pairs (4 fields, 5 years) stop FEASIBLE, while the pruned models reach OPTIMAL with the same
+# objectives in under 1 s. CP-SAT's default presolve is kept: turning probing off sped up the
+# unpruned models but left a pruned 10-field farm FEASIBLE where the default proves it OPTIMAL.
+PRUNE_ABOVE = 500
 MAX_CANDIDATES = 40  # per field when pruned
 # ponytail: ceiling of roughly 800 ha; merge cells into coarser pieces when larger farms matter.
 MAX_PIECES = 150  # more pieces: ValueError here, 422 at the API
@@ -105,7 +106,7 @@ class RuleResult:
 
 @dataclass(frozen=True)
 class Plan:
-    allocation: dict[Key, int]
+    allocation: dict[Key, int]  # every piece once, full area, its field's rotation
     scenario_totals: list[int]  # sum of score x area per scenario
     objective: int
     status: str  # CP-SAT status name of the solve that found it
@@ -144,8 +145,9 @@ def solve_farm(
         raise ValueError(f"unknown eco practice {eco_practice!r}")
     if len(pieces) > MAX_PIECES:
         raise ValueError(f"{len(pieces)} pieces; at most {MAX_PIECES} are planned")
-    kept = _prune(pieces, scores) if len(scores) > prune_above else scores
-    pruned = len(kept) < len(scores)
+    by_field = _field_scores(pieces, scores)
+    kept = _prune(by_field) if len(by_field) > prune_above else by_field
+    pruned = len(kept) < len(by_field)
     lam = round(100 * risk_aversion)
     times: list[float] = []
     for practice in dict.fromkeys((eco_practice, None)):  # no plan: retry once without it
@@ -161,7 +163,7 @@ def solve_farm(
 
 def _rank(
     pieces: Sequence[tuple[str, str, int]],
-    scores: Mapping[Key, Sequence[int]],
+    scores: Mapping[Key, Sequence[int]],  # (field_id, rotation_id) -> per scenario
     legumes: Collection[str],
     practice: str | None,
     lam: int,
@@ -171,42 +173,24 @@ def _rank(
     pruned: bool,
 ) -> tuple[list[Plan], str, list[float]]:
     m = cp_model.CpModel()
-    area = {p: a for p, _, a in pieces}
-    total = sum(area.values())
     field_area: dict[str, int] = defaultdict(int)
-    for _, f, a in pieces:
+    of_field: dict[str, list[tuple[str, int]]] = defaultdict(list)
+    for p, f, a in pieces:
         field_area[f] += a
+        of_field[f].append((p, a))
+    total = sum(field_area.values())
 
-    keys = [k for k in scores if k[0] in area]
-    ha = {k: m.new_int_var(0, area[k[0]], f"ha_{k[0]}_{k[1]}") for k in keys}
-    per_piece: dict[str, list[cp_model.IntVar]] = defaultdict(list)
-    for (p, _), v in ha.items():
-        per_piece[p].append(v)
-    for p, a in area.items():
-        m.add(cp_model.LinearExpr.sum(per_piece[p]) == a)
-
-    # Blocks: a rotation takes 0 or >= MIN_BLOCK of a field; few rotations per field.
-    field_of = {p: f for p, f, _ in pieces}
-    blocks: dict[tuple[str, str], list[cp_model.IntVar]] = defaultdict(list)
-    for (p, r), v in ha.items():
-        blocks[field_of[p], r].append(v)
-    use: dict[tuple[str, str], cp_model.IntVar] = {}
-    per_field: dict[str, list[cp_model.IntVar]] = defaultdict(list)
-    for (f, r), vs in blocks.items():
-        u = use[f, r] = m.new_bool_var(f"use_{f}_{r}")
-        per_field[f].append(u)
-        block = cp_model.LinearExpr.sum(vs)
-        m.add(block >= min(MIN_BLOCK, field_area[f]) * u)
-        m.add(block <= field_area[f] * u)
-    for f, us in per_field.items():
-        cap = 1 if field_area[f] < WHOLE_FIELD_BELOW else MAX_ROTATIONS
-        m.add(cp_model.LinearExpr.sum(us) <= cap)
+    # One rotation per field (no candidate left: INFEASIBLE).
+    x = {k: m.new_bool_var(f"x_{k[0]}_{k[1]}") for k in scores}
+    for f in field_area:
+        m.add_exactly_one(v for (g, _), v in x.items() if g == f)
 
     # The one eco practice selected: every plan year, on the whole farm area, as integers.
+    areas = {k: field_area[k[0]] * v for k, v in x.items()}
     for rule in RULES_2026:
         if practice is None or rule.practice != practice or total <= rule.above:
             continue
-        for grown in _grown_per_year(ha):
+        for grown in _grown_per_year(areas):
             g = {c: cp_model.LinearExpr.sum(vs) for c, vs in grown.items()}
             if rule.id == "max_crop_share":
                 for e in g.values():
@@ -219,20 +203,18 @@ def _rank(
                 m.add(100 * cp_model.LinearExpr.sum(leg) >= rule.limit_pct * total)
 
     # Objective: (100 - lam) * sum_k total_k + lam * K * worst, worst <= total_k.
+    keys = list(x)
+    xs = list(x.values())
     n_scen = len(next(iter(scores.values()))) if scores else 0
-    hv = list(ha.values())
     worst = m.new_int_var(0, 1000 * total, "worst")
     for k in range(n_scen):
-        m.add(worst <= cp_model.LinearExpr.weighted_sum(hv, [scores[key][k] for key in keys]))
+        m.add(worst <= cp_model.LinearExpr.weighted_sum(xs, [scores[key][k] for key in keys]))
     coefs = [(100 - lam) * sum(scores[key]) for key in keys]
-    m.maximize(cp_model.LinearExpr.weighted_sum([*hv, worst], [*coefs, lam * n_scen]))
+    m.maximize(cp_model.LinearExpr.weighted_sum([*xs, worst], [*coefs, lam * n_scen]))
 
     solver = cp_model.CpSolver()
     solver.parameters.max_time_in_seconds = max_time_s
     solver.parameters.num_workers = num_workers
-    # Probing and the linear-overlap presolve took 2.5 of 3 s on a 150-piece farm (no solution).
-    solver.parameters.cp_model_probing_level = 0
-    solver.parameters.find_big_linear_overlap = False
     plans: list[Plan] = []
     times: list[float] = []
     status_name = "INFEASIBLE"
@@ -242,12 +224,13 @@ def _rank(
         status_name = solver.status_name(status)
         if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
             break  # INFEASIBLE: no further alternative (or no plan); UNKNOWN: out of time
-        alloc = {k: a for k, v in ha.items() if (a := solver.value(v))}
-        totals = [sum(scores[k][s] * a for k, a in alloc.items()) for s in range(n_scen)]
+        on = [k for k in keys if solver.value(x[k])]
+        alloc = {(p, r): a for f, r in on for p, a in of_field[f]}
+        totals = [sum(scores[k][s] for k in on) for s in range(n_scen)]
         proven = is_proven_optimal(status, pruned, i == 0)
         plans.append(Plan(alloc, totals, round(solver.objective_value), status_name, proven))
-        on = [u for u in use.values() if solver.value(u)]
-        m.add(cp_model.LinearExpr.sum(on) <= len(on) - min(2, len(on)))
+        # The next plan changes the rotation of at least two fields (of the only one if one).
+        m.add(cp_model.LinearExpr.sum([x[k] for k in on]) <= len(on) - min(2, len(on)))
     return plans, status_name, times
 
 
@@ -262,23 +245,35 @@ def _grown_per_year[T](alloc: Mapping[Key, T]) -> list[dict[str, list[T]]]:
     return years
 
 
-def _prune(
+def _field_scores(
     pieces: Sequence[tuple[str, str, int]], scores: Mapping[Key, Sequence[int]]
-) -> dict[Key, Sequence[int]]:
-    """Keep MAX_CANDIDATES rotation IDs per field, ranked on the field's area-weighted scores:
-    first the best ID by mean for every (year, crop), so the share rules stay reachable, then
-    alternately the best by mean and by worst scenario, so risk-averse choices survive. One set
-    per field, not per piece: a field carries at most MAX_ROTATIONS rotations, and per-piece sets
-    can share none of them."""
-    area = {p: a for p, _, a in pieces}
-    group = {p: f for p, f, _ in pieces}
-    agg: dict[str, dict[str, list[int]]] = defaultdict(dict)
+) -> dict[Key, list[int]]:
+    """(field_id, rotation_id) -> per scenario, the sum of score x area over the field's pieces,
+    for the rotations every piece of the field has."""
+    field_of = {p: (f, a) for p, f, a in pieces}
+    n_pieces = Counter(f for _, f, _ in pieces)
+    acc: dict[Key, list[int]] = {}
+    seen: Counter[Key] = Counter()
     for (p, r), s in scores.items():
-        acc = agg[group[p]].setdefault(r, [0] * len(s))
-        for k, x in enumerate(s):
-            acc[k] += x * area[p]
-    keep: dict[str, set[str]] = {}
-    for g, rs in agg.items():
+        if p not in field_of:
+            continue
+        f, a = field_of[p]
+        row = acc.setdefault((f, r), [0] * len(s))
+        for k, v in enumerate(s):
+            row[k] += v * a
+        seen[f, r] += 1
+    return {k: row for k, row in acc.items() if seen[k] == n_pieces[k[0]]}
+
+
+def _prune(scores: Mapping[Key, list[int]]) -> dict[Key, list[int]]:
+    """Keep MAX_CANDIDATES rotation IDs per field: first the best ID by mean for every (year,
+    crop), so the share rules stay reachable, then alternately the best by mean and by worst
+    scenario, so risk-averse choices survive."""
+    rows: dict[str, dict[str, list[int]]] = defaultdict(dict)
+    for (f, r), s in scores.items():
+        rows[f][r] = s
+    keep: set[Key] = set()
+    for f, rs in rows.items():
         by_mean = sorted(rs, key=lambda r: -sum(rs[r]))
         by_worst = sorted(rs, key=lambda r: -min(rs[r]))
         seeds: dict[tuple[int, str], str] = {}
@@ -288,8 +283,8 @@ def _prune(
         order = dict.fromkeys(
             chain(seeds.values(), chain.from_iterable(zip(by_mean, by_worst, strict=True)))
         )
-        keep[g] = set(list(order)[:MAX_CANDIDATES])
-    return {k: s for k, s in scores.items() if k[1] in keep[group[k[0]]]}
+        keep.update((f, r) for r in list(order)[:MAX_CANDIDATES])
+    return {k: s for k, s in scores.items() if k in keep}
 
 
 def yearly_areas(allocation: Mapping[Key, int]) -> list[dict[str, int]]:
