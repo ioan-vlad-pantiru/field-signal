@@ -6,7 +6,7 @@ import type { DataOrigin, Loaded } from "@/lib/api";
 import type { FarmPlan, FarmPlanResponse, RuleCheck } from "@/lib/contracts";
 import { CROP_COLORS } from "@/lib/crops";
 import { formatNumber } from "@/lib/format";
-import { ruleStatus } from "@/lib/results";
+import { byField, ruleStatus } from "@/lib/results";
 import { useAppLocale, useLocalized } from "@/lib/localized";
 import { ConfidenceBadge, ToneBadge } from "@/components/ui/badges";
 import { RangeBar } from "@/components/ui/charts";
@@ -118,7 +118,7 @@ function FarmPlanBody({ data, origin, names }: { data: FarmPlanResponse; origin:
   );
 }
 
-/** One plan: title, score against today's rotation, weather spread, area split, then the details. */
+/** One plan: title, score against today's rotation, weather spread, rotations by field, then the details. */
 function PlanView({
   plan,
   current,
@@ -179,10 +179,10 @@ function PlanView({
       <div>
         <h4 className="font-semibold">{t("perField")}</h4>
         <p className="text-sm text-ink-muted">{t("perFieldHint")}</p>
-        {/* One allocation per field (one rotation per parcel); a list, should the API ever send more. */}
+        {/* One row per rotation; a field on a farm under 75 ha may have several rows (same field_id). */}
         <ul className="mt-2 flex flex-col divide-y divide-line">
-          {plan.allocations.map((a, i) => (
-            <li key={i} className="flex flex-col gap-1.5 py-2">
+          {byField(plan.allocations).map((a, i) => (
+            <li key={`${a.field_id}:${i}`} className="flex flex-col gap-1.5 py-2">
               <p>
                 <span className="font-medium">{fieldName(a.field_id)}</span>{" "}
                 <span className="tabular-nums text-ink-muted">· {t("ha", { ha: formatNumber(a.area_ha, locale, 1) })}</span>

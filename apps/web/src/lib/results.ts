@@ -113,3 +113,13 @@ export function ruleStatus(rule: Pick<RuleCheck, "id" | "limit_pct" | "value_pct
   const breaks = rule.id === "legume_share" ? rule.value_pct < rule.limit_pct : rule.value_pct > rule.limit_pct;
   return breaks ? "belowThreshold" : "within";
 }
+
+/**
+ * A farm plan's allocation rows with each field's rows together, fields in first-seen order. On a farm
+ * under 75 ha one field may carry several rotations, each its own row with the same `field_id`.
+ */
+export function byField<T extends { field_id: string }>(rows: readonly T[]): T[] {
+  const order = new Map<string, number>();
+  for (const row of rows) if (!order.has(row.field_id)) order.set(row.field_id, order.size);
+  return [...rows].sort((a, b) => order.get(a.field_id)! - order.get(b.field_id)!);
+}
