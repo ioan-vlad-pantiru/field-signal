@@ -39,6 +39,7 @@ export function FieldPlan({
 
   const [season, setSeason] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [mapUnavailable, setMapUnavailable] = useState(false);
   const [shownId, setShownId] = useState(strategy.id);
   if (shownId !== strategy.id) {
     setShownId(strategy.id);
@@ -70,8 +71,8 @@ export function FieldPlan({
   const year = firstSeason + season;
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="flex flex-col gap-4 print:gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         <div>
           <p className="text-sm text-ink-muted">{t("season")}</p>
           <p className="text-3xl font-semibold tracking-tight tabular-nums" aria-live="polite">
@@ -107,13 +108,15 @@ export function FieldPlan({
         plots={plots}
         boundary={boundary}
         onNonFarmland={setNonFarmland}
+        fitKey={strategy.id}
+        onUnavailable={setMapUnavailable}
         label={t("mapLabel", {
           year,
           plots: plots.map((p) => `${p.id}: ${p.label}`).join(", "),
         })}
       />
 
-      <ul className="flex flex-wrap gap-x-4 gap-y-2 text-sm" aria-label={t("legend")}>
+      <ul hidden={mapUnavailable} className="flex flex-wrap gap-x-4 gap-y-2 text-sm" aria-label={t("legend")}>
         {cropsThisSeason.map((crop) => (
           <li key={crop} className="flex items-center gap-1.5">
             <Hexagon fill={CROP_COLORS[crop]} />
@@ -135,7 +138,7 @@ export function FieldPlan({
         </li>
       </ul>
 
-      <div className="relative overflow-x-auto">
+      <div className="relative overflow-x-auto print:break-inside-avoid">
         <table className="w-full min-w-[22rem] border-collapse text-left text-sm">
           <caption className="sr-only">{t("tableCaption")}</caption>
           <thead className="border-b border-line">
@@ -149,7 +152,7 @@ export function FieldPlan({
                     type="button"
                     onClick={() => setSeason(i)}
                     aria-pressed={i === season}
-                    className={`press min-h-11 w-full rounded-lg px-2 font-semibold tabular-nums ${
+                    className={`press min-h-11 w-full rounded-lg px-2 font-semibold tabular-nums print:min-h-0 print:bg-transparent print:py-1 print:text-ink ${
                       i === season ? "bg-field text-on-field" : "hover:bg-surface-sunken"
                     }`}
                   >
@@ -162,7 +165,7 @@ export function FieldPlan({
           <tbody>
             {layout.plots.map((plot, p) => (
               <tr key={plot.id} className="border-t border-line">
-                <th scope="row" className="whitespace-nowrap px-3 py-2 font-semibold">
+                <th scope="row" className="whitespace-nowrap px-3 py-2 font-semibold print:py-1">
                   {plot.id}
                   <span className="block text-xs font-normal tabular-nums text-ink-muted">
                     {t("area", { ha: formatNumber(plot.areaHa, locale, 0) })}
@@ -173,7 +176,7 @@ export function FieldPlan({
                   return (
                     <td
                       key={i}
-                      className={`whitespace-nowrap px-2 py-2 ${i === season ? "bg-surface-sunken" : ""}`}
+                      className={`whitespace-nowrap px-2 py-2 print:bg-transparent print:py-1 ${i === season ? "bg-surface-sunken" : ""}`}
                     >
                       <span className="inline-flex items-center gap-1.5">
                         <CropDot crop={crop} />

@@ -313,7 +313,8 @@
         "water": "apă",
         "woods": "pădure",
         "built_up": "zonă construită"
-      }
+      },
+      "mapUnavailable": "Harta nu poate fi afișată în acest browser. Tabelul parcelelor de mai jos conține în continuare tot planul."
     }
   },
   "Feed": {

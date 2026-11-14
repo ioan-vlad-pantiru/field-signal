@@ -20,7 +20,16 @@ import { SectionNav, type SectionId } from "./results/section-nav";
 import { ShiftList } from "./results/shift";
 import { LAPTOP, useMediaQuery } from "./results/use-media-query";
 import { Verdict } from "./results/verdict";
-import { STILL } from "./results/still";
+
+/**
+ * A clean one-page plan on paper: the site chrome goes (it lives in the layout, so it is hidden from
+ * here while results are on screen) and the page uses the full sheet.
+ */
+const PRINT_CSS = `@media print {
+  body > header, body > nav, body > footer { display: none !important; }
+  main { max-width: none !important; padding: 0 !important; }
+  @page { margin: 14mm; }
+}`;
 
 /** Sections sit under the sticky site header and, on a laptop, the in-page nav. */
 const SECTION = "lg:scroll-mt-32";
@@ -57,25 +66,24 @@ export function ResultsView({
   const end = years.at(-1) ?? analysis.period_end;
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col print:text-[11pt]">
+      <style>{PRINT_CSS}</style>
       {analysis.mock ? <DemoBanner origin={origin} /> : null}
 
       <div className={analysis.mock ? "mt-6" : ""}>
         <ResultsHeader analysis={analysis} boundary={boundary} onBack={onBack} />
       </div>
 
-      <div className="mt-8 md:mt-10">
+      <div className="mt-8 md:mt-10 print:mt-4">
         <Verdict verdict={verdict} start={analysis.period_start} />
       </div>
 
-      <div className="mt-10">
+      <div className="mt-10 print:mt-0">
         <SectionNav sections={sections} />
-        <div className="mt-10 lg:mt-12">
+        <div className="mt-10 lg:mt-12 print:mt-0">
         {shifts.length > 0 ? (
           <Section id="shift" title={t("shift.title")} hint={t("shift.hint")} className={`${SECTION} print:hidden`}>
-            <div className={STILL}>
-              <ShiftList shifts={shifts} />
-            </div>
+            <ShiftList shifts={shifts} />
           </Section>
         ) : null}
 
@@ -95,8 +103,8 @@ export function ResultsView({
           />
         </Section>
 
-        <Section id="plan" title={t("planTitle")} hint={t("planHint")} className={`${SECTION} print:mt-6 print:border-t-0 print:pt-0`}>
-          <div className="flex flex-col gap-6">
+        <Section id="plan" title={t("planTitle")} hint={t("planHint")} className={`${SECTION} print:mt-6 print:border-t-0 print:pt-0 print:[&>p]:hidden`}>
+          <div className="flex flex-col gap-6 print:gap-2">
             <div className="no-print">
               {/* Names are too long for a segmented control on a phone; a native select fits them. */}
               <div className="hidden sm:block">
