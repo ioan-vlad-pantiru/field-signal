@@ -6,7 +6,7 @@ import type { SeasonOutcome, Status } from "@/lib/contracts";
  * Pair every strip with a `SeasonLegend` so the marks are explained in words.
  */
 const CELL: Record<Status, { className: string; mark: string }> = {
-  good: { className: "bg-surface-sunken", mark: "" },
+  good: { className: "bg-status-good-tint", mark: "" },
   watch: { className: "bg-status-watch text-on-status", mark: "!" },
   bad: { className: "bg-status-bad text-on-status", mark: "×" },
   no_data: { className: "border border-dashed border-line", mark: "" },

@@ -233,7 +233,7 @@
     },
     "verdict": {
       "fewer": "Cu rotația „{name}” ați fi avut <b>{best, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} în loc de {current}</b> din {start} încoace.",
-      "same": "Rotația „{name}” se potrivește cel mai bine priorităților dumneavoastră. Din {start} ar fi avut tot atâtea sezoane slabe cât rotația de acum: <b>{count}</b>.",
+      "same": "„{name}” se potrivește cel mai bine priorităților dumneavoastră. Din {start} ar fi avut <b>{count, plural, =0 {niciun sezon slab} one {# sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}</b>, la fel ca rotația actuală.",
       "more": "Rotația „{name}” se potrivește cel mai bine priorităților dumneavoastră, deși din {start} ar fi avut <b>{best, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} față de {current}</b> cu rotația de acum.",
       "keep": "Rotația dumneavoastră de acum se potrivește deja cel mai bine priorităților. Din {start} a avut <b>{count, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}</b>.",
       "fit": "Se potrivește priorităților dumneavoastră: {best} din 100; rotația de acum: {current}",
@@ -347,23 +347,11 @@
       "next": "Sezonul următor",
       "play": "Arată anii",
       "pause": "Oprește",
-      "mapLabel": "Harta câmpului în {year}: {plots}",
-      "legend": "Culturi în acest sezon",
-      "tableCaption": "Ce cultură are fiecare parcelă în fiecare sezon",
-      "plot": "Parcela",
-      "area": "{ha} ha",
-      "note": "Exemplu: {ha} ha cultivabili împărțiți în {plots} parcele. Fiecare hexagon are exact 1 ha. Am scos hexagoanele de pe drumuri, clădiri, ape sau păduri, după OpenStreetMap. Granițele sunt desenate de noi, nu sunt ale câmpului dumneavoastră. Înălțimea culturilor pe hartă este exagerată.",
-      "noteDrawn": "Câmpul desenat de dumneavoastră are {area} ha. Îl acoperim cu {ha} hexagoane de 1 ha cultivabile, împărțite în {plots} parcele. Am scos hexagoanele de pe drumuri, clădiri, ape sau păduri, după OpenStreetMap. Înălțimea culturilor pe hartă este exagerată.",
-      "notFarmland": "Nu se cultivă: {ha} ha ({reasons})",
-      "hexScale": "1 hexagon = 1 ha",
-      "reason": {
-        "road": "drum",
-        "building": "clădiri",
-        "water": "apă",
-        "woods": "pădure",
-        "built_up": "zonă construită"
-      },
-      "mapUnavailable": "Harta nu poate fi afișată în acest browser. Tabelul parcelelor de mai jos conține în continuare tot planul."
+      "mapLabel": "Câmpul dumneavoastră în {year}: {crop}",
+      "mapUnavailable": "Harta nu poate fi afișată în acest browser. Sezoanele de mai jos conțin în continuare tot planul.",
+      "seasons": "Sezoanele rotației pe acest câmp",
+      "noteField": "Câmpul așa cum l-ați desenat, {area} ha. În fiecare sezon tot câmpul are cultura acelui an; planul se repetă la fiecare {years} ani. Înălțimea culturilor pe hartă este exagerată.",
+      "notePin": "Cercul marchează punctul ales; desenați conturul câmpului ca să vedeți forma lui reală. În fiecare sezon tot câmpul are cultura acelui an; planul se repetă la fiecare {years} ani."
     },
     "fields": {
       "title": "{count, plural, few {# câmpuri} other {# de câmpuri}} · {ha} ha în total",
@@ -393,9 +381,9 @@
     "loading": "Rulăm modelul culturilor pe câmpurile tale…",
     "loadingHint": "Rulează în fundal: între timp poți citi rezultatele fiecărui câmp de mai sus.",
     "loadingBackground": "Încă rulează ({s} s). Rulează în fundal: restul paginii funcționează între timp.",
-    "error": "Planul fermei nu a putut fi făcut pentru aceste câmpuri. Rezultatele fiecărui câmp de mai sus nu sunt afectate.",
+    "error": "Planul fermei nu a putut fi făcut de această dată. Rezultatele fiecărui câmp de mai sus nu sunt afectate.",
     "invalid": "Aceste câmpuri nu au putut fi planificate: un câmp este în afara zonei acoperite, este prea mare sau conturul lui nu este valid. Rezultatele fiecărui câmp de mai sus nu sunt afectate.",
-    "meta": "Plan pe {years} ani · {ha} ha · {count, plural, one {o fereastră meteo din trecut} few {# ferestre meteo din trecut} other {# de ferestre meteo din trecut}}, sezoanele {first}–{last} · model {model}",
+    "meta": "Plan pe {years} ani · {ha} ha · {count, plural, one {o fereastră meteo din trecut} few {# ferestre meteo din trecut} other {# de ferestre meteo din trecut}}, sezoanele {first}–{last} · {model}",
     "none": "Nu s-a găsit niciun plan pentru aceste câmpuri. Vedeți notele de mai jos.",
     "best": "Cea mai bună soluție găsită",
     "bestOptimal": "Cea mai bună soluție găsită, optimă pentru model",
@@ -429,7 +417,9 @@
       "applied": "Impusă în acest plan",
       "notApplied": "Neimpusă",
       "unverified": "Neverificată"
-    }
+    },
+    "retry": "Încearcă din nou",
+    "modelName": "modelul de culturi Field Signal{runs, plural, one {} other {, # rulări}}"
   },
   "Feed": {
     "title": "De unde cumpărați furaje anul acesta",

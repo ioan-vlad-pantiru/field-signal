@@ -4,68 +4,53 @@ import { useEffect, useRef, useState } from "react";
 import { LngLatBounds, Marker, type GeoJSONSource, type Map as MapLibreMap } from "maplibre-gl";
 import type { Crop, LatLon } from "@/lib/contracts";
 import { CROP_COLORS, CROP_HEIGHT_M } from "@/lib/crops";
-import type { FieldLayout, Hex } from "@/lib/field-plan";
 import { polygonCentroid, radiusMetres } from "@/lib/geo";
-import { findNonFarmland, type NonFarmland } from "@/lib/land-cover";
 import { useTranslations } from "next-intl";
 import { SATELLITE_ATTRIBUTION, useMap } from "@/components/map/use-map";
 
 /** Crops are a few metres tall at most; exaggerate so the difference reads from above. */
-const HEIGHT_EXAGGERATION = 12;
-/** Hexagons are drawn slightly inset so the gaps show the grid between extruded cells. */
-const INSET = 0.92;
+const HEIGHT_EXAGGERATION = 4;
 const GROW_MS = 700;
-/** Plots smaller than this many hectares get letter-only labels. */
-const COMPACT_BELOW = 6;
-const HEXES = "fs-hexes";
-const BLOCKED_COLOR = "#8d958c";
-/** Camera over the field: tilted enough to read crop heights, turned a little like the arrival view. */
-const FIT_PITCH = 45;
+const FIELD = "fs-field";
+/** Camera over the field: tilted enough to read the crop, turned a little like the arrival view. */
+const FIT_PITCH = 50;
 const FIT_BEARING = -12;
+/** Without a drawn outline the field is a disc of this radius around the pin. */
+const PIN_RADIUS_M = 180;
 
-export interface PlotView {
-  id: string;
-  crop: Crop;
-  label: string;
+type FieldData = Extract<Parameters<GeoJSONSource["setData"]>[0], { type: "Feature" }>;
+
+function ring(outline: LatLon[]): [number, number][] {
+  const r = outline.map((c): [number, number] => [c.lon, c.lat]);
+  return [...r, r[0]];
 }
 
-type HexData = Extract<Parameters<GeoJSONSource["setData"]>[0], { type: "FeatureCollection" }>;
-
-function inset(hex: Hex): [number, number][] {
-  const [cx, cy] = hex.center;
-  return hex.ring.map(([x, y]) => [cx + (x - cx) * INSET, cy + (y - cy) * INSET]);
+/** A disc around the pin, for a field opened without an outline. */
+function disc(center: LatLon): LatLon[] {
+  const dLat = PIN_RADIUS_M / 111_320;
+  const dLon = dLat / Math.cos((center.lat * Math.PI) / 180);
+  return Array.from({ length: 48 }, (_, i) => {
+    const a = (i / 48) * 2 * Math.PI;
+    return { lat: center.lat + dLat * Math.sin(a), lon: center.lon + dLon * Math.cos(a) };
+  });
 }
 
-function hexData(layout: FieldLayout, plots: PlotView[]): HexData {
-  const plotOf = new Map<string, number>();
-  layout.plots.forEach((plot, i) => plot.hexIds.forEach((id) => plotOf.set(id, i)));
+function fieldData(outlines: LatLon[][], crop: Crop): FieldData {
   return {
-    type: "FeatureCollection",
-    features: layout.hexes.map((hex) => {
-      const plot = plotOf.get(hex.id);
-      const crop = plot === undefined ? null : plots[plot].crop;
-      return {
-        type: "Feature",
-        properties: crop
-          ? { kind: "crop", color: CROP_COLORS[crop], h: CROP_HEIGHT_M[crop] * HEIGHT_EXAGGERATION }
-          : { kind: "blocked", color: BLOCKED_COLOR, h: 0 },
-        geometry: { type: "Polygon", coordinates: [inset(hex)] },
-      };
-    }),
+    type: "Feature",
+    properties: { color: CROP_COLORS[crop], h: CROP_HEIGHT_M[crop] * HEIGHT_EXAGGERATION },
+    geometry: { type: "MultiPolygon", coordinates: outlines.map((o) => [ring(o)]) },
   };
 }
 
-/** Zoom that fits a drawn field of this size in the plan map, with room for the 3D tilt. */
+/** Zoom that fits a field of this size in the plan map, with room for the 3D tilt. */
 function zoomFor(boundary: LatLon[]): number {
   const radius = radiusMetres(polygonCentroid(boundary), boundary);
   return Math.max(12, Math.min(16.5, 14.6 - Math.log2(Math.max(radius, 1) / 370)));
 }
 
-/** Bounds of the drawn field, or of the hexagons when the outline is illustrative. */
-function fieldBounds(layout: FieldLayout, boundary: LatLon[] | null, parts: LatLon[][] = []): LngLatBounds | null {
-  const points: [number, number][] = boundary
-    ? [boundary, ...parts].flat().map((c) => [c.lon, c.lat])
-    : layout.hexes.flatMap((hex) => hex.ring.map(([x, y]): [number, number] => [x, y]));
+function boundsOf(outlines: LatLon[][]): LngLatBounds | null {
+  const points = outlines.flat().map((c): [number, number] => [c.lon, c.lat]);
   if (points.length === 0) return null;
   return points.reduce((b, p) => b.extend(p), new LngLatBounds(points[0], points[0]));
 }
@@ -85,7 +70,7 @@ function fitField(map: MapLibreMap, bounds: LngLatBounds) {
   const widthM = Math.max((ne.lng - sw.lng) * metresPerDegLon, 50);
   const heightM = Math.max((ne.lat - sw.lat) * metresPerDegLat, 50);
   // Leave room around the field, more in depth: the tilt magnifies the near edge.
-  const metresPerPixel = Math.max(widthM / (w * 0.55), heightM / (h * 0.5));
+  const metresPerPixel = Math.max(widthM / (w * 0.45), heightM / (h * 0.4));
   const zoom = Math.log2((156_543.03 * Math.cos((center.lat * Math.PI) / 180)) / metresPerPixel);
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   map.easeTo({
@@ -103,28 +88,28 @@ function whenStyleReady(map: MapLibreMap, run: () => void) {
 }
 
 /**
- * The farmer's field as 1 ha hexagons on the 3D map: crop hexagons coloured and raised by crop,
- * hexagons on roads, buildings, water or woods flat and grey. Reports those once tiles are in.
+ * The farmer's own field on the 3D satellite map, following the outline they drew (every part):
+ * filled and raised in the colour of the season's crop, with the outline on top and the crop named
+ * on the field.
  */
 export function FieldPlanMap({
   center,
-  layout,
-  plots,
   boundary,
   parts = [],
-  onNonFarmland,
+  crop,
+  cropLabel,
   label,
   fitKey,
   onUnavailable,
 }: {
   center: LatLon;
-  layout: FieldLayout;
-  plots: PlotView[];
-  /** The farmer's drawn field, outlined on top of the hexagons. */
+  /** The farmer's drawn field; null draws a disc around the pin. */
   boundary: LatLon[] | null;
-  /** Further pieces of the same field, outlined too. */
+  /** Further pieces of the same field. */
   parts?: LatLon[][];
-  onNonFarmland: (found: Map<string, NonFarmland>) => void;
+  /** The season's crop, on the whole field. */
+  crop: Crop;
+  cropLabel: string;
   label: string;
   /** Re-frame the field when this changes, such as the selected rotation. */
   fitKey: string;
@@ -132,77 +117,48 @@ export function FieldPlanMap({
   onUnavailable?: (unavailable: boolean) => void;
 }) {
   const t = useTranslations("Results.plan");
+  const outlines = boundary ? [boundary, ...parts] : [disc(center)];
   const focus = boundary ? polygonCentroid(boundary) : center;
-  const { container, map, failed } = useMap([focus.lon, focus.lat], boundary ? zoomFor(boundary) : 14.6, {
+  const { container, map, failed } = useMap([focus.lon, focus.lat], zoomFor(outlines[0]), {
     satellite: true,
     cooperativeGestures: true,
   });
-  const markers = useRef<Marker[]>([]);
+  const marker = useRef<Marker | null>(null);
   const [snapshot, setSnapshot] = useState<string | null>(null);
-  const report = useRef(onNonFarmland);
 
-  useEffect(() => {
-    report.current = onNonFarmland;
-  }, [onNonFarmland]);
-
-  // Layers once per map, then one land-cover pass when the camera has settled.
+  // Layers once per map: the raised field, its outline, and a soft ground shadow.
   useEffect(() => {
     if (!map) return;
-    let checked = false;
-    const check = () => {
-      if (checked || map.isMoving()) return;
-      checked = true;
-      report.current(findNonFarmland(map, layout.hexes, [HEXES]));
-    };
     whenStyleReady(map, () => {
-      map.addSource(HEXES, { type: "geojson", data: hexData(layout, plots) });
+      map.addSource(FIELD, { type: "geojson", data: fieldData(outlines, crop) });
       map.addLayer({
-        id: "fs-hex-blocked",
+        id: "fs-field-ground",
         type: "fill",
-        source: HEXES,
-        filter: ["==", ["get", "kind"], "blocked"],
-        paint: { "fill-color": ["get", "color"], "fill-opacity": 0.55 },
+        source: FIELD,
+        paint: { "fill-color": "#000000", "fill-opacity": 0.25 },
       });
       map.addLayer({
-        id: "fs-hex-blocked-line",
-        type: "line",
-        source: HEXES,
-        filter: ["==", ["get", "kind"], "blocked"],
-        paint: { "line-color": "#ffffff", "line-width": 1.5, "line-dasharray": [2, 1.5] },
-      });
-      map.addLayer({
-        id: "fs-hex-crop",
+        id: "fs-field-crop",
         type: "fill-extrusion",
-        source: HEXES,
-        filter: ["==", ["get", "kind"], "crop"],
+        source: FIELD,
         paint: {
           "fill-extrusion-color": ["get", "color"],
           "fill-extrusion-height": ["get", "h"],
-          "fill-extrusion-opacity": 0.92,
+          "fill-extrusion-opacity": 0.72,
+          "fill-extrusion-vertical-gradient": true,
         },
       });
-      if (boundary) {
-        const lines = [boundary, ...parts].map((outline) => {
-          const ring = outline.map((c): [number, number] => [c.lon, c.lat]);
-          return [...ring, ring[0]];
-        });
-        map.addSource("fs-boundary", {
-          type: "geojson",
-          data: { type: "Feature", properties: {}, geometry: { type: "MultiLineString", coordinates: lines } },
-        });
-        map.addLayer({
-          id: "fs-boundary",
-          type: "line",
-          source: "fs-boundary",
-          paint: { "line-color": "#ffffff", "line-width": 3, "line-dasharray": [2, 1] },
-        });
-      }
-      map.on("idle", check);
+      map.addLayer({
+        id: "fs-field-outline",
+        type: "line",
+        source: FIELD,
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: { "line-color": "#ffffff", "line-width": 2.5, "line-opacity": 0.95 },
+      });
     });
     return () => {
-      map.off("idle", check);
-      markers.current.forEach((m) => m.remove());
-      markers.current = [];
+      marker.current?.remove();
+      marker.current = null;
     };
     // Layers are set up once; data updates happen in the effect below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -221,7 +177,7 @@ export function FieldPlanMap({
       try {
         setSnapshot(map.getCanvas().toDataURL("image/jpeg", 0.85));
       } catch {
-        // Tainted or lost context: print falls back to the table alone.
+        // Tainted or lost context: print shows the season list alone.
       }
     };
     const onIdle = () => {
@@ -240,7 +196,7 @@ export function FieldPlanMap({
   }, [map]);
 
   // Fit the camera to the field once the map has loaded (after its arrival move) and per rotation.
-  const bounds = fieldBounds(layout, boundary, parts);
+  const bounds = boundsOf(outlines);
   const boundsKey = bounds?.toArray().flat().map((v) => v.toFixed(5)).join(",") ?? "";
   useEffect(() => {
     if (!map || !bounds) return;
@@ -252,41 +208,40 @@ export function FieldPlanMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, boundsKey, fitKey]);
 
-  // New season, strategy or land cover: recolour, move the plot labels, and grow the crops in.
+  // New season or rotation: recolour, rename the crop on the field, and grow the crop in.
   useEffect(() => {
     if (!map) return;
     let frame = 0;
     whenStyleReady(map, () => {
-      const source = map.getSource<GeoJSONSource>(HEXES);
+      const source = map.getSource<GeoJSONSource>(FIELD);
       if (!source) return;
-      source.setData(hexData(layout, plots));
+      source.setData(fieldData(outlines, crop));
 
-      markers.current.forEach((m) => m.remove());
-      // Small plots sit close together: label them with the letter only (the legend names the crop).
-      const compact = layout.plots.some((plot) => plot.hexIds.length > 0 && plot.hexIds.length < COMPACT_BELOW);
-      markers.current = layout.plots
-        .filter((plot) => plot.hexIds.length > 0)
-        .map((plot) => {
-          const el = document.createElement("div");
-          el.className = "plot-label";
-          el.setAttribute("aria-hidden", "true");
-          const view = plots.find((p) => p.id === plot.id);
-          el.textContent = view && !compact ? `${plot.id} · ${view.label}` : plot.id;
-          return new Marker({ element: el }).setLngLat(plot.centroid).addTo(map);
-        });
+      marker.current?.remove();
+      const el = document.createElement("div");
+      el.className = "plot-label";
+      el.setAttribute("aria-hidden", "true");
+      const dot = document.createElement("span");
+      dot.className = "plot-label-dot";
+      dot.style.background = CROP_COLORS[crop];
+      el.append(dot, document.createTextNode(cropLabel));
+      const at = polygonCentroid(outlines[0]);
+      marker.current = new Marker({ element: el }).setLngLat([at.lon, at.lat]).addTo(map);
 
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const start = performance.now();
       const grow = (now: number) => {
-        const t = reduced ? 1 : Math.min(1, (now - start) / GROW_MS);
-        const eased = 1 - Math.pow(1 - t, 3);
-        map.setPaintProperty("fs-hex-crop", "fill-extrusion-height", ["*", ["get", "h"], eased]);
-        if (t < 1) frame = requestAnimationFrame(grow);
+        const k = reduced ? 1 : Math.min(1, (now - start) / GROW_MS);
+        const eased = 1 - Math.pow(1 - k, 3);
+        map.setPaintProperty("fs-field-crop", "fill-extrusion-height", ["*", ["get", "h"], eased]);
+        if (k < 1) frame = requestAnimationFrame(grow);
       };
       frame = requestAnimationFrame(grow);
     });
     return () => cancelAnimationFrame(frame);
-  }, [map, layout, plots]);
+    // `outlines` is rebuilt every render from the same props; the crop drives the update.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, crop, cropLabel, boundsKey]);
 
   if (failed) {
     return (

@@ -393,9 +393,12 @@ input[type="range"].slider::-moz-range-thumb {
   animation: pin-drop var(--duration-slow) var(--ease-pop);
 }
 
-/* Plot labels on the field-plan map. */
+/* The season's crop, named on the field-plan map. */
 .plot-label {
-  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
   border-radius: 999px;
   background: var(--surface);
   color: var(--ink);
@@ -404,6 +407,11 @@ input[type="range"].slider::-moz-range-thumb {
   font-weight: 600;
   white-space: nowrap;
   pointer-events: none;
+}
+.plot-label-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
 }
 
 /* Season strips: cells fill in from 2001 to the latest year, the one orchestrated moment per screen. */
