@@ -55,12 +55,14 @@ function toLonLat(origin: LatLon, x: number, y: number): [number, number] {
  * Pointy-top 1 ha hexagons. With a drawn boundary: every hexagon whose centre falls inside it,
  * so the hexagon count matches the field's area. Without one: FIELD_RINGS around the pin.
  */
-export function hexField(pin: LatLon, boundary: LatLon[] | null = null): Hex[] {
+export function hexField(pin: LatLon, boundary: LatLon[] | null = null, parts: LatLon[][] = []): Hex[] {
   const s = HEX_SIDE_M;
   const angle = (PLOT_AXIS_DEG * Math.PI) / 180;
+  // A field in several pieces: hexagons fill every piece, laid out around the main one.
+  const outlines = boundary ? [boundary, ...parts] : [];
   const center = boundary ? polygonCentroid(boundary) : pin;
   const rings = boundary
-    ? Math.min(MAX_RINGS, Math.ceil(radiusMetres(center, boundary) / (s * Math.sqrt(3))) + 1)
+    ? Math.min(MAX_RINGS, Math.ceil(radiusMetres(center, outlines.flat()) / (s * Math.sqrt(3))) + 1)
     : FIELD_RINGS;
   const hexes: Hex[] = [];
   for (let q = -rings; q <= rings; q++) {
@@ -73,7 +75,7 @@ export function hexField(pin: LatLon, boundary: LatLon[] | null = null): Hex[] {
         return toLonLat(center, x + s * Math.cos(a), y + s * Math.sin(a));
       });
       const hexCenter = toLonLat(center, x, y);
-      if (boundary && !insidePolygon(hexCenter, boundary)) continue;
+      if (boundary && !outlines.some((outline) => insidePolygon(hexCenter, outline))) continue;
       hexes.push({
         id: `${q},${r}`,
         ring: [...corners, corners[0]],

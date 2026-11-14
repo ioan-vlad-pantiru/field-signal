@@ -1,0 +1,213 @@
+{
+  "$defs": {
+    "LatLon": {
+      "additionalProperties": false,
+      "properties": {
+        "lat": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Lat",
+          "type": "number"
+        },
+        "lon": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Lon",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lat",
+        "lon"
+      ],
+      "title": "LatLon",
+      "type": "object"
+    },
+    "Parcel": {
+      "additionalProperties": false,
+      "description": "A parcel declared to APIA (open LPIS data, CC BY 4.0), offered so a farmer can tap it.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "integer"
+        },
+        "boundary": {
+          "items": {
+            "$ref": "#/$defs/LatLon"
+          },
+          "maxItems": 500,
+          "minItems": 3,
+          "title": "Boundary",
+          "type": "array"
+        },
+        "area_ha": {
+          "description": "area declared to APIA",
+          "minimum": 0,
+          "title": "Area Ha",
+          "type": "number"
+        },
+        "land_use": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "APIA land-use code, e.g. TA (arable)",
+          "title": "Land Use"
+        },
+        "crop_history": {
+          "description": "mapped crop per year, oldest first; empty = not computed",
+          "items": {
+            "$ref": "#/$defs/ParcelCrop"
+          },
+          "title": "Crop History",
+          "type": "array"
+        },
+        "soil": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ParcelSoil"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "boundary",
+        "area_ha"
+      ],
+      "title": "Parcel",
+      "type": "object"
+    },
+    "ParcelCrop": {
+      "additionalProperties": false,
+      "description": "The crop mapped on a parcel in one year (JRC EUCROPMAP, 10 m; 2022 map ~79% accurate).",
+      "properties": {
+        "year": {
+          "title": "Year",
+          "type": "integer"
+        },
+        "crop": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "EUCROPMAP class name (e.g. maize, common_wheat, grassland); null = not mapped",
+          "title": "Crop"
+        },
+        "share": {
+          "description": "share of the parcel's pixels in that class",
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Share",
+          "type": "number"
+        }
+      },
+      "required": [
+        "year",
+        "crop",
+        "share"
+      ],
+      "title": "ParcelCrop",
+      "type": "object"
+    },
+    "ParcelSoil": {
+      "additionalProperties": false,
+      "description": "SoilGrids 2.0 topsoil 0-30 cm averaged over the parcel (250 m model, not a measurement).",
+      "properties": {
+        "soc_g_per_kg": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Soc G Per Kg"
+        },
+        "ph_h2o": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ph H2O"
+        },
+        "clay_pct": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Clay Pct"
+        },
+        "sand_pct": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sand Pct"
+        }
+      },
+      "title": "ParcelSoil",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Saved parcels matched to the current APIA layer by outline.",
+  "properties": {
+    "parcels": {
+      "description": "current APIA parcels the saved ones overlap",
+      "items": {
+        "$ref": "#/$defs/Parcel"
+      },
+      "title": "Parcels",
+      "type": "array"
+    },
+    "mapping": {
+      "additionalProperties": {
+        "items": {
+          "type": "integer"
+        },
+        "type": "array"
+      },
+      "description": "saved parcel id -> current parcel ids; missing = no parcel under it now",
+      "title": "Mapping",
+      "type": "object"
+    }
+  },
+  "required": [
+    "parcels",
+    "mapping"
+  ],
+  "title": "FarmRematch",
+  "type": "object",
+  "$id": "https://field-signal/contracts/farm_rematch/0.1.0"
+}

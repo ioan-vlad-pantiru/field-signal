@@ -158,7 +158,7 @@ def list_parcels(
 
 
 def merge(conn: sqlite3.Connection, ids: list[int]) -> MergedParcels:
-    """Join parcels into one outline. 422 when they do not touch, so they cannot be one field."""
+    """Join parcels into one field: touching ones into one outline, the rest as further pieces."""
     unique = sorted(set(ids))
     marks = ",".join("?" * len(unique))
     rows = conn.execute(
@@ -176,20 +176,26 @@ def merge(conn: sqlite3.Connection, ids: list[int]) -> MergedParcels:
     joined = shapely.union_all([p.buffer(GAP_M, join_style="mitre") for p in polygons]).buffer(
         -GAP_M, join_style="mitre"
     )
-    if not isinstance(joined, shapely.Polygon):
-        raise HTTPException(status_code=422, detail="not_touching")
-    outline = shapely.Polygon(joined.exterior)
-    tolerance = 1.0
-    simple = outline.simplify(tolerance, preserve_topology=True)
-    while len(simple.exterior.coords) - 1 > MAX_CORNERS:
-        tolerance *= 2
+    # Parcels that do not touch stay separate pieces of the same field, largest first.
+    pieces = sorted(
+        joined.geoms if isinstance(joined, shapely.MultiPolygon) else [joined],
+        key=lambda g: -g.area,
+    )
+
+    def ring(piece: shapely.Polygon) -> list[LatLon]:
+        outline = shapely.Polygon(piece.exterior)
+        tolerance = 1.0
         simple = outline.simplify(tolerance, preserve_topology=True)
-    boundary = [
-        LatLon(lon=round(x / kx, 6), lat=round(y / ky, 6))
-        for x, y in list(simple.exterior.coords)[:-1]
-    ]
+        while len(simple.exterior.coords) - 1 > MAX_CORNERS:
+            tolerance *= 2
+            simple = outline.simplify(tolerance, preserve_topology=True)
+        coords = list(simple.exterior.coords)[:-1]
+        return [LatLon(lon=round(x / kx, 6), lat=round(y / ky, 6)) for x, y in coords]
+
+    outlines = [ring(p) for p in pieces if not p.is_empty]
     return MergedParcels(
-        boundary=boundary,
+        boundary=outlines[0],
+        parts=outlines[1:],
         area_ha=round(sum(area for _, area, _ in rows), 2),
         parcel_ids=unique,
     )

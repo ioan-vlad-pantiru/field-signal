@@ -29,8 +29,17 @@ const DRAW_ZOOM = 14;
 
 type DrawData = Extract<Parameters<GeoJSONSource["setData"]>[0], { type: "FeatureCollection" }>;
 
-function drawData(corners: LatLon[], closed: boolean): DrawData {
+function drawData(corners: LatLon[], closed: boolean, parts: LatLon[][] = []): DrawData {
   const coords = corners.map((c): [number, number] => [c.lon, c.lat]);
+  // Further pieces of the same field: filled and outlined like it, without corner handles.
+  const pieces: DrawData["features"] = parts.flatMap((part) => {
+    const ring = part.map((c): [number, number] => [c.lon, c.lat]);
+    const closedRing = [...ring, ring[0]];
+    return [
+      { type: "Feature", properties: { kind: "area" }, geometry: { type: "Polygon", coordinates: [closedRing] } },
+      { type: "Feature", properties: { kind: "edge" }, geometry: { type: "LineString", coordinates: closedRing } },
+    ];
+  });
   const features: DrawData["features"] = coords.map((c, i) => ({
     type: "Feature",
     properties: { kind: "corner", first: i === 0 },
@@ -50,7 +59,7 @@ function drawData(corners: LatLon[], closed: boolean): DrawData {
       geometry: { type: "LineString", coordinates: closed ? [...coords, coords[0]] : coords },
     });
   }
-  return { type: "FeatureCollection", features };
+  return { type: "FeatureCollection", features: [...pieces, ...features] };
 }
 
 function parcelsData(parcels: Parcel[]): DrawData {
@@ -103,6 +112,7 @@ export function FieldMap({
   mode,
   corners,
   closed,
+  parts = [],
   others = [],
   onAddCorner,
   onTapParcel,
@@ -120,6 +130,8 @@ export function FieldMap({
   mode: MapMode;
   corners: LatLon[];
   closed: boolean;
+  /** Further pieces of the field being edited (parcels that do not touch). */
+  parts?: LatLon[][];
   /** Other fields in the same analysis, shown for orientation. */
   others?: LatLon[][];
   onAddCorner: (point: LatLon) => void;
@@ -373,14 +385,14 @@ export function FieldMap({
   useEffect(() => {
     if (!map) return;
     whenStyleReady(map, () => {
-      map.getSource<GeoJSONSource>(DRAW)?.setData(drawData(corners, closed));
+      map.getSource<GeoJSONSource>(DRAW)?.setData(drawData(corners, closed, parts));
       if (closed && corners.length >= 3) {
         const bounds = new LngLatBounds();
-        corners.forEach((c) => bounds.extend([c.lon, c.lat]));
+        [corners, ...parts].flat().forEach((c) => bounds.extend([c.lon, c.lat]));
         map.fitBounds(bounds, { padding: 40, maxZoom: 16, duration: 700 });
       }
     });
-  }, [map, corners, closed]);
+  }, [map, corners, closed, parts]);
 
   useEffect(() => {
     if (!map) return;

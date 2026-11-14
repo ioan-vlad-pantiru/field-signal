@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { CROP_COLORS } from "@/lib/crops";
 import { formatNumber } from "@/lib/format";
-import { polygonAreaHa } from "@/lib/geo";
+import { fieldAreaHa } from "@/lib/geo";
 import { useAppLocale } from "@/lib/localized";
 import type { DraftField } from "../draft-field";
 
@@ -28,7 +28,7 @@ export function FieldList({
   const crops = useTranslations("CropsShort");
   const locale = useAppLocale();
   const label = useFieldLabel();
-  const totalHa = fields.reduce((sum, f) => sum + polygonAreaHa(f.boundary), 0);
+  const totalHa = fields.reduce((sum, f) => sum + fieldAreaHa(f), 0);
 
   return (
     <section aria-labelledby="kept-fields" className="rounded-2xl bg-surface-sunken p-3">
@@ -40,7 +40,7 @@ export function FieldList({
           <li key={i} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-2 pl-1">
             <div className="min-w-0">
               <p className="break-words font-medium">
-                {label(field, i)} <span className="font-normal tabular-nums text-ink-muted">· {t("area", { ha: formatNumber(polygonAreaHa(field.boundary), locale, 1) })}</span>
+                {label(field, i)} <span className="font-normal tabular-nums text-ink-muted">· {t("area", { ha: formatNumber(fieldAreaHa(field), locale, 1) })}</span>
               </p>
               <p className="flex items-center gap-1.5 text-sm text-ink-muted">
                 <span className="flex gap-0.5" aria-hidden="true">

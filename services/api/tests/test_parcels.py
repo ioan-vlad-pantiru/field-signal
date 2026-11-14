@@ -100,12 +100,16 @@ def test_merge_joins_touching_parcels(client: TestClient) -> None:
     assert min(lats) == pytest.approx(46.30, abs=1e-5)
     assert max(lats) == pytest.approx(46.31, abs=1e-5)
     assert len(body["boundary"]) == 4
+    assert body["parts"] == []
 
 
-def test_merge_refuses_parcels_far_apart(client: TestClient) -> None:
+def test_merge_keeps_far_parcels_as_pieces(client: TestClient) -> None:
     res = client.post("/v1/parcels/merge", json={"ids": [1, 3]})
-    assert res.status_code == 422
-    assert res.json()["detail"] == "not_touching"
+    assert res.status_code == 200
+    body = res.json()
+    # Same size: one is the boundary, the other a further piece of the same field.
+    assert len(body["parts"]) == 1
+    assert body["area_ha"] == 8.5
 
 
 def test_merge_unknown_parcel(client: TestClient) -> None:

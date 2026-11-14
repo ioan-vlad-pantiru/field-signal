@@ -190,7 +190,7 @@
     },
     "assistantField": "Câmpul meu",
     "parcel": {
-      "hint": "Atingeți parcelele dumneavoastră ca să le selectați sau porniți „Selectați trăgând” ca să alegeți mai multe deodată. Apoi apăsați „Folosiți ca un câmp”. Sunt parcelele declarate la APIA; dacă nu o găsiți pe a dumneavoastră, atingeți colțurile câmpului.",
+      "hint": "Atingeți parcelele dumneavoastră ca să le selectați sau porniți „Selectați trăgând” ca să alegeți mai multe deodată. Apoi folosiți-le ca un singur câmp (nu trebuie să se atingă) sau adăugați fiecare ca solă separată. Sunt parcelele declarate la APIA; dacă nu o găsiți pe a dumneavoastră, atingeți colțurile câmpului.",
       "mapHint": "Atingeți parcelele dumneavoastră",
       "selected": "{count, plural, one {# parcelă selectată} few {# parcele selectate} other {# de parcele selectate}} · {ha} ha",
       "use": "Folosiți ca un câmp",
@@ -198,11 +198,13 @@
       "clear": "Anulați selecția",
       "tooSmall": "Împreună au {ha} ha. Un câmp trebuie să aibă cel puțin {min} ha: atingeți și parcelele vecine sau atingeți colțurile ca să desenați câmpul.",
       "tooBig": "Au {ha} ha, peste {max} ha. Selectați mai puține parcele.",
-      "notTouching": "Parcelele nu se ating. Alegeți parcele vecine sau adăugați fiecare câmp separat.",
       "failed": "Nu am putut uni parcelele. Încercați din nou sau atingeți colțurile ca să desenați câmpul.",
       "brush": "Selectați trăgând",
       "brushHint": "Trageți peste parcelele dumneavoastră",
-      "brushHelp": "Trageți peste parcelele dumneavoastră ca să le selectați. Începeți pe o parcelă verde ca să o deselectați. Mutați harta cu două degete sau opriți „Selectați trăgând”."
+      "brushHelp": "Trageți peste parcelele dumneavoastră ca să le selectați. Începeți pe o parcelă verde ca să o deselectați. Mutați harta cu două degete sau opriți „Selectați trăgând”.",
+      "separate": "Adăugați fiecare ca solă separată",
+      "separateSmall": "{count, plural, one {O parcelă are} few {# parcele au} other {# de parcele au}} sub {min} ha, prea puțin pentru o solă separată: au rămas selectate. Folosiți-le împreună ca un câmp sau cu parcelele vecine.",
+      "separateFull": "Puteți analiza cel mult {max} câmpuri deodată. Parcelele rămase sunt încă selectate."
     }
   },
   "Results": {
@@ -963,7 +965,81 @@
       "ph_high": "{count, plural, one {O parcelă este alcalină} few {# parcele sunt alcaline} other {# de parcele sunt alcaline}} (pH peste 8)."
     },
     "back": "Înapoi",
-    "toPlan": "Faceți planul fermei"
+    "toPlan": "Faceți planul fermei",
+    "parcel": {
+      "title": "Parcela APIA {id}",
+      "area": "{ha} ha",
+      "landUse": "Categoria de folosință (APIA)",
+      "field": "Sola",
+      "noField": "Încă nu e într-o solă",
+      "declared": "Cultura din fișierul dumneavoastră",
+      "history": "Cultura văzută din satelit",
+      "share": "{pct}% din parcelă",
+      "historyNote": "Din hărțile europene ale culturilor (10 m). Cam 8 din 10 parcele sunt cartate corect.",
+      "soil": "Solul de suprafață (0–30 cm)",
+      "soc": "Carbon organic {value} g/kg",
+      "ph": "pH {value}",
+      "clay": "Argilă {value}%",
+      "sand": "Nisip {value}%",
+      "soilNote": "Din hărți de sol (SoilGrids, 250 m): o estimare, nu o analiză de sol.",
+      "unknown": "Necunoscut",
+      "moveLabel": "Mutați în",
+      "moveNew": "O solă nouă",
+      "move": "Mutați",
+      "remove": "Scoateți din fermă",
+      "close": "Închideți",
+      "sources": "APIA LPIS 2025 (data.gov.ro) · JRC EUCROPMAP · ISRIC SoilGrids.",
+      "landUses": {
+        "TA": "Teren arabil",
+        "TAn": "Teren arabil (TAn)",
+        "PP": "Pajiște permanentă",
+        "PPn": "Pajiște permanentă (PPn)",
+        "PPi": "Pajiște permanentă (PPi)",
+        "CP": "Culturi permanente (livadă, vie)",
+        "CPn": "Culturi permanente (CPn)"
+      },
+      "flags": {
+        "clay_high": "Mult mai multă argilă decât restul fermei.",
+        "clay_low": "Mult mai puțină argilă decât restul fermei.",
+        "carbon_low": "Mai puțină materie organică decât restul fermei.",
+        "ph_low": "Sol acid (pH sub 5,5).",
+        "ph_high": "Sol alcalin (pH peste 8)."
+      },
+      "crops": {
+        "none": "Necartat",
+        "maize": "Porumb",
+        "common_wheat": "Grâu",
+        "durum_wheat": "Grâu dur",
+        "barley": "Orz",
+        "rye": "Secară",
+        "oats": "Ovăz",
+        "triticale": "Triticale",
+        "other_cereals": "Alte cereale",
+        "potatoes": "Cartofi",
+        "sugar_beet": "Sfeclă de zahăr",
+        "sunflower": "Floarea-soarelui",
+        "rapeseed": "Rapiță",
+        "soybean": "Soia",
+        "dry_pulses": "Mazăre sau fasole",
+        "fodder_crops": "Plante furajere",
+        "bare_arable": "Arabil necultivat",
+        "grassland": "Pajiște",
+        "woodland_shrubland": "Pădure sau tufăriș",
+        "artificial": "Construit",
+        "water": "Apă",
+        "wetlands": "Zonă umedă",
+        "bare_land": "Teren gol"
+      }
+    },
+    "rematch": {
+      "title": "Parcele dintr-un an anterior?",
+      "hint": "APIA redesenează parcelele în fiecare an și numerele lor se pot schimba. Potriviți ferma cu cele mai noi parcele APIA; solele rămân cum sunt.",
+      "button": "Actualizați la cele mai noi parcele APIA",
+      "busy": "Potrivim…",
+      "same": "Parcelele dumneavoastră se potrivesc deja cu cele mai noi parcele APIA (2025).",
+      "done": "{changed, plural, =0 {Nicio parcelă nu s-a schimbat} one {O parcelă s-a schimbat} few {# parcele s-au schimbat} other {# de parcele s-au schimbat}}. {missing, plural, =0 {} one {O parcelă nu mai are nicio parcelă APIA dedesubt și a rămas cum era.} few {# parcele nu mai au nicio parcelă APIA dedesubt și au rămas cum erau.} other {# de parcele nu mai au nicio parcelă APIA dedesubt și au rămas cum erau.}}",
+      "error": "Nu am putut potrivi parcelele. Încercați din nou."
+    }
   },
   "FarmPlan": {
     "empty": "Adăugați mai întâi cel puțin o solă cu parcele. Apoi putem planifica culturile pentru toată ferma.",

@@ -10,7 +10,7 @@ import type { FieldAnalysis, LatLon, SavedField as AccountField } from "@/lib/co
 import { Link } from "@/i18n/navigation";
 import { formatNumber } from "@/lib/format";
 import { useAppLocale } from "@/lib/localized";
-import { polygonAreaHa } from "@/lib/geo";
+import { fieldAreaHa } from "@/lib/geo";
 import { Button } from "@/components/ui/button";
 import { NoticeBar } from "@/components/ui/notice-bar";
 import { ErrorState } from "@/components/ui/states";
@@ -33,11 +33,11 @@ type State =
   | { step: "error" };
 
 function fromAccount(field: AccountField): SubmittedField {
-  return { request: field.request, boundary: field.boundary, place: field.near ?? null, accountId: field.id, name: field.name };
+  return { request: field.request, boundary: field.boundary, parts: field.parts ?? [], place: field.near ?? null, accountId: field.id, name: field.name };
 }
 
 function fromLocal(field: SavedField): SubmittedField {
-  return { request: field.request, boundary: field.boundary, place: field.near, accountId: null, name: null };
+  return { request: field.request, boundary: field.boundary, parts: field.parts ?? [], place: field.near, accountId: null, name: null };
 }
 
 /** A pin passed in the URL (`?lat=…&lon=…&place=…`), e.g. from the feed screen's zone sheet. */
@@ -156,7 +156,7 @@ function AccountFieldsBar({ fields, onOpen }: { fields: AccountField[]; onOpen: 
                 </span>
                 <span className="truncate">{field.name}</span>
                 <span className="shrink-0 tabular-nums text-ink-muted">
-                  {area("area", { ha: formatNumber(polygonAreaHa(field.boundary), locale, 0) })}
+                  {area("area", { ha: formatNumber(fieldAreaHa(field), locale, 0) })}
                 </span>
               </button>
             </li>
@@ -177,7 +177,7 @@ function AccountFieldsBar({ fields, onOpen }: { fields: AccountField[]; onOpen: 
 function SavedFieldBar({ saved, onResume }: { saved: SavedField; onResume: () => void }) {
   const t = useTranslations("Field.saved");
   const locale = useAppLocale();
-  const ha = formatNumber(polygonAreaHa(saved.boundary), locale, 0);
+  const ha = formatNumber(fieldAreaHa(saved), locale, 0);
   return (
     <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
       <p className="text-lg">{saved.near ? t("near", { place: saved.near, ha }) : t("noPlace", { ha })}</p>
@@ -237,7 +237,7 @@ function Flow({
       const accountField = signedIn ? account.fields.find((f) => f.id === field.accountId) : undefined;
       if (accountField) {
         // Keep the saved field in step with what the farmer just ran; results never wait for it.
-        const body = { ...fieldInput(accountField), request: field.request, boundary: field.boundary, near: field.place };
+        const body = { ...fieldInput(accountField), request: field.request, boundary: field.boundary, parts: field.parts ?? [], near: field.place };
         updateField(accountField.id, body)
           .then(() => setUpdated((prev) => new Set(prev).add(accountField.id)))
           .catch(() => undefined);
@@ -245,7 +245,7 @@ function Flow({
     }
     const lastField = list.at(-1);
     if (!signedIn && lastField) {
-      saveField({ request: lastField.request, boundary: lastField.boundary, near: lastField.place });
+      saveField({ request: lastField.request, boundary: lastField.boundary, parts: lastField.parts, near: lastField.place });
     }
     try {
       const results = await Promise.all(list.map((f) => analyzeField(f.request)));
@@ -263,7 +263,7 @@ function Flow({
         name: fields.length > 1 ? fieldLabel(f, i) : (f.name ?? f.place ?? t("assistantField")),
         request: f.request,
         near: f.place,
-        area_ha: polygonAreaHa(f.boundary),
+        area_ha: fieldAreaHa(f),
       })),
     );
     return () => setAssistantFields([]);
@@ -324,12 +324,14 @@ function Flow({
             analysis={result.data}
             origin={result.origin}
             boundary={field.boundary}
+            parts={field.parts}
             placeName={name}
             onBack={back}
             save={
               <SaveField
                 request={field.request}
                 boundary={field.boundary}
+                parts={field.parts}
                 placeName={field.place}
                 defaultName={name}
                 savedId={field.accountId}

@@ -190,6 +190,14 @@
       "minItems": 1,
       "title": "Parcels",
       "type": "array"
+    },
+    "declared_crops": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "crop declared per parcel id (e.g. from an imported file)",
+      "title": "Declared Crops",
+      "type": "object"
     }
   },
   "required": [

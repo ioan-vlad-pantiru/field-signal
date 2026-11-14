@@ -28,6 +28,7 @@ from pyproj import CRS, Transformer
 
 from api.contracts import (
     FarmImport,
+    FarmRematch,
     FarmSuggestion,
     FarmSuggestRequest,
     LatLon,
@@ -209,11 +210,21 @@ async def import_farm(request: Request, filename: str = Query(max_length=200)) -
 
 
 @router.post("/rematch")
-def rematch(parcels: list[Parcel]) -> FarmImport:
+def rematch(parcels: list[Parcel]) -> FarmRematch:
     """Match saved parcels to the current APIA layer by outline (ids change between years)."""
     if not parcels or len(parcels) > 1000:
         raise HTTPException(422, "between 1 and 1000 parcels")
-    return _imported(db(), [_ring(p) for p in parcels], [None] * len(parcels), "EPSG:4326")
+    conn = db()
+    matches, _ = match_outlines(conn, [_ring(p) for p in parcels])
+    # APIA parcels can overlap; a parcel whose own id is still under its outline stays itself.
+    matches = [
+        [old.id] if old.id in found else found for old, found in zip(parcels, matches, strict=True)
+    ]
+    ids = sorted({pid for found in matches for pid in found})
+    return FarmRematch(
+        parcels=parcels_by_id(conn, ids) if ids else [],
+        mapping={old.id: found for old, found in zip(parcels, matches, strict=True) if found},
+    )
 
 
 # --------------------------------------------------------------------------- suggested fields

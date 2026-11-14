@@ -8,11 +8,13 @@ import type { Parcel } from "@/lib/contracts";
 import {
   FIELD_COLOURS,
   FarmError,
+  applyRematch,
   areaHa,
   fieldParcels,
   importFarmFile,
   loadSavedFarm,
   readDraft,
+  rematchFarm,
   saveFarm,
   soilFlags,
   suggestFields,
@@ -29,6 +31,7 @@ import { Segmented } from "@/components/ui/segmented";
 import { Stepper } from "@/components/ui/stepper";
 import { PlanStep, type PlanInputField } from "./plan-step";
 import { FarmMap } from "./farm-map";
+import { ParcelDetails } from "./parcel-details";
 
 type Step = 0 | 1 | 2;
 const STEPS = ["parcels", "fields", "plan"] as const;
@@ -74,6 +77,11 @@ export function FarmView() {
   const [suggesting, setSuggesting] = useState<"idle" | "busy" | "error">("idle");
   const [saving, setSaving] = useState<"idle" | "busy" | "saved" | "error">("idle");
   const [moveTo, setMoveTo] = useState("new");
+  /** The parcel whose details are open. */
+  const [inspected, setInspected] = useState<number | null>(null);
+  const [rematch, setRematch] = useState<
+    { status: "idle" | "busy" | "error" } | { status: "done"; changed: number; missing: number }
+  >({ status: "idle" });
   /** Why each suggested field was grouped, in the page language. */
   const [reasons, setReasons] = useState<Record<string, string>>({});
   const loaded = useRef(false);
@@ -260,6 +268,11 @@ export function FarmView() {
 
   const onTap = useCallback(
     (p: Parcel) => {
+      // Without drag-to-select, a tap on a farm parcel opens its details; actions live there.
+      if (!brush && byId.has(p.id)) {
+        setInspected(p.id);
+        return;
+      }
       if (step === 0) {
         if (byId.has(p.id)) removeParcels(new Set([p.id]));
         else addParcels([p]);
@@ -272,8 +285,34 @@ export function FarmView() {
         return next;
       });
     },
-    [step, byId, addParcels, removeParcels],
+    [step, brush, byId, addParcels, removeParcels],
   );
+
+  function moveParcel(id: number, to: string) {
+    setFields((prev) => {
+      const stripped = prev.map((f) => ({ ...f, parcel_ids: f.parcel_ids.filter((x) => x !== id) }));
+      const next =
+        to === "new"
+          ? [...stripped, { id: `field-${Date.now()}`, name: t("fieldN", { n: prev.length + 1 }), parcel_ids: [id], current_rotation: null }]
+          : stripped.map((f) => (f.id === to ? { ...f, parcel_ids: [...f.parcel_ids, id] } : f));
+      return next.filter((f) => f.parcel_ids.length > 0);
+    });
+    setInspected(null);
+  }
+
+  async function updateParcels() {
+    if (parcels.length === 0) return;
+    setRematch({ status: "busy" });
+    try {
+      const result = await rematchFarm(parcels);
+      const next = applyRematch({ parcels, fields }, result);
+      setParcels(next.parcels);
+      setFields(next.fields);
+      setRematch({ status: "done", changed: next.changed, missing: next.missing });
+    } catch {
+      setRematch({ status: "error" });
+    }
+  }
 
   async function save() {
     setSaving("busy");
@@ -430,6 +469,23 @@ export function FarmView() {
                 <p className="text-sm text-ink-muted">{t("pick.how")}</p>
               </Card>
 
+              {parcels.length > 0 ? (
+                <Card title={t("rematch.title")} hint={t("rematch.hint")}>
+                  <Button variant="secondary" onClick={updateParcels} disabled={rematch.status === "busy"}>
+                    {rematch.status === "busy" ? t("rematch.busy") : t("rematch.button")}
+                  </Button>
+                  <p aria-live="polite" className="mt-3 text-sm">
+                    {rematch.status === "done"
+                      ? rematch.changed === 0 && rematch.missing === 0
+                        ? t("rematch.same")
+                        : t("rematch.done", { changed: rematch.changed, missing: rematch.missing })
+                      : rematch.status === "error"
+                        ? t("rematch.error")
+                        : ""}
+                  </p>
+                </Card>
+              ) : null}
+
               <div className="flex flex-col gap-3 rounded-2xl bg-field-tint p-5">
                 <p className="font-display text-3xl font-semibold tabular-nums text-field-strong">{ha(totalHa)} ha</p>
                 <p>{t("summary", { count: parcels.length, ha: ha(totalHa) })}</p>
@@ -571,7 +627,26 @@ export function FarmView() {
             </>
           ) : null}
         </div>
-      </div>
+            </div>
+
+      <ParcelDetails
+        parcel={inspected !== null ? (byId.get(inspected) ?? null) : null}
+        field={inspected !== null ? (fields[fieldOf.get(inspected) ?? -1] ?? null) : null}
+        fieldColour={
+          inspected !== null && fieldOf.has(inspected)
+            ? FIELD_COLOURS[(fieldOf.get(inspected) ?? 0) % FIELD_COLOURS.length]
+            : null
+        }
+        fields={fields}
+        declaredCrop={inspected !== null ? (declared[inspected] ?? null) : null}
+        flags={flags.filter((f) => f.parcelId === inspected)}
+        onMove={fields.length > 0 ? (to) => inspected !== null && moveParcel(inspected, to) : undefined}
+        onRemove={() => {
+          if (inspected !== null) removeParcels(new Set([inspected]));
+          setInspected(null);
+        }}
+        onClose={() => setInspected(null)}
+      />
     </div>
   );
 }

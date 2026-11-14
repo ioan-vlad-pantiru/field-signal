@@ -25,6 +25,7 @@ const NAMES = [
   "merged_parcels",
   "farm",
   "farm_import",
+  "farm_rematch",
   "farm_suggest_request",
   "farm_suggestion",
   "farm_plan_request",

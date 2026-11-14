@@ -65,3 +65,36 @@ export function insidePolygon(point: [number, number], corners: LatLon[]): boole
 export function radiusMetres(center: LatLon, corners: LatLon[]): number {
   return Math.max(...corners.map((c) => Math.hypot(...toMetres(center, c))));
 }
+
+/** A field: its main outline and, when its parcels do not touch, further pieces. */
+export interface FieldShape {
+  boundary: LatLon[];
+  parts?: LatLon[][] | null;
+}
+
+/** Every outline of a field, the main one first. */
+export function fieldRings(field: FieldShape): LatLon[][] {
+  return [field.boundary, ...(field.parts ?? [])].filter((ring) => ring.length >= 3);
+}
+
+/** A field's area in hectares, all its pieces together. */
+export function fieldAreaHa(field: FieldShape): number {
+  return fieldRings(field).reduce((sum, ring) => sum + polygonAreaHa(ring), 0);
+}
+
+/** Area-weighted centre of all of a field's pieces. */
+export function fieldCentroid(field: FieldShape): LatLon {
+  const rings = fieldRings(field);
+  if (rings.length <= 1) return polygonCentroid(field.boundary);
+  let lat = 0;
+  let lon = 0;
+  let total = 0;
+  for (const ring of rings) {
+    const a = polygonAreaHa(ring);
+    const c = polygonCentroid(ring);
+    lat += c.lat * a;
+    lon += c.lon * a;
+    total += a;
+  }
+  return total > 0 ? { lat: lat / total, lon: lon / total } : polygonCentroid(field.boundary);
+}

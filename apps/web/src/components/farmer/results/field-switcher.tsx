@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import type { Loaded } from "@/lib/api";
 import type { FieldAnalysis } from "@/lib/contracts";
 import { formatNumber } from "@/lib/format";
-import { polygonAreaHa } from "@/lib/geo";
+import { fieldAreaHa } from "@/lib/geo";
 import { useAppLocale } from "@/lib/localized";
 import { verdict } from "@/lib/results";
 import type { SubmittedField } from "../draft-field";
@@ -35,7 +35,7 @@ export function FieldSwitcher({
   const label = useFieldLabel();
   const nameOf = useRotationName();
   const list = useRef<HTMLDivElement>(null);
-  const totalHa = fields.reduce((sum, f) => sum + polygonAreaHa(f.boundary), 0);
+  const totalHa = fields.reduce((sum, f) => sum + fieldAreaHa(f), 0);
 
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
@@ -90,7 +90,7 @@ export function FieldSwitcher({
             >
               <span className="w-full truncate font-semibold">{label(field, i)}</span>
               <span className="text-sm tabular-nums text-ink-muted">
-                {t("area", { ha: formatNumber(polygonAreaHa(field.boundary), locale, 1) })}
+                {t("area", { ha: formatNumber(fieldAreaHa(field), locale, 1) })}
               </span>
               <span className="mt-0.5 line-clamp-2 w-full text-sm">
                 {v.kind === "keep" ? t("keep") : t("best", { name: nameOf(v.best) })}

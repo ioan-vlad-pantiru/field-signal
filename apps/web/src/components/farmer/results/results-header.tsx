@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import type { FieldAnalysis, LatLon } from "@/lib/contracts";
 import { formatNumber } from "@/lib/format";
-import { polygonAreaHa, polygonCentroid } from "@/lib/geo";
+import { fieldAreaHa, fieldCentroid } from "@/lib/geo";
 import { useAppLocale } from "@/lib/localized";
 import { Button } from "@/components/ui/button";
 import { ArrowLeftIcon } from "@/components/ui/icons";
@@ -13,12 +13,14 @@ import { ArrowLeftIcon } from "@/components/ui/icons";
 export function ResultsHeader({
   analysis,
   boundary,
+  parts = [],
   placeName,
   onBack,
   save,
 }: {
   analysis: FieldAnalysis;
   boundary: LatLon[] | null;
+  parts?: LatLon[][];
   placeName: string | null;
   onBack: () => void;
   /** "Save field" control, when the farmer drew a field. */
@@ -29,10 +31,10 @@ export function ResultsHeader({
   const { location } = analysis;
   const place = placeName || [location.commune, location.county].filter(Boolean).join(", ") || location.label;
   // The drawn field is where the farmer is; the API may answer for a nearby point (or the mock's).
-  const point = boundary ? polygonCentroid(boundary) : location.point;
+  const point = boundary ? fieldCentroid({ boundary, parts }) : location.point;
   const period = t("period", { start: analysis.period_start, end: analysis.period_end });
   const meta = boundary
-    ? t("meta", { area: t("area", { ha: formatNumber(polygonAreaHa(boundary), locale, 1) }), period })
+    ? t("meta", { area: t("area", { ha: formatNumber(fieldAreaHa({ boundary, parts }), locale, 1) }), period })
     : t("metaNoArea", { period });
 
   const [copy, setCopy] = useState<"idle" | "copied" | "failed">("idle");

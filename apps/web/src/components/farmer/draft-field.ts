@@ -6,6 +6,8 @@ export const MAX_FIELDS = 10;
 /** One field in the intake: what was drawn and its rotation. Priorities are shared by all fields. */
 export interface DraftField {
   boundary: LatLon[];
+  /** Further pieces of the same field: parcels picked together that do not touch the boundary. */
+  parts?: LatLon[][];
   /** Centroid, rounded; the API answers for this point. */
   point: LatLon;
   rotation: Crop[];
@@ -21,6 +23,7 @@ export interface DraftField {
 export interface SubmittedField {
   request: FieldRequest;
   boundary: LatLon[];
+  parts?: LatLon[][];
   place: string | null;
   accountId: string | null;
   name: string | null;
@@ -29,6 +32,7 @@ export interface SubmittedField {
 export function toDraft(field: SubmittedField): DraftField {
   return {
     boundary: field.boundary,
+    parts: field.parts,
     point: field.request.location,
     rotation: [...field.request.current_rotation],
     place: field.place,

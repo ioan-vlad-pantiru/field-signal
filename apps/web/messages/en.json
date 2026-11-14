@@ -190,7 +190,7 @@
     },
     "assistantField": "My field",
     "parcel": {
-      "hint": "Tap your parcels to select them, or switch on “Drag to select” to select many at once. Then press “Use as my field”. These are the parcels declared to APIA; if yours is not there, tap the corners of your field instead.",
+      "hint": "Tap your parcels to select them, or switch on “Drag to select” to select many at once. Then use them as one field (they do not need to touch), or add each as its own field. These are the parcels declared to APIA; if yours is not there, tap the corners of your field instead.",
       "mapHint": "Tap your parcels",
       "selected": "{count, plural, one {# parcel} other {# parcels}} selected · {ha} ha",
       "use": "Use as my field",
@@ -198,11 +198,13 @@
       "clear": "Clear selection",
       "tooSmall": "Together that is {ha} ha. A field needs at least {min} ha: also tap the parcels next to it, or tap the corners to draw your field.",
       "tooBig": "That is {ha} ha, over {max} ha. Select fewer parcels.",
-      "notTouching": "These parcels do not touch. Choose parcels that sit next to each other, or add each field separately.",
       "failed": "Could not join the parcels. Try again, or tap the corners to draw your field.",
       "brush": "Drag to select",
       "brushHint": "Drag over your parcels",
-      "brushHelp": "Drag over your parcels to select them. Start a drag on a green parcel to unselect. Use two fingers to move the map, or switch off “Drag to select”."
+      "brushHelp": "Drag over your parcels to select them. Start a drag on a green parcel to unselect. Use two fingers to move the map, or switch off “Drag to select”.",
+      "separate": "Add each as its own field",
+      "separateSmall": "{count, plural, one {# parcel is} other {# parcels are}} under {min} ha, too small for a field of {count, plural, one {its} other {their}} own: they are still selected. Use them as one field together, or with the parcels next to them.",
+      "separateFull": "You can analyse up to {max} fields together. The parcels left are still selected."
     }
   },
   "Results": {
@@ -963,7 +965,81 @@
       "ph_high": "{count, plural, one {# parcel is} other {# parcels are}} alkaline (pH over 8)."
     },
     "back": "Back",
-    "toPlan": "Make the farm plan"
+    "toPlan": "Make the farm plan",
+    "parcel": {
+      "title": "APIA parcel {id}",
+      "area": "{ha} ha",
+      "landUse": "Land use (APIA)",
+      "field": "Field",
+      "noField": "Not in a field yet",
+      "declared": "Crop in your file",
+      "history": "Crop seen from satellite",
+      "share": "{pct}% of the parcel",
+      "historyNote": "From the EU crop maps (10 m). About 8 in 10 parcels are mapped right.",
+      "soil": "Topsoil (0–30 cm)",
+      "soc": "Organic carbon {value} g/kg",
+      "ph": "pH {value}",
+      "clay": "Clay {value}%",
+      "sand": "Sand {value}%",
+      "soilNote": "From soil maps (SoilGrids, 250 m): an estimate, not a soil test.",
+      "unknown": "Not known",
+      "moveLabel": "Move to",
+      "moveNew": "A new field",
+      "move": "Move",
+      "remove": "Remove from farm",
+      "close": "Close",
+      "sources": "APIA LPIS 2025 (data.gov.ro) · JRC EUCROPMAP · ISRIC SoilGrids.",
+      "landUses": {
+        "TA": "Arable land",
+        "TAn": "Arable land (TAn)",
+        "PP": "Permanent grassland",
+        "PPn": "Permanent grassland (PPn)",
+        "PPi": "Permanent grassland (PPi)",
+        "CP": "Permanent crops (orchard, vineyard)",
+        "CPn": "Permanent crops (CPn)"
+      },
+      "flags": {
+        "clay_high": "Much more clay than the rest of your farm.",
+        "clay_low": "Much less clay than the rest of your farm.",
+        "carbon_low": "Less organic matter than the rest of your farm.",
+        "ph_low": "Acidic soil (pH under 5.5).",
+        "ph_high": "Alkaline soil (pH over 8)."
+      },
+      "crops": {
+        "none": "Not mapped",
+        "maize": "Maize",
+        "common_wheat": "Wheat",
+        "durum_wheat": "Durum wheat",
+        "barley": "Barley",
+        "rye": "Rye",
+        "oats": "Oats",
+        "triticale": "Triticale",
+        "other_cereals": "Other cereals",
+        "potatoes": "Potatoes",
+        "sugar_beet": "Sugar beet",
+        "sunflower": "Sunflower",
+        "rapeseed": "Rapeseed",
+        "soybean": "Soybean",
+        "dry_pulses": "Peas or beans",
+        "fodder_crops": "Fodder crops",
+        "bare_arable": "Bare arable land",
+        "grassland": "Grassland",
+        "woodland_shrubland": "Woods or shrubs",
+        "artificial": "Built-up",
+        "water": "Water",
+        "wetlands": "Wetland",
+        "bare_land": "Bare land"
+      }
+    },
+    "rematch": {
+      "title": "Parcels from an earlier year?",
+      "hint": "APIA redraws parcels every year and their numbers can change. Match your farm to the latest APIA parcels; your fields stay as they are.",
+      "button": "Update to the latest APIA parcels",
+      "busy": "Matching…",
+      "same": "Your parcels already match the latest APIA parcels (2025).",
+      "done": "{changed, plural, =0 {No parcels changed} one {# parcel changed} other {# parcels changed}}. {missing, plural, =0 {} one {# parcel has no APIA parcel under it now and was kept as it was.} other {# parcels have no APIA parcel under them now and were kept as they were.}}",
+      "error": "Could not match the parcels. Try again."
+    }
   },
   "FarmPlan": {
     "empty": "Add at least one field with parcels first. Then we can plan the crops for the whole farm.",

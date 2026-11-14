@@ -17,6 +17,7 @@ import { INPUT } from "@/components/account/account-view";
 export function SaveField({
   request,
   boundary,
+  parts = [],
   placeName,
   defaultName = null,
   savedId,
@@ -25,6 +26,7 @@ export function SaveField({
 }: {
   request: FieldRequest;
   boundary: LatLon[];
+  parts?: LatLon[][];
   placeName: string | null;
   /** Suggested name; the place name when not given. */
   defaultName?: string | null;
@@ -77,7 +79,7 @@ export function SaveField({
     setBusy(true);
     setError(null);
     try {
-      const field = await createField({ name, request, boundary, near: placeName });
+      const field = await createField({ name, request, boundary, parts, near: placeName });
       onSaved(field.id);
     } catch (caught) {
       const code = caught instanceof AccountError ? caught.code : "server";

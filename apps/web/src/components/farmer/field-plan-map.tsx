@@ -62,9 +62,9 @@ function zoomFor(boundary: LatLon[]): number {
 }
 
 /** Bounds of the drawn field, or of the hexagons when the outline is illustrative. */
-function fieldBounds(layout: FieldLayout, boundary: LatLon[] | null): LngLatBounds | null {
+function fieldBounds(layout: FieldLayout, boundary: LatLon[] | null, parts: LatLon[][] = []): LngLatBounds | null {
   const points: [number, number][] = boundary
-    ? boundary.map((c) => [c.lon, c.lat])
+    ? [boundary, ...parts].flat().map((c) => [c.lon, c.lat])
     : layout.hexes.flatMap((hex) => hex.ring.map(([x, y]): [number, number] => [x, y]));
   if (points.length === 0) return null;
   return points.reduce((b, p) => b.extend(p), new LngLatBounds(points[0], points[0]));
@@ -111,6 +111,7 @@ export function FieldPlanMap({
   layout,
   plots,
   boundary,
+  parts = [],
   onNonFarmland,
   label,
   fitKey,
@@ -121,6 +122,8 @@ export function FieldPlanMap({
   plots: PlotView[];
   /** The farmer's drawn field, outlined on top of the hexagons. */
   boundary: LatLon[] | null;
+  /** Further pieces of the same field, outlined too. */
+  parts?: LatLon[][];
   onNonFarmland: (found: Map<string, NonFarmland>) => void;
   label: string;
   /** Re-frame the field when this changes, such as the selected rotation. */
@@ -179,10 +182,13 @@ export function FieldPlanMap({
         },
       });
       if (boundary) {
-        const ring = boundary.map((c): [number, number] => [c.lon, c.lat]);
+        const lines = [boundary, ...parts].map((outline) => {
+          const ring = outline.map((c): [number, number] => [c.lon, c.lat]);
+          return [...ring, ring[0]];
+        });
         map.addSource("fs-boundary", {
           type: "geojson",
-          data: { type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: [...ring, ring[0]] } },
+          data: { type: "Feature", properties: {}, geometry: { type: "MultiLineString", coordinates: lines } },
         });
         map.addLayer({
           id: "fs-boundary",
@@ -234,7 +240,7 @@ export function FieldPlanMap({
   }, [map]);
 
   // Fit the camera to the field once the map has loaded (after its arrival move) and per rotation.
-  const bounds = fieldBounds(layout, boundary);
+  const bounds = fieldBounds(layout, boundary, parts);
   const boundsKey = bounds?.toArray().flat().map((v) => v.toFixed(5)).join(",") ?? "";
   useEffect(() => {
     if (!map || !bounds) return;

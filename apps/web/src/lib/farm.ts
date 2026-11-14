@@ -1,6 +1,6 @@
 "use client";
 
-import type { Farm, FarmField, FarmImport, FarmSuggestion, Parcel } from "@/lib/contracts";
+import type { Farm, FarmField, FarmImport, FarmRematch, FarmSuggestion, Parcel } from "@/lib/contracts";
 
 /** A field while the farmer edits it: like FarmField, but it may briefly hold no parcels. */
 export type FieldGroup = Omit<FarmField, "parcel_ids"> & { parcel_ids: number[] };
@@ -16,11 +16,12 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 /** A stable code the UI translates: `unsupported_file`, `no_outlines`, `offline`, ... */
 export class FarmError extends Error {
-  constructor(
-    readonly code: string,
-    readonly status: number,
-  ) {
+  readonly code: string;
+  readonly status: number;
+  constructor(code: string, status: number) {
     super(code);
+    this.code = code;
+    this.status = status;
   }
 }
 
@@ -53,6 +54,44 @@ export function importFarmFile(file: Blob, filename: string): Promise<FarmImport
     body: file,
     timeoutMs: 60_000,
   });
+}
+
+/** Match the farm's parcels to the current APIA layer by outline (ids change from year to year). */
+export function rematchFarm(parcels: Parcel[]): Promise<FarmRematch> {
+  return call<FarmRematch>("/v1/farm/rematch", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(parcels),
+    timeoutMs: 60_000,
+  });
+}
+
+/**
+ * Apply a re-match: parcels with a match are replaced by the current ones, the rest kept as they
+ * were; fields keep their parcels under the new ids (a new parcel stays in the first field it
+ * lands in).
+ */
+export function applyRematch(
+  state: { parcels: Parcel[]; fields: FieldGroup[] },
+  result: FarmRematch,
+): { parcels: Parcel[]; fields: FieldGroup[]; changed: number; missing: number } {
+  const mapping = new Map(Object.entries(result.mapping ?? {}).map(([k, v]) => [Number(k), v]));
+  const kept = state.parcels.filter((p) => !mapping.has(p.id));
+  const current = new Map(result.parcels.map((p) => [p.id, p]));
+  const seen = new Set<number>();
+  const fields = state.fields
+    .map((f) => ({
+      ...f,
+      parcel_ids: f.parcel_ids
+        .flatMap((id) => mapping.get(id) ?? [id])
+        .filter((id) => (seen.has(id) ? false : (seen.add(id), true))),
+    }))
+    .filter((f) => f.parcel_ids.length > 0);
+  const changed = state.parcels.filter((p) => {
+    const ids = mapping.get(p.id);
+    return ids !== undefined && !(ids.length === 1 && ids[0] === p.id);
+  }).length;
+  return { parcels: [...current.values(), ...kept], fields, changed, missing: kept.length };
 }
 
 export function suggestFields(parcels: Parcel[], declared: Record<number, string>): Promise<FarmSuggestion> {

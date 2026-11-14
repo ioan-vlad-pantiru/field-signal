@@ -120,9 +120,12 @@ export function FarmMap({
     map.on("click", (event) => {
       // While drag-to-select is on, the brush handles taps itself.
       if (state.current.brush) return;
-      const layer = state.current.mode === "pick" ? "farm-apia-area" : "farm-parcels-area";
-      if (!map.getLayer(layer)) return;
-      const hit = map.queryRenderedFeatures(event.point, { layers: [layer] })[0];
+      // The farm's own parcels first (shown at any zoom), then APIA parcels to add while picking.
+      const layers = (state.current.mode === "pick" ? ["farm-parcels-area", "farm-apia-area"] : ["farm-parcels-area"]).filter(
+        (id) => map.getLayer(id),
+      );
+      if (layers.length === 0) return;
+      const hit = map.queryRenderedFeatures(event.point, { layers })[0];
       const parcel = hit ? known.current.get(Number(hit.properties?.id)) : undefined;
       if (parcel) state.current.onTap(parcel);
     });

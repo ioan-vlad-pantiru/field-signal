@@ -110,6 +110,20 @@
       "title": "Boundary",
       "type": "array"
     },
+    "parts": {
+      "description": "further pieces of the same field (parcels that do not touch the boundary)",
+      "items": {
+        "items": {
+          "$ref": "#/$defs/LatLon"
+        },
+        "maxItems": 500,
+        "minItems": 3,
+        "type": "array"
+      },
+      "maxItems": 40,
+      "title": "Parts",
+      "type": "array"
+    },
     "near": {
       "anyOf": [
         {

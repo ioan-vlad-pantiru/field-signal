@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import type { Loaded } from "@/lib/api";
 import type { FieldAnalysis, LatLon } from "@/lib/contracts";
 import { formatNumber } from "@/lib/format";
-import { polygonAreaHa } from "@/lib/geo";
+import { fieldAreaHa, fieldRings } from "@/lib/geo";
 import { useAppLocale } from "@/lib/localized";
 import { verdict, type VerdictKind } from "@/lib/results";
 import { useMap } from "@/components/map/use-map";
@@ -83,11 +83,11 @@ export function ResultsOverview({
   const label = useFieldLabel();
   const nameOf = useRotationName();
   const verdicts = useMemo(() => results.map((r) => verdict(r.data.strategies)), [results]);
-  const start = frame(fields.map((f) => f.boundary));
+  const start = frame(fields.flatMap((f) => fieldRings(f)));
   const { container, map, failed } = useMap(start.center, start.zoom, { satellite: true, cooperativeGestures: true });
-  const totalHa = fields.reduce((sum, f) => sum + polygonAreaHa(f.boundary), 0);
+  const totalHa = fields.reduce((sum, f) => sum + fieldAreaHa(f), 0);
   const better = verdicts.filter((v) => v.kind === "fewer");
-  const betterHa = fields.reduce((sum, f, i) => sum + (verdicts[i].kind === "fewer" ? polygonAreaHa(f.boundary) : 0), 0);
+  const betterHa = fields.reduce((sum, f, i) => sum + (verdicts[i].kind === "fewer" ? fieldAreaHa(f) : 0), 0);
   const mock = results.find((r) => r.data.mock);
 
   const data = useMemo<FieldCollection>(
@@ -96,7 +96,10 @@ export function ResultsOverview({
       features: fields.map((f, i) => ({
         type: "Feature",
         properties: { index: i, color: KIND_COLOR[verdicts[i].kind] },
-        geometry: { type: "Polygon", coordinates: [[...f.boundary, f.boundary[0]].map((p) => [p.lon, p.lat])] },
+        geometry: {
+          type: "MultiPolygon",
+          coordinates: fieldRings(f).map((ring) => [[...ring, ring[0]].map((p) => [p.lon, p.lat])]),
+        },
       })),
     }),
     [fields, verdicts],
@@ -171,7 +174,7 @@ export function ResultsOverview({
                   <p className="break-words font-semibold">
                     {label(field, i)}{" "}
                     <span className="font-normal tabular-nums text-ink-muted">
-                      · {t("area", { ha: formatNumber(polygonAreaHa(field.boundary), locale, 1) })}
+                      · {t("area", { ha: formatNumber(fieldAreaHa(field), locale, 1) })}
                     </span>
                   </p>
                   <p className="text-ink-muted">

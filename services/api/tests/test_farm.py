@@ -140,3 +140,19 @@ def test_rematch_by_outline(client: TestClient) -> None:
     res = client.post("/v1/farm/rematch", json=[old.model_dump()])
     assert res.status_code == 200
     assert [p["id"] for p in res.json()["parcels"]] == [2]
+    assert res.json()["mapping"] == {"999": [2]}
+    assert res.json()["mapping"] == {"999": [2]}
+
+
+def test_rematch_keeps_an_unchanged_parcel_even_where_parcels_overlap(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Parcel 2 is a duplicate drawn over parcel 1 (APIA parcels can overlap).
+    path = tmp_path / "overlap.sqlite"
+    parcels.write_db(path, [(1, 2.0, "TA", strip(0), None), (2, 2.0, "TA", strip(0), None)])
+    monkeypatch.setattr(get_settings(), "parcels_path", path)
+    parcels._connect.cache_clear()
+    parcels._has_info.cache_clear()
+    saved = as_parcels()[0]
+    res = TestClient(app).post("/v1/farm/rematch", json=[saved.model_dump()])
+    assert res.json()["mapping"] == {"1": [1]}

@@ -403,6 +403,12 @@ export interface SavedFieldInput {
    */
   boundary: [LatLon, LatLon, LatLon, ...LatLon[]];
   /**
+   * further pieces of the same field (parcels that do not touch the boundary)
+   *
+   * @maxItems 40
+   */
+  parts?: [LatLon, LatLon, LatLon, ...LatLon[]][];
+  /**
    * nearest commune name
    */
   near?: string | null;
@@ -416,6 +422,12 @@ export interface SavedField {
    * @maxItems 500
    */
   boundary: [LatLon, LatLon, LatLon, ...LatLon[]];
+  /**
+   * further pieces of the same field (parcels that do not touch the boundary)
+   *
+   * @maxItems 40
+   */
+  parts?: [LatLon, LatLon, LatLon, ...LatLon[]][];
   /**
    * nearest commune name
    */
@@ -589,7 +601,8 @@ export interface ParcelMergeRequest {
 }
 
 /**
- * The joined outline of parcels that touch each other.
+ * Tapped parcels joined into one field: touching parcels become one outline. When they do
+ * not all touch, `boundary` is the largest piece and `parts` the others.
  */
 
 export interface MergedParcels {
@@ -598,6 +611,10 @@ export interface MergedParcels {
    * @maxItems 500
    */
   boundary: [LatLon, LatLon, LatLon, ...LatLon[]];
+  /**
+   * @maxItems 40
+   */
+  parts?: [LatLon, LatLon, LatLon, ...LatLon[]][];
   /**
    * sum of the areas declared to APIA
    */
@@ -663,12 +680,38 @@ export interface FarmImport {
  * A parcel declared to APIA (open LPIS data, CC BY 4.0), offered so a farmer can tap it.
  */
 
+/**
+ * Saved parcels matched to the current APIA layer by outline.
+ */
+
+export interface FarmRematch {
+  /**
+   * current APIA parcels the saved ones overlap
+   */
+  parcels: Parcel[];
+  /**
+   * saved parcel id -> current parcel ids; missing = no parcel under it now
+   */
+  mapping: {
+    [k: string]: number[];
+  };
+}
+/**
+ * A parcel declared to APIA (open LPIS data, CC BY 4.0), offered so a farmer can tap it.
+ */
+
 export interface FarmSuggestRequest {
   /**
    * @minItems 1
    * @maxItems 1000
    */
   parcels: [Parcel, ...Parcel[]];
+  /**
+   * crop declared per parcel id (e.g. from an imported file)
+   */
+  declared_crops?: {
+    [k: string]: string;
+  };
 }
 /**
  * A parcel declared to APIA (open LPIS data, CC BY 4.0), offered so a farmer can tap it.

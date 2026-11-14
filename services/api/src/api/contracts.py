@@ -17,7 +17,7 @@ Conventions
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -78,6 +78,10 @@ class Priority(StrEnum):
 class LatLon(Contract):
     lat: float = Field(ge=-90, le=90)
     lon: float = Field(ge=-180, le=180)
+
+
+Ring = Annotated[list[LatLon], Field(min_length=3, max_length=500)]
+"""A closed outline without its closing point."""
 
 
 class Range(Contract):
@@ -425,6 +429,11 @@ class SavedFieldInput(Contract):
     name: str = Field(min_length=1, max_length=80)
     request: FieldRequest
     boundary: list[LatLon] = Field(min_length=3, max_length=500)
+    parts: list[Ring] = Field(
+        default_factory=list,
+        max_length=40,
+        description="further pieces of the same field (parcels that do not touch the boundary)",
+    )
     near: str | None = Field(default=None, max_length=120, description="nearest commune name")
 
 
@@ -507,9 +516,11 @@ class ParcelMergeRequest(Contract):
 
 
 class MergedParcels(Contract):
-    """The joined outline of parcels that touch each other."""
+    """Tapped parcels joined into one field: touching parcels become one outline. When they do
+    not all touch, `boundary` is the largest piece and `parts` the others."""
 
     boundary: list[LatLon] = Field(min_length=3, max_length=500)
+    parts: list[Ring] = Field(default_factory=list, max_length=40)
     area_ha: float = Field(ge=0, description="sum of the areas declared to APIA")
     parcel_ids: list[int]
 
@@ -557,6 +568,15 @@ class FarmImport(Contract):
     file_crops: dict[int, str] = Field(
         default_factory=dict,
         description="crop declared in the file per matched APIA parcel id, when the file has one",
+    )
+
+
+class FarmRematch(Contract):
+    """Saved parcels matched to the current APIA layer by outline."""
+
+    parcels: list[Parcel] = Field(description="current APIA parcels the saved ones overlap")
+    mapping: dict[int, list[int]] = Field(
+        description="saved parcel id -> current parcel ids; missing = no parcel under it now"
     )
 
 
@@ -643,6 +663,7 @@ EXPORTED: dict[str, type[Contract]] = {
     "merged_parcels": MergedParcels,
     "farm": Farm,
     "farm_import": FarmImport,
+    "farm_rematch": FarmRematch,
     "farm_suggest_request": FarmSuggestRequest,
     "farm_suggestion": FarmSuggestion,
     "farm_plan_request": FarmPlanRequest,
