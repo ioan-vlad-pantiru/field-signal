@@ -1,0 +1,316 @@
+"""Optimizer tests (plan §5 T4). Inline tables and deterministic stand-in scores; no other planner
+module. Timing tests print their figures (run with `-s` to see them)."""
+
+import random
+import time
+from itertools import pairwise
+
+import pytest
+from ortools.sat.python import cp_model
+
+from api.planner.candidates import (
+    candidates,
+    crops_of,
+    cycle,
+    history_from_cycle,
+    is_valid,
+    rotation_id,
+)
+from api.planner.optimizer import (
+    MAX_PIECES,
+    RULES_2026,
+    FarmSolve,
+    Plan,
+    area_mean,
+    is_proven_optimal,
+    rule_checks,
+    solve_farm,
+    yearly_areas,
+)
+
+# As planner/crops.py on 14 Nov 2026 (draft return intervals).
+MIN_RETURN = {"maize": 1, "wheat": 2, "barley": 2, "sunflower": 5, "pea": 4}
+CROPS = list(MIN_RETURN)
+LEGUMES = {"pea"}
+VALUE = {"maize": 60, "wheat": 50, "barley": 45, "sunflower": 55, "pea": 35}
+MAIZE_FIRST = {"maize": 90, "wheat": 60, "barley": 50, "sunflower": 50, "pea": 10}
+DEMO = {"A": [62] * 6, "B": [80]}  # 37.2 ha in six pieces and an 8 ha field (the sketch's farm)
+TWO_FIELDS = {"X": [50] * 4, "Y": [50] * 4}  # 40 ha: both share caps bind (> 30 ha)
+SCENARIOS = {3: 42, 4: 41, 5: 40}  # windows inside 1982-2025
+SLOW = 30.0  # time limit where a test needs OPTIMAL; these solve in about 1 s here
+
+Pieces = list[tuple[str, str, int]]
+Scores = dict[tuple[str, str], list[int]]
+
+
+def farm(
+    fields: dict[str, list[int]],
+    years: int,
+    n_scen: int,
+    value: dict[str, int] = VALUE,
+    weather: int = 25,
+    seed: int = 0,
+) -> tuple[Pieces, Scores]:
+    """Stand-in world model: crop value plus a per-scenario weather effect per year and crop, a
+    bonus for wheat after pea and a small per-piece offset; 0-1000."""
+    rng = random.Random(seed)
+    w = [
+        [{c: rng.randint(-weather, weather) for c in CROPS} for _ in range(years)]
+        for _ in range(n_scen)
+    ]
+    rids = candidates(CROPS, years, MIN_RETURN)
+    pieces: Pieces = []
+    scores: Scores = {}
+    for f, cells in fields.items():
+        for i, area in enumerate(cells):
+            p = f"{f}{i}"
+            pieces.append((p, f, area))
+            off = rng.randint(-5, 5)
+            for r in rids:
+                cs = crops_of(r)
+                bonus = 8 * sum(x == "pea" and y == "wheat" for x, y in pairwise(cs))
+                scores[p, r] = [
+                    min(
+                        1000,
+                        max(
+                            0,
+                            200
+                            + 10
+                            * (
+                                sum(value[c] + w[k][t][c] for t, c in enumerate(cs)) // years
+                                + bonus
+                                + off
+                            ),
+                        ),
+                    )
+                    for k in range(n_scen)
+                ]
+    return pieces, scores
+
+
+def shares(plan: Plan) -> list[dict[str, float]]:
+    areas = yearly_areas(plan.allocation)
+    total = sum(plan.allocation.values())
+    return [{c: 100 * a / total for c, a in year.items()} for year in areas]
+
+
+def choices(plan: Plan, pieces: Pieces) -> set[tuple[str, str]]:
+    field_of = {p: f for p, f, _ in pieces}
+    return {(field_of[p], r) for p, r in plan.allocation}
+
+
+def check_blocks(result: FarmSolve, pieces: Pieces) -> None:
+    area = {p: a for p, _, a in pieces}
+    field_area: dict[str, int] = {}
+    for _, f, a in pieces:
+        field_area[f] = field_area.get(f, 0) + a
+    for plan in result.plans:
+        for p, a in area.items():
+            assert sum(v for (q, _), v in plan.allocation.items() if q == p) == a
+        blocks: dict[tuple[str, str], int] = {}
+        field_of = {p: f for p, f, _ in pieces}
+        for (p, r), v in plan.allocation.items():
+            blocks[field_of[p], r] = blocks.get((field_of[p], r), 0) + v
+        for f, af in field_area.items():
+            used = [v for (g, _), v in blocks.items() if g == f]
+            assert len(used) <= (1 if af < 100 else 3)
+            assert min(used) >= min(50, af)
+
+
+# --- candidates ---------------------------------------------------------------------------
+
+
+def test_candidate_counts_and_no_crop_two_years_running() -> None:
+    for years, n in ((3, 72), (4, 234), (5, 735)):
+        rids = candidates(CROPS, years, MIN_RETURN)
+        assert len(rids) == n
+        for r in rids:
+            cs = crops_of(r)
+            assert all(a != b for a, b in pairwise(cs))
+
+
+def test_sunflower_three_years_back_blocks_sunflower_in_year_one() -> None:
+    history = ["sunflower", "wheat", "maize"]  # most recent harvest last
+    assert any(r.startswith("sunflower") for r in candidates(CROPS, 4, MIN_RETURN))
+    assert not any(r.startswith("sunflower") for r in candidates(CROPS, 4, MIN_RETURN, history))
+    assert not is_valid(["wheat", "sunflower", "maize"], MIN_RETURN, history)  # distance 4 < 5
+    assert is_valid(["wheat", "barley", "sunflower"], MIN_RETURN, history)  # distance 5
+    assert is_valid(["maize", "wheat", "maize"], MIN_RETURN, ["soybean"])  # unknown crop ignored
+
+
+def test_baseline_cycle_and_assumed_history() -> None:
+    current = ["maize", "wheat", "maize"]
+    assert cycle(current, 4) == ["maize", "wheat", "maize", "maize"]
+    assert history_from_cycle(current) == ["maize", "maize", "wheat", "maize"]
+    # Plan year 1 repeats last year's maize: the baseline is scored but not proposed.
+    assert not is_valid(cycle(current, 3), MIN_RETURN, history_from_cycle(current))
+    assert rotation_id(cycle(current, 3)) == "maize>wheat>maize"
+
+
+# --- model --------------------------------------------------------------------------------
+
+
+def test_areas_sum_per_piece_and_small_field_stays_whole() -> None:
+    pieces, scores = farm(DEMO, 3, 5)
+    result = solve_farm(pieces, scores, LEGUMES)
+    assert len(result.plans) == 3
+    check_blocks(result, pieces)
+    total = sum(a for _, _, a in pieces)
+    for plan in result.plans:
+        assert len({r for p, r in plan.allocation if p == "B0"}) == 1
+        mean = area_mean(plan.allocation, scores)  # 0-1000 farm score per scenario
+        assert [round(x * total) for x in mean] == plan.scenario_totals
+
+
+def test_too_many_pieces_is_refused() -> None:
+    pieces: Pieces = [(f"P{i}", "F", 10) for i in range(MAX_PIECES + 1)]
+    with pytest.raises(ValueError):
+        solve_farm(pieces, {}, LEGUMES)
+
+
+def test_default_profile_enforces_no_share_rule() -> None:
+    """(a) No eco practice: a farm whose best plan puts over 70 % in one crop keeps it."""
+    pieces, scores = farm(TWO_FIELDS, 3, 2, MAIZE_FIRST, weather=0)
+    result = solve_farm(pieces, scores, LEGUMES)
+    assert result.eco_practice is None and not result.eco_dropped
+    best = result.plans[0]
+    assert max(max(y.values()) for y in shares(best)) > 70
+    rows = rule_checks(best.allocation, LEGUMES, result.eco_practice)
+    assert len(rows) == len(RULES_2026)
+    assert not any(row.applies for row in rows)
+    gaec = [row for row in rows if row.source.startswith("GAEC 7") and row.id == "max_crop_share"]
+    assert gaec[0].value_pct > 75 and not gaec[0].passed  # reported, never enforced
+
+
+def test_diversification_caps_shares_and_forces_no_legume() -> None:
+    """(b) 70 % / 90 % every year, no legume forced."""
+    pieces, scores = farm(TWO_FIELDS, 3, 2, MAIZE_FIRST, weather=0)
+    result = solve_farm(pieces, scores, LEGUMES, "diversification")
+    assert result.eco_practice == "diversification" and not result.eco_dropped
+    check_blocks(result, pieces)
+    for plan in result.plans:
+        for year in shares(plan):
+            top = sorted(year.values())
+            assert top[-1] <= 70 and sum(top[-2:]) <= 90
+        assert min(sum(v for c, v in y.items() if c in LEGUMES) for y in shares(plan)) < 2
+    rows = rule_checks(result.plans[0].allocation, LEGUMES, result.eco_practice)
+    assert all(row.passed for row in rows if row.applies)
+
+
+def test_legume_share_holds_and_caps_no_crop() -> None:
+    """(c) Legumes >= 2 % every year, main crop not capped."""
+    pieces, scores = farm(TWO_FIELDS, 3, 2, MAIZE_FIRST, weather=0)
+    result = solve_farm(pieces, scores, LEGUMES, "legume_share", top=1, max_time_s=SLOW)
+    assert result.eco_practice == "legume_share" and not result.eco_dropped
+    best = result.plans[0]
+    for year in shares(best):
+        assert sum(v for c, v in year.items() if c in LEGUMES) >= 2
+    assert max(max(y.values()) for y in shares(best)) > 70
+
+
+def test_the_two_practices_are_never_both_enforced() -> None:
+    """(d) `applies` marks only the rows of the practice enforced; one practice per call."""
+    pieces, scores = farm(TWO_FIELDS, 3, 2, MAIZE_FIRST, weather=0)
+    for practice in ("diversification", "legume_share"):
+        result = solve_farm(pieces, scores, LEGUMES, practice, top=1)
+        rows = rule_checks(result.plans[0].allocation, LEGUMES, result.eco_practice)
+        assert [row.applies for row in rows] == [rule.practice == practice for rule in RULES_2026]
+    with pytest.raises(ValueError):
+        solve_farm(pieces, scores, LEGUMES, "both")
+
+
+def test_infeasible_practice_is_dropped_once_and_flagged() -> None:
+    """(e) Only maize>wheat>maize on offer: neither practice can hold."""
+    pieces, scores = farm(TWO_FIELDS, 3, 2, MAIZE_FIRST, weather=0)
+    only = {k: v for k, v in scores.items() if k[1] == "maize>wheat>maize"}
+    for practice in ("diversification", "legume_share"):
+        result = solve_farm(pieces, only, LEGUMES, practice)
+        assert result.eco_dropped and result.eco_practice is None
+        assert result.plans and result.plans[0].status == "OPTIMAL"
+        rows = rule_checks(result.plans[0].allocation, LEGUMES, result.eco_practice)
+        assert not any(row.applies for row in rows)
+
+
+def test_infeasible_farm_returns_no_plan() -> None:
+    # An 8 ha field must stay whole, but its two pieces share no candidate.
+    pieces: Pieces = [("S0", "S", 40), ("S1", "S", 40)]
+    scores: Scores = {("S0", "maize>wheat>maize"): [500], ("S1", "wheat>maize>wheat"): [500]}
+    for practice in (None, "diversification"):
+        result = solve_farm(pieces, scores, LEGUMES, practice)
+        assert result.plans == [] and result.status == "INFEASIBLE"
+
+
+def test_rule_rows_are_unverified_and_gaec7_never_applies() -> None:
+    for rule in RULES_2026:
+        assert rule.verified == bool(rule.url and rule.page)
+        assert not rule.verified  # nothing was read in the official PDFs yet
+        if rule.source.startswith("GAEC 7"):
+            assert rule.practice is None
+
+
+def test_proven_optimal_only_for_unpruned_optimal_first_solve() -> None:
+    assert is_proven_optimal(cp_model.OPTIMAL, pruned=False, first_solve=True)
+    assert not is_proven_optimal(cp_model.FEASIBLE, pruned=False, first_solve=True)
+    assert not is_proven_optimal(cp_model.OPTIMAL, pruned=True, first_solve=True)
+    assert not is_proven_optimal(cp_model.OPTIMAL, pruned=False, first_solve=False)
+    pieces, scores = farm(TWO_FIELDS, 3, 2, MAIZE_FIRST, weather=0)
+    full = solve_farm(pieces, scores, LEGUMES, max_time_s=SLOW)
+    assert not full.pruned and full.plans[0].status == "OPTIMAL" and full.plans[0].proven_optimal
+    assert not any(p.proven_optimal for p in full.plans[1:])
+    pruned = solve_farm(pieces, scores, LEGUMES, prune_above=0)
+    assert pruned.pruned and pruned.plans and not any(p.proven_optimal for p in pruned.plans)
+
+
+def test_ranks_best_first_and_differ_in_two_choices() -> None:
+    pieces, scores = farm(DEMO, 3, 5)
+    result = solve_farm(pieces, scores, LEGUMES, num_workers=1, max_time_s=SLOW)
+    plans = result.plans
+    assert len(plans) == 3 and all(p.status == "OPTIMAL" for p in plans)
+    assert [p.objective for p in plans] == sorted((p.objective for p in plans), reverse=True)
+    for i, better in enumerate(plans):
+        on = choices(better, pieces)
+        for worse in plans[i + 1 :]:
+            assert len(on - choices(worse, pieces)) >= min(2, len(on))
+
+
+def test_risk_aversion_never_worsens_the_worst_case() -> None:
+    pieces, scores = farm(DEMO, 3, 10, weather=60, seed=3)
+    neutral = solve_farm(pieces, scores, LEGUMES, risk_aversion=0.0, top=1, max_time_s=SLOW)
+    averse = solve_farm(pieces, scores, LEGUMES, risk_aversion=1.0, top=1, max_time_s=SLOW)
+    assert neutral.plans[0].status == averse.plans[0].status == "OPTIMAL"
+    assert min(averse.plans[0].scenario_totals) >= min(neutral.plans[0].scenario_totals)
+
+
+def test_pruned_versus_unpruned_gap() -> None:
+    pieces, scores = farm(DEMO, 3, SCENARIOS[3])
+    for risk in (0.0, 1.0):
+        full = solve_farm(pieces, scores, LEGUMES, risk_aversion=risk, top=1, max_time_s=SLOW)
+        cut = solve_farm(pieces, scores, LEGUMES, risk_aversion=risk, top=1, prune_above=0)
+        assert full.plans[0].status == "OPTIMAL" and cut.pruned
+        assert cut.plans[0].objective <= full.plans[0].objective
+        gap = 100 * (full.plans[0].objective - cut.plans[0].objective) / full.plans[0].objective
+        print(f"\npruned vs unpruned, lambda={round(100 * risk)}: gap {gap:.4f} %")
+
+
+def test_demo_farm_four_years_top3_within_15s() -> None:
+    pieces, scores = farm(DEMO, 4, SCENARIOS[4])
+    start = time.perf_counter()
+    result = solve_farm(pieces, scores, LEGUMES)
+    elapsed = time.perf_counter() - start
+    print(f"\ndemo farm, 4 years: {elapsed:.2f} s, {[p.status for p in result.plans]}")
+    assert len(result.plans) == 3 and elapsed < 15
+
+
+def test_report_solve_times() -> None:
+    """Figures for the report: demo farm 3 and 5 years; 10 fields, 150 pieces, 5 years."""
+    big = {f"F{j}": [53] * 15 for j in range(10)}
+    for name, fields, years in (("demo", DEMO, 3), ("demo", DEMO, 5), ("150 pieces", big, 5)):
+        pieces, scores = farm(fields, years, SCENARIOS[years])
+        start = time.perf_counter()
+        result = solve_farm(pieces, scores, LEGUMES)
+        elapsed = time.perf_counter() - start
+        print(
+            f"\n{name}, {years} years, {len(scores)} pairs, pruned={result.pruned}: "
+            f"{elapsed:.2f} s, {[p.status for p in result.plans]}"
+        )
+        assert result.plans
