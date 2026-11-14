@@ -148,21 +148,33 @@ export function useMap(
 ) {
   const container = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<MapLibreMap | null>(null);
+  /** True when the browser cannot draw a map (no WebGL): callers show a message instead. */
+  const [failed, setFailed] = useState(false);
   const initial = useRef({ center, zoom, satellite: options.satellite ?? false });
 
   useEffect(() => {
     if (!container.current) return;
     setWorkerUrl(WORKER_URL);
     const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const instance = new MapLibreMap({
-      container: container.current,
-      style: dark ? STYLE_DARK : STYLE_LIGHT,
-      center: initial.current.center,
-      zoom: initial.current.zoom - 1.5,
-      pitch: 0,
-      maxPitch: 70,
-      attributionControl: { compact: true },
-    });
+    let instance: MapLibreMap;
+    try {
+      instance = new MapLibreMap({
+        container: container.current,
+        style: dark ? STYLE_DARK : STYLE_LIGHT,
+        center: initial.current.center,
+        zoom: initial.current.zoom - 1.5,
+        pitch: 0,
+        maxPitch: 70,
+        attributionControl: { compact: true },
+      });
+    } catch {
+      // MapLibre throws when WebGL is unavailable (old devices, GPU off, some headless browsers).
+      // The page must keep working without the map; `map` stays null and `failed` tells the caller.
+      // Only known once construction is tried, so this state change has to happen in the effect.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setFailed(true);
+      return;
+    }
     instance.addControl(
       new NavigationControl({ showCompass: true, visualizePitch: true }),
       "top-right",
@@ -210,5 +222,5 @@ export function useMap(
     };
   }, []);
 
-  return { container, map };
+  return { container, map, failed };
 }
