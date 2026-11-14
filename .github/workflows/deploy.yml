@@ -1,7 +1,7 @@
 name: Deploy
 
-# Every push to main that passes CI ships both apps to Azure Container Apps, behind the
-# Cloudflare front door on https://fieldsignal.land. Azure login is OIDC (no stored password):
+# Every push to main that passes CI ships both apps to Azure Container Apps: the web app on
+# https://fieldsignal.land, the API on https://api.fieldsignal.land. Azure login is OIDC (no stored password):
 # repo secrets AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID.
 on:
   workflow_run:
@@ -67,8 +67,8 @@ jobs:
           context: .
           file: apps/web/Dockerfile
           push: true
-          # The browser reaches the API through the front door at the same origin.
-          build-args: NEXT_PUBLIC_API_URL=/api
+          # The browser calls the API on its own subdomain (same site, so the sign-in cookie works).
+          build-args: NEXT_PUBLIC_API_URL=https://api.fieldsignal.land
           tags: ${{ env.REGISTRY }}/field-signal:${{ env.TAG }}
           cache-from: type=gha,scope=web
           cache-to: type=gha,scope=web,mode=max

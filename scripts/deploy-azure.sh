@@ -16,9 +16,9 @@ TARGETS=${1:-"api web"}
 
 cd "$(git rev-parse --show-toplevel)"
 az acr login -n "$ACR" >/dev/null
-# The browser reaches the API through the Cloudflare front door (deploy/cloudflare) on whatever
-# domain it serves, so the web image uses a same-origin relative URL.
-API_URL=${PUBLIC_API_URL:-/api}
+# The browser calls the API on its own subdomain (same site as fieldsignal.land, so the sign-in
+# cookie works); the API's CORS_ORIGINS allows the web app's domains.
+API_URL=${PUBLIC_API_URL:-https://api.fieldsignal.land}
 
 for target in $TARGETS; do
   case $target in

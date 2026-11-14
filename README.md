@@ -57,7 +57,7 @@ Lint / format everything: `pnpm lint`, `pnpm format` (or `make lint`, `make form
 
 ## Deploy
 
-Both apps run on Azure Container Apps (consumption plan, scale to zero) in resource group `rg-field-signal`. Every push to `main` that passes CI deploys automatically (`.github/workflows/deploy.yml`); day-to-day work goes to `dev` and reaches `main` through a PR. To deploy by hand, after `az login`, `scripts/deploy-azure.sh` builds the images, pushes them to the registry and rolls out both apps; pass `api` or `web` to deploy only one. A Cloudflare Worker (`deploy/cloudflare`, deploy with `npx wrangler deploy` there) serves fieldsignal.land: `/api/*` goes to the API, everything else to the web app. The web app calls the API at the same-origin path `/api`.
+Both apps run on Azure Container Apps (consumption plan, scale to zero) in resource group `rg-field-signal`. Every push to `main` that passes CI deploys automatically (`.github/workflows/deploy.yml`); day-to-day work goes to `dev` and reaches `main` through a PR. To deploy by hand, after `az login`, `scripts/deploy-azure.sh` builds the images, pushes them to the registry and rolls out both apps; pass `api` or `web` to deploy only one. The web app is served on fieldsignal.land (and www) and the API on api.fieldsignal.land, both as custom domains on the container apps; Cloudflare only hosts the DNS. The web image is built with `NEXT_PUBLIC_API_URL=https://api.fieldsignal.land`.
 
 ## Data sources
 
