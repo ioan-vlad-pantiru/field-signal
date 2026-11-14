@@ -323,6 +323,7 @@
     "regionLine": "{region} · season {season} · {count} communes",
     "cropToggle": "Choose the crop",
     "mapLabel": "Map of supply risk for {crop}",
+    "mapUnavailable": "The map cannot be shown in this browser. The commune table has the same communes and risks.",
     "markerLabel": "{zone}: {risk}",
     "noCropData": "No data for this crop",
     "noZones": "We have no zones for this region yet.",

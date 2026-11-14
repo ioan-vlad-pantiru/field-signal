@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { Marker } from "maplibre-gl";
 import type { CropOutlook, Zone } from "@/lib/contracts";
 import { useMap } from "@/components/map/use-map";
@@ -42,7 +43,8 @@ export function ZoneMap({
   className?: string;
 }) {
   const center = centroidOf(zones);
-  const { container, map } = useMap([center.lon, center.lat], REGION_ZOOM);
+  const t = useTranslations("Feed");
+  const { container, map, failed } = useMap([center.lon, center.lat], REGION_ZOOM);
   const onSelectRef = useRef(onSelect);
   const elements = useRef(new Map<string, HTMLButtonElement>());
 
@@ -87,6 +89,18 @@ export function ZoneMap({
       el.setAttribute("aria-pressed", String(selected));
     }
   }, [map, zones, outlookFor, markerLabel, selectedId]);
+
+  if (failed) {
+    // No WebGL: the table holds the same communes and risks, so say so instead of an empty box.
+    return (
+      <div
+        role="status"
+        className={`flex w-full items-center justify-center rounded-2xl border border-line bg-surface-sunken p-6 text-center text-ink-muted ${className}`}
+      >
+        {t("mapUnavailable")}
+      </div>
+    );
+  }
 
   return (
     <div

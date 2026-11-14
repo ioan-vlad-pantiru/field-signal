@@ -323,6 +323,7 @@
     "regionLine": "{region} · sezonul {season} · {count} comune",
     "cropToggle": "Alegeți cultura",
     "mapLabel": "Hartă cu riscul de aprovizionare pentru {crop}",
+    "mapUnavailable": "Harta nu poate fi afișată în acest browser. Tabelul comunelor conține aceleași comune și riscuri.",
     "markerLabel": "{zone}: {risk}",
     "noCropData": "Fără date pentru această cultură",
     "noZones": "Nu avem încă zone pentru această regiune.",
