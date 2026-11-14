@@ -92,7 +92,7 @@ def climatology(d, n_cells=245):
 def clim_series(d, rows, cutoff, H, clim):
     tgt = np.arange(cutoff + 1, cutoff + H + 1)
     crop = d["crop"][rows]
-    cls = crop[:, torch.as_tensor(tgt // 12, device=rows.device).clamp(max=7), 0]
+    cls = crop[:, torch.as_tensor(tgt // 12, device=rows.device).clamp(max=crop.shape[1] - 1), 0]
     cal = torch.as_tensor(cal_of(tgt) - 1, device=rows.device)[None, :].expand_as(cls)
     cell = d["cell"][rows][:, None].expand_as(cls)
     z = torch.stack([clim[0][cell, cls, cal], clim[1][cell, cls, cal]], -1)

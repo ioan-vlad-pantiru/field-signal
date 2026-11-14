@@ -1,0 +1,227 @@
+{
+  "crop": "sunflower",
+  "features": [
+    "ndvi_peak",
+    "ndvi_sum"
+  ],
+  "target": "yield_t_ha",
+  "min_region_years": 3,
+  "prediction": "region mean yield + model.predict(features - region means)",
+  "fallback": {
+    "yield_t_ha": 2.4596361832038287,
+    "ndvi_peak": 0.7939849796568607,
+    "ndvi_sum": 2.82831389306363
+  },
+  "regions": {
+    "AT11": {
+      "yield_t_ha": 2.3496712528158437,
+      "ndvi_peak": 0.7540813012059424,
+      "ndvi_sum": 2.8231871620253473,
+      "n_years": 8,
+      "fallback": false
+    },
+    "AT12": {
+      "yield_t_ha": 2.7194428033195615,
+      "ndvi_peak": 0.7721800275697503,
+      "ndvi_sum": 2.827990595789459,
+      "n_years": 8,
+      "fallback": false
+    },
+    "BG31": {
+      "yield_t_ha": 2.376854823503178,
+      "ndvi_peak": 0.8114908472706277,
+      "ndvi_sum": 2.8070208938369725,
+      "n_years": 8,
+      "fallback": false
+    },
+    "BG32": {
+      "yield_t_ha": 2.4609689615922665,
+      "ndvi_peak": 0.8188354103642091,
+      "ndvi_sum": 2.755522202197036,
+      "n_years": 8,
+      "fallback": false
+    },
+    "BG33": {
+      "yield_t_ha": 2.389077708684255,
+      "ndvi_peak": 0.8002147330426459,
+      "ndvi_sum": 2.6797642430883637,
+      "n_years": 8,
+      "fallback": false
+    },
+    "BG34": {
+      "yield_t_ha": 1.8822707046689995,
+      "ndvi_peak": 0.7880232370712614,
+      "ndvi_sum": 2.598099637621922,
+      "n_years": 8,
+      "fallback": false
+    },
+    "BG41": {
+      "yield_t_ha": 1.8673381852930866,
+      "ndvi_peak": 0.7750921740605592,
+      "ndvi_sum": 2.8427872070117273,
+      "n_years": 8,
+      "fallback": false
+    },
+    "BG42": {
+      "yield_t_ha": 1.8804715214599979,
+      "ndvi_peak": 0.7789685488832366,
+      "ndvi_sum": 2.582994587144074,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HR02": {
+      "yield_t_ha": 2.980046356429981,
+      "ndvi_peak": 0.7930783222832215,
+      "ndvi_sum": 2.8870754599765545,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HR06": {
+      "yield_t_ha": 2.8060581595627623,
+      "ndvi_peak": 0.8071671432047125,
+      "ndvi_sum": 3.0886377604736817,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HU12": {
+      "yield_t_ha": 2.5694867220995388,
+      "ndvi_peak": 0.7904695287384856,
+      "ndvi_sum": 2.794331692509391,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HU21": {
+      "yield_t_ha": 2.7422469348536755,
+      "ndvi_peak": 0.8021210642875882,
+      "ndvi_sum": 2.8463752913510536,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HU22": {
+      "yield_t_ha": 2.8062548715666065,
+      "ndvi_peak": 0.7948136968974802,
+      "ndvi_sum": 2.82578914222269,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HU23": {
+      "yield_t_ha": 3.0538853210225048,
+      "ndvi_peak": 0.7895998061659744,
+      "ndvi_sum": 2.699935783620545,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HU31": {
+      "yield_t_ha": 2.6656042141807044,
+      "ndvi_peak": 0.8038465874172285,
+      "ndvi_sum": 2.937577285144462,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HU32": {
+      "yield_t_ha": 2.716556178254755,
+      "ndvi_peak": 0.8041049140468645,
+      "ndvi_sum": 2.9258521945227653,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HU33": {
+      "yield_t_ha": 2.617984555194795,
+      "ndvi_peak": 0.7971784899812865,
+      "ndvi_sum": 2.839548719321335,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO11": {
+      "yield_t_ha": 2.3733696180212327,
+      "ndvi_peak": 0.7890439037743983,
+      "ndvi_sum": 2.9076802406674376,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO12": {
+      "yield_t_ha": 2.6395778848334523,
+      "ndvi_peak": 0.8230295319203309,
+      "ndvi_sum": 3.1971855853511784,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO21": {
+      "yield_t_ha": 2.1712281186896543,
+      "ndvi_peak": 0.7994945779498691,
+      "ndvi_sum": 2.9097607563665564,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO22": {
+      "yield_t_ha": 2.16416928754621,
+      "ndvi_peak": 0.7578483881631257,
+      "ndvi_sum": 2.580683322225832,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO31": {
+      "yield_t_ha": 2.312038052360404,
+      "ndvi_peak": 0.8016443538148263,
+      "ndvi_sum": 2.696467306119405,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO32": {
+      "yield_t_ha": 2.045843763196962,
+      "ndvi_peak": 0.789122084166434,
+      "ndvi_sum": 2.759895134782494,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO41": {
+      "yield_t_ha": 2.3201460252677077,
+      "ndvi_peak": 0.8011433619782145,
+      "ndvi_sum": 2.7536405824880585,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO42": {
+      "yield_t_ha": 2.484393267754635,
+      "ndvi_peak": 0.8095065590246205,
+      "ndvi_sum": 2.949515548730957,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RS12": {
+      "yield_t_ha": 2.717024581139202,
+      "ndvi_peak": 0.7979700229626141,
+      "ndvi_sum": 2.841615532395511,
+      "n_years": 8,
+      "fallback": false
+    },
+    "SK01": {
+      "yield_t_ha": 2.2272326677013123,
+      "ndvi_peak": 0.7719803704107595,
+      "ndvi_sum": 2.7358373873520634,
+      "n_years": 8,
+      "fallback": false
+    },
+    "SK02": {
+      "yield_t_ha": 2.759698570566927,
+      "ndvi_peak": 0.7987021295736514,
+      "ndvi_sum": 2.866886509752102,
+      "n_years": 8,
+      "fallback": false
+    },
+    "SK03": {
+      "yield_t_ha": 2.3486259412589874,
+      "ndvi_peak": 0.7875400133825543,
+      "ndvi_sum": 2.9282165865954033,
+      "n_years": 8,
+      "fallback": false
+    },
+    "SK04": {
+      "yield_t_ha": 2.341518443275666,
+      "ndvi_peak": 0.8112582600933543,
+      "ndvi_sum": 2.959542441224519,
+      "n_years": 8,
+      "fallback": false
+    }
+  }
+}

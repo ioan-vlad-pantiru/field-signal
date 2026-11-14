@@ -70,7 +70,7 @@ def destandardise(d, z, months, crop):
     """Standardised [N,L,2] -> physical, with the crop class of each month's crop year."""
     dev = z.device
     months = np.asarray(months)
-    cls = crop[:, torch.as_tensor(months // 12, device=dev).clamp(max=7), 0]
+    cls = crop[:, torch.as_tensor(months // 12, device=dev).clamp(max=crop.shape[1] - 1), 0]
     cal = torch.as_tensor(cal_of(months) - 1, device=dev)[None, :].expand_as(cls)
     nd = z[:, :, 0] * d["nd_std"][cls, cal] + d["nd_mean"][cls, cal]
     sm = z[:, :, 1] * d["sm_std"][cal] + d["sm_mean"][cal]
