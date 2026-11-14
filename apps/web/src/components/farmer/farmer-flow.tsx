@@ -85,14 +85,17 @@ function Flow({ pin }: { pin: UrlPin | null }) {
   const [boundary, setBoundary] = useState<LatLon[] | null>(null);
   /** Remounts the form with the saved field, opened on its last step. */
   const [resumed, setResumed] = useState<FormStep | null>(null);
+  /** The commune the farmer chose: picked in the search, from the feed link, or the saved field's. */
+  const [placeName, setPlaceName] = useState<string | null>(pin?.place ?? null);
 
-  async function run(request: FieldRequest, drawn: LatLon[] | null) {
+  async function run(request: FieldRequest, drawn: LatLon[] | null, place: string | null) {
     setLastRequest(request);
     setBoundary(drawn);
+    setPlaceName(place);
     setState({ step: "loading" });
     window.scrollTo({ top: 0 });
     if (drawn) {
-      saveField({ request, boundary: drawn, near: nearestCommune(communes, request.location)?.name ?? null });
+      saveField({ request, boundary: drawn, near: place ?? nearestCommune(communes, request.location)?.name ?? null });
     }
     try {
       setState({ step: "results", result: await analyzeField(request) });
@@ -101,8 +104,9 @@ function Flow({ pin }: { pin: UrlPin | null }) {
     }
   }
 
+  /** "Change field or rotation": back to the rotation step, everything kept. */
   function back() {
-    setResumed(2);
+    setResumed(1);
     setState({ step: "form" });
     window.scrollTo({ top: 0 });
   }
@@ -110,6 +114,7 @@ function Flow({ pin }: { pin: UrlPin | null }) {
   function resume(field: SavedField) {
     setLastRequest(field.request);
     setBoundary(field.boundary);
+    setPlaceName(field.near);
     setResumed(2);
   }
 
@@ -117,13 +122,14 @@ function Flow({ pin }: { pin: UrlPin | null }) {
     case "loading":
       return <ResultsSkeleton />;
     case "error":
-      return <ErrorState onRetry={() => (lastRequest ? run(lastRequest, boundary) : back())} />;
+      return <ErrorState onRetry={() => (lastRequest ? run(lastRequest, boundary, placeName) : back())} />;
     case "results":
       return (
         <ResultsView
           analysis={state.result.data}
           origin={state.result.origin}
           boundary={boundary}
+          placeName={placeName}
           onBack={back}
         />
       );
@@ -139,6 +145,7 @@ function Flow({ pin }: { pin: UrlPin | null }) {
             initialBoundary={boundary}
             initialStep={resumed ?? 0}
             startPoint={pin?.point}
+            initialPlace={placeName}
             communes={communes}
             notice={
               pin ? (

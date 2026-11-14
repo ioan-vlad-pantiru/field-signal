@@ -36,6 +36,13 @@ const SATELLITE = "fs-satellite";
 
 export type Basemap = "map" | "satellite";
 
+/** MapLibre's hint for cooperative gestures, in the page language (MapLibre ships English only). */
+const GESTURE_HELP_RO = {
+  "CooperativeGesturesHandler.WindowsHelpText": "Folosiți Ctrl + rotița ca să măriți harta",
+  "CooperativeGesturesHandler.MacHelpText": "Folosiți ⌘ + rotița ca să măriți harta",
+  "CooperativeGesturesHandler.MobileHelpText": "Folosiți două degete ca să mutați harta",
+};
+
 const TERRAIN_EXAGGERATION = 1.5;
 const BUILDINGS_MIN_ZOOM = 14;
 
@@ -143,14 +150,23 @@ export function setBasemap(map: MapLibreMap, basemap: Basemap) {
 export function useMap(
   center: LngLatLike,
   zoom: number,
-  /** `satellite`: add the satellite layer, shown at start; switch it with `setBasemap`. Off by default. */
-  options: { satellite?: boolean } = {},
+  /**
+   * `satellite`: add the satellite layer, shown at start; switch it with `setBasemap`. Off by default.
+   * `cooperativeGestures`: the page scrolls past the map; zoom needs Ctrl/⌘ + wheel, pan needs two
+   * fingers. For maps that sit in a scrolling page; off where the map is the task (drawing a field).
+   */
+  options: { satellite?: boolean; cooperativeGestures?: boolean } = {},
 ) {
   const container = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<MapLibreMap | null>(null);
   /** True when the browser cannot draw a map (no WebGL): callers show a message instead. */
   const [failed, setFailed] = useState(false);
-  const initial = useRef({ center, zoom, satellite: options.satellite ?? false });
+  const initial = useRef({
+    center,
+    zoom,
+    satellite: options.satellite ?? false,
+    cooperativeGestures: options.cooperativeGestures ?? false,
+  });
 
   useEffect(() => {
     if (!container.current) return;
@@ -166,6 +182,8 @@ export function useMap(
         pitch: 0,
         maxPitch: 70,
         attributionControl: { compact: true },
+        cooperativeGestures: initial.current.cooperativeGestures,
+        locale: document.documentElement.lang === "ro" ? GESTURE_HELP_RO : undefined,
       });
     } catch {
       // MapLibre throws when WebGL is unavailable (old devices, GPU off, some headless browsers).

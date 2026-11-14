@@ -157,7 +157,8 @@ export function FieldStep({
   onRestart,
 }: {
   communes: Commune[];
-  onFocus: (point: LatLon, zoom: number) => void;
+  /** `place` is the commune picked in the search; null for the farmer's own location. */
+  onFocus: (point: LatLon, zoom: number, place: string | null) => void;
   mode: MapMode;
   corners: LatLon[];
   areaHa: number;
@@ -187,10 +188,10 @@ export function FieldStep({
         <div className="flex flex-col gap-1">
           <PlaceSearch
             communes={communes}
-            onPick={(c) => onFocus(c.point, COMMUNE_ZOOM)}
+            onPick={(c) => onFocus(c.point, COMMUNE_ZOOM, c.name)}
             action={
               <LocateButton
-                onFound={(point) => onFocus(point, LOCATION_ZOOM)}
+                onFound={(point) => onFocus(point, LOCATION_ZOOM, null)}
                 onFailed={setLocateFailed}
               />
             }

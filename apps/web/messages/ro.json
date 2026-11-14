@@ -92,13 +92,13 @@
       "hint": "Atingeți harta în fiecare colț al câmpului, pe rând. Sunt necesare cel puțin 3 colțuri.",
       "mapHint": "Atingeți fiecare colț al câmpului",
       "cornerCount": "{corners, plural, =0 {Niciun colț încă} one {1 colț} few {# colțuri} other {# de colțuri}}",
-      "tooSmall": "Prea mic: câmpul are sub {min} ha. Desenați-l mai mare: fiecare hexagon are 1 ha.",
-      "tooBig": "Prea mare: câmpul are peste {max} ha. Desenați o singură parcelă.",
+      "tooSmall": "Prea mic: câmpul are sub {min} ha. Desenați-l mai mare: fiecare hexagon are 1 ha.",
+      "tooBig": "Prea mare: câmpul are peste {max} ha. Desenați o singură parcelă.",
       "undo": "Anulați ultimul colț",
       "clear": "Ștergeți tot",
       "done": "Gata",
       "yourField": "Câmpul dumneavoastră",
-      "area": "{ha} ha",
+      "area": "{ha} ha",
       "edit": "Modificați",
       "restart": "Desenați din nou"
     },
@@ -152,8 +152,8 @@
     "irrigatedHint": "Activați dacă puteți uda culturile vara.",
     "analyze": "Arătați-mi cele 25 de sezoane",
     "saved": {
-      "near": "Continuați cu câmpul de lângă {place}, {ha} ha",
-      "noPlace": "Continuați cu câmpul de {ha} ha",
+      "near": "Continuați cu câmpul de lângă {place}, {ha} ha",
+      "noPlace": "Continuați cu câmpul de {ha} ha",
       "resume": "Continuați",
       "forget": "Câmp nou"
     }

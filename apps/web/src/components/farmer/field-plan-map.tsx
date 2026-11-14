@@ -132,6 +132,7 @@ export function FieldPlanMap({
   const focus = boundary ? polygonCentroid(boundary) : center;
   const { container, map, failed } = useMap([focus.lon, focus.lat], boundary ? zoomFor(boundary) : 14.6, {
     satellite: true,
+    cooperativeGestures: true,
   });
   const markers = useRef<Marker[]>([]);
   const [snapshot, setSnapshot] = useState<string | null>(null);

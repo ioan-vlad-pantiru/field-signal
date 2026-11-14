@@ -30,6 +30,7 @@ export function FieldForm({
   initialBoundary,
   initialStep = 0,
   startPoint,
+  initialPlace = null,
   communes,
   notice,
   onSubmit,
@@ -40,11 +41,13 @@ export function FieldForm({
   initialStep?: FormStep;
   /** Where the map opens when there is no earlier request (e.g. a point passed from the feed screen). */
   startPoint?: LatLon | null;
+  /** The place name known so far (feed link or saved field), replaced by a commune picked in the search. */
+  initialPlace?: string | null;
   communes: Commune[];
   /** Shown above the step, such as the place pinned from the feed screen. */
   notice?: ReactNode;
   /** `boundary` is the drawn field; the API still receives a point, its centroid. */
-  onSubmit: (request: FieldRequest, boundary: LatLon[]) => void;
+  onSubmit: (request: FieldRequest, boundary: LatLon[], place: string | null) => void;
 }) {
   const t = useTranslations("Field");
   const locale = useAppLocale();
@@ -59,6 +62,7 @@ export function FieldForm({
   const [basemap, setBasemap] = useState<Basemap>("satellite");
   const [focus, setFocus] = useState<MapFocus | null>(null);
   const [mapFailed, setMapFailed] = useState(false);
+  const [place, setPlace] = useState<string | null>(initialPlace);
 
   const areaHa = polygonAreaHa(corners);
   const boundary = mode === "locked" && corners.length >= 3 ? corners : null;
@@ -92,6 +96,7 @@ export function FieldForm({
         irrigated,
       },
       boundary,
+      place,
     );
   }
 
@@ -145,8 +150,15 @@ export function FieldForm({
           </p>
         ) : null}
         {basemap === "satellite" && !mapFailed ? (
-          <p className="absolute inset-x-2 bottom-2 z-[1] w-fit max-w-[calc(100%-1rem)] rounded-md bg-surface/90 px-2 py-0.5 text-xs leading-snug text-ink">
-            <a href={SATELLITE_ATTRIBUTION.href} target="_blank" rel="noopener" className="underline-offset-2 hover:underline">
+          // Licence: the credit stays visible, on one small line; the full text is also behind the (i) control.
+          <p className="absolute bottom-2 left-2 right-10 z-[1] flex">
+            <a
+              href={SATELLITE_ATTRIBUTION.href}
+              target="_blank"
+              rel="noopener"
+              title={SATELLITE_ATTRIBUTION.text}
+              className="truncate rounded-md bg-surface/90 px-1.5 py-px text-[11px] leading-4 text-ink underline-offset-2 hover:underline"
+            >
               {SATELLITE_ATTRIBUTION.text}
             </a>
           </p>
@@ -160,7 +172,10 @@ export function FieldForm({
         {step === 0 ? (
           <FieldStep
             communes={communes}
-            onFocus={(p, zoom) => setFocus((prev) => ({ point: p, zoom, seq: (prev?.seq ?? 0) + 1 }))}
+            onFocus={(p, zoom, name) => {
+              setFocus((prev) => ({ point: p, zoom, seq: (prev?.seq ?? 0) + 1 }));
+              setPlace(name);
+            }}
             mode={mode}
             corners={corners}
             areaHa={areaHa}
