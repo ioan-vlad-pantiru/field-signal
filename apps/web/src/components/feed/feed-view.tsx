@@ -3,18 +3,22 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { getSourcingRegion, type Loaded } from "@/lib/api";
-import type { Crop, CropOutlook, SourcingRegion, Zone } from "@/lib/contracts";
-import { formatNumber } from "@/lib/format";
+import type { Crop, CropOutlook, SourcingRecommendation, SourcingRegion, Zone } from "@/lib/contracts";
 import { useAppLocale, useLocalized } from "@/lib/localized";
-import { ConfidenceBadge, RiskBadge } from "@/components/ui/badges";
-import { Card, SectionTitle } from "@/components/ui/card";
+import { ConfidenceBadge } from "@/components/ui/badges";
 import { CropDot } from "@/components/ui/crop-chip";
+import { Disclosure } from "@/components/ui/disclosure";
+import { CrossIcon } from "@/components/ui/icons";
+import { Section } from "@/components/ui/section";
+import { Segmented } from "@/components/ui/segmented";
 import { Sheet } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SourceChip } from "@/components/ui/source-chip";
 import { DemoBanner, EmptyState, ErrorState } from "@/components/ui/states";
 import { AdoptionSlider } from "./adoption-slider";
-import { ZoneCompare } from "./zone-compare";
+import { CommuneTable } from "./commune-table";
+import { useMediaQuery } from "./use-media-query";
+import { ZoneCompare, defaultPair } from "./zone-compare";
 import { ZoneDetails } from "./zone-sheet";
 import { ZoneMap } from "./zone-map";
 
@@ -23,10 +27,12 @@ type State =
   | { status: "error" }
   | { status: "ready"; result: Loaded<SourcingRegion> };
 
+/** Tailwind's `lg`: from here the map sits on the left and details open beside it. */
+const LAPTOP = "(min-width: 1024px)";
+
 export function FeedView() {
   const t = useTranslations("Feed");
   const [state, setState] = useState<State>({ status: "loading" });
-
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
@@ -44,16 +50,11 @@ export function FeedView() {
     setAttempt((n) => n + 1);
   }
 
+  if (state.status === "ready") return <Region result={state.result} />;
   return (
     <div className="flex flex-col gap-4">
-      <header>
-        <p className="font-medium text-field">{t("eyebrow")}</p>
-        <h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="mt-1 text-lg text-ink-muted">{t("intro")}</p>
-      </header>
-      {state.status === "loading" ? <FeedSkeleton /> : null}
-      {state.status === "error" ? <ErrorState onRetry={retry} /> : null}
-      {state.status === "ready" ? <Region result={state.result} /> : null}
+      <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+      {state.status === "loading" ? <FeedSkeleton /> : <ErrorState onRetry={retry} />}
     </div>
   );
 }
@@ -78,9 +79,15 @@ function Region({ result }: { result: Loaded<SourcingRegion> }) {
   const tr = useTranslations("Risk");
   const locale = useAppLocale();
   const l = useLocalized();
+  const isLaptop = useMediaQuery(LAPTOP);
   const region = result.data;
   const [crop, setCrop] = useState<Crop>(region.reference_crops[0] ?? "maize");
-  const [selected, setSelected] = useState<Zone | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [view, setView] = useState<"list" | "map">("list");
+  // Starts on the safest and the riskiest commune for the first crop: the comparison a buyer starts from.
+  const [ticked, setTicked] = useState<string[]>(() =>
+    region.zones.length >= 2 ? defaultPair(region.zones, crop) : [],
+  );
 
   const outlookFor = useCallback(
     (zone: Zone): CropOutlook | undefined => zone.crops.find((c) => c.crop === crop),
@@ -94,138 +101,206 @@ function Region({ result }: { result: Loaded<SourcingRegion> }) {
       }),
     [t, tr],
   );
+  const select = useCallback((zone: Zone) => setSelectedId(zone.id), []);
+  // Ticking a third commune drops the one ticked first, so two stay ticked.
+  const tick = (id: string) =>
+    setTicked((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id].slice(-2)));
 
+  const selected = region.zones.find((z) => z.id === selectedId) ?? null;
   const selectedOutlook = selected ? outlookFor(selected) : undefined;
-  const { recommendation } = region;
+  const cropName = tc(crop).toLocaleLowerCase(locale);
+  const hasZones = region.zones.length > 0;
+  const firstTicked = region.zones.find((z) => z.id === ticked[0]);
+
+  const details = selected ? (
+    selectedOutlook ? (
+      <ZoneDetails outlook={selectedOutlook} centroid={selected.centroid} place={selected.name} />
+    ) : (
+      <p>{t("noCropData")}</p>
+    )
+  ) : null;
+  const detailTitle = selected ? t("sheetTitle", { zone: selected.name, crop: tc(crop) }) : null;
 
   return (
-    <>
+    <div className="flex flex-col gap-6">
       {region.mock ? <DemoBanner origin={result.origin} /> : null}
-      <p className="text-ink-muted">
-        {t("regionLine", { region: region.region_name, season: region.season, count: region.zones.length })}
-      </p>
 
-      <div role="radiogroup" aria-label={t("cropToggle")} className="flex flex-wrap gap-2">
-        {region.reference_crops.map((c) => (
-          <button
-            key={c}
-            type="button"
-            role="radio"
-            aria-checked={c === crop}
-            onClick={() => setCrop(c)}
-            className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-4 font-medium ${
-              c === crop ? "border-field bg-field text-on-field" : "border-line bg-surface hover:border-field"
+      {/* Phone: one column (top, map when chosen, then the rest). Laptop: sticky map left, work panel right. */}
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,4fr)_minmax(0,7fr)] lg:gap-x-10 lg:gap-y-0">
+        <div className="flex flex-col gap-6 lg:col-start-2 lg:row-start-1">
+          <header>
+            <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+            <p className="mt-1 text-ink-muted">
+              {t("regionLine", { region: region.region_name, season: region.season, count: region.zones.length })}
+            </p>
+          </header>
+
+          <Recommendation recommendation={region.recommendation} />
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+            <Segmented
+              label={t("cropToggle")}
+              value={crop}
+              onChange={setCrop}
+              className="w-full sm:w-auto"
+              options={region.reference_crops.map((c) => ({
+                value: c,
+                label: (
+                  <>
+                    <CropDot crop={c} />
+                    {tc(c)}
+                  </>
+                ),
+              }))}
+            />
+            {hasZones ? (
+              <Segmented
+                label={t("view.label")}
+                value={view}
+                onChange={setView}
+                className="w-full sm:w-auto lg:hidden"
+                options={[
+                  { value: "list", label: t("view.list") },
+                  { value: "map", label: t("view.map") },
+                ]}
+              />
+            ) : null}
+          </div>
+        </div>
+
+        {hasZones ? (
+          <aside
+            className={`flex flex-col gap-4 lg:sticky lg:top-20 lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:h-[calc(100dvh-6rem)] lg:self-start ${
+              view === "map" ? "" : "max-lg:hidden"
             }`}
           >
-            <CropDot crop={c} />
-            {tc(c)}
-          </button>
-        ))}
+            <ZoneMap
+              zones={region.zones}
+              outlookFor={outlookFor}
+              markerLabel={markerLabel}
+              onSelect={select}
+              selectedId={selectedId}
+              label={t("mapLabel", { crop: cropName })}
+              className="h-[60dvh] min-h-72 lg:h-auto lg:min-h-56 lg:flex-1"
+            />
+            {isLaptop ? (
+              <div className="flex max-h-[62%] min-h-0 flex-col border-t border-line pt-4">
+                {selected ? (
+                  <>
+                    <div className="flex items-start justify-between gap-3">
+                      <h2 className="text-lg font-semibold">{detailTitle}</h2>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedId(null)}
+                        aria-label={t("closeDetail")}
+                        className="-mr-2 -mt-2 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full hover:bg-surface-sunken"
+                      >
+                        <CrossIcon />
+                      </button>
+                    </div>
+                    <div className="mt-3 min-h-0 overflow-y-auto pr-1">{details}</div>
+                  </>
+                ) : (
+                  <p className="text-sm text-ink-muted">{t("detailEmpty")}</p>
+                )}
+              </div>
+            ) : null}
+          </aside>
+        ) : null}
+
+        <div className="flex flex-col lg:col-start-2 lg:row-start-2">
+          {hasZones ? (
+            <div className={`mt-2 ${view === "list" ? "" : "max-lg:hidden"}`}>
+              <CommuneTable
+                zones={region.zones}
+                outlookFor={outlookFor}
+                cropName={cropName}
+                selectedId={selectedId}
+                onSelect={select}
+                ticked={ticked}
+                onTick={tick}
+              />
+            </div>
+          ) : (
+            <EmptyState>{t("noZones")}</EmptyState>
+          )}
+
+          {region.zones.length >= 2 ? (
+            <Section title={t("compareTitle")} hint={t("compareHint")}>
+              {ticked.length === 2 ? (
+                <ZoneCompare zones={region.zones} crop={crop} ids={[ticked[0], ticked[1]]} />
+              ) : (
+                <p className="text-ink-muted" aria-live="polite">
+                  {firstTicked ? t("compare.pickOne", { zone: firstTicked.name }) : t("compare.pickTwo")}
+                </p>
+              )}
+            </Section>
+          ) : null}
+
+          <Section title={t("scenarioTitle")}>
+            <AdoptionSlider scenario={region.scenario} />
+          </Section>
+
+          <Section title={t("caveatsTitle")}>
+            <ul className="max-w-[65ch] list-disc space-y-2 pl-5">
+              {region.caveats.map((c, i) => (
+                <li key={i}>{l(c)}</li>
+              ))}
+            </ul>
+            <h3 className="mt-6 text-sm font-medium text-ink-muted">{t("sourcesTitle")}</h3>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {region.sources.map((s) => (
+                <SourceChip key={s.dataset} source={s} />
+              ))}
+            </div>
+          </Section>
+        </div>
       </div>
 
-      {region.zones.length === 0 ? (
-        <EmptyState>{t("noZones")}</EmptyState>
-      ) : (
-        <>
-          <ZoneMap
-            zones={region.zones}
-            outlookFor={outlookFor}
-            markerLabel={markerLabel}
-            onSelect={setSelected}
-            label={t("mapLabel", { crop: tc(crop).toLocaleLowerCase(locale) })}
-          />
-          <p className="text-sm text-ink-muted">{t("mapHint")}</p>
-          <ul className="grid gap-2 sm:grid-cols-2" aria-label={t("zoneList")}>
-            {region.zones.map((zone, index) => {
-              const outlook = outlookFor(zone);
-              return (
-                <li key={zone.id} className="rise" style={{ "--i": index } as React.CSSProperties}>
-                  <button
-                    type="button"
-                    onClick={() => setSelected(zone)}
-                    className="press flex min-h-14 w-full items-center justify-between gap-3 rounded-2xl border border-line bg-surface px-4 py-2 text-left hover:border-field"
-                  >
-                    <span>
-                      <span className="block font-semibold">{zone.name}</span>
-                      <span className="text-sm text-ink-muted">
-                        {outlook?.area_ha != null
-                          ? t("zone.area", { ha: formatNumber(outlook.area_ha, locale, 0) })
-                          : zone.county}
-                      </span>
-                    </span>
-                    {outlook ? (
-                      <RiskBadge level={outlook.availability.level} prefix={t("riskShort")} />
-                    ) : (
-                      <span className="text-sm text-ink-muted">{t("noCropData")}</span>
-                    )}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </>
-      )}
+      <Sheet open={!isLaptop && selected !== null} onClose={() => setSelectedId(null)} title={detailTitle}>
+        {details}
+      </Sheet>
+    </div>
+  );
+}
 
-      {region.zones.length >= 2 ? (
-        <>
-          <SectionTitle hint={t("compareHint")}>{t("compareTitle")}</SectionTitle>
-          <ZoneCompare zones={region.zones} crop={crop} />
-        </>
-      ) : null}
-
-      <SectionTitle>{t("recommendationTitle")}</SectionTitle>
-      <Card className="flex flex-col gap-3 border-2 border-field">
-        <h3 className="text-xl font-semibold">{l(recommendation.title)}</h3>
-        <p>{l(recommendation.text)}</p>
-        <ul className="flex flex-col gap-2">
-          {recommendation.actions.map((a, i) => (
-            <li key={i} className="flex gap-2 rounded-xl bg-field-tint px-3 py-2">
-              <span aria-hidden="true" className="font-semibold text-field">
-                {i + 1}.
-              </span>
-              {l(a)}
-            </li>
-          ))}
-        </ul>
-        <ConfidenceBadge confidence={recommendation.confidence} />
+/** The answer first: the recommendation as a sentence, its numbered actions and its confidence. */
+function Recommendation({ recommendation }: { recommendation: SourcingRecommendation }) {
+  const t = useTranslations("Feed");
+  const l = useLocalized();
+  return (
+    <section aria-labelledby="feed-recommendation" className="flex max-w-[720px] flex-col gap-4">
+      <div>
+        <h2 id="feed-recommendation" className="text-3xl font-semibold tracking-tight text-balance lg:text-4xl">
+          {l(recommendation.title)}
+        </h2>
+        <p className="mt-2 text-ink-muted">{l(recommendation.text)}</p>
+      </div>
+      {recommendation.actions.length > 0 ? (
         <div>
-          <h4 className="mb-1 text-sm font-semibold">{t("assumptions")}</h4>
+          <h3 className="sr-only">{t("actionsTitle")}</h3>
+          <ol className="flex flex-col">
+            {recommendation.actions.map((a, i) => (
+              <li key={i} className="flex gap-3 border-t border-line py-2 last:border-b">
+                <span aria-hidden="true" className="w-5 shrink-0 font-semibold tabular-nums text-field">
+                  {i + 1}
+                </span>
+                {l(a)}
+              </li>
+            ))}
+          </ol>
+        </div>
+      ) : null}
+      <ConfidenceBadge confidence={recommendation.confidence} />
+      {recommendation.assumptions.length > 0 ? (
+        <Disclosure summary={t("assumptions")}>
           <ul className="list-disc space-y-1 pl-5 text-sm text-ink-muted">
             {recommendation.assumptions.map((a, i) => (
               <li key={i}>{l(a)}</li>
             ))}
           </ul>
-        </div>
-      </Card>
-
-      <SectionTitle>{t("scenarioTitle")}</SectionTitle>
-      <AdoptionSlider scenario={region.scenario} />
-
-      <SectionTitle>{t("caveatsTitle")}</SectionTitle>
-      <Card>
-        <ul className="list-disc space-y-2 pl-5">
-          {region.caveats.map((c, i) => (
-            <li key={i}>{l(c)}</li>
-          ))}
-        </ul>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {region.sources.map((s) => (
-            <SourceChip key={s.dataset} source={s} />
-          ))}
-        </div>
-      </Card>
-
-      <Sheet
-        open={selected !== null}
-        onClose={() => setSelected(null)}
-        title={selected ? t("sheetTitle", { zone: selected.name, crop: tc(crop) }) : null}
-      >
-        {selected && selectedOutlook ? (
-          <ZoneDetails outlook={selectedOutlook} centroid={selected.centroid} place={selected.name} />
-        ) : (
-          <p>{t("noCropData")}</p>
-        )}
-      </Sheet>
-    </>
+        </Disclosure>
+      ) : null}
+    </section>
   );
 }

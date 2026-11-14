@@ -237,17 +237,13 @@
     }
   },
   "Feed": {
-    "eyebrow": "Field Signal · Furaje",
-    "title": "De unde cumpărați furaje anul acesta?",
+    "title": "De unde cumpărați furaje anul acesta",
     "intro": "Pentru fiecare comună: dacă va fi destulă recoltă, ce riscuri de calitate există și cât de prietenos cu mediul se cultivă.",
     "loading": "Încărcăm zonele…",
     "regionLine": "{region} · sezonul {season} · {count} comune",
     "cropToggle": "Alegeți cultura",
     "mapLabel": "Hartă cu riscul de aprovizionare pentru {crop}",
-    "mapHint": "Culoarea și semnul arată riscul de a nu găsi destulă recoltă. Atingeți o comună pentru detalii.",
     "markerLabel": "{zone}: {risk}",
-    "zoneList": "Comune",
-    "riskShort": "Aprovizionare",
     "noCropData": "Fără date pentru această cultură",
     "noZones": "Nu avem încă zone pentru această regiune.",
     "sheetTitle": "{zone} · {crop}",
@@ -272,14 +268,10 @@
       "lowerRiskOther": "Dacă nu cultivați aceeași plantă doi ani la rând, riscul scade de obicei în 3 ani. Comparați rotațiile pentru un câmp din această comună.",
       "compareHere": "Comparați rotațiile aici"
     },
-    "compareTitle": "Comparați două zone",
-    "compareHint": "Alegeți două comune și vedeți care e mai sigură pentru cultura aleasă: cantitate, calitate și apă.",
+    "compareTitle": "Comparați două comune",
+    "compareHint": "Bifați două comune în tabel și vedeți care este mai sigură pentru cultura aleasă: cantitate, calitate și apă.",
     "compare": {
-      "zoneA": "Prima zonă",
-      "zoneB": "A doua zonă",
-      "swap": "Inversează zonele",
       "summary": "La {crop}, {a} e mai bună la {winsA} din {total} indicatori, {b} la {winsB}.",
-      "sameZone": "Alegeți două zone diferite.",
       "caption": "{a} comparată cu {b}, pentru {crop}",
       "supplyRisk": "Risc de aprovizionare",
       "riskScore": "Scor de risc (mai mic e mai bine)",
@@ -288,14 +280,16 @@
       "flagDays": "{observed} zile cu risc, față de {normal} de obicei",
       "confidence": "Încredere",
       "better": "mai bine",
-      "note": "„Mai bine” compară doar cele două zone, indicator cu indicator. Toate cifrele sunt estimări cu interval; verificați încrederea fiecărei zone."
+      "note": "„Mai bine” compară doar cele două zone, indicator cu indicator. Toate cifrele sunt estimări cu interval; verificați încrederea fiecărei zone.",
+      "pickTwo": "Bifați două comune în tabel pentru a le compara.",
+      "pickOne": "Bifați încă o comună pentru a o compara cu {zone}.",
+      "measure": "Indicator"
     },
     "recommendationTitle": "Recomandare",
     "assumptions": "Presupuneri",
     "scenarioTitle": "Dacă mai mulți fermieri ar cultiva soia",
     "adoption": {
-      "estimate": "Estimare",
-      "title": "Câtă {crop} în plus ar fi în zonă",
+      "title": "Câtă {crop} în plus ar putea oferi zona, estimat",
       "hint": "Mutați glisorul: ce procent dintre furnizori ar introduce cultura în rotație.",
       "sliderLabel": "Furnizori care adaugă {crop}",
       "area": "Suprafață în plus",
@@ -318,7 +312,31 @@
       "bothSum": "Amândouă: aceeași suprafață în plus, jumătate soia și jumătate mazăre furajeră. Producția și proteina sunt suma celor două jumătăți.",
       "soyScenario": "Valorile pentru soia vin din scenariul calculat de model."
     },
-    "caveatsTitle": "De reținut"
+    "caveatsTitle": "De reținut",
+    "metaTitle": "Cumpărători de furaje",
+    "actionsTitle": "Ce puteți face",
+    "view": {
+      "label": "Afișați comunele ca",
+      "list": "Listă",
+      "map": "Hartă"
+    },
+    "table": {
+      "caption": "Comunele pentru {crop}. Întâi cele cu riscul de aprovizionare cel mai mic, dacă nu sortați după altă coloană.",
+      "name": "Comuna",
+      "area": "Suprafață",
+      "risk": "Risc de aprovizionare",
+      "quality": "Semnale de calitate",
+      "confidence": "Încredere",
+      "compare": "Comparați",
+      "tick": "Comparați {zone}",
+      "areaValue": "{ha} ha",
+      "noWarnings": "Niciunul",
+      "warnings": "{count, plural, one {# semnal} few {# semnale} other {# de semnale}}",
+      "open": "Detalii pentru {zone}"
+    },
+    "detailEmpty": "Selectați o comună din tabel sau de pe hartă pentru a vedea recolta, calitatea și apa.",
+    "closeDetail": "Închideți detaliile",
+    "sourcesTitle": "Surse"
   },
   "About": {
     "title": "Despre Field Signal",

@@ -8,39 +8,16 @@ import { formatNumber, formatQuantity } from "@/lib/format";
 import { useAppLocale, useLocalized } from "@/lib/localized";
 import { useUnitLabel } from "@/lib/use-unit-label";
 import { AgronomistBadge, ConfidenceBadge, RiskBadge } from "@/components/ui/badges";
+import { buttonClass } from "@/components/ui/button";
 import { FieldIcon } from "@/components/ui/icons";
-import { RISK_TONE, TONE_CLASSES, TONE_ICONS } from "@/components/ui/tone";
 
-/** One traffic light: a big icon + level, then the details that explain it. */
-function Light({
-  title,
-  level,
-  index,
-  children,
-}: {
-  title: string;
-  level: RiskLevel;
-  index: number;
-  children: ReactNode;
-}) {
-  const tone = RISK_TONE[level];
-  const Icon = TONE_ICONS[tone];
+/** One of the three outlooks: its name and level, then the details that explain it. Hairline, no fill. */
+function Light({ title, level, children }: { title: string; level: RiskLevel; children: ReactNode }) {
   return (
-    <section
-      className={`rise rounded-[20px] p-4 ${TONE_CLASSES[tone].soft}`}
-      style={{ "--i": index + 2 } as React.CSSProperties}
-    >
-      <header className="mb-3 flex items-center gap-3">
-        <span
-          className={`cell-in flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${TONE_CLASSES[tone].solid}`}
-          style={{ "--row": index + 2 } as React.CSSProperties}
-        >
-          <Icon size={22} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <h3 className="font-semibold">{title}</h3>
-          <RiskBadge level={level} />
-        </div>
+    <section className="border-t border-line pt-4 first:border-t-0 first:pt-0">
+      <header className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h3 className="font-semibold">{title}</h3>
+        <RiskBadge level={level} />
       </header>
       <div className="flex flex-col gap-2">{children}</div>
     </section>
@@ -51,7 +28,7 @@ function Row({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
       <span>{label}</span>
-      <span className="text-right font-mono font-semibold tabular-nums">{value}</span>
+      <span className="text-right font-semibold tabular-nums">{value}</span>
     </div>
   );
 }
@@ -63,7 +40,7 @@ function Row({ label, value }: { label: string; value: ReactNode }) {
 function LowerRisk({ crop, centroid, place }: { crop: CropOutlook["crop"]; centroid?: LatLon; place?: string }) {
   const t = useTranslations("Feed.zone");
   return (
-    <div className="mt-1 flex flex-col gap-2 rounded-xl bg-surface p-3">
+    <div className="mt-2 flex flex-col gap-2 rounded-xl bg-surface-sunken p-3">
       <p className="font-medium">{t("lowerRiskTitle")}</p>
       <p>{crop === "maize" ? t("lowerRiskMaize") : t("lowerRiskOther")}</p>
       <AgronomistBadge />
@@ -77,7 +54,7 @@ function LowerRisk({ crop, centroid, place }: { crop: CropOutlook["crop"]; centr
               ...(place ? { place } : {}),
             },
           }}
-          className="press mt-1 inline-flex min-h-11 w-fit items-center gap-2 rounded-full bg-field px-4 font-semibold text-on-field hover:bg-field-strong"
+          className={buttonClass("primary", "md", "mt-1 w-fit")}
         >
           <FieldIcon size={18} />
           {t("compareHere")}
@@ -109,12 +86,12 @@ export function ZoneDetails({
   const anomaly = availability.expected_yield_anomaly_pct;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-5">
       {outlook.area_ha != null ? (
         <p className="text-ink-muted">{t("area", { ha: formatNumber(outlook.area_ha, locale, 0) })}</p>
       ) : null}
 
-      <Light title={t("availability")} level={availability.level} index={0}>
+      <Light title={t("availability")} level={availability.level}>
         <Row label={t("riskScore")} value={`${formatNumber(availability.score, locale, 0)}/100`} />
         <Row
           label={t("yieldAnomaly")}
@@ -147,13 +124,13 @@ export function ZoneDetails({
         ) : null}
       </Light>
 
-      <Light title={t("quality")} level={quality.level} index={1}>
+      <Light title={t("quality")} level={quality.level}>
         {quality.flags.length === 0 ? (
           <p>{t("noFlags")}</p>
         ) : (
           <ul className="flex flex-col gap-3">
             {quality.flags.map((flag) => (
-              <li key={flag.code} className="rounded-xl bg-surface p-3">
+              <li key={flag.code}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-medium">{l(flag.label)}</span>
                   <RiskBadge level={flag.level} />
@@ -168,7 +145,7 @@ export function ZoneDetails({
         )}
       </Light>
 
-      <Light title={t("impact")} level={impact.level} index={2}>
+      <Light title={t("impact")} level={impact.level}>
         <Row label={t("waterDeficit")} value={n(impact.water_deficit_mm, "mm")} />
         <Row
           label={t("legumeShare")}

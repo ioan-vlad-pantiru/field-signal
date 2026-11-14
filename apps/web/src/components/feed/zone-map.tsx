@@ -9,6 +9,10 @@ import { RISK_TONE } from "@/components/ui/tone";
 const MARKER_SYMBOL = { good: "✓", watch: "!", bad: "✕", nodata: "–" } as const;
 /** Fits the ~20 km Sântimbru–Aiud sourcing area on a phone, with room for the 3D tilt. */
 const REGION_ZOOM = 9.1;
+/** The drawn marker is 34 px; the invisible ring widens the touch target to 44 px. */
+const HIT_AREA = "after:absolute after:-inset-[5px] after:rounded-full after:content-['']";
+/** The commune open in the details: a ring around its marker, matching its selected table row. */
+const SELECTED = ["outline-solid", "outline-3", "outline-offset-2", "outline-ink", "z-[1]"];
 
 function centroidOf(zones: Zone[]): { lat: number; lon: number } {
   if (zones.length === 0) return { lat: 46.3, lon: 23.75 };
@@ -16,23 +20,31 @@ function centroidOf(zones: Zone[]): { lat: number; lon: number } {
   return { lat: sum.lat / zones.length, lon: sum.lon / zones.length };
 }
 
-/** One button-marker per zone, coloured and labelled by availability risk for the chosen crop. */
+/**
+ * One button-marker per zone, coloured and labelled by availability risk for the chosen crop.
+ * The selected zone's marker gets a ring and `aria-pressed`.
+ */
 export function ZoneMap({
   zones,
   outlookFor,
   markerLabel,
   onSelect,
+  selectedId,
   label,
+  className = "",
 }: {
   zones: Zone[];
   outlookFor: (zone: Zone) => CropOutlook | undefined;
   markerLabel: (zone: Zone, outlook: CropOutlook | undefined) => string;
   onSelect: (zone: Zone) => void;
+  selectedId: string | null;
   label: string;
+  className?: string;
 }) {
   const center = centroidOf(zones);
   const { container, map } = useMap([center.lon, center.lat], REGION_ZOOM);
   const onSelectRef = useRef(onSelect);
+  const elements = useRef(new Map<string, HTMLButtonElement>());
 
   useEffect(() => {
     onSelectRef.current = onSelect;
@@ -40,33 +52,48 @@ export function ZoneMap({
 
   useEffect(() => {
     if (!map) return;
+    const byId = elements.current;
     const markers = zones.map((zone, index) => {
       const outlook = outlookFor(zone);
       const tone = outlook ? RISK_TONE[outlook.availability.level] : "nodata";
       const el = document.createElement("button");
       el.type = "button";
-      el.className = `zone-marker zone-marker--${tone}`;
+      el.className = `zone-marker zone-marker--${tone} ${HIT_AREA}`;
       el.style.setProperty("--i", String(index));
       const symbol = document.createElement("span");
       symbol.setAttribute("aria-hidden", "true");
       symbol.textContent = MARKER_SYMBOL[tone];
       el.append(symbol);
       el.setAttribute("aria-label", markerLabel(zone, outlook));
+      el.setAttribute("aria-pressed", "false");
       el.addEventListener("click", (event) => {
         event.stopPropagation();
         onSelectRef.current(zone);
       });
+      byId.set(zone.id, el);
       return new Marker({ element: el }).setLngLat([zone.centroid.lon, zone.centroid.lat]).addTo(map);
     });
-    return () => markers.forEach((m) => m.remove());
+    return () => {
+      markers.forEach((m) => m.remove());
+      byId.clear();
+    };
   }, [map, zones, outlookFor, markerLabel]);
+
+  // Runs after the marker effect above, so a crop change keeps the ring on the selected zone.
+  useEffect(() => {
+    for (const [id, el] of elements.current) {
+      const selected = id === selectedId;
+      for (const c of SELECTED) el.classList.toggle(c, selected);
+      el.setAttribute("aria-pressed", String(selected));
+    }
+  }, [map, zones, outlookFor, markerLabel, selectedId]);
 
   return (
     <div
       ref={container}
       role="region"
       aria-label={label}
-      className="h-72 w-full overflow-hidden rounded-2xl border border-line bg-surface-sunken sm:h-96"
+      className={`w-full overflow-hidden rounded-2xl bg-surface-sunken ${className}`}
     />
   );
 }

@@ -1,13 +1,12 @@
 "use client";
 
-import { useId, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import type { Crop, CropOutlook, RiskLevel, Zone } from "@/lib/contracts";
 import { formatNumber } from "@/lib/format";
 import { useAppLocale } from "@/lib/localized";
 import { useUnitLabel } from "@/lib/use-unit-label";
 import { ConfidenceBadge, RiskBadge } from "@/components/ui/badges";
-import { Card } from "@/components/ui/card";
 import { CheckIcon } from "@/components/ui/icons";
 
 type Side = "a" | "b";
@@ -29,7 +28,7 @@ interface Row {
 }
 
 /** Defaults to the riskiest and the safest zone for the crop: the comparison a buyer starts from. */
-function defaultPair(zones: Zone[], crop: Crop): [string, string] {
+export function defaultPair(zones: Zone[], crop: Crop): [string, string] {
   const scored = zones
     .map((z) => ({ id: z.id, score: z.crops.find((c) => c.crop === crop)?.availability.score }))
     .filter((z): z is { id: string; score: number } => z.score != null)
@@ -43,23 +42,17 @@ function defaultPair(zones: Zone[], crop: Crop): [string, string] {
  * SPACE2FEED question 3: how do two supply zones compare on availability, quality and water?
  * Every row marks the better zone with an icon and a word, never colour alone.
  */
-export function ZoneCompare({ zones, crop }: { zones: Zone[]; crop: Crop }) {
+export function ZoneCompare({ zones, crop, ids }: { zones: Zone[]; crop: Crop; ids: [string, string] }) {
   const t = useTranslations("Feed.compare");
   const tc = useTranslations("Crops");
   const tz = useTranslations("Feed.zone");
   const locale = useAppLocale();
   const unitLabel = useUnitLabel();
-  const [pair, setPair] = useState<{ crop: Crop; ids: [string, string] }>(() => ({
-    crop,
-    ids: defaultPair(zones, crop),
-  }));
-  // A new crop resets the pair to that crop's riskiest and safest zones.
-  const [idA, idB] = pair.crop === crop ? pair.ids : defaultPair(zones, crop);
-  const setIds = (ids: [string, string]) => setPair({ crop, ids });
+  const [idA, idB] = ids;
 
   const zoneA = zones.find((z) => z.id === idA);
   const zoneB = zones.find((z) => z.id === idB);
-  if (!zoneA || !zoneB || zones.length < 2) return null;
+  if (!zoneA || !zoneB || idA === idB) return null;
   const a = zoneA.crops.find((c) => c.crop === crop);
   const b = zoneB.crops.find((c) => c.crop === crop);
 
@@ -149,46 +142,28 @@ export function ZoneCompare({ zones, crop }: { zones: Zone[]; crop: Crop }) {
   const winsB = scored.filter((r) => r.winner === "b").length;
 
   return (
-    <Card className="flex flex-col gap-4">
-      {/* Phones stack the pickers so long commune names fit; side by side from sm up. */}
-      <div className="grid grid-cols-1 items-end gap-2 sm:grid-cols-[1fr_auto_1fr]">
-        <ZonePicker label={t("zoneA")} zones={zones} value={idA} onChange={(id) => setIds([id, idB])} />
-        <button
-          type="button"
-          onClick={() => setIds([idB, idA])}
-          aria-label={t("swap")}
-          className="press inline-flex h-11 w-11 items-center justify-center justify-self-center rounded-full border border-line bg-surface text-lg hover:border-field sm:mb-0.5"
-        >
-          <span aria-hidden="true" className="rotate-90 sm:rotate-0">
-            ⇄
-          </span>
-        </button>
-        <ZonePicker label={t("zoneB")} zones={zones} value={idB} onChange={(id) => setIds([idA, id])} />
-      </div>
-
-      <p className="rise rounded-2xl bg-field-tint px-4 py-3 font-medium" aria-live="polite" key={`${idA}-${idB}-${crop}`}>
-        {idA === idB
-          ? t("sameZone")
-          : t("summary", {
-              crop: tc(crop).toLocaleLowerCase(locale),
-              a: zoneA.name,
-              b: zoneB.name,
-              winsA,
-              winsB,
-              total: scored.length,
-            })}
+    <div className="flex flex-col gap-4">
+      <p className="max-w-[65ch] font-medium" aria-live="polite">
+        {t("summary", {
+          crop: tc(crop).toLocaleLowerCase(locale),
+          a: zoneA.name,
+          b: zoneB.name,
+          winsA,
+          winsB,
+          total: scored.length,
+        })}
       </p>
 
-      {/* One measure per row: its name on top, the two zones side by side (fits 390 px). */}
-      <div className="overflow-hidden rounded-2xl border border-line">
-        <div className="grid grid-cols-2 bg-surface-sunken" aria-hidden="true">
+      {/* One measure per row: its name on top, the two communes side by side (fits 390 px). */}
+      <div className="border-y border-line">
+        <div className="grid grid-cols-2" aria-hidden="true">
           <p className="min-w-0 break-words px-3 py-2 font-semibold">{zoneA.name}</p>
           <p className="min-w-0 break-words border-l border-line px-3 py-2 font-semibold">{zoneB.name}</p>
         </div>
         <ul aria-label={t("caption", { a: zoneA.name, b: zoneB.name, crop: tc(crop) })}>
-          {rows.map((row, index) => (
-            <li key={row.key} className="rise border-t border-line" style={{ "--i": index } as React.CSSProperties}>
-              <p className="px-3 pt-2 text-sm font-medium text-ink-muted">{row.label}</p>
+          {rows.map((row) => (
+            <li key={row.key} className="border-t border-line">
+              <p className="px-3 pt-2 text-sm text-ink-muted">{row.label}</p>
               <div className="grid grid-cols-2">
                 <Cell zone={zoneA.name} wins={row.winner === "a"} betterLabel={t("better")}>
                   {row.a}
@@ -200,7 +175,7 @@ export function ZoneCompare({ zones, crop }: { zones: Zone[]; crop: Crop }) {
             </li>
           ))}
           <li className="border-t border-line">
-            <p className="px-3 pt-2 text-sm font-medium text-ink-muted">{t("confidence")}</p>
+            <p className="px-3 pt-2 text-sm text-ink-muted">{t("confidence")}</p>
             <div className="grid grid-cols-2">
               <Cell zone={zoneA.name} wins={false} betterLabel={t("better")}>
                 {a ? <ConfidenceBadge confidence={a.confidence} /> : "—"}
@@ -212,8 +187,8 @@ export function ZoneCompare({ zones, crop }: { zones: Zone[]; crop: Crop }) {
           </li>
         </ul>
       </div>
-      <p className="text-sm text-ink-muted">{t("note")}</p>
-    </Card>
+      <p className="max-w-[65ch] text-sm text-ink-muted">{t("note")}</p>
+    </div>
   );
 }
 
@@ -232,13 +207,11 @@ function Cell({
 }) {
   return (
     <div
-      className={`flex min-w-0 flex-col gap-1 px-3 pb-2 pt-1 transition-colors ${wins ? "bg-field-tint" : ""} ${
-        divider ? "border-l border-line" : ""
-      }`}
+      className={`flex min-w-0 flex-col gap-1 px-3 pb-2 pt-1 ${divider ? "border-l border-line" : ""}`}
     >
       <span className="sr-only">{zone}:</span>
       {typeof children === "string" ? (
-        <span className="font-mono tabular-nums">{children}</span>
+        <span className="tabular-nums">{children}</span>
       ) : (
         children
       )}
@@ -248,39 +221,6 @@ function Cell({
           {betterLabel}
         </span>
       ) : null}
-    </div>
-  );
-}
-
-function ZonePicker({
-  label,
-  zones,
-  value,
-  onChange,
-}: {
-  label: string;
-  zones: Zone[];
-  value: string;
-  onChange: (id: string) => void;
-}) {
-  const id = useId();
-  return (
-    <div className="flex min-w-0 flex-col gap-1">
-      <label htmlFor={id} className="text-sm text-ink-muted">
-        {label}
-      </label>
-      <select
-        id={id}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="press min-h-11 w-full min-w-0 rounded-xl border border-line bg-surface px-3 font-medium hover:border-field"
-      >
-        {zones.map((z) => (
-          <option key={z.id} value={z.id}>
-            {z.name}
-          </option>
-        ))}
-      </select>
     </div>
   );
 }
