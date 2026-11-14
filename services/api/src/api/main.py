@@ -1,12 +1,19 @@
 """FastAPI application entrypoint."""
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from api import accounts, mocks
 from api.analysis import run_field_analysis
-from api.contracts import FieldAnalysis, FieldRequest, SourcingRegion
+from api.contracts import (
+    FarmPlanRequest,
+    FarmPlanResponse,
+    FieldAnalysis,
+    FieldRequest,
+    SourcingRegion,
+)
+from api.planner.service import PlanRejected, plan_farm
 from api.settings import get_settings
 from api.whatsapp.router import router as whatsapp_router
 
@@ -45,3 +52,13 @@ def analyze_field(request: FieldRequest) -> FieldAnalysis:
 def sourcing_region(season: int = 2025) -> SourcingRegion:
     """Feed-buyer screen. Currently returns MOCK data (mock=true)."""
     return mocks.sourcing_region(season)
+
+
+@app.post("/v1/farm/plan", tags=["farmer"])
+def farm_plan(request: FarmPlanRequest) -> FarmPlanResponse:
+    """Farm rotation plan: an area split per field. Scores come from the MOCK world model
+    (mock=true); 422 when a field cannot be planned."""
+    try:
+        return plan_farm(request)
+    except PlanRejected as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
