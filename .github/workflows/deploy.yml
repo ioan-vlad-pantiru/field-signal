@@ -81,12 +81,12 @@ jobs:
 
       - name: Smoke test
         run: |
-          for path in /api/health /ro /en/feed; do
+          for url in https://api.fieldsignal.land/health "$PUBLIC_URL/ro" "$PUBLIC_URL/en/feed"; do
             for attempt in 1 2 3 4 5 6; do
-              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$PUBLIC_URL$path") || true
+              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$url") || true
               [ "$code" = 200 ] && break
               sleep 10
             done
-            echo "$code $path"
+            echo "$code $url"
             [ "$code" = 200 ] || exit 1
           done
