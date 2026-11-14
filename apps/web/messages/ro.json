@@ -591,6 +591,7 @@
     "buyer": "Cumpăr furaje",
     "imageAlt": "Transilvania văzută din satelit, vara: terenuri agricole în centru, înconjurate de Carpații împăduriți.",
     "imageCredit": "Transilvania, 2 iulie 2025. Imagine: NASA Worldview, MODIS pe satelitul Terra.",
+    "sceneNote": "Ilustrație: o vale de exemplu, nu un câmp real.",
     "proofTitle": "Un câmp de lângă {place}, 25 de sezoane",
     "proofSentence": "{current, plural, =0 {Niciun sezon slab} one {Un sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} cu {currentCrops}. {best, plural, =0 {Niciunul} one {Unul} other {#}} cu {bestCrops}.",
     "proofHint": "Fiecare pătrat este un sezon, din {start} până în {end}. Sezoanele bune rămân gri; sunt marcate doar cele slabe.",

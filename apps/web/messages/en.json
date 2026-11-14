@@ -591,6 +591,7 @@
     "buyer": "I buy feed",
     "imageAlt": "Satellite view of Transylvania in summer: farmland in the centre, ringed by the forested Carpathians.",
     "imageCredit": "Transylvania, 2 July 2025. Image: NASA Worldview, MODIS on Terra.",
+    "sceneNote": "Illustration: an example valley, not a real field.",
     "proofTitle": "One field near {place}, 25 seasons",
     "proofSentence": "{current, plural, =0 {No poor seasons} one {1 poor season} other {# poor seasons}} with {currentCrops}. {best, plural, =0 {None} one {1} other {#}} with {bestCrops}.",
     "proofHint": "Each square is one season, {start} to {end}. Good seasons stay grey; only weak ones are marked.",

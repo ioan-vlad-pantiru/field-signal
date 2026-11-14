@@ -7,6 +7,7 @@ import { buttonClass } from "@/components/ui/button";
 import { CrossIcon } from "@/components/ui/icons";
 import { SeasonAxis, SeasonLegend, SeasonStrip } from "@/components/ui/season-strip";
 import { Section } from "@/components/ui/section";
+import { HeroScene } from "@/components/home/hero-scene";
 
 const STEPS = ["field", "rotation", "result"] as const;
 const LIMITS = ["hail", "pests", "markets", "management", "scale"] as const;
@@ -34,7 +35,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
   return (
     <div>
-      <section className="relative isolate flex min-h-[70svh] flex-col justify-end overflow-hidden rounded-2xl sm:min-h-[560px]">
+      <section className="group relative isolate flex min-h-[78svh] flex-col justify-end overflow-hidden rounded-2xl bg-[#0b120e] sm:min-h-[680px]">
         <Image
           src="/hero-transylvania.webp"
           alt={t("imageAlt")}
@@ -43,7 +44,8 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           sizes="(min-width: 1200px) 1168px, 100vw"
           className="-z-10 object-cover"
         />
-        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-black/80 via-black/45 to-black/10" />
+        <HeroScene sequence={best.sequence} firstYear={demo.period_end + 2} />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-t from-black/80 via-black/35 to-transparent sm:bg-gradient-to-tr sm:from-black/75 sm:via-black/20" />
         <div className="flex max-w-3xl flex-col gap-4 p-5 text-white sm:p-10">
           <h1 className="text-[2rem] font-semibold leading-[1.08] tracking-tight sm:text-[3.25rem]">{t("title")}</h1>
           <p className="max-w-xl text-lg text-white/90 sm:text-xl">{t("lead")}</p>
@@ -55,7 +57,8 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
               {t("buyer")}
             </Link>
           </div>
-          <p className="mt-2 text-xs text-white/70">{t("imageCredit")}</p>
+          <p className="mt-2 text-xs text-white/70 group-has-[[data-scene=ready]]:hidden">{t("imageCredit")}</p>
+          <p className="mt-2 hidden text-xs text-white/70 group-has-[[data-scene=ready]]:block">{t("sceneNote")}</p>
         </div>
       </section>
 
