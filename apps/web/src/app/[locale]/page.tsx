@@ -111,11 +111,14 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       </section>
 
 
-      <dl className="mt-6 grid grid-cols-3 gap-3 sm:gap-4">
+      <dl className="mt-4 grid gap-2 sm:mt-6 sm:grid-cols-3 sm:gap-4">
         {stats.map((stat) => (
-          <div key={stat.label} className="rounded-2xl border border-line bg-surface p-4 sm:p-6">
-            <dd className="font-display text-3xl font-semibold tabular-nums text-field-strong sm:text-5xl">{stat.value}</dd>
-            <dt className="mt-1 text-sm text-ink-muted sm:text-base">{stat.label}</dt>
+          <div
+            key={stat.label}
+            className="flex flex-row-reverse items-center justify-end gap-4 rounded-2xl border border-line bg-surface px-4 py-3 sm:flex-col-reverse sm:items-start sm:gap-1 sm:p-6"
+          >
+            <dt className="text-ink-muted sm:text-base">{stat.label}</dt>
+            <dd className="w-12 shrink-0 font-display text-3xl font-semibold tabular-nums text-field-strong sm:w-auto sm:text-5xl">{stat.value}</dd>
           </div>
         ))}
       </dl>
