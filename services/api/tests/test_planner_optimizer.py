@@ -4,10 +4,12 @@ module. Timing tests print their figures (run with `-s` to see them)."""
 import random
 import time
 from itertools import pairwise
+from typing import Any
 
 import pytest
 from ortools.sat.python import cp_model
 
+import api.planner.optimizer as optimizer
 from api.planner.candidates import (
     candidates,
     crops_of,
@@ -231,6 +233,20 @@ def test_infeasible_practice_is_dropped_once_and_flagged() -> None:
         assert not any(row.applies for row in rows)
 
 
+def test_practice_without_a_plan_in_time_is_dropped(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A2: the solve with the practice ends UNKNOWN with no plan (stubbed); one retry without it."""
+    real = optimizer._rank
+
+    def out_of_time(*args: Any) -> tuple[list[Plan], str, list[float]]:
+        return ([], "UNKNOWN", [3.0]) if args[3] is not None else real(*args)
+
+    monkeypatch.setattr(optimizer, "_rank", out_of_time)
+    pieces, scores = farm(TWO_FIELDS, 3, 2)
+    result = solve_farm(pieces, scores, LEGUMES, "diversification")
+    assert result.eco_dropped and result.eco_practice is None and result.plans
+    assert result.times_s[0] == 3.0  # the stubbed solve was counted
+
+
 def test_infeasible_farm_returns_no_plan() -> None:
     # An 8 ha field must stay whole, but its two pieces share no candidate.
     pieces: Pieces = [("S0", "S", 40), ("S1", "S", 40)]
@@ -259,6 +275,27 @@ def test_proven_optimal_only_for_unpruned_optimal_first_solve() -> None:
     assert not any(p.proven_optimal for p in full.plans[1:])
     pruned = solve_farm(pieces, scores, LEGUMES, prune_above=0)
     assert pruned.pruned and pruned.plans and not any(p.proven_optimal for p in pruned.plans)
+
+
+def test_pruned_only_when_a_pair_is_removed() -> None:
+    """A3: above the threshold, but a field has no more than MAX_CANDIDATES rotations."""
+    pieces, scores = farm(TWO_FIELDS, 3, 2, MAIZE_FIRST, weather=0)
+    few = set(candidates(CROPS, 3, MIN_RETURN)[::3])  # 24 rotations
+    some = {k: v for k, v in scores.items() if k[1] in few}
+    result = solve_farm(pieces, some, LEGUMES, prune_above=0, max_time_s=SLOW)
+    assert not result.pruned and result.plans[0].proven_optimal
+
+
+def test_pruning_keeps_one_candidate_set_per_field() -> None:
+    """A1: one 64.8 ha field in 12 pieces whose scores differ independently per piece and
+    rotation; per-piece kept sets share no rotation, per-field sets keep the farm feasible."""
+    rng = random.Random(1)
+    pieces: Pieces = [(f"F{i}", "F", 54) for i in range(12)]
+    rids = candidates(CROPS, 5, MIN_RETURN)
+    scores: Scores = {(p, r): [rng.randint(300, 700)] * 3 for p, _, _ in pieces for r in rids}
+    result = solve_farm(pieces, scores, LEGUMES, top=1)
+    assert result.pruned and result.plans
+    check_blocks(result, pieces)
 
 
 def test_ranks_best_first_and_differ_in_two_choices() -> None:

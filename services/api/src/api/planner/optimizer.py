@@ -22,7 +22,8 @@ Signatures (T5 builds on these):
               values: Mapping[tuple[str, str], Sequence[float]]) -> list[float]
 
 `scores` holds, per piece, the candidates valid for its field (crop history applied). Above
-`prune_above` (piece, rotation) pairs, `solve_farm` keeps `MAX_CANDIDATES` per piece itself.
+`prune_above` (piece, rotation) pairs, `solve_farm` keeps `MAX_CANDIDATES` per field itself;
+`FarmSolve.pruned` is true only when that removed a pair.
 An allocation is `{(piece_id, rotation_id): area_tenths_ha}`; the helpers work for any
 allocation, including the farmer's current rotation (call `rule_checks` with
 `eco_practice=None`: nothing applies). `area_mean(allocation, scores)` gives the farm score per
@@ -55,7 +56,7 @@ WHOLE_FIELD_BELOW = 100  # 0.1 ha: a field under 10 ha carries one rotation (pla
 # of 2-5 % at risk 1, while the pruned model reaches the same or better objectives.
 # ponytail: pruning by pair count; aggregate identical pieces if large farms need proofs.
 PRUNE_ABOVE = 2000
-MAX_CANDIDATES = 40  # per piece when pruned
+MAX_CANDIDATES = 40  # per field when pruned
 # ponytail: ceiling of roughly 800 ha; merge cells into coarser pieces when larger farms matter.
 MAX_PIECES = 150  # more pieces: ValueError here, 422 at the API
 
@@ -77,10 +78,8 @@ class Rule:
     page: str = ""
 
 
-# Figures from secondary sources, NOT read in the official 2026 documents: every row unverified.
-# To verify: the MADR eco-scheme guide (sector vegetal, campania 2026) and "Ghidul fermierului
-# privind condiționalitatea", ed. IV 2026, both on madr.ro; neither PDF could be fetched on
-# 14 Nov 2026 (web firewall / TLS error), so no URL or page is recorded.
+# Figures from secondary sources. The official 2026 documents (the MADR eco-scheme guide and the
+# conditionality guide for farmers) were not read: every row is unverified, with no URL or page.
 RULES_2026 = (
     Rule("max_crop_share", "GAEC 7 2026", None, 75, 100),
     Rule("max_two_crops_share", "GAEC 7 2026", None, 95, 300),
@@ -118,7 +117,8 @@ class FarmSolve:
     plans: list[Plan]  # best objective first; plans[1:] are alternatives, not runners-up
     status: str  # status of the solve that ended the ranking: INFEASIBLE / UNKNOWN when it stopped
     eco_practice: str | None  # practice enforced in `plans` (None if none or dropped)
-    eco_dropped: bool  # the requested practice made the model infeasible and was dropped
+    eco_dropped: bool  # the requested practice was not applied: its solve found no plan
+    # (INFEASIBLE, or UNKNOWN when out of time), so the plans come from one retry without it
     pruned: bool
     times_s: list[float] = field(default_factory=list)  # wall time per solve
 
@@ -144,16 +144,16 @@ def solve_farm(
         raise ValueError(f"unknown eco practice {eco_practice!r}")
     if len(pieces) > MAX_PIECES:
         raise ValueError(f"{len(pieces)} pieces; at most {MAX_PIECES} are planned")
-    pruned = len(scores) > prune_above
-    kept = _prune(pieces, scores) if pruned else scores
+    kept = _prune(pieces, scores) if len(scores) > prune_above else scores
+    pruned = len(kept) < len(scores)
     lam = round(100 * risk_aversion)
     times: list[float] = []
-    for practice in dict.fromkeys((eco_practice, None)):  # retry once without the practice
+    for practice in dict.fromkeys((eco_practice, None)):  # no plan: retry once without it
         plans, status, t = _rank(
             pieces, kept, legumes, practice, lam, top, max_time_s, num_workers, pruned
         )
         times += t
-        if plans or status != "INFEASIBLE":
+        if plans:
             break
     plans.sort(key=lambda p: -p.objective)  # a time-limited solve can find them out of order
     return FarmSolve(plans, status, practice, practice != eco_practice, pruned, times)
@@ -265,15 +265,13 @@ def _grown_per_year[T](alloc: Mapping[Key, T]) -> list[dict[str, list[T]]]:
 def _prune(
     pieces: Sequence[tuple[str, str, int]], scores: Mapping[Key, Sequence[int]]
 ) -> dict[Key, Sequence[int]]:
-    """Keep MAX_CANDIDATES rotation IDs per piece: first the best ID by mean for every (year,
-    crop), so the share rules stay reachable, then alternately the best by mean and by worst
-    scenario, so risk-averse choices survive. The pieces of a field that must stay whole share one
-    set, ranked on the field's area-weighted scores, so one rotation can still cover them all."""
-    field_area: dict[str, int] = defaultdict(int)
-    for _, f, a in pieces:
-        field_area[f] += a
+    """Keep MAX_CANDIDATES rotation IDs per field, ranked on the field's area-weighted scores:
+    first the best ID by mean for every (year, crop), so the share rules stay reachable, then
+    alternately the best by mean and by worst scenario, so risk-averse choices survive. One set
+    per field, not per piece: a field carries at most MAX_ROTATIONS rotations, and per-piece sets
+    can share none of them."""
     area = {p: a for p, _, a in pieces}
-    group = {p: f if field_area[f] < WHOLE_FIELD_BELOW else p for p, f, _ in pieces}
+    group = {p: f for p, f, _ in pieces}
     agg: dict[str, dict[str, list[int]]] = defaultdict(dict)
     for (p, r), s in scores.items():
         acc = agg[group[p]].setdefault(r, [0] * len(s))
