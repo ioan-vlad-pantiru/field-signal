@@ -359,11 +359,22 @@ class RotationOutcome(Contract):
     ndvi_offseason: Range | None = Field(
         default=None, description="mean NDVI outside the crop's season (soil cover)"
     )
+    ndvi_monthly: list[float] | None = Field(
+        default=None,
+        min_length=12,
+        max_length=12,
+        description="monthly NDVI, January to December of the harvest year, ensemble P50; the "
+        "planner's soil-water balance reads it",
+    )
     rootzone_sm_critical: Range | None = Field(
-        default=None, description="root-zone soil moisture in the crop's critical months"
+        default=None,
+        description="root-zone soil moisture in the crop's critical months; the planner does not "
+        "read it (it computes soil water from ndvi_monthly and the weather); may be null",
     )
     et_season_mm: Range | None = Field(
-        default=None, description="evapotranspiration over the crop's season"
+        default=None,
+        description="evapotranspiration over the crop's season; the planner does not read it; "
+        "may be null",
     )
     model_version: str = Field(description="'mock-0' for the mock world model")
 

@@ -818,11 +818,16 @@ export interface RotationOutcome {
    */
   ndvi_offseason?: Range | null;
   /**
-   * root-zone soil moisture in the crop's critical months
+   * monthly NDVI, January to December of the harvest year, ensemble P50; the planner's soil-water balance reads it
+   */
+  ndvi_monthly?:
+    [number, number, number, number, number, number, number, number, number, number, number, number] | null;
+  /**
+   * root-zone soil moisture in the crop's critical months; the planner does not read it (it computes soil water from ndvi_monthly and the weather); may be null
    */
   rootzone_sm_critical?: Range | null;
   /**
-   * evapotranspiration over the crop's season
+   * evapotranspiration over the crop's season; the planner does not read it; may be null
    */
   et_season_mm?: Range | null;
   /**

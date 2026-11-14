@@ -45,7 +45,7 @@ from numpy.typing import NDArray
 
 from api.contracts import Crop, Range, RotationOutcome
 from api.planner import weather
-from api.planner.crops import CROPS
+from api.planner.crops import CROPS, crop_months
 
 Array = NDArray[np.float64]
 
@@ -119,27 +119,11 @@ def _calendar(cell: str) -> Array:
 
 
 @cache
-def _crop_months(crop: str) -> tuple[NDArray[np.bool_], Array, slice]:
-    """In-season mask and NDVI shape (Jan-Dec of the harvest year), flowering months."""
-    c = CROPS[crop]
-    first = 1 if c.season_type == "winter" else c.sowing_months[0]  # winter: sown last autumn
-    (f0, f1), last = c.flowering_months, c.harvest_months[1]
-    m = np.arange(1, 13)
-    mask = (m >= first) & (m <= last)
-    shape = np.where(
-        m < f0,
-        (m - first + 1) / (f0 - first + 1),
-        np.where(m > f1, (last - m + 1) / (last - f1 + 1), 1.0),
-    )
-    return mask, np.where(mask, shape, 0.0), slice(f0 - 1, f1)
-
-
-@cache
 def _stress(cell: str, crop: str) -> Array:
     """Weather loss of yield per season (fraction), from the flowering months and, for a
     winter crop, the sowing months of the previous autumn."""
     c, cal = CROPS[crop], _calendar(cell)
-    f = _crop_months(crop)[2]
+    f = crop_months(crop)[2]
     heat = np.maximum(0, cal[:, f, 0] - (c.heat_watch_tmax_c - HEAT_MARGIN_C)).mean(1)
     dry = np.maximum(0, cal[:, f, 4].max(1) - DRY_SPELL_OK_DAYS)
     deficit = np.maximum(0, SM_OK[c.water_need] - cal[:, f, 3].mean(1))
@@ -177,7 +161,7 @@ def _simulate(point: str, crop: str, prev2: str, prev1: str) -> Array:
     lat, lon = map(float, point.split("_"))
     cell = weather.cell_id(lat, lon)
     cal = _calendar(cell)
-    mask, shape, _ = _crop_months(crop)
+    mask, shape, _ = crop_months(crop)
     u = _seed(point) / 2**64
     base = 1 + _sequence(crop, prev2, prev1) + POINT_VARIATION * (2 * u - 1) - _stress(cell, crop)
     z = np.random.default_rng(_seed(point, prev2, prev1, crop)).standard_normal(
@@ -195,11 +179,11 @@ def _simulate(point: str, crop: str, prev2: str, prev1: str) -> Array:
     return np.stack([ndvi, np.broadcast_to(sm[:, None, :], ndvi.shape), et], axis=-1)
 
 
-def _summaries(states: Array, crop: str) -> Array:
-    """[season, member, month, variable] -> [season, summary, (P10, P50, P90)]. Summaries in
-    RotationOutcome order: yield_rel, ndvi_peak, ndvi_offseason, rootzone_sm_critical,
-    et_season_mm."""
-    mask, _, f = _crop_months(crop)
+def _summaries(states: Array, crop: str) -> tuple[Array, Array]:
+    """[season, member, month, variable] -> ([season, summary, (P10, P50, P90)], monthly NDVI P50
+    [season, month]). Summaries in RotationOutcome order: yield_rel, ndvi_peak, ndvi_offseason,
+    rootzone_sm_critical, et_season_mm."""
+    mask, _, f = crop_months(crop)
     ndvi, sm, et = states[..., 0], states[..., 1], states[..., 2]
     peak = ndvi[..., mask].max(-1)
     x = np.stack(
@@ -212,16 +196,19 @@ def _summaries(states: Array, crop: str) -> Array:
         ],
         axis=-1,
     )
-    return np.percentile(x, (10, 50, 90), axis=1).transpose(1, 2, 0)
+    ranges = np.percentile(x, (10, 50, 90), axis=1).transpose(1, 2, 0)
+    return ranges, np.percentile(ndvi, 50, axis=1)
 
 
-# ponytail: bounded LRU, about 5 KB per entry (4096 = 21 MB); a 150-piece farm reuses it per piece.
+# ponytail: bounded LRU, about 9.5 KB per entry (4096 = 39 MB); a 150-piece farm reuses it per
+# piece.
 @lru_cache(maxsize=4096)
-def _season_summaries(point: str, crop: str, prev2: str, prev1: str) -> Array | None:
+def _season_summaries(point: str, crop: str, prev2: str, prev1: str) -> tuple[Array, Array] | None:
     if crop not in CROPS:
         return None
     out = _summaries(_simulate(point, crop, prev2, prev1), crop)
-    out.setflags(write=False)
+    for a in out:
+        a.setflags(write=False)
     return out
 
 
@@ -233,11 +220,17 @@ def _check(rotation: Sequence[str], start: int) -> int:
 
 
 def _row(
-    point: str, rotation: Sequence[str], start: int, year: int, crop: str, vals: Array | None
+    point: str,
+    rotation: Sequence[str],
+    start: int,
+    year: int,
+    crop: str,
+    vals: tuple[Array, Array] | None,
 ) -> RotationOutcome:
+    """vals: one season of `_summaries` (ranges, monthly NDVI), or None = not simulated."""
     r: list[Range | None] = [None] * 5
     if vals is not None:
-        r = [Range(low=lo, mid=mid, high=hi) for lo, mid, hi in vals.tolist()]
+        r = [Range(low=lo, mid=mid, high=hi) for lo, mid, hi in vals[0].tolist()]
     return RotationOutcome(
         grid_point_id=point,
         rotation=">".join(rotation),
@@ -248,6 +241,7 @@ def _row(
         yield_rel=r[0],
         ndvi_peak=r[1],
         ndvi_offseason=r[2],
+        ndvi_monthly=None if vals is None else vals[1].tolist(),
         rootzone_sm_critical=r[3],
         et_season_mm=r[4],
         model_version=MODEL_VERSION,
@@ -277,8 +271,10 @@ def summarise(
     rows = []
     for y, crop in enumerate(rotation):
         block = state[:, 12 * y : 12 * (y + 1)]
-        ok = crop in CROPS and not np.isnan(block).any()
-        vals = _summaries(block[None], crop)[0] if ok else None
+        vals = None
+        if crop in CROPS and not np.isnan(block).any():
+            ranges, ndvi = _summaries(block[None], crop)
+            vals = (ranges[0], ndvi[0])
         rows.append(_row(grid_point_id, rotation, start, y + 1, crop, vals))
     return rows
 
@@ -291,7 +287,6 @@ def outcomes(
     rows = []
     for y, (crop, p2, p1) in enumerate(_years(last_two, rotation)):
         s = _season_summaries(grid_point_id, crop, p2, p1)
-        rows.append(
-            _row(grid_point_id, rotation, start, y + 1, crop, None if s is None else s[i + y])
-        )
+        vals = None if s is None else (s[0][i + y], s[1][i + y])
+        rows.append(_row(grid_point_id, rotation, start, y + 1, crop, vals))
     return rows

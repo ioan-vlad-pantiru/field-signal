@@ -1,17 +1,26 @@
 """Scoring for the farm planner (plan §3.6): world-model rows -> four scores 0-100, higher better.
 
-Scoring reads only `RotationOutcome` rows (yearly physical summaries) and the rotation itself.
-Soil (pH, texture, organic carbon), elevation and weather are NOT inputs here: they act through
-the world model only, so using them again would count them twice.
+Scoring reads `RotationOutcome` rows (yearly physical summaries and monthly NDVI), the rotation
+and, for `water` only, the NASA POWER weather of the row's cell (monthly Tmax, Tmin, rain) and the
+world model's reference NDVI curve. Weather therefore enters `water` directly, through a
+soil-water balance (`water_balance`), as well as through the model. Soil (pH, texture, organic
+carbon) and elevation are NOT inputs here: they act through the world model only, so using them
+again would count them twice; the soil-water balance assumes the same soil for every field.
 
 Score             What it measures, the proxy used, and what it does NOT measure
 yield_stability   measures: expected yield level over the plan
                   proxy:    mean over plan years of the yield_rel mid (P50); no spread term
                   not:      prices, costs, margins; uncertainty (counted once, in low_risk)
-water             measures: whether root-zone moisture meets the crop's need when it matters
-                  proxy:    mean over plan years of rootzone_sm_critical mid against the crop's
-                            water_need (not ET: derived from NDVI, it would repeat the yield)
-                  not:      irrigation, groundwater, the farm's water use
+water             measures: whether the crop gets the water a good-year crop would use, at flowering
+                  proxy:    mean over plan years of min(1, sum ETa / sum ETm) over the crop's
+                            flowering months (FAO-33 relative evapotranspiration). ETa: a monthly
+                            one-layer bucket from ndvi_monthly, rain and Hargreaves ET0, starting
+                            each January refilled. ETm: the same ET0 x the crop coefficient of the
+                            reference NDVI curve (P90 over seasons, unknown history, per point and
+                            crop). ETa follows NDVI, so this score partly follows yield.
+                  not:      irrigation, groundwater, soil texture or depth (one soil assumed),
+                            water carried over from last year, the farm's water use; it does not
+                            read rootzone_sm_critical or et_season_mm
 soil_health       measures: soil cover outside the main crop, and legume years
                   proxy:    ndvi_offseason mid (cover) and the rotation's share of legume years
                   not:      nutrients, organic matter, structure, erosion, disease pressure;
@@ -43,14 +52,16 @@ in table.items()}`.
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping, Sequence
-from functools import lru_cache
+from functools import cache, lru_cache
 
 import numpy as np
 from numpy.typing import NDArray
 
 from api.contracts import Priority, RotationOutcome, ScoreBreakdown
 from api.planner import mock_world_model as wm
-from api.planner.crops import CROPS, LEGUMES
+from api.planner import water_balance as wb
+from api.planner import weather
+from api.planner.crops import CROPS, LEGUMES, crop_months
 from api.planner.grid import Piece
 
 Array = NDArray[np.float64]
@@ -60,8 +71,6 @@ _PRIORITIES = (Priority.YIELD, Priority.WATER, Priority.SOIL, Priority.RISK)  # 
 
 # PLACEHOLDER normalisation constants, not calibrated.
 YIELD_REL_ZERO, YIELD_REL_FULL = 0.4, 1.2  # yield_rel (mid or P10) mapped to 0 and 100
-SM_DRY = 0.25  # root-zone wetness (POWER GWETROOT, 0-1) scored 0
-SM_NEED = {"low": 0.35, "medium": 0.45, "high": 0.55}  # wetness scored 100, per crop water_need
 COVER_NDVI_ZERO, COVER_NDVI_FULL = 0.15, 0.35  # off-season NDVI mapped to 0 and 100
 LEGUME_SHARE_FULL = 0.25  # share of legume years scored 100
 COVER_WEIGHT = 0.5  # soil_health = this x cover + the rest x legume share
@@ -77,18 +86,49 @@ def weight_vector(weights: Mapping[Priority, float]) -> Array:
     return w / w.sum() if w.sum() > 0 else np.full(4, 0.25)
 
 
-def _year_parts(row: RotationOutcome) -> tuple[float, float, float, float] | None:
-    """(yield mid, moisture against need, off-season NDVI mid, yield P10) of one plan year."""
-    crop, yld, sm, off = (
-        CROPS.get(row.crop),
-        row.yield_rel,
-        row.rootzone_sm_critical,
-        row.ndvi_offseason,
+@cache
+def _cell_weather(cell: str) -> tuple[Array, Array]:
+    """[season, month Jan-Dec] ET0 and rain (mm) of a POWER cell, harvest years."""
+    m = np.array(
+        [
+            [(x.tmax_mean_c, x.tmin_mean_c, x.rain_mm) for x in weather.season_months(cell, s)]
+            for s in weather.seasons()
+        ]
     )
-    if crop is None or yld is None or sm is None or off is None:
+    return wb.et0_mm(m[..., 0], m[..., 1], float(cell.split("_")[0])), m[..., 2]
+
+
+@lru_cache(maxsize=4096)
+def _reference_kc(point: str, crop: str) -> Array:
+    """Crop coefficient of a good-year crop per month: P90 over all seasons of the world model's
+    monthly NDVI for an unknown history."""
+    ndvi = [wm.outcomes(point, ("", ""), (crop,), s)[0].ndvi_monthly for s in wm.scenarios(1)]
+    kc = wb.crop_coefficient(np.percentile(np.array(ndvi, dtype=float), 90, axis=0))
+    kc.setflags(write=False)
+    return kc
+
+
+def _year_parts(rows: Sequence[RotationOutcome]) -> Array | None:
+    """[row, (yield mid, water ratio, off-season NDVI mid, yield P10)] for rows of one grid point
+    and crop (any seasons); None when a value the scores need is null. `water` = min(1, sum ETa /
+    sum ETm) over the flowering months; see the module header."""
+    point, crop = rows[0].grid_point_id, rows[0].crop
+    if crop not in CROPS:
         return None
-    need = SM_NEED[crop.water_need]
-    return yld.mid, (sm.mid - SM_DRY) / (need - SM_DRY), off.mid, yld.low
+    cols = []
+    for r in rows:
+        if r.yield_rel is None or r.ndvi_offseason is None or r.ndvi_monthly is None:
+            return None
+        cols.append((r.yield_rel.mid, r.ndvi_offseason.mid, r.yield_rel.low))
+    et0, rain = _cell_weather(weather.cell_id(*map(float, point.split("_"))))
+    i = np.array([r.season for r in rows]) - weather.seasons().start
+    f = crop_months(crop)[2]  # the bucket runs from January to the last flowering month
+    ndvi = np.array([r.ndvi_monthly for r in rows], dtype=float)
+    _, eta, _, _ = wb.bucket(ndvi[:, : f.stop], et0[i, : f.stop], rain[i, : f.stop])
+    etm = _reference_kc(point, crop)[f] * et0[i, f]
+    water = np.minimum(1, eta[:, f].sum(-1) / np.maximum(etm.sum(-1), 1e-9))
+    x = np.array(cols)
+    return np.column_stack([x[:, 0], water, x[:, 1], x[:, 2]])
 
 
 def _combine(parts: Array, legume_share: float, w: Array) -> Array:
@@ -115,10 +155,10 @@ def score(
 ) -> ScoreBreakdown | None:
     """The four scores and the total for the rows of one piece, rotation and scenario (one row
     per plan year); None when a value the scores need is null."""
-    parts = [_year_parts(r) for r in rows]
+    parts = [_year_parts([r]) for r in rows]
     if not parts or any(p is None for p in parts):
         return None
-    arr = np.array(parts, dtype=float)[:, None, :]
+    arr = np.concatenate([p for p in parts if p is not None])[:, None, :]
     v = _combine(arr, _legume_share([r.crop for r in rows]), weight_vector(weights))[0]
     return ScoreBreakdown(**dict(zip(COLUMNS, v.tolist(), strict=True)))
 
@@ -127,12 +167,9 @@ def score(
 @lru_cache(maxsize=4096)
 def _parts(point: str, crop: str, prev2: str, prev1: str) -> Array | None:
     """Year parts for every season: [season, part], built from the world model's rows."""
-    rows = [wm.outcomes(point, (prev2, prev1), (crop,), s)[0] for s in wm.scenarios(1)]
-    parts = [_year_parts(r) for r in rows]
-    if any(p is None for p in parts):
-        return None
-    out = np.array(parts, dtype=float)
-    out.setflags(write=False)
+    out = _year_parts([wm.outcomes(point, (prev2, prev1), (crop,), s)[0] for s in wm.scenarios(1)])
+    if out is not None:
+        out.setflags(write=False)
     return out
 
 

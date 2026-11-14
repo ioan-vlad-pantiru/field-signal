@@ -10,6 +10,10 @@ may appear in a farmer's history but is never proposed. Pea is the only legume.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import cache
+
+import numpy as np
+from numpy.typing import NDArray
 
 
 @dataclass(frozen=True)
@@ -38,3 +42,19 @@ LEGUMES = frozenset(c for c, v in CROPS.items() if v.is_legume)
 # Rule checks only: legume main crops of the contract that a farmer's current rotation may hold
 # (soybean is never proposed, but it counts towards the legume share of a baseline).
 RULE_LEGUMES = LEGUMES | {"soybean"}
+
+
+@cache
+def crop_months(crop: str) -> tuple[NDArray[np.bool_], NDArray[np.float64], slice]:
+    """In-season mask and NDVI shape (Jan-Dec of the harvest year), flowering months."""
+    c = CROPS[crop]
+    first = 1 if c.season_type == "winter" else c.sowing_months[0]  # winter: sown last autumn
+    (f0, f1), last = c.flowering_months, c.harvest_months[1]
+    m = np.arange(1, 13)
+    mask = (m >= first) & (m <= last)
+    shape = np.where(
+        m < f0,
+        (m - first + 1) / (f0 - first + 1),
+        np.where(m > f1, (last - m + 1) / (last - f1 + 1), 1.0),
+    )
+    return mask, np.where(mask, shape, 0.0), slice(f0 - 1, f1)

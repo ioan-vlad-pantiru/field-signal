@@ -13,10 +13,20 @@
       "allocations": [
         {
           "field_id": "f1",
-          "area_ha": 36.6,
+          "area_ha": 31.6,
           "sequence": [
             "sunflower",
             "barley",
+            "pea",
+            "barley"
+          ]
+        },
+        {
+          "field_id": "f1",
+          "area_ha": 5.0,
+          "sequence": [
+            "barley",
+            "sunflower",
             "pea",
             "barley"
           ]
@@ -33,26 +43,26 @@
         }
       ],
       "score": {
-        "total": 77.6,
-        "yield_stability": 72.3,
-        "water": 99.2,
+        "total": 75.2,
+        "yield_stability": 72.1,
+        "water": 92.8,
         "soil_health": 68.2,
-        "low_risk": 55.1
+        "low_risk": 54.4
       },
       "score_range": {
-        "low": 73.9,
-        "mid": 78.1,
-        "high": 79.6
+        "low": 66.7,
+        "mid": 76.0,
+        "high": 78.8
       },
       "worst": {
         "start_season": 2000,
         "end_season": 2003,
-        "total": 73.9
+        "total": 66.7
       },
       "best": {
         "start_season": 2004,
         "end_season": 2007,
-        "total": 79.6
+        "total": 78.8
       },
       "yearly_areas": [
         {
@@ -60,8 +70,13 @@
           "areas": [
             {
               "crop": "sunflower",
-              "area_ha": 45.0,
-              "share_pct": 100.0
+              "area_ha": 40.0,
+              "share_pct": 88.9
+            },
+            {
+              "crop": "barley",
+              "area_ha": 5.0,
+              "share_pct": 11.1
             }
           ]
         },
@@ -70,8 +85,13 @@
           "areas": [
             {
               "crop": "barley",
-              "area_ha": 45.0,
-              "share_pct": 100.0
+              "area_ha": 40.0,
+              "share_pct": 88.9
+            },
+            {
+              "crop": "sunflower",
+              "area_ha": 5.0,
+              "share_pct": 11.1
             }
           ]
         },
@@ -151,70 +171,60 @@
       "allocations": [
         {
           "field_id": "f1",
-          "area_ha": 30.7,
+          "area_ha": 36.6,
           "sequence": [
-            "pea",
-            "barley",
             "sunflower",
+            "barley",
+            "pea",
             "barley"
-          ]
-        },
-        {
-          "field_id": "f1",
-          "area_ha": 5.9,
-          "sequence": [
-            "sunflower",
-            "barley",
-            "pea",
-            "wheat"
           ]
         },
         {
           "field_id": "f2",
           "area_ha": 8.4,
           "sequence": [
-            "pea",
             "barley",
             "sunflower",
+            "pea",
             "barley"
           ]
         }
       ],
       "score": {
-        "total": 77.6,
-        "yield_stability": 72.2,
-        "water": 99.2,
+        "total": 75.1,
+        "yield_stability": 72.0,
+        "water": 92.7,
         "soil_health": 68.2,
-        "low_risk": 55.0
+        "low_risk": 54.0
       },
       "score_range": {
-        "low": 72.9,
-        "mid": 77.8,
-        "high": 79.5
+        "low": 67.0,
+        "mid": 76.0,
+        "high": 78.6
       },
       "worst": {
         "start_season": 2000,
         "end_season": 2003,
-        "total": 72.9
+        "total": 67.0
       },
       "best": {
-        "start_season": 2014,
-        "end_season": 2017,
-        "total": 79.5
+        "start_season": 2004,
+        "end_season": 2007,
+        "total": 78.6
       },
       "yearly_areas": [
         {
           "plan_year": 1,
           "areas": [
             {
-              "crop": "pea",
-              "area_ha": 39.1,
-              "share_pct": 86.9
+              "crop": "sunflower",
+              "area_ha": 36.6,
+              "share_pct": 81.3
             },
             {
-              "crop": "sunflower",
-              "area_ha": 5.9,
-              "share_pct": 13.1
+              "crop": "barley",
+              "area_ha": 8.4,
+              "share_pct": 18.7
             }
           ]
         },
@@ -223,8 +233,13 @@
           "areas": [
             {
               "crop": "barley",
-              "area_ha": 45.0,
-              "share_pct": 100.0
+              "area_ha": 36.6,
+              "share_pct": 81.3
+            },
+            {
+              "crop": "sunflower",
+              "area_ha": 8.4,
+              "share_pct": 18.7
             }
           ]
         },
@@ -232,14 +247,9 @@
           "plan_year": 3,
           "areas": [
             {
-              "crop": "sunflower",
-              "area_ha": 39.1,
-              "share_pct": 86.9
-            },
-            {
               "crop": "pea",
-              "area_ha": 5.9,
-              "share_pct": 13.1
+              "area_ha": 45.0,
+              "share_pct": 100.0
             }
           ]
         },
@@ -248,13 +258,8 @@
           "areas": [
             {
               "crop": "barley",
-              "area_ha": 39.1,
-              "share_pct": 86.9
-            },
-            {
-              "crop": "wheat",
-              "area_ha": 5.9,
-              "share_pct": 13.1
+              "area_ha": 45.0,
+              "share_pct": 100.0
             }
           ]
         }
@@ -314,7 +319,17 @@
       "allocations": [
         {
           "field_id": "f1",
-          "area_ha": 36.6,
+          "area_ha": 27.8,
+          "sequence": [
+            "barley",
+            "sunflower",
+            "pea",
+            "barley"
+          ]
+        },
+        {
+          "field_id": "f1",
+          "area_ha": 8.8,
           "sequence": [
             "pea",
             "barley",
@@ -326,48 +341,48 @@
           "field_id": "f2",
           "area_ha": 8.4,
           "sequence": [
+            "pea",
             "barley",
             "sunflower",
-            "pea",
             "barley"
           ]
         }
       ],
       "score": {
-        "total": 77.4,
-        "yield_stability": 72.1,
-        "water": 99.2,
+        "total": 74.3,
+        "yield_stability": 71.4,
+        "water": 92.1,
         "soil_health": 68.2,
-        "low_risk": 53.9
+        "low_risk": 51.3
       },
       "score_range": {
-        "low": 73.1,
-        "mid": 77.8,
-        "high": 79.0
+        "low": 68.4,
+        "mid": 74.6,
+        "high": 77.2
       },
       "worst": {
         "start_season": 2000,
         "end_season": 2003,
-        "total": 73.1
+        "total": 68.4
       },
       "best": {
         "start_season": 2004,
         "end_season": 2007,
-        "total": 79.0
+        "total": 77.2
       },
       "yearly_areas": [
         {
           "plan_year": 1,
           "areas": [
             {
-              "crop": "pea",
-              "area_ha": 36.6,
-              "share_pct": 81.3
+              "crop": "barley",
+              "area_ha": 27.8,
+              "share_pct": 61.8
             },
             {
-              "crop": "barley",
-              "area_ha": 8.4,
-              "share_pct": 18.7
+              "crop": "pea",
+              "area_ha": 17.2,
+              "share_pct": 38.2
             }
           ]
         },
@@ -375,14 +390,14 @@
           "plan_year": 2,
           "areas": [
             {
-              "crop": "barley",
-              "area_ha": 36.6,
-              "share_pct": 81.3
+              "crop": "sunflower",
+              "area_ha": 27.8,
+              "share_pct": 61.8
             },
             {
-              "crop": "sunflower",
-              "area_ha": 8.4,
-              "share_pct": 18.7
+              "crop": "barley",
+              "area_ha": 17.2,
+              "share_pct": 38.2
             }
           ]
         },
@@ -390,14 +405,14 @@
           "plan_year": 3,
           "areas": [
             {
-              "crop": "sunflower",
-              "area_ha": 36.6,
-              "share_pct": 81.3
+              "crop": "pea",
+              "area_ha": 27.8,
+              "share_pct": 61.8
             },
             {
-              "crop": "pea",
-              "area_ha": 8.4,
-              "share_pct": 18.7
+              "crop": "sunflower",
+              "area_ha": 17.2,
+              "share_pct": 38.2
             }
           ]
         },
@@ -488,26 +503,26 @@
       }
     ],
     "score": {
-      "total": 43.1,
+      "total": 41.0,
       "yield_stability": 40.2,
-      "water": 79.5,
+      "water": 73.4,
       "soil_health": 14.6,
       "low_risk": 16.7
     },
     "score_range": {
-      "low": 31.9,
-      "mid": 43.2,
-      "high": 49.9
+      "low": 27.6,
+      "mid": 41.1,
+      "high": 47.7
     },
     "worst": {
       "start_season": 2000,
       "end_season": 2003,
-      "total": 31.9
+      "total": 27.6
     },
     "best": {
-      "start_season": 2016,
-      "end_season": 2019,
-      "total": 49.9
+      "start_season": 2006,
+      "end_season": 2009,
+      "total": 47.7
     },
     "yearly_areas": [
       {
@@ -613,6 +628,10 @@
     {
       "ro": "Fiecare câmp primește vremea celulei sale NASA POWER (circa 50 km), comună tuturor câmpurilor din aceeași celulă; umiditatea din zona rădăcinilor este o valoare de model MERRA-2, nu o măsurătoare în câmp.",
       "en": "Each field takes the weather of its NASA POWER cell (about 50 km), shared by every field in that cell; root-zone wetness is a MERRA-2 model value, not a field measurement."
+    },
+    {
+      "ro": "Apa din sol din scorul de apă este un bilanț lunar modelat al ploii și al consumului de apă al culturii (din NDVI și temperatură), cu același sol presupus pentru fiecare câmp și reumplut în fiecare iarnă; nu este o măsurătoare.",
+      "en": "Soil water in the water score is a modelled monthly balance of rain and crop water use (from NDVI and temperature), with the same soil assumed for every field and refilled each winter; it is not a measurement."
     },
     {
       "ro": "Acoperirea este grila NASA POWER peste România: un câmp aflat chiar dincolo de graniță, într-o celulă acoperită, este planificat cu aceleași date.",

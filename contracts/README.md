@@ -111,7 +111,10 @@ the rows carry no scores.
 - `yield_rel`, `ndvi_peak`, `ndvi_offseason`, `rootzone_sm_critical`, `et_season_mm`: `Range` with
   low/mid/high = P10/P50/P90 over ensemble members, i.e. the spread across ensemble members for one
   weather window (not across weather windows); null = not predicted, and the planner then drops
-  that rotation for that grid point.
+  that rotation for that grid point. The planner does not read `rootzone_sm_critical` or
+  `et_season_mm`: they may be null.
+- `ndvi_monthly`: 12 NDVI values, January to December of the harvest year, the P50 over ensemble
+  members; null drops the rotation. The planner computes soil water from it and the weather.
 - `model_version`: `"mock-0"` while the declared mock world model stands in for the real one.
 
 ## (3a) Field cells: per-hexagon farmland mask (proposal, #22)

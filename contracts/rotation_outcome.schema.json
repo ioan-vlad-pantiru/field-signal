@@ -111,6 +111,24 @@
       "default": null,
       "description": "mean NDVI outside the crop's season (soil cover)"
     },
+    "ndvi_monthly": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 12,
+          "minItems": 12,
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "monthly NDVI, January to December of the harvest year, ensemble P50; the planner's soil-water balance reads it",
+      "title": "Ndvi Monthly"
+    },
     "rootzone_sm_critical": {
       "anyOf": [
         {
@@ -121,7 +139,7 @@
         }
       ],
       "default": null,
-      "description": "root-zone soil moisture in the crop's critical months"
+      "description": "root-zone soil moisture in the crop's critical months; the planner does not read it (it computes soil water from ndvi_monthly and the weather); may be null"
     },
     "et_season_mm": {
       "anyOf": [
@@ -133,7 +151,7 @@
         }
       ],
       "default": null,
-      "description": "evapotranspiration over the crop's season"
+      "description": "evapotranspiration over the crop's season; the planner does not read it; may be null"
     },
     "model_version": {
       "description": "'mock-0' for the mock world model",

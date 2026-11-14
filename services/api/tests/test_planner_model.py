@@ -6,6 +6,7 @@ import pytest
 from api.contracts import Priority, RotationOutcome, ScoreBreakdown
 from api.planner import grid, scoring, weather
 from api.planner import mock_world_model as wm
+from api.planner.crops import CROPS
 
 AIUD = grid.grid_point(46.30, 23.75)
 # Demo farm near Aiud: about 37 ha and 8 ha, (lat, lon).
@@ -127,6 +128,27 @@ def test_2012_scores_worse_for_maize_than_a_mild_year() -> None:
     assert s[2012].low_risk < s[2005].low_risk
     assert s[2012].water < s[2005].water
     assert s[2012].total < s[2005].total
+
+
+def test_water_follows_the_soil_water_balance() -> None:
+    # Dry 2012 at Aiud: maize with its NDVI pulled halfway to bare soil uses less water at
+    # flowering, against the same good-year demand, so its water part drops.
+    row = wm.outcomes(AIUD, ["wheat", "pea"], ["maize"], 2012)[0]
+    assert row.ndvi_monthly is not None
+    thin = [wm.BARE_NDVI + 0.5 * (v - wm.BARE_NDVI) for v in row.ndvi_monthly]
+    assert (
+        _score([row.model_copy(update={"ndvi_monthly": thin})], {}).water < _score([row], {}).water
+    )
+    # Wet 2005: every crop at its reference curve (P90 over seasons) scores close to 100.
+    for crop in CROPS:
+        rows = [wm.outcomes(AIUD, ["", ""], [crop], s)[0] for s in wm.scenarios(1)]
+        ref = np.percentile([r.ndvi_monthly for r in rows], 90, axis=0).tolist()
+        wet = rows[2005 - rows[0].season].model_copy(update={"ndvi_monthly": ref})
+        assert _score([wet], {}).water > 95, crop
+    # A null monthly NDVI drops the rotation; the model's soil moisture and ET are not read.
+    assert scoring.score([row.model_copy(update={"ndvi_monthly": None})], {}) is None
+    no_sm = row.model_copy(update={"rootzone_sm_critical": None, "et_season_mm": None})
+    assert scoring.score([no_sm], {}) == _score([row], {})
 
 
 def test_legume_before_wheat_beats_wheat_after_wheat() -> None:

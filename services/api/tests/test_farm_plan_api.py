@@ -104,6 +104,7 @@ def test_default_enforces_no_eco_rule(demo: FarmPlanResponse) -> None:
     assert "area split" not in en and "which part of a field" not in en
     assert "shown as optimal only when the solver proves it" in en
     assert "the weather of its NASA POWER cell" in en and "whole farm" not in en
+    assert "modelled monthly balance of rain and crop water use" in en
     assert "just across the border" in en
     assert "proven_optimal" not in en
     for c in demo.caveats:

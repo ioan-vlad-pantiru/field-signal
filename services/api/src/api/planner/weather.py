@@ -72,6 +72,7 @@ def cell_id(lat: float, lon: float) -> str:
     return cid
 
 
+@cache  # the planner calls it per world-model row; the table it reads is cached too
 def seasons() -> range:
     """Harvest seasons with full weather, winter sowing included: 1982-2025."""
     years = {y for y, _ in next(iter(_table().values()))}
