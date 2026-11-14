@@ -20,7 +20,7 @@ For a zone x crop and a season, each indicator is ranked against that zone x cro
 seasons 2001-2025 (the season itself left out): the share of other seasons that were better,
 ties counted half. Indicators, worse direction in brackets:
   water_deficit_mm (higher), gwetroot_critical (lower), ndvi_peak_anomaly (lower, when present),
-  hot_days_flowering (higher; maize, soybean and sunflower only).
+  hot_days_flowering (higher; maize and sunflower only).
 score = 100 x mean of those ranks. level: high >= 67, low < 33, medium in between.
 Validation: county Alba, each crop and season with an INS yield; a "poor" year is an INS yield
 more than 10 % below trend. hit = (high and poor) or (low/medium and not poor).
@@ -30,8 +30,7 @@ Quality windows (NASA POWER daily, mean over the commune's sample points, then c
   >= 7 days and window rain below its 2001-2024 mean (Bailly et al. 2018 rule in crops.toml);
   medium if >= 7 days, or >= 3 days and at least 1.5x the normal; else low.
 - fusarium_window (wheat): days with RH >= 85 % or rain >= 1 mm, 7 days before to 10 after
-  anthesis. soy_seed_fill_rain (soybean): days with rain >= 1 mm, 5 Aug-10 Sep (about R5-R7 in
-  Alba; crops.toml has no seed-fill window). harvest_rain (every crop): days with rain >= 1 mm
+  anthesis. harvest_rain (every crop): days with rain >= 1 mm
   in the crop's harvest window. For these: high if the 2025 count is at or above the 80th
   percentile of 2001-2024, medium at or above the 60th, else low.
 """
@@ -43,14 +42,10 @@ import json
 import sqlite3
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Any
 
 import numpy as np
 import pandas as pd
 import pyogrio
-from farm_data import CACHE, power
-from farm_data.crops import load_crops
-from farm_data.features import POWER_RANGE
 
 from api.contracts import (
     AdoptionScenario,
@@ -70,6 +65,9 @@ from api.contracts import (
     ValidationYear,
     Zone,
 )
+from farm_data import CACHE, power
+from farm_data.crops import load_crops
+from farm_data.features import POWER_RANGE
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT = REPO_ROOT / "services" / "api" / "src" / "api" / "data" / "sourcing_alba.json"
@@ -78,8 +76,9 @@ L = Localized
 
 SEASON = 2025
 FIRST = 2001
-CROPS = ["maize", "wheat", "soybean", "sunflower", "barley"]
-REFERENCE = ["maize", "wheat", "soybean"]
+# Soybean is left out: the buyer imports GM soy (GM soy may not be grown in the EU).
+CROPS = ["maize", "wheat", "barley", "sunflower"]
+REFERENCE = ["maize", "wheat", "barley"]
 MODEL_VERSION = "rule-percentile-0.1"
 HIGH, LOW = 67.0, 33.0
 POOR_PCT = -10.0
@@ -90,16 +89,13 @@ MAP_CROP = {
     "common_wheat": "wheat",
     "durum_wheat": "wheat",
     "barley": "barley",
-    "soybean": "soybean",
     "sunflower": "sunflower",
 }
 LEGUMES = ("soybean", "dry_pulses")
-SUMMER_HEAT = ("maize", "soybean", "sunflower")
-SOY_FILL = ("08-05", "09-10")
+SUMMER_HEAT = ("maize", "sunflower")
 CROP_NAME = {
     "maize": ("porumb", "maize"),
     "wheat": ("grâu", "wheat"),
-    "soybean": ("soia", "soybean"),
     "sunflower": ("floarea-soarelui", "sunflower"),
     "barley": ("orz", "barley"),
 }
@@ -160,7 +156,9 @@ def score_season(hist: pd.DataFrame, crop: str, season: int) -> tuple[float, lis
         b = badness(float(v), others, direction)
         if np.isnan(b):
             continue
-        parts.append({"name": name, "value": float(v), "normal": float(np.nanmedian(others)), "rank": b})
+        parts.append(
+            {"name": name, "value": float(v), "normal": float(np.nanmedian(others)), "rank": b}
+        )
     score = 100 * float(np.mean([p["rank"] for p in parts])) if parts else 50.0
     return round(score, 1), parts
 
@@ -245,7 +243,10 @@ def validate(county: pd.DataFrame) -> tuple[Validation, dict[str, Fit]]:
         resid = y - (a + b * x)
         if b < 0 and r <= -0.3:
             fits[crop] = (a, b, float(np.percentile(resid, 20)), float(np.percentile(resid, 80)))
-        print(f"  {crop}: n={len(x)} r={r:+.2f} slope={b:+.2f} %/pt  fit={'yes' if crop in fits else 'no'}")
+        print(
+            f"  {crop}: n={len(x)} r={r:+.2f} slope={b:+.2f} %/pt"
+            f"  fit={'yes' if crop in fits else 'no'}"
+        )
     hits = sum(y.hit for y in years)
     method = L(
         ro=(
@@ -379,20 +380,6 @@ def quality_flags(kb, crop: str, w: pd.DataFrame) -> list[QualityFlag]:
                 "înflorirea grâului, zile umede sau cu ploaie",
                 "wheat flowering, humid or rainy days",
             ),
-        )
-    if crop == "soybean":
-        win = (_md(SEASON, SOY_FILL[0]), _md(SEASON, SOY_FILL[1]))
-        wet = window_counts(w, win, lambda d: d["PRECTOTCORR"] >= 1.0)
-        flag(
-            "soy_seed_fill_rain",
-            L(
-                ro="Ploaie cât se umplu boabele (risc de proteină mai mică)",
-                en="Rain while the beans fill (lower protein risk)",
-            ),
-            pct_level(wet),
-            wet,
-            win,
-            ("umplerea boabelor de soia, zile cu ploaie", "soybean seed fill, rainy days"),
         )
     har = c.window("harvest", SEASON)
     wet = window_counts(w, har, lambda d: d["PRECTOTCORR"] >= 1.0)
@@ -562,7 +549,7 @@ def build(zip_path: Path) -> tuple[SourcingRegion, pd.DataFrame]:
         reference_crops=REFERENCE,
         zones=out_zones,
         recommendation=recommendation(t, county),
-        scenario=scenario(land),
+        scenario=scenario(),
         caveats=CAVEATS,
         sources=SOURCES,
         validation=validation,
@@ -576,151 +563,165 @@ def names(rows: pd.DataFrame) -> str:
     return ", ".join(rows["name"])
 
 
+def wheat_action(safe: pd.DataFrame, test: pd.DataFrame, rainy_share: float) -> Localized:
+    if len(test):
+        rain_ro = (
+            " și recoltarea din iulie a fost mai ploioasă decât de obicei"
+            if rainy_share >= 0.5
+            else ""
+        )
+        rain_en = " and the July harvest was rainier than usual" if rainy_share >= 0.5 else ""
+        return L(
+            ro=(
+                f"Grâu: cumpărați întâi din {names(safe)} (cel mai mic risc față de istoricul "
+                f"lor). Înflorirea a fost umedă{rain_ro}: testați loturile din {names(test)} "
+                "pentru DON (toxina de fuzarioză) și umiditate."
+            ),
+            en=(
+                f"Wheat: buy first from {names(safe)} (lowest risk against their own record). "
+                f"Flowering was humid{rain_en}: test lots from {names(test)} for DON "
+                "(fusarium toxin) and moisture."
+            ),
+        )
+    return L(
+        ro=f"Grâu: cumpărați întâi din {names(safe)} (cel mai mic risc față de istoricul lor).",
+        en=f"Wheat: buy first from {names(safe)} (lowest risk against their own record).",
+    )
+
+
 def recommendation(t: pd.DataFrame, county: pd.DataFrame) -> SourcingRecommendation:
-    maize = t[(t["crop"] == "maize") & (t["ha"] >= 100)].sort_values("score")
-    safe, risky = maize.head(3), maize.tail(3).iloc[::-1]
+    maize = t[(t["crop"] == "maize") & (t["ha"] >= 100)]
+    # Ties (communes on the same NASA POWER cell) go to the commune with more maize.
+    safe = maize.sort_values(["score", "ha"], ascending=[True, False]).head(3)
+    risky = maize.sort_values(["score", "ha"], ascending=[False, False]).head(3)
+    lo, hi = maize["score"].min(), maize["score"].max()
     afla = risky[risky["flags"].map(lambda f: f.get("aflatoxin_window") != "low")]
-    soy = t[t["crop"] == "soybean"]
-    calm = soy[soy["deficit_rank"] < 0.5].sort_values("arable", ascending=False).head(3)
+    wet_harvest = maize["flags"].map(lambda f: f.get("harvest_rain") != "low").mean()
+    wheat = t[(t["crop"] == "wheat") & (t["ha"] >= 50)]
+    w_safe = wheat.sort_values(["score", "ha"], ascending=[True, False]).head(3)
+    w_wet = wheat[wheat["flags"].map(lambda f: f.get("fusarium_window") != "low")]
+    w_test = w_wet.sort_values("ha", ascending=False).head(3)
+    w_rain = wheat["flags"].map(lambda f: f.get("harvest_rain") == "high").mean()
     ins = county[(county["crop"] == "maize") & (county["season"] == SEASON)]
     ins_pct = float(ins["yield_anomaly_pct"].iloc[0])
-    test_from = afla if len(afla) else risky
+    if len(afla):
+        check = L(
+            ro=(
+                f"Testați loturile de porumb din {names(afla)} pentru aflatoxine la recepție: "
+                "acolo au fost multe zile peste 33 °C la înflorire."
+            ),
+            en=(
+                f"Test maize lots from {names(afla)} for aflatoxin at intake: they had many "
+                "days above 33 °C at flowering."
+            ),
+        )
+    else:
+        harvest_ro = (
+            "toamna a fost mai ploioasă decât de obicei la recoltare, deci "
+            if wet_harvest >= 0.5
+            else ""
+        )
+        harvest_en = "autumn was rainier than usual at harvest, so " if wet_harvest >= 0.5 else ""
+        check = L(
+            ro=(
+                "Semnalul de aflatoxine e scăzut în acest an (zile fierbinți la înflorire "
+                f"aproape de normal); {harvest_ro}verificați umiditatea și mucegaiul la loturile "
+                f"de porumb din {names(risky)}."
+            ),
+            en=(
+                "The aflatoxin signal is low this season (hot days at flowering close to "
+                f"normal); {harvest_en}check moisture and mould on maize lots from "
+                f"{names(risky)}."
+            ),
+        )
     actions = [
         L(
             ro=(
-                f"Testați loturile de porumb din {names(test_from)} pentru aflatoxine la "
-                "recepție; acolo sezonul a fost cel mai greu."
+                f"Asigurați volumele de porumb din timp: producția județului a fost cu "
+                f"{abs(ins_pct):.0f}% sub tendință. Începeți cu {names(safe)}, unde sezonul a "
+                "arătat cel mai puțin rău față de istoricul lor."
             ),
             en=(
-                f"Test maize lots from {names(test_from)} for aflatoxin at intake; the season "
-                "was hardest there."
-            ),
-        ),
-        L(
-            ro=(
-                f"Cumpărați întâi porumb din {names(safe)}, unde sezonul a arătat cel mai bine "
-                "față de istoricul lor."
-            ),
-            en=(
-                f"Buy maize first from {names(safe)}, where the season looked best against "
+                f"Secure maize volumes early: the county yield was {abs(ins_pct):.0f}% below "
+                f"trend. Start with {names(safe)}, where the season looked least bad against "
                 "their own record."
             ),
         ),
-        L(
-            ro=(
-                f"Pentru soia, discutați contracte cu fermierii din {names(calm)}: au mult teren "
-                "arabil declarat la APIA și stres de apă sub mediana istorică în acest an. "
-                "Contractați pe o specificație de proteină și testați la recepție."
-            ),
-            en=(
-                f"For soy, talk contracts with farmers in {names(calm)}: they have the most "
-                "arable land declared to APIA and below-median water stress this season. "
-                "Contract on a protein specification and test at intake."
-            ),
-        ),
+        check,
+        wheat_action(w_safe, w_test, w_rain),
     ]
+    first = safe["name"].iloc[0]
     return SourcingRecommendation(
         title=L(
-            ro=f"Porumb {SEASON}: cumpărați din {safe['name'].iloc[0]}, verificați {risky['name'].iloc[0]}",
-            en=f"Maize {SEASON}: buy from {safe['name'].iloc[0]}, check {risky['name'].iloc[0]}",
+            ro=f"Porumb {SEASON}: ofertă mică în tot județul; cel mai puțin afectat, {first}",
+            en=f"Maize {SEASON}: tight supply across the county; least affected, {first}",
         ),
         text=L(
             ro=(
                 f"Producția medie de porumb din județul Alba în {SEASON} a fost cu "
-                f"{abs(ins_pct):.0f}% sub tendință (INS), deci oferta e mai mică decât de obicei. "
-                f"Cel mai sigur arată {names(safe)}; cel mai mare risc îl au {names(risky)}. "
-                "Clasamentul compară fiecare comună cu propriul ei istoric 2001-2025 (vreme și "
-                "umiditatea solului din NASA POWER), nu comunele între ele."
+                f"{abs(ins_pct):.0f}% sub tendință (INS): sezonul a fost secetos peste tot. "
+                f"Diferențele dintre comune sunt mici (scor de risc {lo:.0f}-{hi:.0f} din 100). "
+                f"Cel mai puțin afectate par {names(safe)}; cel mai afectate, {names(risky)}. "
+                "Fiecare comună e comparată cu propriul ei istoric 2001-2025 "
+                "(vreme și umiditatea solului din NASA POWER)."
             ),
             en=(
                 f"Alba's county maize yield in {SEASON} was {abs(ins_pct):.0f}% below trend "
-                f"(INS), so supply is tighter than usual. The safest communes are "
-                f"{names(safe)}; the riskiest are {names(risky)}. The ranking compares each "
-                "commune with its own 2001-2025 record (NASA POWER weather and soil wetness), "
-                "not communes with each other."
+                "(INS): the season was dry everywhere. Differences between communes are small "
+                f"(risk score {lo:.0f}-{hi:.0f} of 100). Least affected look {names(safe)}; "
+                f"most affected, {names(risky)}. Each commune is compared with its own "
+                "2001-2025 record (NASA POWER weather and soil wetness)."
             ),
         ),
         actions=actions,
         confidence="medium",
         assumptions=[
             L(
-                ro="Doar comunele cu cel puțin 100 ha de porumb (APIA 2025 x harta culturilor 2022).",
+                ro=(
+                    "Doar comunele cu cel puțin 100 ha de porumb "
+                    "(APIA 2025 x harta culturilor 2022)."
+                ),
                 en="Only communes with at least 100 ha of maize (APIA 2025 x 2022 crop map).",
             ),
             L(
                 ro=(
-                    f"Imaginile din satelit (MODIS) lipsesc pentru vara {SEASON}, deci scorul "
-                    "porumbului și al soiei se bazează doar pe vreme și umiditatea solului."
+                    "Vremea vine din celule NASA POWER de ~50 km, deci mai multe comune au "
+                    "aceleași valori; la egalitate, comuna cu mai mult porumb e trecută prima."
                 ),
                 en=(
-                    f"Satellite images (MODIS) are missing for summer {SEASON}, so the maize "
-                    "and soy scores rest on weather and soil wetness only."
+                    "Weather comes from ~50 km NASA POWER cells, so several communes share the "
+                    "same values; ties go to the commune with more maize."
                 ),
             ),
             L(
-                ro="Pragurile de aflatoxine și fuzarioză sunt preluate din studii, nevalidate local.",
-                en="Aflatoxin and fusarium thresholds are borrowed from studies, not validated locally.",
+                ro=(
+                    f"Imaginile din satelit (MODIS) lipsesc pentru vara {SEASON}, deci scorul "
+                    "porumbului și al florii-soarelui se bazează doar pe vreme și umiditatea "
+                    "solului."
+                ),
+                en=(
+                    f"Satellite images (MODIS) are missing for summer {SEASON}, so the maize "
+                    "and sunflower scores rest on weather and soil wetness only."
+                ),
+            ),
+            L(
+                ro="Pragurile pentru aflatoxine și fuzarioză vin din studii, nevalidate local.",
+                en="Aflatoxin and fusarium thresholds come from studies, not validated locally.",
             ),
         ],
     )
 
 
-def scenario(land: pd.DataFrame) -> AdoptionScenario:
-    adoption = 25.0
-    arable = float(land["arable"].sum())
-    adopters = arable * adoption / 100
-    # One slot of a 3-5 year rotation (soy returns after >= 3 years, crops.toml) goes to soy.
-    ha = Range(low=adopters / 5, mid=adopters / 4, high=adopters / 3)
-    ins = pd.read_parquet(CACHE / "ins" / "county_yields.parquet")
-    soy = ins[(ins["county"] == "AB") & (ins["crop"] == "soybean")]
-    recent = soy[soy["year"] > SEASON - 10]["yield_t_ha"].dropna()
-    y25, y50, y75 = np.percentile(recent, [25, 50, 75])
-    prod = Range(low=ha.low * y25, mid=ha.mid * y50, high=ha.high * y75)
-    prot = Range(low=prod.low * 0.33, mid=prod.mid * 0.34, high=prod.high * 0.35)
-
-    def r(x: Range) -> Range:
-        return Range(low=round(x.low, -1), mid=round(x.mid, -1), high=round(x.high, -1))
-
+def scenario() -> AdoptionScenario:
+    """Placeholder: the contract still requires a scenario; not used for this buyer."""
+    zero = Range(low=0, mid=0, high=0)
     return AdoptionScenario(
-        crop="soybean",
-        adoption_pct=adoption,
-        added_area_ha=r(ha),
-        added_production_t=r(prod),
-        added_protein_t=r(prot),
-        assumptions=[
-            L(
-                ro=(
-                    f"Teren arabil (TA) declarat la APIA în 2025 în cele 40 de comune: "
-                    f"{arable:,.0f} ha. 25% dintre fermieri trec o tură din rotație pe soia: "
-                    "într-o rotație de 3-5 ani, soia ocupă în fiecare an 1/5-1/3 din terenul lor."
-                ),
-                en=(
-                    f"Arable land (TA) declared to APIA in 2025 in the 40 communes: "
-                    f"{arable:,.0f} ha. 25% of farmers switch one rotation slot to soy: in a "
-                    "3-5 year rotation soy covers 1/5-1/3 of their land each year."
-                ),
-            ),
-            L(
-                ro=(
-                    f"Producție la hectar: producția medie de soia din Alba (INS) în ultimii 10 "
-                    f"ani, {y25:.1f} / {y50:.1f} / {y75:.1f} t/ha (cuartila de jos / mediana / "
-                    "cuartila de sus)."
-                ),
-                en=(
-                    f"Yield: Alba's soybean yield (INS) over the last 10 seasons, "
-                    f"{y25:.1f} / {y50:.1f} / {y75:.1f} t/ha (lower quartile / median / upper "
-                    "quartile)."
-                ),
-            ),
-            L(
-                ro="Proteină: 33-35% din boabe la umiditatea de recoltare (data/crops.toml).",
-                en="Protein: 33-35% of the beans at harvest moisture (data/crops.toml).",
-            ),
-            L(
-                ro="Nu scade soia pe care fermierii o cultivă deja și nici culturile înlocuite.",
-                en="Does not subtract soy already grown or the crops it replaces.",
-            ),
-        ],
+        crop="barley",
+        adoption_pct=0,
+        added_area_ha=zero,
+        added_production_t=zero,
+        added_protein_t=zero,
+        assumptions=[L(ro="Nefolosit.", en="Not used.")],
     )
 
 
@@ -767,16 +768,6 @@ CAVEATS = [
         en=(
             "Validation is at county level (INS publishes no commune yields). The quality "
             "thresholds are borrowed from studies and have not been checked by an agronomist."
-        ),
-    ),
-    L(
-        ro=(
-            "Proteina din soia depinde mai ales de sezon și de soi; testați la recepție și "
-            "contractați pe o specificație de proteină."
-        ),
-        en=(
-            "Soy protein depends mostly on the season and the variety; test at intake and "
-            "contract on a protein specification."
         ),
     ),
 ]
@@ -839,20 +830,24 @@ def main() -> None:
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(text + "\n", encoding="utf-8")
 
-    m = t[(t["crop"] == "maize") & (t["ha"] >= 100)].sort_values("score")
-    print("\nmaize, safest:", m.head(3)[["name", "score", "ha"]].to_dict("records"))
-    print("maize, riskiest:", m.tail(3)[["name", "score", "ha"]].to_dict("records"))
-    print("levels by crop:", t.groupby("crop")["level"].value_counts().unstack(fill_value=0).to_dict("index"))
+    m = t[(t["crop"] == "maize") & (t["ha"] >= 100)][["name", "score", "ha"]]
+    safe = m.sort_values(["score", "ha"], ascending=[True, False]).head(3)
+    risky = m.sort_values(["score", "ha"], ascending=[False, False]).head(3)
+    print("\nmaize, safest:", safe.to_dict("records"))
+    print("maize, riskiest:", risky.to_dict("records"))
+    print(
+        "levels by crop:",
+        t.groupby("crop")["level"].value_counts().unstack(fill_value=0).to_dict("index"),
+    )
     v = region.validation
     assert v
     print(f"validation: {v.hits} hits, {v.misses} misses")
     for crop in CROPS:
         ys = [y for y in v.years if y.crop == crop]
-        print(f"  {crop}: {sum(y.hit for y in ys)}/{len(ys)}  misses: "
-              f"{[(y.season, y.risk_level, y.yield_anomaly_pct) for y in ys if not y.hit]}")
-    s = region.scenario
-    print(f"scenario: +{s.added_area_ha.mid:,.0f} ha soy, +{s.added_production_t.mid:,.0f} t, "
-          f"+{s.added_protein_t.mid:,.0f} t protein")
+        print(
+            f"  {crop}: {sum(y.hit for y in ys)}/{len(ys)}  misses: "
+            f"{[(y.season, y.risk_level, y.yield_anomaly_pct) for y in ys if not y.hit]}"
+        )
     print(f"wrote {args.out.relative_to(REPO_ROOT)} ({args.out.stat().st_size / 1e3:.0f} kB)")
 
 
