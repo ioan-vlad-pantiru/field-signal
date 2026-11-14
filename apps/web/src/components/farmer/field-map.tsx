@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { LngLatBounds, Marker, type GeoJSONSource, type Map as MapLibreMap } from "maplibre-gl";
 import { getParcels } from "@/lib/api";
 import type { LatLon, Parcel } from "@/lib/contracts";
+import { useParcelBrush } from "@/components/map/parcel-brush";
 import { setBasemap, useMap, type Basemap } from "@/components/map/use-map";
 
 /** draw: tap adds a field corner · locked: a drawn field is set. */
@@ -28,8 +29,17 @@ const DRAW_ZOOM = 14;
 
 type DrawData = Extract<Parameters<GeoJSONSource["setData"]>[0], { type: "FeatureCollection" }>;
 
-function drawData(corners: LatLon[], closed: boolean): DrawData {
+function drawData(corners: LatLon[], closed: boolean, parts: LatLon[][] = []): DrawData {
   const coords = corners.map((c): [number, number] => [c.lon, c.lat]);
+  // Further pieces of the same field: filled and outlined like it, without corner handles.
+  const pieces: DrawData["features"] = parts.flatMap((part) => {
+    const ring = part.map((c): [number, number] => [c.lon, c.lat]);
+    const closedRing = [...ring, ring[0]];
+    return [
+      { type: "Feature", properties: { kind: "area" }, geometry: { type: "Polygon", coordinates: [closedRing] } },
+      { type: "Feature", properties: { kind: "edge" }, geometry: { type: "LineString", coordinates: closedRing } },
+    ];
+  });
   const features: DrawData["features"] = coords.map((c, i) => ({
     type: "Feature",
     properties: { kind: "corner", first: i === 0 },
@@ -49,7 +59,7 @@ function drawData(corners: LatLon[], closed: boolean): DrawData {
       geometry: { type: "LineString", coordinates: closed ? [...coords, coords[0]] : coords },
     });
   }
-  return { type: "FeatureCollection", features };
+  return { type: "FeatureCollection", features: [...pieces, ...features] };
 }
 
 function parcelsData(parcels: Parcel[]): DrawData {
@@ -102,6 +112,7 @@ export function FieldMap({
   mode,
   corners,
   closed,
+  parts = [],
   others = [],
   onAddCorner,
   onTapParcel,
@@ -119,6 +130,8 @@ export function FieldMap({
   mode: MapMode;
   corners: LatLon[];
   closed: boolean;
+  /** Further pieces of the field being edited (parcels that do not touch). */
+  parts?: LatLon[][];
   /** Other fields in the same analysis, shown for orientation. */
   others?: LatLon[][];
   onAddCorner: (point: LatLon) => void;
@@ -344,94 +357,13 @@ export function FieldMap({
   }, [map, showParcels]);
 
   // Drag-to-select: one finger or the mouse paints over parcels; two fingers still zoom and pan.
-  useEffect(() => {
-    if (!map || !brushing) return;
-    map.dragPan.disable();
-    map.dragRotate.disable();
-    const canvas = map.getCanvasContainer();
-    let stroke: { id: number; action: "add" | "remove"; last: [number, number]; moved: number; seen: Set<number> } | null = null;
-    const pointers = new Set<number>();
-
-    const at = (event: PointerEvent): [number, number] => {
-      const r = canvas.getBoundingClientRect();
-      return [event.clientX - r.left, event.clientY - r.top];
-    };
-    /** Parcels under the segment from a to b, sampled every few pixels so fast drags skip nothing. */
-    const parcelsAlong = (a: [number, number], b: [number, number]): Parcel[] => {
-      const steps = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 4));
-      const found = new Map<number, Parcel>();
-      for (let i = 0; i <= steps; i++) {
-        const x = a[0] + ((b[0] - a[0]) * i) / steps;
-        const y = a[1] + ((b[1] - a[1]) * i) / steps;
-        for (const f of map.queryRenderedFeatures([x, y], { layers: ["fs-parcels-area"] })) {
-          const parcel = loaded.current.get(Number(f.properties?.id));
-          if (parcel) found.set(parcel.id, parcel);
-        }
-      }
-      return [...found.values()];
-    };
-    const paint = (parcels: Parcel[]) => {
-      if (!stroke) return;
-      const fresh = parcels.filter((p) => !stroke!.seen.has(p.id));
-      fresh.forEach((p) => stroke!.seen.add(p.id));
-      if (fresh.length > 0) handlers.current.onBrushParcels?.(fresh, stroke.action);
-    };
-
-    const down = (event: PointerEvent) => {
-      pointers.add(event.pointerId);
-      if (pointers.size > 1) {
-        // A second finger: this is a zoom or pan, not a selection.
-        stroke = null;
-        map.dragPan.enable();
-        return;
-      }
-      const point = at(event);
-      const first = parcelsAlong(point, point)[0];
-      stroke = {
-        id: event.pointerId,
-        action: first && selectedIds.current.has(first.id) ? "remove" : "add",
-        last: point,
-        moved: 0,
-        seen: new Set(),
-      };
-      canvas.setPointerCapture?.(event.pointerId);
-    };
-    const move = (event: PointerEvent) => {
-      if (!stroke || event.pointerId !== stroke.id) return;
-      const point = at(event);
-      stroke.moved += Math.hypot(point[0] - stroke.last[0], point[1] - stroke.last[1]);
-      // Below a few pixels it is still a tap.
-      if (stroke.moved >= 4) paint(parcelsAlong(stroke.last, point));
-      stroke.last = point;
-    };
-    const up = (event: PointerEvent) => {
-      pointers.delete(event.pointerId);
-      if (pointers.size === 0) map.dragPan.disable();
-      if (!stroke || event.pointerId !== stroke.id) return;
-      if (stroke.moved < 4) {
-        // A tap: toggle the parcel under it, as outside drag-to-select.
-        const parcel = parcelsAlong(stroke.last, stroke.last)[0];
-        if (parcel) handlers.current.onTapParcel?.(parcel);
-      }
-      stroke = null;
-    };
-
-    canvas.addEventListener("pointerdown", down);
-    canvas.addEventListener("pointermove", move);
-    canvas.addEventListener("pointerup", up);
-    canvas.addEventListener("pointercancel", up);
-    const cursor = map.getCanvas().style.cursor;
-    map.getCanvas().style.cursor = "cell";
-    return () => {
-      canvas.removeEventListener("pointerdown", down);
-      canvas.removeEventListener("pointermove", move);
-      canvas.removeEventListener("pointerup", up);
-      canvas.removeEventListener("pointercancel", up);
-      map.getCanvas().style.cursor = cursor;
-      map.dragPan.enable();
-      map.dragRotate.enable();
-    };
-  }, [map, brushing]);
+  useParcelBrush(map, brushing, {
+    layer: "fs-parcels-area",
+    parcel: (id) => loaded.current.get(id),
+    isSelected: (id) => selectedIds.current.has(id),
+    onStroke: (parcels, action) => handlers.current.onBrushParcels?.(parcels, action),
+    onTap: (parcel) => handlers.current.onTapParcel?.(parcel),
+  });
 
   useEffect(() => {
     if (!map) return;
@@ -453,14 +385,14 @@ export function FieldMap({
   useEffect(() => {
     if (!map) return;
     whenStyleReady(map, () => {
-      map.getSource<GeoJSONSource>(DRAW)?.setData(drawData(corners, closed));
+      map.getSource<GeoJSONSource>(DRAW)?.setData(drawData(corners, closed, parts));
       if (closed && corners.length >= 3) {
         const bounds = new LngLatBounds();
-        corners.forEach((c) => bounds.extend([c.lon, c.lat]));
+        [corners, ...parts].flat().forEach((c) => bounds.extend([c.lon, c.lat]));
         map.fitBounds(bounds, { padding: 40, maxZoom: 16, duration: 700 });
       }
     });
-  }, [map, corners, closed]);
+  }, [map, corners, closed, parts]);
 
   useEffect(() => {
     if (!map) return;

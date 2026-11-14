@@ -11,11 +11,13 @@ import {
   ChevronDownIcon,
   FieldIcon,
   GlobeIcon,
+  GridIcon,
   UserIcon,
 } from "@/components/ui/icons";
 
 const ITEMS = [
   { href: "/field", key: "field", Icon: FieldIcon },
+  { href: "/farm", key: "farm", Icon: GridIcon },
   { href: "/feed", key: "feed", Icon: BarnIcon },
   { href: "/about", key: "about", Icon: BookIcon },
   { href: "/account", key: "account", Icon: UserIcon },
@@ -35,7 +37,7 @@ export function BottomNav() {
       aria-label={t("label")}
       className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
     >
-      <ul className="grid grid-cols-4">
+      <ul className="grid grid-cols-5">
         {ITEMS.map(({ href, key, Icon }) => {
           const active = isActive(href);
           return (

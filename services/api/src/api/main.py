@@ -7,13 +7,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from pydantic import BaseModel
 
-from api import accounts, assistant, mocks, parcels
+from api import accounts, assistant, farm, farm_plan, parcels, sourcing
 from api.analysis import run_field_analysis
 from api.contracts import (
-    FarmPlanRequest,
-    FarmPlanResponse,
     FieldAnalysis,
     FieldRequest,
+    OptimizerRequest,
+    OptimizerResponse,
     SourcingRegion,
 )
 from api.planner.service import PlanRejected, plan_farm
@@ -21,7 +21,7 @@ from api.settings import get_settings
 from api.whatsapp.router import router as whatsapp_router
 
 settings = get_settings()
-# uvicorn configures only its own loggers: show this app's INFO logs (farm plan stage times),
+# uvicorn configures only its own loggers: show this app's INFO logs (optimizer stage times),
 # keep third-party libraries at WARNING.
 logging.basicConfig(level=logging.WARNING, format="%(levelname)s:     %(name)s %(message)s")
 logging.getLogger("api").setLevel(logging.INFO)
@@ -39,7 +39,9 @@ app.add_middleware(GZipMiddleware, minimum_size=2048)
 
 app.include_router(accounts.router)
 app.include_router(assistant.router)
+app.include_router(farm_plan.router)
 app.include_router(parcels.router)
+app.include_router(farm.router)
 app.include_router(whatsapp_router)
 
 
@@ -60,14 +62,14 @@ def analyze_field(request: FieldRequest) -> FieldAnalysis:
 
 
 @app.get("/v1/sourcing/region", tags=["buyer"])
-def sourcing_region(season: int = 2025) -> SourcingRegion:
-    """Feed-buyer screen. Currently returns MOCK data (mock=true)."""
-    return mocks.sourcing_region(season)
+def sourcing_region(season: int | None = None) -> SourcingRegion:
+    """Feed-buyer screen: real numbers for Alba's communes when built, else demo (mock=true)."""
+    return sourcing.sourcing_region(season)
 
 
-@app.post("/v1/farm/plan", tags=["farmer"])
-def farm_plan(request: FarmPlanRequest) -> FarmPlanResponse:
-    """Farm rotation plan: an area split per field. Scores come from the MOCK world model
+@app.post("/v1/farm/optimize", tags=["farmer"])
+def optimize_farm(request: OptimizerRequest) -> OptimizerResponse:
+    """Farm rotation optimizer: an area split per field. Scores come from the MOCK world model
     (mock=true); 422 when a field cannot be planned."""
     try:
         return plan_farm(request)

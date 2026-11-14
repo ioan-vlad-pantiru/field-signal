@@ -157,6 +157,7 @@ export function FieldStep({
   selectedHa = 0,
   joining = false,
   onUseSelected,
+  onAddSeparate,
   onClearSelected,
   onUndo,
   onClear,
@@ -181,6 +182,8 @@ export function FieldStep({
   selectedHa?: number;
   joining?: boolean;
   onUseSelected?: () => void;
+  /** Make each selected parcel its own field (offered when several are selected). */
+  onAddSeparate?: () => void;
   onClearSelected?: () => void;
   onUndo: () => void;
   onClear: () => void;
@@ -235,6 +238,11 @@ export function FieldStep({
               <Button onClick={onUseSelected} disabled={joining}>
                 {joining ? t("parcel.joining") : t("parcel.use")}
               </Button>
+              {onAddSeparate ? (
+                <Button variant="secondary" onClick={onAddSeparate} disabled={joining}>
+                  {t("parcel.separate")}
+                </Button>
+              ) : null}
               <Button variant="secondary" onClick={onClearSelected} disabled={joining}>
                 {t("parcel.clear")}
               </Button>

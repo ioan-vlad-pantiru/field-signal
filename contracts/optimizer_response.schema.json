@@ -57,33 +57,6 @@
       "title": "Crop",
       "type": "string"
     },
-    "CropArea": {
-      "additionalProperties": false,
-      "properties": {
-        "crop": {
-          "$ref": "#/$defs/Crop"
-        },
-        "area_ha": {
-          "minimum": 0,
-          "title": "Area Ha",
-          "type": "number"
-        },
-        "share_pct": {
-          "description": "share of the whole farm area",
-          "maximum": 100,
-          "minimum": 0,
-          "title": "Share Pct",
-          "type": "number"
-        }
-      },
-      "required": [
-        "crop",
-        "area_ha",
-        "share_pct"
-      ],
-      "title": "CropArea",
-      "type": "object"
-    },
     "DataSource": {
       "additionalProperties": false,
       "properties": {
@@ -134,7 +107,53 @@
       "title": "DataSource",
       "type": "object"
     },
-    "FarmPlan": {
+    "Localized": {
+      "additionalProperties": false,
+      "properties": {
+        "ro": {
+          "title": "Ro",
+          "type": "string"
+        },
+        "en": {
+          "title": "En",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ro",
+        "en"
+      ],
+      "title": "Localized",
+      "type": "object"
+    },
+    "OptimizerCropArea": {
+      "additionalProperties": false,
+      "properties": {
+        "crop": {
+          "$ref": "#/$defs/Crop"
+        },
+        "area_ha": {
+          "minimum": 0,
+          "title": "Area Ha",
+          "type": "number"
+        },
+        "share_pct": {
+          "description": "share of the whole farm area",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Share Pct",
+          "type": "number"
+        }
+      },
+      "required": [
+        "crop",
+        "area_ha",
+        "share_pct"
+      ],
+      "title": "OptimizerCropArea",
+      "type": "object"
+    },
+    "OptimizerPlan": {
       "additionalProperties": false,
       "description": "One farm plan. Scores are 0-100 decision metrics (higher is better), not probabilities.\n`score_range` is the spread across weather windows, not a confidence interval.",
       "properties": {
@@ -203,26 +222,7 @@
         "confidence",
         "proven_optimal"
       ],
-      "title": "FarmPlan",
-      "type": "object"
-    },
-    "Localized": {
-      "additionalProperties": false,
-      "properties": {
-        "ro": {
-          "title": "Ro",
-          "type": "string"
-        },
-        "en": {
-          "title": "En",
-          "type": "string"
-        }
-      },
-      "required": [
-        "ro",
-        "en"
-      ],
-      "title": "Localized",
+      "title": "OptimizerPlan",
       "type": "object"
     },
     "Range": {
@@ -394,7 +394,7 @@
         },
         "areas": {
           "items": {
-            "$ref": "#/$defs/CropArea"
+            "$ref": "#/$defs/OptimizerCropArea"
           },
           "title": "Areas",
           "type": "array"
@@ -455,7 +455,7 @@
     "plans": {
       "description": "plans[0] is the best solution found (optimal for the model only when proven_optimal), the others are alternatives; empty if none is feasible",
       "items": {
-        "$ref": "#/$defs/FarmPlan"
+        "$ref": "#/$defs/OptimizerPlan"
       },
       "maxItems": 3,
       "title": "Plans",
@@ -464,7 +464,7 @@
     "current": {
       "anyOf": [
         {
-          "$ref": "#/$defs/FarmPlan"
+          "$ref": "#/$defs/OptimizerPlan"
         },
         {
           "type": "null"
@@ -499,7 +499,7 @@
     "caveats",
     "sources"
   ],
-  "title": "FarmPlanResponse",
+  "title": "OptimizerResponse",
   "type": "object",
-  "$id": "https://field-signal/contracts/farm_plan_response/0.2.0"
+  "$id": "https://field-signal/contracts/optimizer_response/0.2.0"
 }

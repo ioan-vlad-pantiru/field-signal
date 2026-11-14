@@ -35,19 +35,25 @@ export function PrioritiesStep({
   onLevels,
   irrigated,
   onIrrigated,
+  headingLevel = 1,
 }: {
   levels: PriorityLevels;
   onLevels: (levels: PriorityLevels) => void;
   irrigated: boolean;
   onIrrigated: (irrigated: boolean) => void;
+  /** 1 as its own step; 2 inside a page that already has a title (the farm plan). */
+  headingLevel?: 1 | 2;
 }) {
+  const Heading = headingLevel === 1 ? "h1" : "h2";
   const t = useTranslations("Field");
   const options = LEVELS.map((value) => ({ value, label: t(`level.${value}`) }));
 
   return (
     <div className="flex flex-col gap-4">
       <header>
-        <h1 className="text-3xl font-semibold tracking-tight">{t("prioritiesTitle")}</h1>
+        <Heading className={headingLevel === 1 ? "text-3xl font-semibold tracking-tight" : "text-xl font-semibold tracking-tight"}>
+          {t("prioritiesTitle")}
+        </Heading>
         <p className="mt-1 text-ink-muted">{t("prioritiesHint")}</p>
       </header>
 

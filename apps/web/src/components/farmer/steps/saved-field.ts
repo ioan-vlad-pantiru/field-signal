@@ -7,6 +7,7 @@ import type { FieldRequest, LatLon } from "@/lib/contracts";
 export interface SavedField {
   request: FieldRequest;
   boundary: LatLon[];
+  parts?: LatLon[][];
   /** Name of the nearest commune when it was saved. */
   near: string | null;
 }

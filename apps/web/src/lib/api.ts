@@ -1,13 +1,13 @@
 import type {
-  FarmPlanRequest,
-  FarmPlanResponse,
   FieldAnalysis,
   FieldRequest,
   MergedParcels,
+  OptimizerRequest,
+  OptimizerResponse,
   ParcelCollection,
   SourcingRegion,
 } from "@/lib/contracts";
-import { mockFarmPlan, mockFieldAnalysis, mockSourcingRegion } from "@/lib/mocks";
+import { mockFieldAnalysis, mockOptimizer, mockSourcingRegion } from "@/lib/mocks";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const TIMEOUT_MS = 5000;
@@ -75,15 +75,15 @@ export function getSourcingRegion(season = 2025): Promise<Loaded<SourcingRegion>
 }
 
 /** One farm plan for all fields together; the solver may take a while, hence 30 s. */
-export function planFarm(body: FarmPlanRequest): Promise<Loaded<FarmPlanResponse>> {
+export function optimizeFarm(body: OptimizerRequest): Promise<Loaded<OptimizerResponse>> {
   return withFallback(
     () =>
-      request<FarmPlanResponse>(
-        "/v1/farm/plan",
+      request<OptimizerResponse>(
+        "/v1/farm/optimize",
         { method: "POST", body: JSON.stringify(body) },
         30_000,
       ),
-    mockFarmPlan,
+    mockOptimizer,
   );
 }
 

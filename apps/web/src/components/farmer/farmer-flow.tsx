@@ -3,14 +3,14 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { analyzeField, ApiRequestError, planFarm, type Loaded } from "@/lib/api";
+import { analyzeField, ApiRequestError, optimizeFarm, type Loaded } from "@/lib/api";
 import { fieldInput, updateField, useAccount } from "@/lib/account";
 import { setAssistantFields } from "@/lib/assistant";
 import type { FieldAnalysis, LatLon, SavedField as AccountField } from "@/lib/contracts";
 import { Link } from "@/i18n/navigation";
 import { formatNumber } from "@/lib/format";
 import { useAppLocale } from "@/lib/localized";
-import { polygonAreaHa } from "@/lib/geo";
+import { fieldAreaHa } from "@/lib/geo";
 import { Button } from "@/components/ui/button";
 import { NoticeBar } from "@/components/ui/notice-bar";
 import { ErrorState } from "@/components/ui/states";
@@ -18,7 +18,7 @@ import { FieldForm, type FormStep } from "./field-form";
 import { ResultsSkeleton, ResultsView } from "./results-view";
 import { SaveField } from "./save-field";
 import { farmRequest, MAX_FIELDS, toDraft, type SubmittedField } from "./draft-field";
-import { FarmPlanSection, type FarmPlanState } from "./results/farm-plan";
+import { OptimizerSection, type OptimizerState } from "./results/optimizer-plan";
 import { ALL_FIELDS, FieldSwitcher } from "./results/field-switcher";
 import { ResultsOverview } from "./results/results-overview";
 import { useFieldLabel } from "./steps/field-list";
@@ -34,11 +34,11 @@ type State =
   | { step: "error" };
 
 function fromAccount(field: AccountField): SubmittedField {
-  return { request: field.request, boundary: field.boundary, place: field.near ?? null, accountId: field.id, name: field.name };
+  return { request: field.request, boundary: field.boundary, parts: field.parts ?? [], place: field.near ?? null, accountId: field.id, name: field.name };
 }
 
 function fromLocal(field: SavedField): SubmittedField {
-  return { request: field.request, boundary: field.boundary, place: field.near, accountId: null, name: null };
+  return { request: field.request, boundary: field.boundary, parts: field.parts ?? [], place: field.near, accountId: null, name: null };
 }
 
 /** A pin passed in the URL (`?lat=…&lon=…&place=…`), e.g. from the feed screen's zone sheet. */
@@ -157,7 +157,7 @@ function AccountFieldsBar({ fields, onOpen }: { fields: AccountField[]; onOpen: 
                 </span>
                 <span className="truncate">{field.name}</span>
                 <span className="shrink-0 tabular-nums text-ink-muted">
-                  {area("area", { ha: formatNumber(polygonAreaHa(field.boundary), locale, 0) })}
+                  {area("area", { ha: formatNumber(fieldAreaHa(field), locale, 0) })}
                 </span>
               </button>
             </li>
@@ -178,7 +178,7 @@ function AccountFieldsBar({ fields, onOpen }: { fields: AccountField[]; onOpen: 
 function SavedFieldBar({ saved, onResume }: { saved: SavedField; onResume: () => void }) {
   const t = useTranslations("Field.saved");
   const locale = useAppLocale();
-  const ha = formatNumber(polygonAreaHa(saved.boundary), locale, 0);
+  const ha = formatNumber(fieldAreaHa(saved), locale, 0);
   return (
     <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
       <p className="text-lg">{saved.near ? t("near", { place: saved.near, ha }) : t("noPlace", { ha })}</p>
@@ -224,14 +224,14 @@ function Flow({
   /** My fields entries updated by the last run. */
   const [updated, setUpdated] = useState<ReadonlySet<string>>(new Set());
   /** The farm plan of the last run; a newer run makes older answers stale. */
-  const [farm, setFarm] = useState<FarmPlanState>({ status: "loading" });
+  const [farm, setFarm] = useState<OptimizerState>({ status: "loading" });
   const farmRun = useRef(0);
 
   /** Not part of the per-field Promise.all: a slow solve or a 422 never holds up the per-field results. */
-  function startFarmPlan(list: SubmittedField[]) {
+  function startOptimizer(list: SubmittedField[]) {
     const runId = ++farmRun.current;
     setFarm({ status: "loading" });
-    planFarm(farmRequest(list, fieldLabel)).then(
+    optimizeFarm(farmRequest(list, fieldLabel)).then(
       (result) => {
         if (farmRun.current === runId) setFarm({ status: "done", result });
       },
@@ -256,7 +256,7 @@ function Flow({
       const accountField = signedIn ? account.fields.find((f) => f.id === field.accountId) : undefined;
       if (accountField) {
         // Keep the saved field in step with what the farmer just ran; results never wait for it.
-        const body = { ...fieldInput(accountField), request: field.request, boundary: field.boundary, near: field.place };
+        const body = { ...fieldInput(accountField), request: field.request, boundary: field.boundary, parts: field.parts ?? [], near: field.place };
         updateField(accountField.id, body)
           .then(() => setUpdated((prev) => new Set(prev).add(accountField.id)))
           .catch(() => undefined);
@@ -264,9 +264,9 @@ function Flow({
     }
     const lastField = list.at(-1);
     if (!signedIn && lastField) {
-      saveField({ request: lastField.request, boundary: lastField.boundary, near: lastField.place });
+      saveField({ request: lastField.request, boundary: lastField.boundary, parts: lastField.parts, near: lastField.place });
     }
-    startFarmPlan(list);
+    startOptimizer(list);
     try {
       const results = await Promise.all(list.map((f) => analyzeField(f.request)));
       setState({ step: "results", results });
@@ -283,7 +283,7 @@ function Flow({
         name: fields.length > 1 ? fieldLabel(f, i) : (f.name ?? f.place ?? t("assistantField")),
         request: f.request,
         near: f.place,
-        area_ha: polygonAreaHa(f.boundary),
+        area_ha: fieldAreaHa(f),
       })),
     );
     return () => setAssistantFields([]);
@@ -296,7 +296,7 @@ function Flow({
   useEffect(() => {
     if (autoStarted.current) return;
     autoStarted.current = true;
-    startFarmPlan(fields);
+    startOptimizer(fields);
     Promise.all(opened.map((f) => analyzeField(f.request)))
       .then((results) => setState({ step: "results", results }))
       .catch(() => setState({ step: "error" }));
@@ -345,12 +345,14 @@ function Flow({
             analysis={result.data}
             origin={result.origin}
             boundary={field.boundary}
+            parts={field.parts}
             placeName={name}
             onBack={back}
             save={
               <SaveField
                 request={field.request}
                 boundary={field.boundary}
+                parts={field.parts}
                 placeName={field.place}
                 defaultName={name}
                 savedId={field.accountId}
@@ -360,7 +362,7 @@ function Flow({
             }
           />
           )}
-          <FarmPlanSection state={farm} names={fields.map(fieldLabel)} />
+          <OptimizerSection state={farm} names={fields.map(fieldLabel)} />
         </div>
       );
     }

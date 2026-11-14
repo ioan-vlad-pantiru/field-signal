@@ -240,9 +240,13 @@ export interface SourcingRegion {
   reference_crops: Crop[];
   zones: Zone[];
   recommendation: SourcingRecommendation;
-  scenario: AdoptionScenario;
+  /**
+   * what-if for adding a crop; not shown to buyers today
+   */
+  scenario?: AdoptionScenario | null;
   caveats: Localized[];
   sources: DataSource[];
+  validation?: Validation | null;
 }
 
 export interface Zone {
@@ -285,7 +289,7 @@ export interface QualityRisk {
 }
 
 export interface QualityFlag {
-  code: "aflatoxin_window" | "fusarium_window" | "harvest_rain";
+  code: "aflatoxin_window" | "fusarium_window" | "harvest_rain" | "soy_seed_fill_rain";
   label: Localized;
   level: RiskLevel;
   days_observed: number;
@@ -331,6 +335,30 @@ export interface AdoptionScenario {
   added_production_t: Range;
   added_protein_t: Range;
   assumptions: Localized[];
+}
+
+export interface Validation {
+  method: Localized;
+  hits: number;
+  misses: number;
+  years: ValidationYear[];
+}
+/**
+ * One past season: the risk we would have given vs what the official yields showed.
+ */
+
+export interface ValidationYear {
+  season: number;
+  crop: Crop;
+  risk_level: RiskLevel;
+  /**
+   * INS county yield vs its linear trend
+   */
+  yield_anomaly_pct: number;
+  /**
+   * high risk with a poor yield, or low risk with a normal one
+   */
+  hit: boolean;
 }
 
 export interface ModelPrediction {
@@ -403,6 +431,12 @@ export interface SavedFieldInput {
    */
   boundary: [LatLon, LatLon, LatLon, ...LatLon[]];
   /**
+   * further pieces of the same field (parcels that do not touch the boundary)
+   *
+   * @maxItems 40
+   */
+  parts?: [LatLon, LatLon, LatLon, ...LatLon[]][];
+  /**
    * nearest commune name
    */
   near?: string | null;
@@ -416,6 +450,12 @@ export interface SavedField {
    * @maxItems 500
    */
   boundary: [LatLon, LatLon, LatLon, ...LatLon[]];
+  /**
+   * further pieces of the same field (parcels that do not touch the boundary)
+   *
+   * @maxItems 40
+   */
+  parts?: [LatLon, LatLon, LatLon, ...LatLon[]][];
   /**
    * nearest commune name
    */
@@ -547,6 +587,33 @@ export interface Parcel {
    * APIA land-use code, e.g. TA (arable)
    */
   land_use?: string | null;
+  /**
+   * mapped crop per year, oldest first; empty = not computed
+   */
+  crop_history?: ParcelCrop[];
+  soil?: ParcelSoil | null;
+}
+
+export interface ParcelCrop {
+  year: number;
+  /**
+   * EUCROPMAP class name (e.g. maize, common_wheat, grassland); null = not mapped
+   */
+  crop: string | null;
+  /**
+   * share of the parcel's pixels in that class
+   */
+  share: number;
+}
+/**
+ * SoilGrids 2.0 topsoil 0-30 cm averaged over the parcel (250 m model, not a measurement).
+ */
+
+export interface ParcelSoil {
+  soc_g_per_kg?: number | null;
+  ph_h2o?: number | null;
+  clay_pct?: number | null;
+  sand_pct?: number | null;
 }
 
 /**
@@ -562,7 +629,8 @@ export interface ParcelMergeRequest {
 }
 
 /**
- * The joined outline of parcels that touch each other.
+ * Tapped parcels joined into one field: touching parcels become one outline. When they do
+ * not all touch, `boundary` is the largest piece and `parts` the others.
  */
 
 export interface MergedParcels {
@@ -572,28 +640,315 @@ export interface MergedParcels {
    */
   boundary: [LatLon, LatLon, LatLon, ...LatLon[]];
   /**
+   * @maxItems 40
+   */
+  parts?: [LatLon, LatLon, LatLon, ...LatLon[]][];
+  /**
    * sum of the areas declared to APIA
    */
   area_ha: number;
   parcel_ids: number[];
 }
 
+export interface Farm {
+  name: string;
+  /**
+   * @minItems 1
+   * @maxItems 1000
+   */
+  parcels: [Parcel, ...Parcel[]];
+  /**
+   * @maxItems 200
+   */
+  fields?: FarmField[];
+}
+/**
+ * A parcel declared to APIA (open LPIS data, CC BY 4.0), offered so a farmer can tap it.
+ */
+
+export interface FarmField {
+  id: string;
+  name: string;
+  /**
+   * @minItems 1
+   * @maxItems 400
+   */
+  parcel_ids: [number, ...number[]];
+  /**
+   * what the farmer grows now, if known
+   */
+  current_rotation?: [Crop, Crop] | [Crop, Crop, Crop] | [Crop, Crop, Crop, Crop] | null;
+}
+
+/**
+ * An uploaded parcel file (e.g. an AGI Online export) matched to the APIA layer.
+ */
+
+export interface FarmImport {
+  /**
+   * APIA parcels the file's outlines overlap
+   */
+  parcels: Parcel[];
+  /**
+   * outlines in the file with no APIA parcel under them
+   */
+  unmatched: number;
+  /**
+   * coordinate system read from the file, e.g. EPSG:3844
+   */
+  source_crs: string;
+  /**
+   * crop declared in the file per matched APIA parcel id, when the file has one
+   */
+  file_crops?: {
+    [k: string]: string;
+  };
+}
+/**
+ * A parcel declared to APIA (open LPIS data, CC BY 4.0), offered so a farmer can tap it.
+ */
+
+/**
+ * Saved parcels matched to the current APIA layer by outline.
+ */
+
+export interface FarmRematch {
+  /**
+   * current APIA parcels the saved ones overlap
+   */
+  parcels: Parcel[];
+  /**
+   * saved parcel id -> current parcel ids; missing = no parcel under it now
+   */
+  mapping: {
+    [k: string]: number[];
+  };
+}
+/**
+ * A parcel declared to APIA (open LPIS data, CC BY 4.0), offered so a farmer can tap it.
+ */
+
+export interface FarmSuggestRequest {
+  /**
+   * @minItems 1
+   * @maxItems 1000
+   */
+  parcels: [Parcel, ...Parcel[]];
+  /**
+   * crop declared per parcel id (e.g. from an imported file)
+   */
+  declared_crops?: {
+    [k: string]: string;
+  };
+}
+/**
+ * A parcel declared to APIA (open LPIS data, CC BY 4.0), offered so a farmer can tap it.
+ */
+
+export interface FarmSuggestion {
+  fields: SuggestedField[];
+}
+
+export interface SuggestedField {
+  id: string;
+  name: string;
+  /**
+   * @minItems 1
+   * @maxItems 400
+   */
+  parcel_ids: [number, ...number[]];
+  /**
+   * what the farmer grows now, if known
+   */
+  current_rotation?: [Crop, Crop] | [Crop, Crop, Crop] | [Crop, Crop, Crop, Crop] | null;
+  reason: Localized;
+}
+/**
+ * why these parcels were grouped
+ */
+
 export interface FarmPlanRequest {
+  /**
+   * @minItems 1
+   * @maxItems 200
+   */
+  fields: [PlanField, ...PlanField[]];
+  priorities: {
+    [k: string]: number;
+  };
+  irrigated?: boolean;
+  /**
+   * first season planned
+   */
+  start_year: number;
+  years?: number;
+}
+/**
+ * One field going into the farm plan.
+ */
+
+export interface PlanField {
+  id: string;
+  name: string;
+  area_ha: number;
+  location: LatLon;
+  current_rotation?: [Crop, Crop] | [Crop, Crop, Crop] | [Crop, Crop, Crop, Crop] | null;
+  /**
+   * most recent crop known (mapped or declared)
+   */
+  last_crop?: Crop | null;
+}
+/**
+ * centroid of the field's parcels
+ */
+
+export interface FarmPlan {
+  /**
+   * built on demonstration (mock) field analyses
+   */
+  mock: boolean;
+  years: number[];
+  fields: FieldPlan[];
+  /**
+   * area per crop per year across the farm
+   */
+  totals: CropArea[];
+  checks: PlanCheck[];
+  caveats: Localized[];
+}
+
+export interface FieldPlan {
+  field_id: string;
+  strategy_name: Localized;
+  /**
+   * the rotation chosen
+   *
+   * @minItems 2
+   * @maxItems 4
+   */
+  sequence: [Crop, Crop] | [Crop, Crop, Crop] | [Crop, Crop, Crop, Crop];
+  /**
+   * crop per planned year, aligned with FarmPlan.years
+   */
+  crops: Crop[];
+  score: number;
+}
+
+export interface CropArea {
+  year: number;
+  crop: Crop;
+  area_ha: number;
+}
+
+export interface PlanCheck {
+  id: string;
+  ok: boolean;
+  title: Localized;
+  detail: Localized;
+}
+
+export interface RotationOutcome {
+  /**
+   * '{lat:.5f}_{lon:.5f}' of the centre of the 0.0025° (about 250 m) grid cell
+   */
+  grid_point_id: string;
+  /**
+   * crop sequence joined by '>', e.g. 'maize>wheat>pea'
+   */
+  rotation: string;
+  /**
+   * scenario id: first harvest season of the weather window, e.g. 1987
+   */
+  weather_start_season: number;
+  /**
+   * year inside the plan, 1-based
+   */
+  plan_year: number;
+  crop: Crop;
+  /**
+   * harvest year of the weather used: start + plan_year - 1
+   */
+  season: number;
+  /**
+   * yield relative to the crop's local normal (1.0 = normal)
+   */
+  yield_rel?: Range | null;
+  /**
+   * peak-season NDVI
+   */
+  ndvi_peak?: Range | null;
+  /**
+   * mean NDVI outside the crop's season (soil cover)
+   */
+  ndvi_offseason?: Range | null;
+  /**
+   * monthly NDVI, January to December of the harvest year, ensemble P50; the planner's soil-water balance reads it
+   */
+  ndvi_monthly?:
+    [number, number, number, number, number, number, number, number, number, number, number, number] | null;
+  /**
+   * root-zone soil moisture in the crop's critical months; the planner does not read it (it computes soil water from ndvi_monthly and the weather); may be null
+   */
+  rootzone_sm_critical?: Range | null;
+  /**
+   * evapotranspiration over the crop's season; the planner does not read it; may be null
+   */
+  et_season_mm?: Range | null;
+  /**
+   * 'mock-0' for the mock world model
+   */
+  model_version: string;
+}
+/**
+ * An estimate with its uncertainty. `low <= mid <= high`.
+ */
+
+export interface OptimizerRequest {
   /**
    * @minItems 1
    * @maxItems 10
    */
   fields:
-    | [FarmField]
-    | [FarmField, FarmField]
-    | [FarmField, FarmField, FarmField]
-    | [FarmField, FarmField, FarmField, FarmField]
-    | [FarmField, FarmField, FarmField, FarmField, FarmField]
-    | [FarmField, FarmField, FarmField, FarmField, FarmField, FarmField]
-    | [FarmField, FarmField, FarmField, FarmField, FarmField, FarmField, FarmField]
-    | [FarmField, FarmField, FarmField, FarmField, FarmField, FarmField, FarmField, FarmField]
-    | [FarmField, FarmField, FarmField, FarmField, FarmField, FarmField, FarmField, FarmField, FarmField]
-    | [FarmField, FarmField, FarmField, FarmField, FarmField, FarmField, FarmField, FarmField, FarmField, FarmField];
+    | [OptimizerField]
+    | [OptimizerField, OptimizerField]
+    | [OptimizerField, OptimizerField, OptimizerField]
+    | [OptimizerField, OptimizerField, OptimizerField, OptimizerField]
+    | [OptimizerField, OptimizerField, OptimizerField, OptimizerField, OptimizerField]
+    | [OptimizerField, OptimizerField, OptimizerField, OptimizerField, OptimizerField, OptimizerField]
+    | [OptimizerField, OptimizerField, OptimizerField, OptimizerField, OptimizerField, OptimizerField, OptimizerField]
+    | [
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField
+      ]
+    | [
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField
+      ]
+    | [
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField
+      ];
   /**
    * non-negative weights per priority; normalised server-side, all zero = equal
    */
@@ -615,7 +970,7 @@ export interface FarmPlanRequest {
   eco_practice?: "diversification" | "legume_share";
 }
 
-export interface FarmField {
+export interface OptimizerField {
   /**
    * unique within the request
    */
@@ -640,7 +995,7 @@ export interface FarmField {
     [] | [Crop] | [Crop, Crop] | [Crop, Crop, Crop] | [Crop, Crop, Crop, Crop] | [Crop, Crop, Crop, Crop, Crop] | null;
 }
 
-export interface FarmPlanResponse {
+export interface OptimizerResponse {
   schema_version?: string;
   mock?: boolean;
   /**
@@ -666,11 +1021,11 @@ export interface FarmPlanResponse {
    *
    * @maxItems 3
    */
-  plans: [] | [FarmPlan] | [FarmPlan, FarmPlan] | [FarmPlan, FarmPlan, FarmPlan];
+  plans: [] | [OptimizerPlan] | [OptimizerPlan, OptimizerPlan] | [OptimizerPlan, OptimizerPlan, OptimizerPlan];
   /**
    * the farmer's current rotation; null when it cannot be scored
    */
-  current?: FarmPlan | null;
+  current?: OptimizerPlan | null;
   caveats: Localized[];
   sources: DataSource[];
 }
@@ -679,7 +1034,7 @@ export interface FarmPlanResponse {
  * `score_range` is the spread across weather windows, not a confidence interval.
  */
 
-export interface FarmPlan {
+export interface OptimizerPlan {
   /**
    * 1 = best solution found (optimal for the model only when proven_optimal); 2-3 = alternatives that drop at least two (field, rotation) choices of every better plan (the only one if it has one), not the next-best solutions; 0 = the farmer's current rotation
    */
@@ -741,10 +1096,10 @@ export interface ScenarioScore {
 
 export interface YearAreas {
   plan_year: number;
-  areas: CropArea[];
+  areas: OptimizerCropArea[];
 }
 
-export interface CropArea {
+export interface OptimizerCropArea {
   crop: Crop;
   area_ha: number;
   /**
@@ -782,59 +1137,3 @@ export interface RuleCheck {
    */
   verified: boolean;
 }
-
-export interface RotationOutcome {
-  /**
-   * '{lat:.5f}_{lon:.5f}' of the centre of the 0.0025° (about 250 m) grid cell
-   */
-  grid_point_id: string;
-  /**
-   * crop sequence joined by '>', e.g. 'maize>wheat>pea'
-   */
-  rotation: string;
-  /**
-   * scenario id: first harvest season of the weather window, e.g. 1987
-   */
-  weather_start_season: number;
-  /**
-   * year inside the plan, 1-based
-   */
-  plan_year: number;
-  crop: Crop;
-  /**
-   * harvest year of the weather used: start + plan_year - 1
-   */
-  season: number;
-  /**
-   * yield relative to the crop's local normal (1.0 = normal)
-   */
-  yield_rel?: Range | null;
-  /**
-   * peak-season NDVI
-   */
-  ndvi_peak?: Range | null;
-  /**
-   * mean NDVI outside the crop's season (soil cover)
-   */
-  ndvi_offseason?: Range | null;
-  /**
-   * monthly NDVI, January to December of the harvest year, ensemble P50; the planner's soil-water balance reads it
-   */
-  ndvi_monthly?:
-    [number, number, number, number, number, number, number, number, number, number, number, number] | null;
-  /**
-   * root-zone soil moisture in the crop's critical months; the planner does not read it (it computes soil water from ndvi_monthly and the weather); may be null
-   */
-  rootzone_sm_critical?: Range | null;
-  /**
-   * evapotranspiration over the crop's season; the planner does not read it; may be null
-   */
-  et_season_mm?: Range | null;
-  /**
-   * 'mock-0' for the mock world model
-   */
-  model_version: string;
-}
-/**
- * An estimate with its uncertainty. `low <= mid <= high`.
- */

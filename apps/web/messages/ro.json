@@ -10,7 +10,8 @@
     "about": "Despre",
     "language": "Limba",
     "languageLabel": "Limba: {current}. Alegeți altă limbă",
-    "account": "Cont"
+    "account": "Cont",
+    "farm": "Ferma mea"
   },
   "Footer": {
     "credit": "Creat la NASA Space Apps Challenge 2026 · Date: NASA POWER, MODIS, SMAP, SoilGrids",
@@ -189,7 +190,7 @@
     },
     "assistantField": "Câmpul meu",
     "parcel": {
-      "hint": "Atingeți parcelele dumneavoastră ca să le selectați sau porniți „Selectați trăgând” ca să alegeți mai multe deodată. Apoi apăsați „Folosiți ca un câmp”. Sunt parcelele declarate la APIA; dacă nu o găsiți pe a dumneavoastră, atingeți colțurile câmpului.",
+      "hint": "Atingeți parcelele dumneavoastră ca să le selectați sau porniți „Selectați trăgând” ca să alegeți mai multe deodată. Apoi folosiți-le ca un singur câmp (nu trebuie să se atingă) sau adăugați fiecare ca solă separată. Sunt parcelele declarate la APIA; dacă nu o găsiți pe a dumneavoastră, atingeți colțurile câmpului.",
       "mapHint": "Atingeți parcelele dumneavoastră",
       "selected": "{count, plural, one {# parcelă selectată} few {# parcele selectate} other {# de parcele selectate}} · {ha} ha",
       "use": "Folosiți ca un câmp",
@@ -197,11 +198,13 @@
       "clear": "Anulați selecția",
       "tooSmall": "Împreună au {ha} ha. Un câmp trebuie să aibă cel puțin {min} ha: atingeți și parcelele vecine sau atingeți colțurile ca să desenați câmpul.",
       "tooBig": "Au {ha} ha, peste {max} ha. Selectați mai puține parcele.",
-      "notTouching": "Parcelele nu se ating. Alegeți parcele vecine sau adăugați fiecare câmp separat.",
       "failed": "Nu am putut uni parcelele. Încercați din nou sau atingeți colțurile ca să desenați câmpul.",
       "brush": "Selectați trăgând",
       "brushHint": "Trageți peste parcelele dumneavoastră",
-      "brushHelp": "Trageți peste parcelele dumneavoastră ca să le selectați. Începeți pe o parcelă verde ca să o deselectați. Mutați harta cu două degete sau opriți „Selectați trăgând”."
+      "brushHelp": "Trageți peste parcelele dumneavoastră ca să le selectați. Începeți pe o parcelă verde ca să o deselectați. Mutați harta cu două degete sau opriți „Selectați trăgând”.",
+      "separate": "Adăugați fiecare ca solă separată",
+      "separateSmall": "{count, plural, one {O parcelă are} few {# parcele au} other {# de parcele au}} sub {min} ha, prea puțin pentru o solă separată: au rămas selectate. Folosiți-le împreună ca un câmp sau cu parcelele vecine.",
+      "separateFull": "Puteți analiza cel mult {max} câmpuri deodată. Parcelele rămase sunt încă selectate."
     }
   },
   "Results": {
@@ -384,7 +387,7 @@
       "open": "Vedeți câmpul"
     }
   },
-  "FarmPlan": {
+  "Optimizer": {
     "title": "Planul fermei",
     "hint": "Toate câmpurile dumneavoastră, planificate împreună și testate pe vremea din anii trecuți.",
     "loading": "Facem planul fermei…",
@@ -428,7 +431,7 @@
   },
   "Feed": {
     "title": "De unde cumpărați furaje anul acesta",
-    "intro": "Vedeți ce comune vor avea probabil destul porumb, grâu sau soia anul acesta și unde calitatea ar putea fi o problemă.",
+    "intro": "Vedeți ce comune vor avea probabil destul porumb, grâu sau orz anul acesta și unde calitatea ar putea fi o problemă.",
     "loading": "Încărcăm zonele…",
     "regionLine": "{region} · sezonul {season} · {count} comune",
     "cropToggle": "Alegeți cultura",
@@ -455,7 +458,7 @@
       "winterCover": "Sol acoperit iarna",
       "model": "Versiunea modelului: {version}",
       "lowerRiskTitle": "Ce poate reduce riscul",
-      "lowerRiskMaize": "Rotațiile cu soia sau floarea-soarelui reduc de obicei acest risc în 3 ani. Comparați-le pentru un câmp din această comună.",
+      "lowerRiskMaize": "Rotațiile cu mazăre sau floarea-soarelui reduc de obicei acest risc în 3 ani. Comparați-le pentru un câmp din această comună.",
       "lowerRiskOther": "Dacă nu cultivați aceeași plantă doi ani la rând, riscul scade de obicei în 3 ani. Comparați rotațiile pentru un câmp din această comună.",
       "compareHere": "Comparați rotațiile aici"
     },
@@ -478,31 +481,6 @@
     },
     "recommendationTitle": "Recomandare",
     "assumptions": "Presupuneri",
-    "scenarioTitle": "Dacă mai mulți fermieri ar cultiva soia",
-    "adoption": {
-      "title": "Câtă {crop} în plus ar putea oferi zona, estimat",
-      "hint": "Mutați glisorul: ce procent dintre furnizori ar introduce cultura în rotație.",
-      "sliderLabel": "Furnizori care adaugă {crop}",
-      "area": "Suprafață în plus",
-      "production": "Producție în plus",
-      "protein": "Proteină în plus",
-      "rangeLabel": "Între {low} și {high} {unit}, cel mai probabil {mid} {unit}",
-      "range": "între {low} și {high} {unit}",
-      "assumptions": "Presupuneri",
-      "linear": "Rezultatele cresc proporțional cu procentul de adoptare, pornind de la scenariul calculat pentru {base}%.",
-      "cropLabel": "Ce cultură se adaugă",
-      "choice": {
-        "soy": "Soia",
-        "pea": "Mazăre furajeră",
-        "both": "Amândouă"
-      },
-      "bothName": "{a} și {b}",
-      "peaArea": "Mazăre furajeră: aceeași suprafață în plus ca în scenariul cu soia (aceeași parte din teren își schimbă cultura).",
-      "peaYield": "Producția la mazărea furajeră: între {low} și {high} t/ha, cel mai probabil {mid} t/ha. Valoare provizorie, de verificat cu un agronom.",
-      "peaProtein": "Proteina din mazărea furajeră la recoltare: între {low} și {high}% (tabelul culturilor, încredere scăzută). De verificat cu un agronom.",
-      "bothSum": "Amândouă: aceeași suprafață în plus, jumătate soia și jumătate mazăre furajeră. Producția și proteina sunt suma celor două jumătăți.",
-      "soyScenario": "Valorile pentru soia vin din scenariul calculat de model."
-    },
     "caveatsTitle": "De reținut",
     "metaTitle": "Cumpărători de furaje",
     "actionsTitle": "Ce puteți face",
@@ -536,8 +514,7 @@
       "bad": "{count, plural, one {comună e probabil să nu aibă} few {comune e probabil să nu aibă} other {de comune e probabil să nu aibă}} destul {crop}"
     },
     "listTitle": "Toate comunele, cele mai sigure primele",
-    "listHint": "Atingeți o comună ca să vedeți de ce. Bifați două ca să le comparați.",
-    "scenarioHint": "Câte furaje în plus ar putea da zona dacă mai mulți fermieri și-ar schimba rotația."
+    "listHint": "Atingeți o comună ca să vedeți de ce. Bifați două ca să le comparați."
   },
   "About": {
     "title": "Despre Field Signal",
@@ -545,7 +522,7 @@
     "judgment": "Instrumentul sprijină judecata fermierului. Nu o înlocuiește.",
     "whatTitle": "Ce face",
     "what": {
-      "farmer": "Pentru fermieri: compară rotația de acum cu două alternative (cel puțin una cu soia sau mazăre) și arată, an de an, cum ar fi mers fiecare.",
+      "farmer": "Pentru fermieri: compară rotația de acum cu două alternative (cel puțin una cu mazăre) și arată, an de an, cum ar fi mers fiecare.",
       "buyer": "Pentru cumpărătorii de furaje: arată pe comune riscul de a nu găsi destulă recoltă, riscurile de calitate (aflatoxine, fuzarioză, ploi la recoltare) și impactul asupra mediului.",
       "transparency": "Fiecare cifră are sursa, perioada, presupunerile și nivelul de încredere lângă ea."
     },
@@ -687,7 +664,7 @@
     "start": "Desenați câmpul",
     "buyer": {
       "title": "Cumpărători de furaje",
-      "text": "Vedeți, comună cu comună, unde vor fi probabil porumb, grâu și soia anul acesta și cu ce risc de calitate.",
+      "text": "Vedeți, comună cu comună, unde vor fi probabil porumb, grâu și orz anul acesta și cu ce risc de calitate.",
       "cta": "Deschideți pagina pentru cumpărători"
     },
     "imageAlt": "Transilvania văzută din satelit, vara: terenuri agricole în centru, înconjurate de Carpații împăduriți.",
@@ -747,7 +724,7 @@
       },
       "alternatives": {
         "title": "Două rotații care au mers mai bine",
-        "text": "Cel puțin una cu soia sau mazăre."
+        "text": "Cel puțin una cu mazăre."
       },
       "plan": {
         "title": "Un plan pentru parcele",
@@ -916,5 +893,206 @@
       "offline": "Nu putem ajunge la server. Verificați conexiunea și încercați din nou."
     },
     "lookingAt": "Consultă {what}…"
+  },
+  "Farm": {
+    "title": "Ferma mea",
+    "lead": "Aduceți toate parcelele, grupați-le în sole și primiți un singur plan pentru toată ferma: ce cultivați și unde, an de an.",
+    "nameLabel": "Numele fermei",
+    "defaultName": "Ferma mea",
+    "save": {
+      "button": "Salvați ferma",
+      "busy": "Se salvează…",
+      "done": "Salvată",
+      "signIn": "Autentificați-vă ca să păstrați ferma",
+      "error": "Nu am putut salva. Încercați din nou."
+    },
+    "mapLabel": "Harta parcelelor fermei",
+    "mapUnavailable": "Harta nu poate fi afișată în acest browser. Puteți totuși importa un fișier și face planul.",
+    "basemap": {
+      "label": "Tipul hărții",
+      "satellite": "Satelit",
+      "map": "Hartă"
+    },
+    "brush": "Selectați trăgând",
+    "summary": "{count, plural, =0 {Nicio parcelă încă} one {# parcelă} few {# parcele} other {# de parcele}} · {ha} ha",
+    "selected": "{count, plural, one {# parcelă selectată} few {# parcele selectate} other {# de parcele selectate}}",
+    "fieldsCount": "{count, plural, =0 {Nicio solă încă} one {# solă} few {# sole} other {# de sole}}",
+    "steps": {
+      "label": "Pașii fermei",
+      "parcels": "Parcele",
+      "fields": "Sole",
+      "plan": "Plan"
+    },
+    "import": {
+      "title": "Import din AGI Online",
+      "hint": "Încărcați fișierul cu parcele exportat din contul dumneavoastră APIA (un shapefile .zip) sau un fișier GeoJSON ori KML. Găsim parcelele APIA potrivite.",
+      "button": "Alegeți un fișier",
+      "busy": "Citim fișierul…",
+      "samples": "Nu aveți fișierul la îndemână? Încercați un export demonstrativ:",
+      "sample": {
+        "big": "fermă mare (circa 150 de parcele)",
+        "small": "fermă mică (6 parcele)"
+      },
+      "done": "Am adăugat {count, plural, =0 {nicio parcelă nouă} one {# parcelă} few {# parcele} other {# de parcele}} ({ha} ha).",
+      "unmatched": "{count, plural, one {Un contur} few {# contururi} other {# de contururi}} din fișier nu {count, plural, one {are} other {au}} nicio parcelă APIA dedesubt.",
+      "error": {
+        "unsupported_file": "Acest tip de fișier nu este acceptat. Folosiți un shapefile .zip, GeoJSON sau KML.",
+        "no_outlines": "Fișierul nu are contururi de parcele.",
+        "unreadable_file": "Fișierul nu a putut fi citit. Este exportul din AGI Online?",
+        "file_too_large": "Fișierul este prea mare (peste 20 MB).",
+        "offline": "Nu există conexiune. Încercați din nou când sunteți online.",
+        "server": "Ceva nu a mers. Încercați din nou."
+      }
+    },
+    "pick": {
+      "title": "Sau alegeți parcelele pe hartă",
+      "hint": "Măriți harta pe satul dumneavoastră: apar parcelele declarate la APIA. Atingeți o parcelă ca să o adăugați, atingeți-o din nou ca să o scoateți.",
+      "how": "Multe parcele? Porniți „Selectați trăgând” și trageți peste ele. Dacă începeți pe o parcelă verde, le scoateți."
+    },
+    "toFields": "Grupați în sole",
+    "clear": "Începeți din nou",
+    "fieldN": "Sola {n}",
+    "fields": {
+      "title": "Solele dumneavoastră",
+      "hint": "O solă înseamnă parcelele lucrate la fel, cu aceleași culturi. Nu trebuie să fie lipite. Le-am grupat după culturile văzute din satelit și după distanță; schimbați ce nu este corect.",
+      "busy": "Grupăm parcelele…",
+      "error": "Nu am putut grupa parcelele.",
+      "retry": "Încercați din nou",
+      "again": "Grupați din nou de la zero",
+      "howToMove": "Ca să mutați parcele în altă solă, atingeți-le pe hartă (sau trageți peste ele), apoi alegeți unde merg.",
+      "nameLabel": "Numele solei",
+      "size": "{ha} ha · {count, plural, one {# parcelă} few {# parcele} other {# de parcele}}",
+      "select": "Arătați pe hartă"
+    },
+    "move": {
+      "label": "Mutați în",
+      "new": "O solă nouă",
+      "button": "Mutați",
+      "clear": "Anulați selecția"
+    },
+    "soil": {
+      "title": "Parcele care diferă",
+      "hint": "Din hărți de sol (250 m), nu dintr-o analiză de sol. Merită o privire înainte să le planificați la fel ca pe restul.",
+      "show": "Arătați",
+      "clay_high": "{count, plural, one {O parcelă are} few {# parcele au} other {# de parcele au}} mult mai multă argilă decât restul fermei: se lucrează mai greu și ține apa mai mult.",
+      "clay_low": "{count, plural, one {O parcelă are} few {# parcele au} other {# de parcele au}} mult mai puțină argilă: sol ușor, care se usucă mai repede.",
+      "carbon_low": "{count, plural, one {O parcelă are} few {# parcele au} other {# de parcele au}} mai puțină materie organică decât restul: aici ajută cel mai mult leguminoasele și culturile de acoperire.",
+      "ph_low": "{count, plural, one {O parcelă este acidă} few {# parcele sunt acide} other {# de parcele sunt acide}} (pH sub 5,5).",
+      "ph_high": "{count, plural, one {O parcelă este alcalină} few {# parcele sunt alcaline} other {# de parcele sunt alcaline}} (pH peste 8)."
+    },
+    "back": "Înapoi",
+    "toPlan": "Faceți planul fermei",
+    "parcel": {
+      "title": "Parcela APIA {id}",
+      "area": "{ha} ha",
+      "landUse": "Categoria de folosință (APIA)",
+      "field": "Sola",
+      "noField": "Încă nu e într-o solă",
+      "declared": "Cultura din fișierul dumneavoastră",
+      "history": "Cultura văzută din satelit",
+      "share": "{pct}% din parcelă",
+      "historyNote": "Din hărțile europene ale culturilor (10 m). Cam 8 din 10 parcele sunt cartate corect.",
+      "soil": "Solul de suprafață (0–30 cm)",
+      "soc": "Carbon organic {value} g/kg",
+      "ph": "pH {value}",
+      "clay": "Argilă {value}%",
+      "sand": "Nisip {value}%",
+      "soilNote": "Din hărți de sol (SoilGrids, 250 m): o estimare, nu o analiză de sol.",
+      "unknown": "Necunoscut",
+      "moveLabel": "Mutați în",
+      "moveNew": "O solă nouă",
+      "move": "Mutați",
+      "remove": "Scoateți din fermă",
+      "close": "Închideți",
+      "sources": "APIA LPIS 2025 (data.gov.ro) · JRC EUCROPMAP · ISRIC SoilGrids.",
+      "landUses": {
+        "TA": "Teren arabil",
+        "TAn": "Teren arabil (TAn)",
+        "PP": "Pajiște permanentă",
+        "PPn": "Pajiște permanentă (PPn)",
+        "PPi": "Pajiște permanentă (PPi)",
+        "CP": "Culturi permanente (livadă, vie)",
+        "CPn": "Culturi permanente (CPn)"
+      },
+      "flags": {
+        "clay_high": "Mult mai multă argilă decât restul fermei.",
+        "clay_low": "Mult mai puțină argilă decât restul fermei.",
+        "carbon_low": "Mai puțină materie organică decât restul fermei.",
+        "ph_low": "Sol acid (pH sub 5,5).",
+        "ph_high": "Sol alcalin (pH peste 8)."
+      },
+      "crops": {
+        "none": "Necartat",
+        "maize": "Porumb",
+        "common_wheat": "Grâu",
+        "durum_wheat": "Grâu dur",
+        "barley": "Orz",
+        "rye": "Secară",
+        "oats": "Ovăz",
+        "triticale": "Triticale",
+        "other_cereals": "Alte cereale",
+        "potatoes": "Cartofi",
+        "sugar_beet": "Sfeclă de zahăr",
+        "sunflower": "Floarea-soarelui",
+        "rapeseed": "Rapiță",
+        "soybean": "Soia",
+        "dry_pulses": "Mazăre sau fasole",
+        "fodder_crops": "Plante furajere",
+        "bare_arable": "Arabil necultivat",
+        "grassland": "Pajiște",
+        "woodland_shrubland": "Pădure sau tufăriș",
+        "artificial": "Construit",
+        "water": "Apă",
+        "wetlands": "Zonă umedă",
+        "bare_land": "Teren gol"
+      }
+    },
+    "rematch": {
+      "title": "Parcele dintr-un an anterior?",
+      "hint": "APIA redesenează parcelele în fiecare an și numerele lor se pot schimba. Potriviți ferma cu cele mai noi parcele APIA; solele rămân cum sunt.",
+      "button": "Actualizați la cele mai noi parcele APIA",
+      "busy": "Potrivim…",
+      "same": "Parcelele dumneavoastră se potrivesc deja cu cele mai noi parcele APIA (2025).",
+      "done": "{changed, plural, =0 {Nicio parcelă nu s-a schimbat} one {O parcelă s-a schimbat} few {# parcele s-au schimbat} other {# de parcele s-au schimbat}}. {missing, plural, =0 {} one {O parcelă nu mai are nicio parcelă APIA dedesubt și a rămas cum era.} few {# parcele nu mai au nicio parcelă APIA dedesubt și au rămas cum erau.} other {# de parcele nu mai au nicio parcelă APIA dedesubt și au rămas cum erau.}}",
+      "error": "Nu am putut potrivi parcelele. Încercați din nou."
+    }
+  },
+  "FarmPlan": {
+    "empty": "Adăugați mai întâi cel puțin o solă cu parcele. Apoi putem planifica culturile pentru toată ferma.",
+    "summary": "{count, plural, one {1 solă} few {# sole} other {# de sole}}, sezoanele {from}–{to}.",
+    "make": "Faceți planul",
+    "remake": "Refaceți planul",
+    "loading": "Facem planul. Cu multe sole poate dura câteva secunde.",
+    "tableTitle": "Culturile pe fiecare solă, an de an",
+    "tableHint": "Fiecare solă își păstrează rotația. Solele pornesc din puncte diferite, astfel încât ferma are în fiecare an un amestec echilibrat de culturi.",
+    "field": "Sola",
+    "totalsTitle": "Toată ferma, pe ani",
+    "totalsHint": "Hectarele fiecărei culturi, pe toate solele dumneavoastră.",
+    "legend": "Culturi",
+    "checksTitle": "Ce să verificați",
+    "checkOk": "În regulă",
+    "checkNotOk": "De verificat",
+    "caveatsTitle": "Bine de știut",
+    "downloadTitle": "Lista pentru declarația APIA",
+    "downloadHint": "O listă de verificare pe care o copiați de mână în AGI Online, parcelă cu parcelă. Nu este un fișier oficial de import.",
+    "downloadYear": "Anul listei",
+    "download": "Descărcați lista APIA pentru {year}"
+  },
+  "FeedExtra": {
+    "validation": {
+      "title": "Cum s-a descurcat riscul în anii trecuți",
+      "summary": "din {total} ani trecuți estimați corect",
+      "cropSummary": "{hits} din {total} corect",
+      "hit": "Estimat corect",
+      "miss": "Ratat",
+      "seasonLabel": "{season}: {risk}, recolta {anomaly} față de tendință. {result}.",
+      "honest": "Arătăm intenționat și anii ratați. Niciun scor de risc nu nimerește fiecare an, iar dumneavoastră trebuie să vedeți unde a greșit acesta.",
+      "tableTitle": "Vedeți fiecare an",
+      "colCrop": "Cultura",
+      "colSeason": "Anul",
+      "colRisk": "Riscul pe care l-am fi dat",
+      "colYield": "Recolta față de tendință",
+      "colResult": "Rezultat"
+    }
   }
 }

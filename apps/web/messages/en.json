@@ -10,7 +10,8 @@
     "about": "About",
     "language": "Language",
     "languageLabel": "Language: {current}. Choose another language",
-    "account": "Account"
+    "account": "Account",
+    "farm": "My farm"
   },
   "Footer": {
     "credit": "Created at NASA Space Apps Challenge 2026 · Data: NASA POWER, MODIS, SMAP, SoilGrids",
@@ -189,7 +190,7 @@
     },
     "assistantField": "My field",
     "parcel": {
-      "hint": "Tap your parcels to select them, or switch on “Drag to select” to select many at once. Then press “Use as my field”. These are the parcels declared to APIA; if yours is not there, tap the corners of your field instead.",
+      "hint": "Tap your parcels to select them, or switch on “Drag to select” to select many at once. Then use them as one field (they do not need to touch), or add each as its own field. These are the parcels declared to APIA; if yours is not there, tap the corners of your field instead.",
       "mapHint": "Tap your parcels",
       "selected": "{count, plural, one {# parcel} other {# parcels}} selected · {ha} ha",
       "use": "Use as my field",
@@ -197,11 +198,13 @@
       "clear": "Clear selection",
       "tooSmall": "Together that is {ha} ha. A field needs at least {min} ha: also tap the parcels next to it, or tap the corners to draw your field.",
       "tooBig": "That is {ha} ha, over {max} ha. Select fewer parcels.",
-      "notTouching": "These parcels do not touch. Choose parcels that sit next to each other, or add each field separately.",
       "failed": "Could not join the parcels. Try again, or tap the corners to draw your field.",
       "brush": "Drag to select",
       "brushHint": "Drag over your parcels",
-      "brushHelp": "Drag over your parcels to select them. Start a drag on a green parcel to unselect. Use two fingers to move the map, or switch off “Drag to select”."
+      "brushHelp": "Drag over your parcels to select them. Start a drag on a green parcel to unselect. Use two fingers to move the map, or switch off “Drag to select”.",
+      "separate": "Add each as its own field",
+      "separateSmall": "{count, plural, one {# parcel is} other {# parcels are}} under {min} ha, too small for a field of {count, plural, one {its} other {their}} own: they are still selected. Use them as one field together, or with the parcels next to them.",
+      "separateFull": "You can analyse up to {max} fields together. The parcels left are still selected."
     }
   },
   "Results": {
@@ -384,7 +387,7 @@
       "open": "See this field"
     }
   },
-  "FarmPlan": {
+  "Optimizer": {
     "title": "Farm plan",
     "hint": "All your fields planned together and tested against past weather.",
     "loading": "Making the farm plan…",
@@ -428,7 +431,7 @@
   },
   "Feed": {
     "title": "Where to buy feed this year",
-    "intro": "See which communes are likely to have enough maize, wheat or soybean this year, and where quality could be a problem.",
+    "intro": "See which communes are likely to have enough maize, wheat or barley this year, and where quality could be a problem.",
     "loading": "Loading zones…",
     "regionLine": "{region} · season {season} · {count} communes",
     "cropToggle": "Choose the crop",
@@ -455,7 +458,7 @@
       "winterCover": "Soil covered in winter",
       "model": "Model version: {version}",
       "lowerRiskTitle": "What can lower this risk",
-      "lowerRiskMaize": "Rotations with soybean or sunflower usually lower this risk over 3 years. Compare them for a field in this commune.",
+      "lowerRiskMaize": "Rotations with peas or sunflower usually lower this risk over 3 years. Compare them for a field in this commune.",
       "lowerRiskOther": "Not growing the same crop two years in a row usually lowers this risk over 3 years. Compare rotations for a field in this commune.",
       "compareHere": "Compare rotations here"
     },
@@ -478,31 +481,6 @@
     },
     "recommendationTitle": "Recommendation",
     "assumptions": "Assumptions",
-    "scenarioTitle": "If more farmers grew soybean",
-    "adoption": {
-      "title": "How much more {crop} the area could supply, estimated",
-      "hint": "Move the slider: the share of suppliers who add the crop to their rotation.",
-      "sliderLabel": "Suppliers adding {crop}",
-      "area": "Extra area",
-      "production": "Extra production",
-      "protein": "Extra protein",
-      "rangeLabel": "Between {low} and {high} {unit}, most likely {mid} {unit}",
-      "range": "between {low} and {high} {unit}",
-      "assumptions": "Assumptions",
-      "linear": "Results grow in proportion to the adoption share, starting from the scenario computed for {base}%.",
-      "cropLabel": "Which crop to add",
-      "choice": {
-        "soy": "Soybean",
-        "pea": "Feed pea",
-        "both": "Both"
-      },
-      "bothName": "{a} and {b}",
-      "peaArea": "Feed pea: the same extra area as the soybean scenario (the same share of land changes crop).",
-      "peaYield": "Feed pea yield: {low} to {high} t/ha, most likely {mid} t/ha. Placeholder value, to verify with an agronomist.",
-      "peaProtein": "Feed pea protein as harvested: {low} to {high}% (crop table, low confidence). To verify with an agronomist.",
-      "bothSum": "Both: the same extra area, half soybean and half feed pea. Harvest and protein are the sum of the two halves.",
-      "soyScenario": "Soybean values come from the scenario computed by the model."
-    },
     "caveatsTitle": "Keep in mind",
     "metaTitle": "Feed buyer",
     "actionsTitle": "What to do",
@@ -536,8 +514,7 @@
       "bad": "{count, plural, one {commune} other {communes}} will likely be short of {crop}"
     },
     "listTitle": "All communes, safest first",
-    "listHint": "Tap a commune to see why. Tick two to compare them.",
-    "scenarioHint": "How much extra feed the area could supply if more farmers changed their rotation."
+    "listHint": "Tap a commune to see why. Tick two to compare them."
   },
   "About": {
     "title": "About Field Signal",
@@ -545,7 +522,7 @@
     "judgment": "The tool supports the farmer's judgment. It does not replace it.",
     "whatTitle": "What it does",
     "what": {
-      "farmer": "For farmers: compares your current rotation with two alternatives (at least one with soybean or peas) and shows, year by year, how each would have done.",
+      "farmer": "For farmers: compares your current rotation with two alternatives (at least one with peas) and shows, year by year, how each would have done.",
       "buyer": "For feed buyers: shows, by commune, the risk of not finding enough harvest, quality risks (aflatoxins, fusarium, harvest rain) and environmental impact.",
       "transparency": "Every number shows its source, period, assumptions and confidence next to it."
     },
@@ -687,7 +664,7 @@
     "start": "Draw your field",
     "buyer": {
       "title": "Feed buyers",
-      "text": "See, commune by commune, where maize, wheat and soybean are likely this year, and at what quality risk.",
+      "text": "See, commune by commune, where maize, wheat and barley are likely this year, and at what quality risk.",
       "cta": "Open the buyer view"
     },
     "imageAlt": "Satellite view of Transylvania in summer: farmland in the centre, ringed by the forested Carpathians.",
@@ -747,7 +724,7 @@
       },
       "alternatives": {
         "title": "Two rotations that did better",
-        "text": "At least one with soybean or peas."
+        "text": "At least one with peas."
       },
       "plan": {
         "title": "A plan for your plots",
@@ -916,5 +893,206 @@
       "offline": "We can't reach the server. Check your connection and try again."
     },
     "lookingAt": "Looking at {what}…"
+  },
+  "Farm": {
+    "title": "My farm",
+    "lead": "Bring in all your parcels, group them into fields, and get one plan for the whole farm: what to grow where, year by year.",
+    "nameLabel": "Farm name",
+    "defaultName": "My farm",
+    "save": {
+      "button": "Save farm",
+      "busy": "Saving…",
+      "done": "Saved",
+      "signIn": "Sign in to keep your farm",
+      "error": "Could not save. Try again."
+    },
+    "mapLabel": "Map of your farm's parcels",
+    "mapUnavailable": "The map cannot be shown in this browser. You can still import a file and plan.",
+    "basemap": {
+      "label": "Map view",
+      "satellite": "Satellite",
+      "map": "Map"
+    },
+    "brush": "Drag to select",
+    "summary": "{count, plural, =0 {No parcels yet} one {# parcel} other {# parcels}} · {ha} ha",
+    "selected": "{count, plural, one {# parcel selected} other {# parcels selected}}",
+    "fieldsCount": "{count, plural, =0 {No fields yet} one {# field} other {# fields}}",
+    "steps": {
+      "label": "Farm steps",
+      "parcels": "Parcels",
+      "fields": "Fields",
+      "plan": "Plan"
+    },
+    "import": {
+      "title": "Import from AGI Online",
+      "hint": "Upload the parcel file you export from your APIA account (a .zip shapefile), or a GeoJSON or KML file. We find the matching APIA parcels.",
+      "button": "Choose a file",
+      "busy": "Reading the file…",
+      "samples": "No file at hand? Try a demo export:",
+      "sample": {
+        "big": "large farm (about 150 parcels)",
+        "small": "small farm (6 parcels)"
+      },
+      "done": "Added {count, plural, =0 {no new parcels} one {# parcel} other {# parcels}} ({ha} ha).",
+      "unmatched": "{count, plural, one {# outline} other {# outlines}} in the file had no APIA parcel under {count, plural, one {it} other {them}}.",
+      "error": {
+        "unsupported_file": "This file type is not supported. Use a .zip shapefile, GeoJSON or KML.",
+        "no_outlines": "The file has no parcel outlines.",
+        "unreadable_file": "The file could not be read. Is it the export from AGI Online?",
+        "file_too_large": "The file is too large (over 20 MB).",
+        "offline": "No connection. Try again when you are online.",
+        "server": "Something went wrong. Try again."
+      }
+    },
+    "pick": {
+      "title": "Or pick parcels on the map",
+      "hint": "Zoom in to your village: the parcels declared to APIA appear. Tap a parcel to add it, tap it again to remove it.",
+      "how": "Many parcels? Switch on “Drag to select” and drag over them. A drag that starts on a green parcel removes instead."
+    },
+    "toFields": "Group into fields",
+    "clear": "Start again",
+    "fieldN": "Field {n}",
+    "fields": {
+      "title": "Your fields",
+      "hint": "A field is the parcels you farm the same way, with the same crops. They do not have to touch. We grouped them by the crops seen from satellite and by distance; change anything that is not right.",
+      "busy": "Grouping your parcels…",
+      "error": "Could not group the parcels.",
+      "retry": "Try again",
+      "again": "Group again from scratch",
+      "howToMove": "To move parcels to another field, tap them on the map (or drag over them), then choose where they go.",
+      "nameLabel": "Field name",
+      "size": "{ha} ha · {count, plural, one {# parcel} other {# parcels}}",
+      "select": "Show on the map"
+    },
+    "move": {
+      "label": "Move to",
+      "new": "A new field",
+      "button": "Move",
+      "clear": "Clear selection"
+    },
+    "soil": {
+      "title": "Parcels that differ",
+      "hint": "From soil maps (250 m), not a soil test. Worth a look before you plan them like the rest.",
+      "show": "Show",
+      "clay_high": "{count, plural, one {# parcel has} other {# parcels have}} much more clay than the rest of your farm: heavier to work, holds water longer.",
+      "clay_low": "{count, plural, one {# parcel has} other {# parcels have}} much less clay: lighter soil that dries out sooner.",
+      "carbon_low": "{count, plural, one {# parcel has} other {# parcels have}} less organic matter than the rest: legumes and cover crops help most here.",
+      "ph_low": "{count, plural, one {# parcel is} other {# parcels are}} acidic (pH under 5.5).",
+      "ph_high": "{count, plural, one {# parcel is} other {# parcels are}} alkaline (pH over 8)."
+    },
+    "back": "Back",
+    "toPlan": "Make the farm plan",
+    "parcel": {
+      "title": "APIA parcel {id}",
+      "area": "{ha} ha",
+      "landUse": "Land use (APIA)",
+      "field": "Field",
+      "noField": "Not in a field yet",
+      "declared": "Crop in your file",
+      "history": "Crop seen from satellite",
+      "share": "{pct}% of the parcel",
+      "historyNote": "From the EU crop maps (10 m). About 8 in 10 parcels are mapped right.",
+      "soil": "Topsoil (0–30 cm)",
+      "soc": "Organic carbon {value} g/kg",
+      "ph": "pH {value}",
+      "clay": "Clay {value}%",
+      "sand": "Sand {value}%",
+      "soilNote": "From soil maps (SoilGrids, 250 m): an estimate, not a soil test.",
+      "unknown": "Not known",
+      "moveLabel": "Move to",
+      "moveNew": "A new field",
+      "move": "Move",
+      "remove": "Remove from farm",
+      "close": "Close",
+      "sources": "APIA LPIS 2025 (data.gov.ro) · JRC EUCROPMAP · ISRIC SoilGrids.",
+      "landUses": {
+        "TA": "Arable land",
+        "TAn": "Arable land (TAn)",
+        "PP": "Permanent grassland",
+        "PPn": "Permanent grassland (PPn)",
+        "PPi": "Permanent grassland (PPi)",
+        "CP": "Permanent crops (orchard, vineyard)",
+        "CPn": "Permanent crops (CPn)"
+      },
+      "flags": {
+        "clay_high": "Much more clay than the rest of your farm.",
+        "clay_low": "Much less clay than the rest of your farm.",
+        "carbon_low": "Less organic matter than the rest of your farm.",
+        "ph_low": "Acidic soil (pH under 5.5).",
+        "ph_high": "Alkaline soil (pH over 8)."
+      },
+      "crops": {
+        "none": "Not mapped",
+        "maize": "Maize",
+        "common_wheat": "Wheat",
+        "durum_wheat": "Durum wheat",
+        "barley": "Barley",
+        "rye": "Rye",
+        "oats": "Oats",
+        "triticale": "Triticale",
+        "other_cereals": "Other cereals",
+        "potatoes": "Potatoes",
+        "sugar_beet": "Sugar beet",
+        "sunflower": "Sunflower",
+        "rapeseed": "Rapeseed",
+        "soybean": "Soybean",
+        "dry_pulses": "Peas or beans",
+        "fodder_crops": "Fodder crops",
+        "bare_arable": "Bare arable land",
+        "grassland": "Grassland",
+        "woodland_shrubland": "Woods or shrubs",
+        "artificial": "Built-up",
+        "water": "Water",
+        "wetlands": "Wetland",
+        "bare_land": "Bare land"
+      }
+    },
+    "rematch": {
+      "title": "Parcels from an earlier year?",
+      "hint": "APIA redraws parcels every year and their numbers can change. Match your farm to the latest APIA parcels; your fields stay as they are.",
+      "button": "Update to the latest APIA parcels",
+      "busy": "Matching…",
+      "same": "Your parcels already match the latest APIA parcels (2025).",
+      "done": "{changed, plural, =0 {No parcels changed} one {# parcel changed} other {# parcels changed}}. {missing, plural, =0 {} one {# parcel has no APIA parcel under it now and was kept as it was.} other {# parcels have no APIA parcel under them now and were kept as they were.}}",
+      "error": "Could not match the parcels. Try again."
+    }
+  },
+  "FarmPlan": {
+    "empty": "Add at least one field with parcels first. Then we can plan the crops for the whole farm.",
+    "summary": "{count, plural, one {1 field} other {# fields}}, seasons {from} to {to}.",
+    "make": "Make the plan",
+    "remake": "Make the plan again",
+    "loading": "Making the plan. With many fields this can take a few seconds.",
+    "tableTitle": "Crops per field, year by year",
+    "tableHint": "Each field keeps its own rotation. The fields start at different points, so the farm grows a steady mix every year.",
+    "field": "Field",
+    "totalsTitle": "The whole farm, per year",
+    "totalsHint": "Hectares of each crop across all your fields.",
+    "legend": "Crops",
+    "checksTitle": "What to check",
+    "checkOk": "Fine",
+    "checkNotOk": "Needs a look",
+    "caveatsTitle": "Good to know",
+    "downloadTitle": "List for your APIA declaration",
+    "downloadHint": "A checklist to copy by hand into AGI Online, parcel by parcel. It is not an official import file.",
+    "downloadYear": "Year of the list",
+    "download": "Download the APIA list for {year}"
+  },
+  "FeedExtra": {
+    "validation": {
+      "title": "How the risk did in past years",
+      "summary": "of {total} past seasons called right",
+      "cropSummary": "{hits} of {total} right",
+      "hit": "Called right",
+      "miss": "Missed",
+      "seasonLabel": "{season}: {risk}, harvest {anomaly} against the trend. {result}.",
+      "honest": "We show the misses on purpose. No risk score gets every year right, and you should see where this one went wrong.",
+      "tableTitle": "See every season",
+      "colCrop": "Crop",
+      "colSeason": "Season",
+      "colRisk": "Risk we would have given",
+      "colYield": "Harvest vs trend",
+      "colResult": "Result"
+    }
   }
 }

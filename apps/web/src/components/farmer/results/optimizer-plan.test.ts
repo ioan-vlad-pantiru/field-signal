@@ -26,7 +26,7 @@ function strings(tree: Tree, prefix = ""): [string, string][] {
 
 function farmPlan(locale: string): [string, string][] {
   const url = new URL(`../../../../messages/${locale}.json`, import.meta.url);
-  return strings((JSON.parse(readFileSync(url, "utf8")) as { FarmPlan: Tree }).FarmPlan);
+  return strings((JSON.parse(readFileSync(url, "utf8")) as { Optimizer: Tree }).Optimizer);
 }
 
 // Binding wording (optimizer plan §3.10): never "compliant", "optimal" only for a proven optimum.

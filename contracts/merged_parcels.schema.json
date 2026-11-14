@@ -25,7 +25,7 @@
     }
   },
   "additionalProperties": false,
-  "description": "The joined outline of parcels that touch each other.",
+  "description": "Tapped parcels joined into one field: touching parcels become one outline. When they do\nnot all touch, `boundary` is the largest piece and `parts` the others.",
   "properties": {
     "boundary": {
       "items": {
@@ -34,6 +34,19 @@
       "maxItems": 500,
       "minItems": 3,
       "title": "Boundary",
+      "type": "array"
+    },
+    "parts": {
+      "items": {
+        "items": {
+          "$ref": "#/$defs/LatLon"
+        },
+        "maxItems": 500,
+        "minItems": 3,
+        "type": "array"
+      },
+      "maxItems": 40,
+      "title": "Parts",
       "type": "array"
     },
     "area_ha": {

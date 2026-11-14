@@ -154,7 +154,7 @@ def test_pin_then_why(env: None) -> None:
     r = bot.send(PIN)
     assert "Rotații" in r and "de ce 2" in r and "agronom" in r
     r = bot.send(text("De ce 2?"))
-    assert "porumb → soia → grâu" in r and "Fixează azot" in r
+    assert "porumb → mazăre → grâu" in r and "Fixează azot" in r
     assert "Încredere: medie" in r
     assert "Am 3 rotații" in bot.send(text("de ce 9"))
 

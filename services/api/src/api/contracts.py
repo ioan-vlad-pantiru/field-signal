@@ -80,6 +80,10 @@ class LatLon(Contract):
     lon: float = Field(ge=-180, le=180)
 
 
+Ring = Annotated[list[LatLon], Field(min_length=3, max_length=500)]
+"""A closed outline without its closing point."""
+
+
 class Range(Contract):
     """An estimate with its uncertainty. `low <= mid <= high`."""
 
@@ -244,7 +248,7 @@ class AvailabilityRisk(Contract):
 
 
 class QualityFlag(Contract):
-    code: Literal["aflatoxin_window", "fusarium_window", "harvest_rain"]
+    code: Literal["aflatoxin_window", "fusarium_window", "harvest_rain", "soy_seed_fill_rain"]
     label: Localized
     level: RiskLevel
     days_observed: int
@@ -303,6 +307,26 @@ class AdoptionScenario(Contract):
     assumptions: list[Localized]
 
 
+class ValidationYear(Contract):
+    """One past season: the risk we would have given vs what the official yields showed."""
+
+    season: int
+    crop: Crop
+    risk_level: RiskLevel
+    yield_anomaly_pct: float = Field(description="INS county yield vs its linear trend")
+    hit: bool = Field(description="high risk with a poor yield, or low risk with a normal one")
+
+
+class Validation(Contract):
+    """How the supply-risk rule did against official county yields (INS AGR110A), year by year.
+    Hits and misses are both published."""
+
+    method: Localized
+    hits: int = Field(ge=0)
+    misses: int = Field(ge=0)
+    years: list[ValidationYear]
+
+
 class SourcingRegion(Contract):
     schema_version: str = SCHEMA_VERSION
     mock: bool = False
@@ -311,9 +335,12 @@ class SourcingRegion(Contract):
     reference_crops: list[Crop]
     zones: list[Zone]
     recommendation: SourcingRecommendation
-    scenario: AdoptionScenario
+    scenario: AdoptionScenario | None = Field(
+        default=None, description="what-if for adding a crop; not shown to buyers today"
+    )
     caveats: list[Localized]
     sources: list[DataSource]
+    validation: Validation | None = None
 
 
 # --------------------------------------------------------------------------- ml -> api
@@ -429,7 +456,7 @@ class FeatureRow(Contract):
 # --------------------------------------------------------------------------- farm planner
 
 
-class FarmField(Contract):
+class OptimizerField(Contract):
     id: str = Field(min_length=1, max_length=40, description="unique within the request")
     name: str | None = Field(default=None, max_length=80)
     boundary: list[LatLon] = Field(min_length=3, max_length=500)
@@ -446,8 +473,8 @@ class FarmField(Contract):
     )
 
 
-class FarmPlanRequest(Contract):
-    fields: list[FarmField] = Field(min_length=1, max_length=10)
+class OptimizerRequest(Contract):
+    fields: list[OptimizerField] = Field(min_length=1, max_length=10)
     priorities: dict[Priority, Annotated[float, Field(ge=0)]] = Field(
         description="non-negative weights per priority; normalised server-side, all zero = equal"
     )
@@ -483,7 +510,7 @@ class Allocation(Contract):
     sequence: list[Crop] = Field(min_length=3, max_length=5, description="one crop per plan year")
 
 
-class CropArea(Contract):
+class OptimizerCropArea(Contract):
     crop: Crop
     area_ha: float = Field(ge=0)
     share_pct: float = Field(ge=0, le=100, description="share of the whole farm area")
@@ -491,7 +518,7 @@ class CropArea(Contract):
 
 class YearAreas(Contract):
     plan_year: int = Field(ge=1, le=5)
-    areas: list[CropArea]
+    areas: list[OptimizerCropArea]
 
 
 class RuleCheck(Contract):
@@ -516,7 +543,7 @@ class ScenarioScore(Contract):
     total: float = Field(ge=0, le=100, description="0-100 decision metric, not a probability")
 
 
-class FarmPlan(Contract):
+class OptimizerPlan(Contract):
     """One farm plan. Scores are 0-100 decision metrics (higher is better), not probabilities.
     `score_range` is the spread across weather windows, not a confidence interval."""
 
@@ -553,7 +580,7 @@ class FarmPlan(Contract):
     )
 
 
-class FarmPlanResponse(Contract):
+class OptimizerResponse(Contract):
     schema_version: str = SCHEMA_VERSION
     mock: bool = False
     model_version: str = Field(description="world model behind the scores; 'mock-0' for the mock")
@@ -562,12 +589,12 @@ class FarmPlanResponse(Contract):
     scenario_count: int = Field(ge=0, description="number of weather windows scored")
     scenario_first: int = Field(description="start season of the first weather window")
     scenario_last: int = Field(description="start season of the last weather window")
-    plans: list[FarmPlan] = Field(
+    plans: list[OptimizerPlan] = Field(
         max_length=3,
         description="plans[0] is the best solution found (optimal for the model only when "
         "proven_optimal), the others are alternatives; empty if none is feasible",
     )
-    current: FarmPlan | None = Field(
+    current: OptimizerPlan | None = Field(
         default=None, description="the farmer's current rotation; null when it cannot be scored"
     )
     caveats: list[Localized]
@@ -618,6 +645,11 @@ class SavedFieldInput(Contract):
     name: str = Field(min_length=1, max_length=80)
     request: FieldRequest
     boundary: list[LatLon] = Field(min_length=3, max_length=500)
+    parts: list[Ring] = Field(
+        default_factory=list,
+        max_length=40,
+        description="further pieces of the same field (parcels that do not touch the boundary)",
+    )
     near: str | None = Field(default=None, max_length=120, description="nearest commune name")
 
 
@@ -661,6 +693,25 @@ class AssistantReply(Contract):
 # --------------------------------------------------------------------------- APIA parcels
 
 
+class ParcelCrop(Contract):
+    """The crop mapped on a parcel in one year (JRC EUCROPMAP, 10 m; 2022 map ~79% accurate)."""
+
+    year: int
+    crop: str | None = Field(
+        description="EUCROPMAP class name (e.g. maize, common_wheat, grassland); null = not mapped"
+    )
+    share: float = Field(ge=0, le=1, description="share of the parcel's pixels in that class")
+
+
+class ParcelSoil(Contract):
+    """SoilGrids 2.0 topsoil 0-30 cm averaged over the parcel (250 m model, not a measurement)."""
+
+    soc_g_per_kg: float | None = None
+    ph_h2o: float | None = None
+    clay_pct: float | None = None
+    sand_pct: float | None = None
+
+
 class Parcel(Contract):
     """A parcel declared to APIA (open LPIS data, CC BY 4.0), offered so a farmer can tap it."""
 
@@ -668,6 +719,10 @@ class Parcel(Contract):
     boundary: list[LatLon] = Field(min_length=3, max_length=500)
     area_ha: float = Field(ge=0, description="area declared to APIA")
     land_use: str | None = Field(default=None, description="APIA land-use code, e.g. TA (arable)")
+    crop_history: list[ParcelCrop] = Field(
+        default_factory=list, description="mapped crop per year, oldest first; empty = not computed"
+    )
+    soil: ParcelSoil | None = None
 
 
 class ParcelMergeRequest(Contract):
@@ -677,9 +732,11 @@ class ParcelMergeRequest(Contract):
 
 
 class MergedParcels(Contract):
-    """The joined outline of parcels that touch each other."""
+    """Tapped parcels joined into one field: touching parcels become one outline. When they do
+    not all touch, `boundary` is the largest piece and `parts` the others."""
 
     boundary: list[LatLon] = Field(min_length=3, max_length=500)
+    parts: list[Ring] = Field(default_factory=list, max_length=40)
     area_ha: float = Field(ge=0, description="sum of the areas declared to APIA")
     parcel_ids: list[int]
 
@@ -688,6 +745,117 @@ class ParcelCollection(Contract):
     parcels: list[Parcel]
     truncated: bool = Field(description="more parcels lie in the area than were returned")
     source: str = Field(description="dataset credit to show with the outlines")
+
+
+# --------------------------------------------------------------------------- farm
+
+
+class FarmField(Contract):
+    """Parcels farmed together with the same crops: one rotation for all of them.
+    The parcels need not touch."""
+
+    id: str = Field(min_length=1, max_length=40)
+    name: str = Field(min_length=1, max_length=80)
+    parcel_ids: list[int] = Field(min_length=1, max_length=400)
+    current_rotation: list[Crop] | None = Field(
+        default=None, min_length=2, max_length=4, description="what the farmer grows now, if known"
+    )
+
+
+class SuggestedField(FarmField):
+    reason: Localized = Field(description="why these parcels were grouped")
+
+
+class Farm(Contract):
+    """A farmer's whole holding: the parcels (outlines kept, so they survive a new APIA layer)
+    and how they are grouped into fields."""
+
+    name: str = Field(min_length=1, max_length=80)
+    parcels: list[Parcel] = Field(min_length=1, max_length=1000)
+    fields: list[FarmField] = Field(default_factory=list, max_length=200)
+
+
+class FarmImport(Contract):
+    """An uploaded parcel file (e.g. an AGI Online export) matched to the APIA layer."""
+
+    parcels: list[Parcel] = Field(description="APIA parcels the file's outlines overlap")
+    unmatched: int = Field(ge=0, description="outlines in the file with no APIA parcel under them")
+    source_crs: str = Field(description="coordinate system read from the file, e.g. EPSG:3844")
+    file_crops: dict[int, str] = Field(
+        default_factory=dict,
+        description="crop declared in the file per matched APIA parcel id, when the file has one",
+    )
+
+
+class FarmRematch(Contract):
+    """Saved parcels matched to the current APIA layer by outline."""
+
+    parcels: list[Parcel] = Field(description="current APIA parcels the saved ones overlap")
+    mapping: dict[int, list[int]] = Field(
+        description="saved parcel id -> current parcel ids; missing = no parcel under it now"
+    )
+
+
+class FarmSuggestRequest(Contract):
+    parcels: list[Parcel] = Field(min_length=1, max_length=1000)
+    declared_crops: dict[int, str] = Field(
+        default_factory=dict, description="crop declared per parcel id (e.g. from an imported file)"
+    )
+
+
+class FarmSuggestion(Contract):
+    fields: list[SuggestedField]
+
+
+class PlanField(Contract):
+    """One field going into the farm plan."""
+
+    id: str
+    name: str
+    area_ha: float = Field(gt=0)
+    location: LatLon = Field(description="centroid of the field's parcels")
+    current_rotation: list[Crop] | None = Field(default=None, min_length=2, max_length=4)
+    last_crop: Crop | None = Field(
+        default=None, description="most recent crop known (mapped or declared)"
+    )
+
+
+class FarmPlanRequest(Contract):
+    fields: list[PlanField] = Field(min_length=1, max_length=200)
+    priorities: dict[Priority, float]
+    irrigated: bool = False
+    start_year: int = Field(ge=2020, le=2100, description="first season planned")
+    years: int = Field(default=4, ge=2, le=8)
+
+
+class FieldPlan(Contract):
+    field_id: str
+    strategy_name: Localized
+    sequence: list[Crop] = Field(min_length=2, max_length=4, description="the rotation chosen")
+    crops: list[Crop] = Field(description="crop per planned year, aligned with FarmPlan.years")
+    score: float = Field(ge=0, le=100)
+
+
+class CropArea(Contract):
+    year: int
+    crop: Crop
+    area_ha: float = Field(ge=0)
+
+
+class PlanCheck(Contract):
+    id: str
+    ok: bool
+    title: Localized
+    detail: Localized
+
+
+class FarmPlan(Contract):
+    mock: bool = Field(description="built on demonstration (mock) field analyses")
+    years: list[int]
+    fields: list[FieldPlan]
+    totals: list[CropArea] = Field(description="area per crop per year across the farm")
+    checks: list[PlanCheck]
+    caveats: list[Localized]
 
 
 EXPORTED: dict[str, type[Contract]] = {
@@ -709,7 +877,14 @@ EXPORTED: dict[str, type[Contract]] = {
     "parcel_collection": ParcelCollection,
     "parcel_merge_request": ParcelMergeRequest,
     "merged_parcels": MergedParcels,
-    "rotation_outcome": RotationOutcome,
+    "farm": Farm,
+    "farm_import": FarmImport,
+    "farm_rematch": FarmRematch,
+    "farm_suggest_request": FarmSuggestRequest,
+    "farm_suggestion": FarmSuggestion,
     "farm_plan_request": FarmPlanRequest,
-    "farm_plan_response": FarmPlanResponse,
+    "farm_plan": FarmPlan,
+    "rotation_outcome": RotationOutcome,
+    "optimizer_request": OptimizerRequest,
+    "optimizer_response": OptimizerResponse,
 }

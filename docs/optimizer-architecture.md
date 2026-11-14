@@ -4,7 +4,7 @@ The optimizer turns the world model's predictions into a ranked list of crop-rot
 It decides how many hectares of each field go to each rotation, under EU farm rules and the farmer's priorities.
 Solver: Google OR-Tools CP-SAT.
 
-Status: being implemented on branch `bogdan/optimizer` as `POST /v1/farm/plan` (code in `services/api/src/api/planner/`, contracts `FarmPlanRequest` / `FarmPlanResponse` / `RotationOutcome` in `services/api/src/api/contracts.py`), fed by a declared mock world model. Scores in the implementation are 0–100, higher is better, as in the team contracts; the 0-to-1 scale below is superseded. Values marked *placeholder* are for the team to set.
+Status: being implemented on branch `bogdan/optimizer` as `POST /v1/farm/optimize` (code in `services/api/src/api/planner/`, contracts `OptimizerRequest` / `OptimizerResponse` / `RotationOutcome` in `services/api/src/api/contracts.py`), fed by a declared mock world model. Scores in the implementation are 0–100, higher is better, as in the team contracts; the 0-to-1 scale below is superseded. Values marked *placeholder* are for the team to set.
 
 ## 1. Architecture
 

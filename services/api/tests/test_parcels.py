@@ -11,13 +11,25 @@ from api.settings import get_settings
 SQUARE_A = [(23.70, 46.30), (23.71, 46.30), (23.71, 46.31), (23.70, 46.31)]
 SQUARE_B = [(23.71, 46.30), (23.72, 46.30), (23.72, 46.31), (23.71, 46.31)]
 FAR = [(23.57, 45.95), (23.58, 45.95), (23.58, 45.96), (23.57, 45.96)]
+HISTORY = {
+    "crop_history": [
+        {"year": 2018, "crop": "maize", "share": 0.8},
+        {"year": 2022, "crop": "common_wheat", "share": 0.7},
+    ],
+    "soil": {"soc_g_per_kg": 14.9, "ph_h2o": 6.6, "clay_pct": 33.1, "sand_pct": 21.6},
+}
 
 
 @pytest.fixture
 def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> TestClient:
     path = tmp_path / "parcels.sqlite"
     written = parcels.write_db(
-        path, [(1, 7.5, "TA", SQUARE_A), (2, 3.25, "PP", SQUARE_B), (3, 1.0, "TA", FAR)]
+        path,
+        [
+            (1, 7.5, "TA", SQUARE_A, HISTORY),
+            (2, 3.25, "PP", SQUARE_B, None),
+            (3, 1.0, "TA", FAR, None),
+        ],
     )
     assert written == 3
     monkeypatch.setattr(get_settings(), "parcels_path", path)
@@ -39,6 +51,10 @@ def test_returns_parcels_in_the_box(client: TestClient) -> None:
     assert first["area_ha"] == 7.5
     assert first["boundary"][0] == {"lat": 46.30, "lon": 23.70}
     assert len(first["boundary"]) == 4
+    assert [c["crop"] for c in first["crop_history"]] == ["maize", "common_wheat"]
+    assert first["soil"]["clay_pct"] == 33.1
+    second = next(p for p in body["parcels"] if p["id"] == 2)
+    assert second["crop_history"] == [] and second["soil"] is None
 
 
 def test_box_touching_one_parcel(client: TestClient) -> None:
@@ -84,12 +100,16 @@ def test_merge_joins_touching_parcels(client: TestClient) -> None:
     assert min(lats) == pytest.approx(46.30, abs=1e-5)
     assert max(lats) == pytest.approx(46.31, abs=1e-5)
     assert len(body["boundary"]) == 4
+    assert body["parts"] == []
 
 
-def test_merge_refuses_parcels_far_apart(client: TestClient) -> None:
+def test_merge_keeps_far_parcels_as_pieces(client: TestClient) -> None:
     res = client.post("/v1/parcels/merge", json={"ids": [1, 3]})
-    assert res.status_code == 422
-    assert res.json()["detail"] == "not_touching"
+    assert res.status_code == 200
+    body = res.json()
+    # Same size: one is the boundary, the other a further piece of the same field.
+    assert len(body["parts"]) == 1
+    assert body["area_ha"] == 8.5
 
 
 def test_merge_unknown_parcel(client: TestClient) -> None:
@@ -107,7 +127,7 @@ def test_merge_closes_a_farm_track(tmp_path: Path, monkeypatch: pytest.MonkeyPat
         (23.701 + gap, 46.301),
     ]
     path = tmp_path / "track.sqlite"
-    parcels.write_db(path, [(1, 0.8, "TA", left), (2, 0.8, "TA", right)])
+    parcels.write_db(path, [(1, 0.8, "TA", left, None), (2, 0.8, "TA", right, None)])
     monkeypatch.setattr(get_settings(), "parcels_path", path)
     parcels._connect.cache_clear()
     assert TestClient(app).post("/v1/parcels/merge", json={"ids": [1, 2]}).status_code == 200

@@ -1,4 +1,4 @@
-"""Farm plan service (plan §3.9): FarmPlanRequest -> FarmPlanResponse.
+"""Farm plan service (plan §3.9): OptimizerRequest -> OptimizerResponse.
 
 fields -> pieces -> candidates -> mock outcomes and scores -> CP-SAT optimizer -> response.
 Mode (plan §10, decided by `optimizer.splits`): a farm under 75 ha may divide a field of 10 ha or
@@ -7,7 +7,7 @@ rotation. The service only words the caveats for the mode; farm rules span the f
 Scoring calls the mock world model itself (cached per grid point, crop and last two crops), so
 outcomes and scores are timed as one stage. Every stage time is logged at INFO.
 
-    plan_farm(request, max_time_s=3.0) -> FarmPlanResponse   # raises PlanRejected (-> 422)
+    plan_farm(request, max_time_s=3.0) -> OptimizerResponse   # raises PlanRejected (-> 422)
 """
 
 from __future__ import annotations
@@ -23,12 +23,12 @@ import numpy as np
 from api.contracts import (
     Allocation,
     Confidence,
-    CropArea,
     DataSource,
-    FarmPlan,
-    FarmPlanRequest,
-    FarmPlanResponse,
     Localized,
+    OptimizerCropArea,
+    OptimizerPlan,
+    OptimizerRequest,
+    OptimizerResponse,
     Range,
     RuleCheck,
     ScenarioScore,
@@ -63,7 +63,7 @@ def _stage(name: str, t0: float) -> float:
     return now
 
 
-def _pieces(request: FarmPlanRequest) -> list[grid.Piece]:
+def _pieces(request: OptimizerRequest) -> list[grid.Piece]:
     out: list[grid.Piece] = []
     for f in request.fields:
         try:
@@ -92,7 +92,7 @@ def _plan(
     plan_years: int,
     eco_practice: str | None,
     proven_optimal: bool,
-) -> FarmPlan:
+) -> OptimizerPlan:
     total = sum(allocation.values())
     per_field: dict[tuple[str, str], int] = defaultdict(int)
     for (pid, rid), a in allocation.items():
@@ -107,7 +107,7 @@ def _plan(
             start_season=s, end_season=s + plan_years - 1, total=round(per_scen[i], 1)
         )
 
-    return FarmPlan(
+    return OptimizerPlan(
         rank=rank,
         allocations=[
             Allocation(field_id=f, area_ha=a / 10, sequence=cand.crops_of(r))
@@ -127,7 +127,7 @@ def _plan(
             YearAreas(
                 plan_year=y + 1,
                 areas=[
-                    CropArea(crop=c, area_ha=a / 10, share_pct=round(100 * a / total, 1))
+                    OptimizerCropArea(crop=c, area_ha=a / 10, share_pct=round(100 * a / total, 1))
                     for c, a in sorted(year.items(), key=lambda x: -x[1])
                 ],
             )
@@ -150,7 +150,7 @@ def _plan(
     )
 
 
-def plan_farm(request: FarmPlanRequest, max_time_s: float = 3.0) -> FarmPlanResponse:
+def plan_farm(request: OptimizerRequest, max_time_s: float = 3.0) -> OptimizerResponse:
     t = time.perf_counter()
     pieces = _pieces(request)
     # Unrounded: the mode is decided on this (plan §10.10); boundaries were checked by _pieces.
@@ -214,7 +214,7 @@ def plan_farm(request: FarmPlanRequest, max_time_s: float = 3.0) -> FarmPlanResp
         if all(k in table for k in base_alloc)
         else None
     )
-    response = FarmPlanResponse(
+    response = OptimizerResponse(
         mock=True,
         model_version=wm.MODEL_VERSION,
         plan_years=request.plan_years,
@@ -262,14 +262,14 @@ SOURCES = [
 
 
 def _caveats(
-    request: FarmPlanRequest,
+    request: OptimizerRequest,
     solve: optimizer.FarmSolve,
     scen: Sequence[int],
     assumed: Sequence[str],
     no_current: bool,
     split: bool,
     area_ha: float,
-    plans: Sequence[FarmPlan],
+    plans: Sequence[OptimizerPlan],
 ) -> list[Localized]:
     first, last = scen[0], scen[-1] + request.plan_years - 1
     out = [
@@ -461,7 +461,7 @@ def _mode_caveats(split: bool, area_ha: float) -> list[Localized]:
     ]
 
 
-def _eco_caveat(request: FarmPlanRequest, solve: optimizer.FarmSolve, split: bool) -> Localized:
+def _eco_caveat(request: OptimizerRequest, solve: optimizer.FarmSolve, split: bool) -> Localized:
     if not request.eco_scheme:
         return _l(
             "Nu a fost impusă nicio regulă a eco-schemei PD-04; rândurile PD-04 sunt doar "

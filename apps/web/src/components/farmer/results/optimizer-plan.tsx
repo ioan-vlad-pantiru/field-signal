@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import type { DataOrigin, Loaded } from "@/lib/api";
-import type { FarmPlan, FarmPlanResponse, RuleCheck } from "@/lib/contracts";
+import type { OptimizerPlan, OptimizerResponse, RuleCheck } from "@/lib/contracts";
 import { CROP_COLORS } from "@/lib/crops";
 import { formatNumber } from "@/lib/format";
 import { byField, ruleStatus } from "@/lib/results";
@@ -19,11 +19,11 @@ import { SourceChip } from "@/components/ui/source-chip";
 import { DemoBanner, EmptyState } from "@/components/ui/states";
 import { CropSequence } from "./crop-sequence";
 
-export type FarmPlanState =
+export type OptimizerState =
   | { status: "loading" }
   /** `invalid`: the API refused the fields (422); anything else is a generic failure. */
   | { status: "error"; invalid: boolean }
-  | { status: "done"; result: Loaded<FarmPlanResponse> };
+  | { status: "done"; result: Loaded<OptimizerResponse> };
 
 const BREAKDOWN = ["yield_stability", "water", "soil_health", "low_risk"] as const;
 
@@ -32,11 +32,11 @@ function Pill({ children }: { children: ReactNode }) {
 }
 
 /**
- * All submitted fields planned together (`POST /v1/farm/plan`), below the per-field results. Its own
+ * All submitted fields planned together (`POST /v1/farm/optimize`), below the per-field results. Its own
  * loading and error state: a slow solve or a rejected request never touches the per-field results.
  */
-export function FarmPlanSection({ state, names }: { state: FarmPlanState; names: string[] }) {
-  const t = useTranslations("FarmPlan");
+export function OptimizerSection({ state, names }: { state: OptimizerState; names: string[] }) {
+  const t = useTranslations("Optimizer");
   return (
     <Section id="farm-plan" title={t("title")} hint={t("hint")} className="print:hidden">
       {state.status === "loading" ? (
@@ -50,14 +50,14 @@ export function FarmPlanSection({ state, names }: { state: FarmPlanState; names:
       ) : state.status === "error" ? (
         <NoticeBar>{t(state.invalid ? "invalid" : "error")}</NoticeBar>
       ) : (
-        <FarmPlanBody data={state.result.data} origin={state.result.origin} names={names} />
+        <OptimizerBody data={state.result.data} origin={state.result.origin} names={names} />
       )}
     </Section>
   );
 }
 
-function FarmPlanBody({ data, origin, names }: { data: FarmPlanResponse; origin: DataOrigin; names: string[] }) {
-  const t = useTranslations("FarmPlan");
+function OptimizerBody({ data, origin, names }: { data: OptimizerResponse; origin: DataOrigin; names: string[] }) {
+  const t = useTranslations("Optimizer");
   const multi = useTranslations("Field.multi");
   const locale = useAppLocale();
   const l = useLocalized();
@@ -124,11 +124,11 @@ function PlanView({
   current,
   fieldName,
 }: {
-  plan: FarmPlan;
-  current: FarmPlan | null;
+  plan: OptimizerPlan;
+  current: OptimizerPlan | null;
   fieldName: (id: string) => string;
 }) {
-  const t = useTranslations("FarmPlan");
+  const t = useTranslations("Optimizer");
   const tr = useTranslations("Results.rotations");
   const locale = useAppLocale();
   const n = (v: number) => formatNumber(v, locale, 0);
@@ -214,8 +214,8 @@ function PlanView({
   );
 }
 
-function YearShares({ plan }: { plan: FarmPlan }) {
-  const t = useTranslations("FarmPlan");
+function YearShares({ plan }: { plan: OptimizerPlan }) {
+  const t = useTranslations("Optimizer");
   const crops = useTranslations("Crops");
   const locale = useAppLocale();
   return (
@@ -248,7 +248,7 @@ function YearShares({ plan }: { plan: FarmPlan }) {
 const RULE_TONE = { within: "good", outside: "watch", belowThreshold: "nodata" } as const;
 
 function Rules({ rules }: { rules: RuleCheck[] }) {
-  const t = useTranslations("FarmPlan.rules");
+  const t = useTranslations("Optimizer.rules");
   const locale = useAppLocale();
   const pct = (v: number) => formatNumber(v, locale, 1);
   return (

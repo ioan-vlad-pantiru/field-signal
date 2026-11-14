@@ -147,3 +147,35 @@ def test_profile_password_and_deletion(client: TestClient) -> None:
         "/v1/auth/login", json={"email": "ana@example.ro", "password": "secara-2027!"}
     )
     assert login.status_code == 401
+
+
+FARM = {
+    "name": "Ferma Pop",
+    "parcels": [
+        {
+            "id": 1,
+            "area_ha": 2.0,
+            "boundary": [
+                {"lat": 46.30, "lon": 23.70},
+                {"lat": 46.30, "lon": 23.71},
+                {"lat": 46.31, "lon": 23.71},
+            ],
+        }
+    ],
+    "fields": [{"id": "field-1", "name": "Câmp 1", "parcel_ids": [1]}],
+}
+
+
+def test_farm_is_saved_per_account(client: TestClient) -> None:
+    sign_up(client)
+    assert client.get("/v1/me/farm").json() is None
+    saved = client.put("/v1/me/farm", json=FARM)
+    assert saved.status_code == 200
+    assert client.get("/v1/me/farm").json()["fields"][0]["parcel_ids"] == [1]
+    renamed = {**FARM, "name": "Ferma Pop 2"}
+    client.put("/v1/me/farm", json=renamed)
+    assert client.get("/v1/me/farm").json()["name"] == "Ferma Pop 2"
+    assert client.delete("/v1/me/farm").status_code == 204
+    assert client.get("/v1/me/farm").json() is None
+    client.post("/v1/auth/logout")
+    assert client.get("/v1/me/farm").status_code == 401

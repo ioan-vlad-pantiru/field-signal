@@ -39,6 +39,7 @@ export function ResultsView({
   analysis,
   origin,
   boundary,
+  parts = [],
   onBack,
   placeName = null,
   save,
@@ -47,6 +48,8 @@ export function ResultsView({
   origin: DataOrigin;
   /** The field the farmer drew, if any; the field plan fills it with hexagons. */
   boundary: LatLon[] | null;
+  /** Further pieces of the same field (parcels that do not touch). */
+  parts?: LatLon[][];
   onBack: () => void;
   /** The place the farmer searched or drew at; preferred over the API's commune and county. */
   placeName?: string | null;
@@ -75,7 +78,7 @@ export function ResultsView({
       {analysis.mock ? <DemoBanner origin={origin} /> : null}
 
       <div className={analysis.mock ? "mt-6" : ""}>
-        <ResultsHeader analysis={analysis} boundary={boundary} placeName={placeName} onBack={onBack} save={save} />
+        <ResultsHeader analysis={analysis} boundary={boundary} parts={parts} placeName={placeName} onBack={onBack} save={save} />
       </div>
 
       {/* The map first: the selected rotation laid out on the field, season by season. */}
@@ -106,7 +109,7 @@ export function ResultsView({
           </label>
         </div>
         <p className="hidden font-semibold print:block">{nameOf(selected)}</p>
-        <FieldPlan center={analysis.location.point} boundary={boundary} strategy={selected} />
+        <FieldPlan center={analysis.location.point} boundary={boundary} parts={parts} strategy={selected} />
         <ul className="hidden flex-wrap gap-2 print:flex">
           {analysis.sources.map((s) => (
             <li key={s.dataset}>

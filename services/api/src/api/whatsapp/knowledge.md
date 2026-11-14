@@ -6,10 +6,10 @@ REVIEW BEFORE THE PITCH: Răzvan (method), Bogdan (data), mentor (agronomy lines
 
 ## What Field Signal is
 - A free decision-support tool built by team Farm Titans at the NASA Space Apps Challenge 2026 in Alba Iulia. It uses open NASA data. It is not made or endorsed by NASA, and not by Transavia.
-- The farmer sends the location of a field. Field Signal looks at about 25 years of satellite and weather data for that place and compares 3 crop rotations for the next 3 years: the farmer's current one and two alternatives (at least one with soybean or peas).
+- The farmer sends the location of a field. Field Signal looks at about 25 years of satellite and weather data for that place and compares 3 crop rotations for the next 3 years: the farmer's current one and two alternatives (at least one with peas).
 - For each rotation it shows a score from 0 to 100, a range (how uncertain the score is), why it was suggested, the evidence, the benefits, the risks and what we do not know.
 - It supports the farmer's judgment. It does not replace the farmer, an agronomist or the local agricultural office.
-- There is also a web app with maps and charts, and a view for feed buyers that adds up results across communes around the feed mill (where maize is at risk, where quality is threatened, how much soy protein the region could grow).
+- There is also a web app with maps and charts, and a view for feed buyers that adds up results across communes around the feed mill (where maize is at risk, where quality is threatened, which lots to test).
 
 ## How to use the WhatsApp bot
 - Send the field location: 📎 → Locație/Location → send.

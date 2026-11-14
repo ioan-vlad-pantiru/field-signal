@@ -23,9 +23,16 @@ const NAMES = [
   "parcel_collection",
   "parcel_merge_request",
   "merged_parcels",
+  "farm",
+  "farm_import",
+  "farm_rematch",
+  "farm_suggest_request",
+  "farm_suggestion",
   "farm_plan_request",
-  "farm_plan_response",
+  "farm_plan",
   "rotation_outcome",
+  "optimizer_request",
+  "optimizer_response",
 ];
 const OUT = "apps/web/src/lib/contracts.ts";
 

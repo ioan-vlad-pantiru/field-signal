@@ -1,0 +1,285 @@
+{
+  "$defs": {
+    "Crop": {
+      "enum": [
+        "maize",
+        "wheat",
+        "barley",
+        "soybean",
+        "sunflower",
+        "pea",
+        "cover_mustard",
+        "cover_phacelia",
+        "cover_vetch",
+        "fallow"
+      ],
+      "title": "Crop",
+      "type": "string"
+    },
+    "FarmField": {
+      "additionalProperties": false,
+      "description": "Parcels farmed together with the same crops: one rotation for all of them.\nThe parcels need not touch.",
+      "properties": {
+        "id": {
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "parcel_ids": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 400,
+          "minItems": 1,
+          "title": "Parcel Ids",
+          "type": "array"
+        },
+        "current_rotation": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Crop"
+              },
+              "maxItems": 4,
+              "minItems": 2,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "what the farmer grows now, if known",
+          "title": "Current Rotation"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "parcel_ids"
+      ],
+      "title": "FarmField",
+      "type": "object"
+    },
+    "LatLon": {
+      "additionalProperties": false,
+      "properties": {
+        "lat": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Lat",
+          "type": "number"
+        },
+        "lon": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Lon",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lat",
+        "lon"
+      ],
+      "title": "LatLon",
+      "type": "object"
+    },
+    "Parcel": {
+      "additionalProperties": false,
+      "description": "A parcel declared to APIA (open LPIS data, CC BY 4.0), offered so a farmer can tap it.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "integer"
+        },
+        "boundary": {
+          "items": {
+            "$ref": "#/$defs/LatLon"
+          },
+          "maxItems": 500,
+          "minItems": 3,
+          "title": "Boundary",
+          "type": "array"
+        },
+        "area_ha": {
+          "description": "area declared to APIA",
+          "minimum": 0,
+          "title": "Area Ha",
+          "type": "number"
+        },
+        "land_use": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "APIA land-use code, e.g. TA (arable)",
+          "title": "Land Use"
+        },
+        "crop_history": {
+          "description": "mapped crop per year, oldest first; empty = not computed",
+          "items": {
+            "$ref": "#/$defs/ParcelCrop"
+          },
+          "title": "Crop History",
+          "type": "array"
+        },
+        "soil": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ParcelSoil"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "boundary",
+        "area_ha"
+      ],
+      "title": "Parcel",
+      "type": "object"
+    },
+    "ParcelCrop": {
+      "additionalProperties": false,
+      "description": "The crop mapped on a parcel in one year (JRC EUCROPMAP, 10 m; 2022 map ~79% accurate).",
+      "properties": {
+        "year": {
+          "title": "Year",
+          "type": "integer"
+        },
+        "crop": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "EUCROPMAP class name (e.g. maize, common_wheat, grassland); null = not mapped",
+          "title": "Crop"
+        },
+        "share": {
+          "description": "share of the parcel's pixels in that class",
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Share",
+          "type": "number"
+        }
+      },
+      "required": [
+        "year",
+        "crop",
+        "share"
+      ],
+      "title": "ParcelCrop",
+      "type": "object"
+    },
+    "ParcelSoil": {
+      "additionalProperties": false,
+      "description": "SoilGrids 2.0 topsoil 0-30 cm averaged over the parcel (250 m model, not a measurement).",
+      "properties": {
+        "soc_g_per_kg": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Soc G Per Kg"
+        },
+        "ph_h2o": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ph H2O"
+        },
+        "clay_pct": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Clay Pct"
+        },
+        "sand_pct": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sand Pct"
+        }
+      },
+      "title": "ParcelSoil",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "A farmer's whole holding: the parcels (outlines kept, so they survive a new APIA layer)\nand how they are grouped into fields.",
+  "properties": {
+    "name": {
+      "maxLength": 80,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "parcels": {
+      "items": {
+        "$ref": "#/$defs/Parcel"
+      },
+      "maxItems": 1000,
+      "minItems": 1,
+      "title": "Parcels",
+      "type": "array"
+    },
+    "fields": {
+      "items": {
+        "$ref": "#/$defs/FarmField"
+      },
+      "maxItems": 200,
+      "title": "Fields",
+      "type": "array"
+    }
+  },
+  "required": [
+    "name",
+    "parcels"
+  ],
+  "title": "Farm",
+  "type": "object",
+  "$id": "https://field-signal/contracts/farm/0.2.0"
+}

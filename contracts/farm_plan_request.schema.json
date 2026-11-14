@@ -16,74 +16,6 @@
       "title": "Crop",
       "type": "string"
     },
-    "FarmField": {
-      "additionalProperties": false,
-      "properties": {
-        "id": {
-          "description": "unique within the request",
-          "maxLength": 40,
-          "minLength": 1,
-          "title": "Id",
-          "type": "string"
-        },
-        "name": {
-          "anyOf": [
-            {
-              "maxLength": 80,
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Name"
-        },
-        "boundary": {
-          "items": {
-            "$ref": "#/$defs/LatLon"
-          },
-          "maxItems": 500,
-          "minItems": 3,
-          "title": "Boundary",
-          "type": "array"
-        },
-        "current_rotation": {
-          "description": "the farmer's reference cycle, as in FieldRequest; scored as the baseline",
-          "items": {
-            "$ref": "#/$defs/Crop"
-          },
-          "maxItems": 4,
-          "minItems": 2,
-          "title": "Current Rotation",
-          "type": "array"
-        },
-        "crop_history": {
-          "anyOf": [
-            {
-              "items": {
-                "$ref": "#/$defs/Crop"
-              },
-              "maxItems": 5,
-              "type": "array"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "description": "observed crops of past seasons, most recent harvest last; null = unknown, then the cycle current_rotation is read backwards (an assumption, stated in caveats)",
-          "title": "Crop History"
-        }
-      },
-      "required": [
-        "id",
-        "boundary",
-        "current_rotation"
-      ],
-      "title": "FarmField",
-      "type": "object"
-    },
     "LatLon": {
       "additionalProperties": false,
       "properties": {
@@ -107,6 +39,66 @@
       "title": "LatLon",
       "type": "object"
     },
+    "PlanField": {
+      "additionalProperties": false,
+      "description": "One field going into the farm plan.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "area_ha": {
+          "exclusiveMinimum": 0,
+          "title": "Area Ha",
+          "type": "number"
+        },
+        "location": {
+          "$ref": "#/$defs/LatLon",
+          "description": "centroid of the field's parcels"
+        },
+        "current_rotation": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Crop"
+              },
+              "maxItems": 4,
+              "minItems": 2,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Current Rotation"
+        },
+        "last_crop": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Crop"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "most recent crop known (mapped or declared)"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "area_ha",
+        "location"
+      ],
+      "title": "PlanField",
+      "type": "object"
+    },
     "Priority": {
       "enum": [
         "yield",
@@ -122,60 +114,47 @@
   "properties": {
     "fields": {
       "items": {
-        "$ref": "#/$defs/FarmField"
+        "$ref": "#/$defs/PlanField"
       },
-      "maxItems": 10,
+      "maxItems": 200,
       "minItems": 1,
       "title": "Fields",
       "type": "array"
     },
     "priorities": {
       "additionalProperties": {
-        "minimum": 0,
         "type": "number"
       },
-      "description": "non-negative weights per priority; normalised server-side, all zero = equal",
       "propertyNames": {
         "$ref": "#/$defs/Priority"
       },
       "title": "Priorities",
       "type": "object"
     },
-    "risk_aversion": {
-      "default": 0.3,
-      "description": "0 = best average, 1 = best worst weather window",
-      "maximum": 1,
-      "minimum": 0,
-      "title": "Risk Aversion",
-      "type": "number"
-    },
-    "plan_years": {
-      "default": 4,
-      "maximum": 5,
-      "minimum": 3,
-      "title": "Plan Years",
-      "type": "integer"
-    },
-    "eco_scheme": {
+    "irrigated": {
       "default": false,
-      "description": "enforce one practice of the voluntary PD-04 eco-scheme (eco_practice); false = nothing from PD-04 is enforced",
-      "title": "Eco Scheme",
+      "title": "Irrigated",
       "type": "boolean"
     },
-    "eco_practice": {
-      "default": "diversification",
-      "description": "the one PD-04 practice enforced when eco_scheme is true; ignored otherwise. The two are alternatives, never enforced together",
-      "enum": [
-        "diversification",
-        "legume_share"
-      ],
-      "title": "Eco Practice",
-      "type": "string"
+    "start_year": {
+      "description": "first season planned",
+      "maximum": 2100,
+      "minimum": 2020,
+      "title": "Start Year",
+      "type": "integer"
+    },
+    "years": {
+      "default": 4,
+      "maximum": 8,
+      "minimum": 2,
+      "title": "Years",
+      "type": "integer"
     }
   },
   "required": [
     "fields",
-    "priorities"
+    "priorities",
+    "start_year"
   ],
   "title": "FarmPlanRequest",
   "type": "object",

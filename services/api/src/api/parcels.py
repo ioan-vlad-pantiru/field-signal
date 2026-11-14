@@ -14,6 +14,7 @@ import sqlite3
 from collections.abc import Iterable
 from functools import lru_cache
 from pathlib import Path
+from typing import Any
 
 import shapely  # type: ignore[import-untyped]
 from fastapi import APIRouter, HTTPException, Query
@@ -33,8 +34,9 @@ GAP_M = 8.0
 MAX_CORNERS = 500
 
 
-ParcelRow = tuple[int, float, str | None, list[tuple[float, float]]]
-"""id, declared area in ha, land-use code, outer ring as (lon, lat) without the closing point."""
+ParcelRow = tuple[int, float, str | None, list[tuple[float, float]], dict[str, Any] | None]
+"""id, declared area in ha, land-use code, outer ring as (lon, lat) without the closing point,
+and extra info: {"crop_history": [ParcelCrop...], "soil": ParcelSoil} as plain dicts, or None."""
 
 
 def write_db(path: Path, rows: Iterable[ParcelRow]) -> int:
@@ -44,18 +46,25 @@ def write_db(path: Path, rows: Iterable[ParcelRow]) -> int:
     conn.executescript(
         """
         CREATE TABLE parcels (
-            id INTEGER PRIMARY KEY, area_ha REAL NOT NULL, land_use TEXT, coords TEXT NOT NULL
+            id INTEGER PRIMARY KEY, area_ha REAL NOT NULL, land_use TEXT, coords TEXT NOT NULL,
+            info TEXT
         );
         CREATE VIRTUAL TABLE parcels_idx USING rtree(id, min_lon, max_lon, min_lat, max_lat);
         """
     )
     count = 0
-    for pid, area, land_use, ring in rows:
+    for pid, area, land_use, ring, info in rows:
         lons = [lon for lon, _ in ring]
         lats = [lat for _, lat in ring]
         conn.execute(
-            "INSERT INTO parcels VALUES (?, ?, ?, ?)",
-            (pid, area, land_use, json.dumps(ring, separators=(",", ":"))),
+            "INSERT INTO parcels VALUES (?, ?, ?, ?, ?)",
+            (
+                pid,
+                area,
+                land_use,
+                json.dumps(ring, separators=(",", ":")),
+                json.dumps(info, separators=(",", ":")) if info else None,
+            ),
         )
         conn.execute(
             "INSERT INTO parcels_idx VALUES (?, ?, ?, ?, ?)",
@@ -75,7 +84,42 @@ def _connect(path: Path) -> sqlite3.Connection:
     return conn
 
 
-def _db() -> sqlite3.Connection:
+@lru_cache
+def _has_info(conn: sqlite3.Connection) -> bool:
+    return any(col[1] == "info" for col in conn.execute("PRAGMA table_info(parcels)"))
+
+
+def _info_column(conn: sqlite3.Connection) -> str:
+    """Files built before crop history and soil were added have no `info` column."""
+    return "p.info" if _has_info(conn) else "NULL"
+
+
+def to_parcel(row: tuple[Any, ...]) -> Parcel:
+    """A parcel from a (id, area_ha, land_use, coords, info) row."""
+    pid, area, land_use, coords, info = row
+    extra = json.loads(info) if info else {}
+    return Parcel(
+        id=pid,
+        area_ha=round(area, 2),
+        land_use=land_use,
+        boundary=[LatLon(lon=lon, lat=lat) for lon, lat in json.loads(coords)],
+        crop_history=extra.get("crop_history", []),
+        soil=extra.get("soil"),
+    )
+
+
+def parcels_by_id(conn: sqlite3.Connection, ids: list[int]) -> list[Parcel]:
+    marks = ",".join("?" * len(ids))
+    rows = conn.execute(
+        f"SELECT p.id, p.area_ha, p.land_use, p.coords, {_info_column(conn)} "
+        f"FROM parcels AS p WHERE p.id IN ({marks})",
+        ids,
+    ).fetchall()
+    return [to_parcel(row) for row in rows]
+
+
+def db() -> sqlite3.Connection:
+    """The parcels file, read-only. 404 when this deployment has none."""
     path = get_settings().parcels_path
     if not path.is_file():
         raise HTTPException(status_code=404, detail="Parcel outlines are not available here.")
@@ -86,23 +130,15 @@ def parcels_in(
     conn: sqlite3.Connection, west: float, south: float, east: float, north: float
 ) -> ParcelCollection:
     rows = conn.execute(
-        """
-        SELECT p.id, p.area_ha, p.land_use, p.coords
+        f"""
+        SELECT p.id, p.area_ha, p.land_use, p.coords, {_info_column(conn)}
         FROM parcels_idx AS i JOIN parcels AS p ON p.id = i.id
         WHERE i.max_lon >= ? AND i.min_lon <= ? AND i.max_lat >= ? AND i.min_lat <= ?
         LIMIT ?
         """,
         (west, east, south, north, MAX_PARCELS + 1),
     ).fetchall()
-    parcels = [
-        Parcel(
-            id=pid,
-            area_ha=round(area, 2),
-            land_use=land_use,
-            boundary=[LatLon(lon=lon, lat=lat) for lon, lat in json.loads(coords)],
-        )
-        for pid, area, land_use, coords in rows[:MAX_PARCELS]
-    ]
+    parcels = [to_parcel(row) for row in rows[:MAX_PARCELS]]
     return ParcelCollection(parcels=parcels, truncated=len(rows) > MAX_PARCELS, source=SOURCE)
 
 
@@ -118,11 +154,11 @@ def list_parcels(
         raise HTTPException(status_code=422, detail="The box is empty.")
     if east - west > MAX_SPAN_DEG or north - south > MAX_SPAN_DEG:
         raise HTTPException(status_code=422, detail="Zoom in to see parcels.")
-    return parcels_in(_db(), west, south, east, north)
+    return parcels_in(db(), west, south, east, north)
 
 
 def merge(conn: sqlite3.Connection, ids: list[int]) -> MergedParcels:
-    """Join parcels into one outline. 422 when they do not touch, so they cannot be one field."""
+    """Join parcels into one field: touching ones into one outline, the rest as further pieces."""
     unique = sorted(set(ids))
     marks = ",".join("?" * len(unique))
     rows = conn.execute(
@@ -140,20 +176,26 @@ def merge(conn: sqlite3.Connection, ids: list[int]) -> MergedParcels:
     joined = shapely.union_all([p.buffer(GAP_M, join_style="mitre") for p in polygons]).buffer(
         -GAP_M, join_style="mitre"
     )
-    if not isinstance(joined, shapely.Polygon):
-        raise HTTPException(status_code=422, detail="not_touching")
-    outline = shapely.Polygon(joined.exterior)
-    tolerance = 1.0
-    simple = outline.simplify(tolerance, preserve_topology=True)
-    while len(simple.exterior.coords) - 1 > MAX_CORNERS:
-        tolerance *= 2
+    # Parcels that do not touch stay separate pieces of the same field, largest first.
+    pieces = sorted(
+        joined.geoms if isinstance(joined, shapely.MultiPolygon) else [joined],
+        key=lambda g: -g.area,
+    )
+
+    def ring(piece: shapely.Polygon) -> list[LatLon]:
+        outline = shapely.Polygon(piece.exterior)
+        tolerance = 1.0
         simple = outline.simplify(tolerance, preserve_topology=True)
-    boundary = [
-        LatLon(lon=round(x / kx, 6), lat=round(y / ky, 6))
-        for x, y in list(simple.exterior.coords)[:-1]
-    ]
+        while len(simple.exterior.coords) - 1 > MAX_CORNERS:
+            tolerance *= 2
+            simple = outline.simplify(tolerance, preserve_topology=True)
+        coords = list(simple.exterior.coords)[:-1]
+        return [LatLon(lon=round(x / kx, 6), lat=round(y / ky, 6)) for x, y in coords]
+
+    outlines = [ring(p) for p in pieces if not p.is_empty]
     return MergedParcels(
-        boundary=boundary,
+        boundary=outlines[0],
+        parts=outlines[1:],
         area_ha=round(sum(area for _, area, _ in rows), 2),
         parcel_ids=unique,
     )
@@ -162,4 +204,4 @@ def merge(conn: sqlite3.Connection, ids: list[int]) -> MergedParcels:
 @router.post("/merge")
 def merge_parcels(body: ParcelMergeRequest) -> MergedParcels:
     """Join the parcels a farmer tapped into one field outline."""
-    return merge(_db(), list(body.ids))
+    return merge(db(), list(body.ids))

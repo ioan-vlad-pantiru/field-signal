@@ -319,7 +319,8 @@
           "enum": [
             "aflatoxin_window",
             "fusarium_window",
-            "harvest_rain"
+            "harvest_rain",
+            "soy_seed_fill_rain"
           ],
           "title": "Code",
           "type": "string"
@@ -491,6 +492,75 @@
       "title": "SourcingRecommendation",
       "type": "object"
     },
+    "Validation": {
+      "additionalProperties": false,
+      "description": "How the supply-risk rule did against official county yields (INS AGR110A), year by year.\nHits and misses are both published.",
+      "properties": {
+        "method": {
+          "$ref": "#/$defs/Localized"
+        },
+        "hits": {
+          "minimum": 0,
+          "title": "Hits",
+          "type": "integer"
+        },
+        "misses": {
+          "minimum": 0,
+          "title": "Misses",
+          "type": "integer"
+        },
+        "years": {
+          "items": {
+            "$ref": "#/$defs/ValidationYear"
+          },
+          "title": "Years",
+          "type": "array"
+        }
+      },
+      "required": [
+        "method",
+        "hits",
+        "misses",
+        "years"
+      ],
+      "title": "Validation",
+      "type": "object"
+    },
+    "ValidationYear": {
+      "additionalProperties": false,
+      "description": "One past season: the risk we would have given vs what the official yields showed.",
+      "properties": {
+        "season": {
+          "title": "Season",
+          "type": "integer"
+        },
+        "crop": {
+          "$ref": "#/$defs/Crop"
+        },
+        "risk_level": {
+          "$ref": "#/$defs/RiskLevel"
+        },
+        "yield_anomaly_pct": {
+          "description": "INS county yield vs its linear trend",
+          "title": "Yield Anomaly Pct",
+          "type": "number"
+        },
+        "hit": {
+          "description": "high risk with a poor yield, or low risk with a normal one",
+          "title": "Hit",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "season",
+        "crop",
+        "risk_level",
+        "yield_anomaly_pct",
+        "hit"
+      ],
+      "title": "ValidationYear",
+      "type": "object"
+    },
     "Zone": {
       "additionalProperties": false,
       "properties": {
@@ -567,7 +637,16 @@
       "$ref": "#/$defs/SourcingRecommendation"
     },
     "scenario": {
-      "$ref": "#/$defs/AdoptionScenario"
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AdoptionScenario"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "what-if for adding a crop; not shown to buyers today"
     },
     "caveats": {
       "items": {
@@ -582,6 +661,17 @@
       },
       "title": "Sources",
       "type": "array"
+    },
+    "validation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Validation"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     }
   },
   "required": [
@@ -590,7 +680,6 @@
     "reference_crops",
     "zones",
     "recommendation",
-    "scenario",
     "caveats",
     "sources"
   ],

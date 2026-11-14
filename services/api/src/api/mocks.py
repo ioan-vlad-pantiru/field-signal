@@ -11,7 +11,6 @@ import random
 from functools import lru_cache
 
 from api.contracts import (
-    AdoptionScenario,
     AvailabilityRisk,
     Confidence,
     Crop,
@@ -312,10 +311,10 @@ def field_analysis(lat: float = 46.30, lon: float = 23.75) -> FieldAnalysis:
             55.0,
         ),
         (
-            "soy-break",
-            L(ro="Cu soia", en="With soybean"),
+            "pea-break",
+            L(ro="Cu mazăre", en="With peas"),
             False,
-            [Crop.MAIZE, Crop.SOYBEAN, Crop.WHEAT],
+            [Crop.MAIZE, Crop.PEA, Crop.WHEAT],
             25.0,
             62.0,
         ),
@@ -465,7 +464,7 @@ def _outlook(crop: Crop, rng: random.Random) -> CropOutlook:
 @lru_cache
 def sourcing_region(season: int = 2025) -> SourcingRegion:
     rng = random.Random(season)
-    crops = [Crop.MAIZE, Crop.WHEAT, Crop.SOYBEAN]
+    crops = [Crop.MAIZE, Crop.WHEAT, Crop.BARLEY]
     zones = [
         Zone(
             id=f"mock-{i:02d}",
@@ -476,12 +475,6 @@ def sourcing_region(season: int = 2025) -> SourcingRegion:
         )
         for i, (name, lat, lon) in enumerate(_ZONES)
     ]
-    maize_area = sum(z.crops[0].area_ha or 0 for z in zones)
-    adoption = 25.0
-    # one soybean year in a 3-year rotation on the adopting share of maize land
-    area = maize_area * adoption / 100 / 3
-    yld = Range(low=1.7, mid=2.1, high=2.5)  # t/ha, RO 2024 avg ~2.0 (data/crops.toml)
-    protein = Range(low=0.33, mid=0.34, high=0.35)  # as harvested, ~13% moisture
     return SourcingRegion(
         mock=True,
         region_name="Sântimbru-Aiud (mock)",
@@ -495,32 +488,10 @@ def sourcing_region(season: int = 2025) -> SourcingRegion:
                 en="[MOCK] Northern zones carry high maize risk; buy more from the south.",
             ),
             actions=[
-                L(ro="Contracte cu fermieri care introduc soia", en="Contract soy adopters"),
                 L(ro="Testați loturile pentru aflatoxine", en="Test lots for aflatoxins"),
             ],
             confidence=Confidence.LOW,
             assumptions=[L(ro="Date demonstrative.", en="Demo data.")],
-        ),
-        scenario=AdoptionScenario(
-            crop=Crop.SOYBEAN,
-            adoption_pct=adoption,
-            added_area_ha=_r(area * 0.8, area, area * 1.1),
-            added_production_t=_r(area * 0.8 * yld.low, area * yld.mid, area * 1.1 * yld.high),
-            added_protein_t=_r(
-                area * 0.8 * yld.low * protein.low,
-                area * yld.mid * protein.mid,
-                area * 1.1 * yld.high * protein.high,
-            ),
-            assumptions=[
-                L(
-                    ro="Soia o dată la 3 ani pe terenul fermierilor care adoptă rotația.",
-                    en="Soybean once every 3 years on adopting farmers' land.",
-                ),
-                L(
-                    ro="Randament 1,7-2,5 t/ha; proteină 33-35% la recoltare (de verificat).",
-                    en="Yield 1.7-2.5 t/ha; protein 33-35% as harvested (to verify).",
-                ),
-            ],
         ),
         caveats=[L(ro="DATE DEMONSTRATIVE (mock).", en="DEMO DATA (mock).")],
         sources=[POWER, MODIS, SMAP, EUCROPMAP],

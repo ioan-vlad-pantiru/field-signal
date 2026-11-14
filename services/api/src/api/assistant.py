@@ -19,7 +19,7 @@ import httpx
 from fastapi import APIRouter, Cookie, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 
-from api import accounts, mocks
+from api import accounts, sourcing
 from api.analysis import run_field_analysis
 from api.contracts import (
     Account,
@@ -233,7 +233,7 @@ class Toolbox:
         return {"demo_data": self.demo, "period": "2001-2025", "fields": rows}
 
     def regional_supply(self, season: int = 2025) -> Any:
-        region = mocks.sourcing_region(season)
+        region = sourcing.sourcing_region(season)
         self.demo = self.demo or region.mock
         data = region.model_dump(mode="json", exclude={"sources", "schema_version"})
         data["zones"] = data["zones"][:15]

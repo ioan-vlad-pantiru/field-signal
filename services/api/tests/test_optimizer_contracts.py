@@ -9,9 +9,9 @@ from api.contracts import (
     Allocation,
     Confidence,
     Crop,
-    FarmPlan,
-    FarmPlanRequest,
-    FarmPlanResponse,
+    OptimizerPlan,
+    OptimizerRequest,
+    OptimizerResponse,
     Range,
     RotationOutcome,
     RuleCheck,
@@ -33,9 +33,9 @@ FIELD = {
 REQUEST = {"fields": [FIELD], "priorities": {"yield": 1, "water": 0.5}}
 
 
-def _plan(rank: int) -> FarmPlan:
+def _plan(rank: int) -> OptimizerPlan:
     score = ScoreBreakdown(total=60, yield_stability=55, water=70, soil_health=50, low_risk=65)
-    return FarmPlan(
+    return OptimizerPlan(
         rank=rank,
         allocations=[
             Allocation(field_id="f1", area_ha=12.5, sequence=[Crop.MAIZE, Crop.WHEAT, Crop.PEA])
@@ -61,17 +61,17 @@ def _plan(rank: int) -> FarmPlan:
     )
 
 
-def test_farm_plan_request_round_trips_with_defaults() -> None:
-    req = FarmPlanRequest.model_validate(REQUEST)
+def test_optimizer_request_round_trips_with_defaults() -> None:
+    req = OptimizerRequest.model_validate(REQUEST)
     assert (req.risk_aversion, req.plan_years) == (0.3, 4)
     assert (req.eco_scheme, req.eco_practice) == (False, "diversification")
     assert req.fields[0].crop_history is None
-    assert FarmPlanRequest.model_validate_json(req.model_dump_json()) == req
+    assert OptimizerRequest.model_validate_json(req.model_dump_json()) == req
 
 
-def test_farm_plan_request_accepts_five_years_and_history() -> None:
+def test_optimizer_request_accepts_five_years_and_history() -> None:
     history = ["sunflower", "wheat", "barley", "pea", "maize"]
-    req = FarmPlanRequest.model_validate(
+    req = OptimizerRequest.model_validate(
         {
             **REQUEST,
             "fields": [{**FIELD, "crop_history": history}],
@@ -98,13 +98,13 @@ def test_farm_plan_request_accepts_five_years_and_history() -> None:
         {"fields": [FIELD, FIELD]},  # duplicate id
     ],
 )
-def test_farm_plan_request_rejects_bad_input(change: dict[str, object]) -> None:
+def test_optimizer_request_rejects_bad_input(change: dict[str, object]) -> None:
     with pytest.raises(ValidationError):
-        FarmPlanRequest.model_validate({**REQUEST, **change})
+        OptimizerRequest.model_validate({**REQUEST, **change})
 
 
-def test_farm_plan_response_round_trips() -> None:
-    resp = FarmPlanResponse(
+def test_optimizer_response_round_trips() -> None:
+    resp = OptimizerResponse(
         mock=True,
         model_version="mock-0",
         plan_years=3,
@@ -118,7 +118,7 @@ def test_farm_plan_response_round_trips() -> None:
         sources=[],
     )
     assert resp.schema_version == "0.2.0"
-    assert FarmPlanResponse.model_validate_json(resp.model_dump_json()) == resp
+    assert OptimizerResponse.model_validate_json(resp.model_dump_json()) == resp
 
 
 def test_rotation_outcome_round_trips_with_nulls() -> None:
@@ -136,7 +136,7 @@ def test_rotation_outcome_round_trips_with_nulls() -> None:
     assert RotationOutcome.model_validate_json(row.model_dump_json()) == row
 
 
-@pytest.mark.parametrize("name", ["farm_plan_request", "farm_plan_response", "rotation_outcome"])
+@pytest.mark.parametrize("name", ["optimizer_request", "optimizer_response", "rotation_outcome"])
 def test_generated_schema_is_in_sync(name: str) -> None:
     on_disk = json.loads((CONTRACTS_DIR / f"{name}.schema.json").read_text(encoding="utf-8"))
     on_disk.pop("$id")

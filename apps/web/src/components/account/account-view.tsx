@@ -21,7 +21,7 @@ import {
 import type { Account, SavedField } from "@/lib/contracts";
 import { CROP_COLORS } from "@/lib/crops";
 import { formatNumber } from "@/lib/format";
-import { polygonAreaHa } from "@/lib/geo";
+import { fieldAreaHa, fieldRings } from "@/lib/geo";
 import { useAppLocale } from "@/lib/localized";
 import { Link } from "@/i18n/navigation";
 import { Button, buttonClass } from "@/components/ui/button";
@@ -208,7 +208,7 @@ function SignedIn({ account, fields }: { account: Account; fields: SavedField[] 
   const [focused, setFocused] = useState<string | null>(null);
   const searchId = useId();
 
-  const areas = useMemo(() => new Map(fields.map((f) => [f.id, polygonAreaHa(f.boundary)])), [fields]);
+  const areas = useMemo(() => new Map(fields.map((f) => [f.id, fieldAreaHa(f)])), [fields]);
   const totalHa = fields.reduce((sum, f) => sum + (areas.get(f.id) ?? 0), 0);
   const places = new Set(fields.map((f) => f.near).filter(Boolean)).size;
   // Selections of deleted fields drop out.
@@ -398,7 +398,7 @@ function DeviceFieldImport() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   if (!local) return null;
-  const ha = formatNumber(polygonAreaHa(local.boundary), locale, 0);
+  const ha = formatNumber(fieldAreaHa(local), locale, 0);
 
   async function add() {
     if (!local) return;
@@ -458,7 +458,8 @@ function RotationDots({ field }: { field: SavedField }) {
 function FieldShape({ field }: { field: SavedField }) {
   const lat0 = field.boundary[0].lat;
   const k = Math.cos((lat0 * Math.PI) / 180);
-  const pts = field.boundary.map((p) => [p.lon * k, -p.lat] as const);
+  const rings = fieldRings(field).map((ring) => ring.map((p) => [p.lon * k, -p.lat] as const));
+  const pts = rings.flat();
   const xs = pts.map((p) => p[0]);
   const ys = pts.map((p) => p[1]);
   const minX = Math.min(...xs);
@@ -466,12 +467,17 @@ function FieldShape({ field }: { field: SavedField }) {
   const span = Math.max(Math.max(...xs) - minX, Math.max(...ys) - minY) || 1;
   const offX = (span - (Math.max(...xs) - minX)) / 2;
   const offY = (span - (Math.max(...ys) - minY)) / 2;
-  const d = pts
-    .map(([x, y], i) => `${i ? "L" : "M"}${(6 + ((x - minX + offX) / span) * 52).toFixed(1)} ${(6 + ((y - minY + offY) / span) * 52).toFixed(1)}`)
+  const d = rings
+    .map(
+      (ring) =>
+        ring
+          .map(([x, y], i) => `${i ? "L" : "M"}${(6 + ((x - minX + offX) / span) * 52).toFixed(1)} ${(6 + ((y - minY + offY) / span) * 52).toFixed(1)}`)
+          .join(" ") + "Z",
+    )
     .join(" ");
   return (
     <svg viewBox="0 0 64 64" aria-hidden="true" className="size-16 shrink-0 rounded-xl bg-surface-sunken">
-      <path d={`${d}Z`} className="fill-field-tint stroke-field" strokeWidth="2" strokeLinejoin="round" />
+      <path d={d} className="fill-field-tint stroke-field" strokeWidth="2" strokeLinejoin="round" />
     </svg>
   );
 }

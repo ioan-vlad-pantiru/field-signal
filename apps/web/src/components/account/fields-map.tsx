@@ -3,13 +3,14 @@
 import { useEffect, useMemo } from "react";
 import type { GeoJSONSource, Map as MapLibreMap, MapLayerMouseEvent } from "maplibre-gl";
 import { useTranslations } from "next-intl";
+import { fieldRings } from "@/lib/geo";
 import type { SavedField } from "@/lib/contracts";
 import { useMap } from "@/components/map/use-map";
 
 const SOURCE = "fs-account-fields";
 
 function bounds(fields: readonly SavedField[]) {
-  const pts = fields.flatMap((f) => f.boundary);
+  const pts = fields.flatMap((f) => fieldRings(f).flat());
   const lats = pts.map((p) => p.lat);
   const lons = pts.map((p) => p.lon);
   const south = Math.min(...lats);
@@ -30,8 +31,8 @@ function geojson(fields: readonly SavedField[]) {
       type: "Feature" as const,
       properties: { id: f.id, name: f.name },
       geometry: {
-        type: "Polygon" as const,
-        coordinates: [[...f.boundary, f.boundary[0]].map((p) => [p.lon, p.lat])],
+        type: "MultiPolygon" as const,
+        coordinates: fieldRings(f).map((ring) => [[...ring, ring[0]].map((p) => [p.lon, p.lat])]),
       },
     })),
   };

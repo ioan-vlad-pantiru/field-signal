@@ -4,7 +4,7 @@ import { useEffect, useSyncExternalStore } from "react";
 import type { Account, LatLon, SavedField, SavedFieldInput, SignIn, SignUp } from "@/lib/contracts";
 
 /** A field to save; the API rejects a boundary of fewer than 3 corners. */
-export type FieldDraft = Omit<SavedFieldInput, "boundary"> & { boundary: LatLon[] };
+export type FieldDraft = Omit<SavedFieldInput, "boundary" | "parts"> & { boundary: LatLon[]; parts?: LatLon[][] };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const TIMEOUT_MS = 8000;
@@ -161,5 +161,5 @@ export async function deleteAccount(password: string) {
 
 /** The editable part of a saved field, for a PUT. */
 export function fieldInput(field: SavedField): FieldDraft {
-  return { name: field.name, request: field.request, boundary: field.boundary, near: field.near ?? null };
+  return { name: field.name, request: field.request, boundary: field.boundary, parts: field.parts ?? [], near: field.near ?? null };
 }

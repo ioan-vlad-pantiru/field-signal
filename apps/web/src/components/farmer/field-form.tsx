@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import type { Crop, FieldRequest, LatLon, Parcel } from "@/lib/contracts";
 import { formatNumber } from "@/lib/format";
 import { mergeParcels } from "@/lib/api";
-import { polygonAreaHa, polygonCentroid } from "@/lib/geo";
+import { fieldAreaHa, fieldCentroid, fieldRings, polygonAreaHa, polygonCentroid } from "@/lib/geo";
 import { useAppLocale } from "@/lib/localized";
 import { SATELLITE_ATTRIBUTION, type Basemap } from "@/components/map/use-map";
 import { Button } from "@/components/ui/button";
@@ -72,6 +72,8 @@ export function FieldForm({
   const [levels, setLevels] = useState<PriorityLevels>(() => levelsFrom(initialPriorities));
   const [irrigated, setIrrigated] = useState(initialIrrigated);
   const [corners, setCorners] = useState<LatLon[]>(last?.boundary ?? []);
+  /** Further pieces of the field: picked parcels that do not touch the main outline. */
+  const [parts, setParts] = useState<LatLon[][]>(last?.parts ?? []);
   const [mode, setMode] = useState<MapMode>(last ? "locked" : "draw");
   /** My fields id and name of the field being edited, if it came from there. */
   const [meta, setMeta] = useState({ accountId: last?.accountId ?? null, name: last?.name ?? null });
@@ -88,18 +90,18 @@ export function FieldForm({
   /** Why the selected parcels could not be used, if they could not. */
   const [pickNote, setPickNote] = useState<string | null>(null);
 
-  const areaHa = polygonAreaHa(corners);
+  const areaHa = fieldAreaHa({ boundary: corners, parts });
   const selectedHa = selected.reduce((sum, p) => sum + p.area_ha, 0);
   const boundary = mode === "locked" && corners.length >= 3 ? corners : null;
   const drawing = step === 0 && mode === "draw";
-  const others = useMemo(() => added.map((f) => f.boundary), [added]);
+  const others = useMemo(() => added.flatMap((f) => fieldRings(f)), [added]);
   /** No field being edited (nothing drawn yet) but some already kept: the farmer can go on with those. */
   const onlyAdded = !boundary && corners.length === 0 && added.length > 0;
   const canAddAnother = boundary !== null && added.length + 1 < MAX_FIELDS;
   const total = added.length + (boundary ? 1 : 0);
 
   function current(): DraftField | null {
-    return boundary ? { boundary, point, rotation, place, ...meta } : null;
+    return boundary ? { boundary, parts, point, rotation, place, ...meta } : null;
   }
 
   /** Load a field into the editor (empty for a new one). */
@@ -107,6 +109,7 @@ export function FieldForm({
     setSelected([]);
     setPickNote(null);
     setCorners(field?.boundary ?? []);
+    setParts(field?.parts ?? []);
     setMode(field ? "locked" : "draw");
     if (field) setPoint(field.point);
     if (field) setRotation([...field.rotation]);
@@ -162,10 +165,44 @@ export function FieldForm({
     });
   }
 
-  /** The selected parcels become the field, as if their outline had been drawn and Done pressed. */
+  /** Each selected parcel of at least MIN_FIELD_HA becomes its own field; smaller ones stay selected. */
+  function addSeparate() {
+    const room = MAX_FIELDS - added.length - (boundary ? 1 : 0);
+    const big = selected.filter((p) => polygonAreaHa(p.boundary) >= MIN_FIELD_HA);
+    const taken = big.slice(0, Math.max(0, room));
+    const left = selected.filter((p) => !taken.includes(p));
+    setAdded((prev) => [
+      ...prev,
+      ...taken.map((p): DraftField => {
+        const outline = p.boundary.map((c) => ({ lat: c.lat, lon: c.lon }));
+        const c = polygonCentroid(outline);
+        return {
+          boundary: outline,
+          parts: [],
+          point: { lat: Number(c.lat.toFixed(4)), lon: Number(c.lon.toFixed(4)) },
+          rotation: [...rotation],
+          place,
+          accountId: null,
+          name: null,
+        };
+      }),
+    ]);
+    setSelected(left);
+    setPickNote(
+      left.length === 0
+        ? null
+        : taken.length < big.length
+          ? t("parcel.separateFull", { max: MAX_FIELDS })
+          : t("parcel.separateSmall", { count: left.length, min: MIN_FIELD_HA }),
+    );
+  }
+
+  /** The selected parcels become one field, as if their outline had been drawn and Done pressed.
+   * Parcels that do not touch stay separate pieces of the same field. */
   async function applySelected() {
     if (selected.length === 0 || joining) return;
     let outline: LatLon[];
+    let pieces: LatLon[][] = [];
     if (selected.length === 1) {
       outline = selected[0].boundary.map((c) => ({ lat: c.lat, lon: c.lon }));
     } else {
@@ -173,12 +210,13 @@ export function FieldForm({
       const result = await mergeParcels(selected.map((p) => p.id));
       setJoining(false);
       if (!result.ok) {
-        setPickNote(t(result.reason === "not_touching" ? "parcel.notTouching" : "parcel.failed"));
+        setPickNote(t("parcel.failed"));
         return;
       }
       outline = result.data.boundary.map((c) => ({ lat: c.lat, lon: c.lon }));
+      pieces = (result.data.parts ?? []).map((ring) => ring.map((c) => ({ lat: c.lat, lon: c.lon })));
     }
-    const ha = polygonAreaHa(outline);
+    const ha = fieldAreaHa({ boundary: outline, parts: pieces });
     if (ha < MIN_FIELD_HA || ha > MAX_FIELD_HA) {
       const size = formatNumber(ha, locale, 1);
       setPickNote(
@@ -191,7 +229,8 @@ export function FieldForm({
     setPickNote(null);
     setSelected([]);
     setCorners(outline);
-    const c = polygonCentroid(outline);
+    setParts(pieces);
+    const c = fieldCentroid({ boundary: outline, parts: pieces });
     setPoint({ lat: Number(c.lat.toFixed(4)), lon: Number(c.lon.toFixed(4)) });
     setMode("locked");
   }
@@ -221,6 +260,7 @@ export function FieldForm({
           irrigated,
         },
         boundary: f.boundary,
+        parts: f.parts,
         place: f.place,
         accountId: f.accountId,
         name: f.name,
@@ -246,6 +286,7 @@ export function FieldForm({
           corners={corners}
           closed={mode === "locked"}
           others={others}
+          parts={parts}
           onAddCorner={(c) => {
             setPickNote(null);
             setSelected([]);
@@ -347,16 +388,21 @@ export function FieldForm({
             selectedHa={selectedHa}
             joining={joining}
             onUseSelected={applySelected}
+            onAddSeparate={selected.length > 1 && total < MAX_FIELDS ? addSeparate : undefined}
             onClearSelected={() => {
               setSelected([]);
               setPickNote(null);
             }}
             onUndo={() => setCorners((prev) => prev.slice(0, -1))}
-            onClear={() => setCorners([])}
+            onClear={() => {
+              setCorners([]);
+              setParts([]);
+            }}
             onDone={finishDrawing}
             onEdit={() => setMode("draw")}
             onRestart={() => {
               setCorners([]);
+              setParts([]);
               setMode("draw");
               setMeta({ accountId: null, name: null });
             }}

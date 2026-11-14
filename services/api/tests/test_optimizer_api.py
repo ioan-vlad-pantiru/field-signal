@@ -1,4 +1,4 @@
-"""POST /v1/farm/plan through the API (plan §3.9, T5)."""
+"""POST /v1/farm/optimize through the API (plan §3.9, T5)."""
 
 import json
 import logging
@@ -8,13 +8,13 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
-from api.contracts import FarmPlanResponse
+from api.contracts import OptimizerResponse
 from api.main import app
 from api.planner import grid, optimizer
 from api.planner.crops import RULE_LEGUMES
 
 client = TestClient(app)
-EXAMPLE = Path(__file__).resolve().parents[3] / "contracts/examples/farm_plan.mock.json"
+EXAMPLE = Path(__file__).resolve().parents[3] / "contracts/examples/optimizer.mock.json"
 # Demo farm near Aiud (46.30 N, 23.75 E): about 37 ha and 8 ha, as in test_planner_model.py.
 FIELD_A = [(46.3000, 23.7460), (46.3003, 23.7538), (46.2953, 23.7546), (46.2948, 23.7457)]
 FIELD_B = [(46.3022, 23.7560), (46.3024, 23.7607), (46.3004, 23.7609), (46.3002, 23.7558)]
@@ -50,22 +50,22 @@ def _body(**kw: Any) -> dict[str, Any]:
     }
 
 
-def _plan(body: dict[str, Any]) -> FarmPlanResponse:
-    r = client.post("/v1/farm/plan", json=body)
+def _plan(body: dict[str, Any]) -> OptimizerResponse:
+    r = client.post("/v1/farm/optimize", json=body)
     assert r.status_code == 200, r.text
-    return FarmPlanResponse.model_validate(r.json())
+    return OptimizerResponse.model_validate(r.json())
 
 
-def _en(res: FarmPlanResponse) -> str:
+def _en(res: OptimizerResponse) -> str:
     return "\n".join(c.en for c in res.caveats)
 
 
 @pytest.fixture(scope="module")
-def demo() -> FarmPlanResponse:
+def demo() -> OptimizerResponse:
     return _plan(_body())
 
 
-def test_demo_farm(demo: FarmPlanResponse) -> None:
+def test_demo_farm(demo: OptimizerResponse) -> None:
     assert demo.mock is True and demo.model_version == "mock-0"
     assert 44 < demo.total_area_ha < 46 and demo.plan_years == 4
     assert demo.scenario_count == demo.scenario_last - demo.scenario_first + 1
@@ -86,7 +86,7 @@ def test_demo_farm(demo: FarmPlanResponse) -> None:
     assert all(len(c.ro) > 0 for c in demo.caveats)
 
 
-def test_default_enforces_no_eco_rule(demo: FarmPlanResponse) -> None:
+def test_default_enforces_no_eco_rule(demo: OptimizerResponse) -> None:
     assert demo.current is not None
     for p in [*demo.plans, demo.current]:
         assert p.rules and not any(r.applies for r in p.rules)
@@ -221,15 +221,15 @@ def test_soybean_rotation_has_no_baseline_and_history_is_used() -> None:
 def test_unplannable_field_is_422(boundary: list[tuple[float, float]], message: str) -> None:
     body = _body()
     body["fields"] = [_field("f1", boundary)]
-    r = client.post("/v1/farm/plan", json=body)
+    r = client.post("/v1/farm/optimize", json=body)
     assert r.status_code == 422
     assert message in r.json()["detail"]
 
 
 def test_example_is_valid() -> None:
-    res = FarmPlanResponse.model_validate(json.loads(EXAMPLE.read_text()))
+    res = OptimizerResponse.model_validate(json.loads(EXAMPLE.read_text()))
     assert res.mock is True and res.model_version == "mock-0" and res.plans
-    web = EXAMPLE.parents[2] / "apps/web/src/mocks/farm_plan.mock.json"
+    web = EXAMPLE.parents[2] / "apps/web/src/mocks/optimizer.mock.json"
     assert web.read_text() == EXAMPLE.read_text()
 
 

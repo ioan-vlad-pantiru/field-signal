@@ -15,7 +15,7 @@ Agree here before changing anything downstream. Version: **0.2.0** (14 Nov 2026;
 | 2b | World model → farm planner | Parquet or JSON Lines, one `RotationOutcome` per row | `rotation_outcome.schema.json` |
 | 3a | Farmer screen | `POST /v1/fields/analyze` → `FieldAnalysis` | `field_request.schema.json`, `field_analysis.schema.json` |
 | 3b | Buyer screen | `GET /v1/sourcing/region?season=2025` → `SourcingRegion` | `sourcing_region.schema.json` |
-| 3c | Farm plan | `POST /v1/farm/plan` → `FarmPlanResponse` | `farm_plan_request.schema.json`, `farm_plan_response.schema.json` |
+| 3c | Farm optimizer | `POST /v1/farm/optimize` → `OptimizerResponse` | `optimizer_request.schema.json`, `optimizer_response.schema.json` |
 
 **Source of truth:** the pydantic models in `services/api/src/api/contracts.py`. Do not edit the
 `*.schema.json` files or `apps/web/src/lib/contracts.ts` by hand; regenerate them:
@@ -136,9 +136,9 @@ can extend beyond ring 3. Serving drawn fields needs either the web to centre it
 
 The map behind the fractions (e.g. EUCROPMAP) and its year go in `FieldAnalysis.sources`.
 
-## (3c) Farm plan: `POST /v1/farm/plan`
+## (3c) Farm optimizer: `POST /v1/farm/optimize`
 
-`FarmPlanRequest`: 1–10 fields (`id`, optional `name`, drawn `boundary`, `current_rotation` as the
+`OptimizerRequest`: 1–10 fields (`id`, optional `name`, drawn `boundary`, `current_rotation` as the
 farmer's reference cycle of 2–4 crops, optional `crop_history` of 0–5 observed crops with the most
 recent harvest last), shared `priorities` (non-negative weights, normalised server-side),
 `risk_aversion` 0–1 (default 0.3), `plan_years` 3, 4 or 5 (default 4), `eco_scheme` (default
@@ -147,7 +147,7 @@ false: nothing from the voluntary PD-04 eco-scheme is enforced) and `eco_practic
 that one practice is enforced). Without `crop_history`, the cycle `current_rotation` is read
 backwards as the field's history, an assumption stated in `caveats`.
 
-`FarmPlanResponse`: up to 3 `plans` plus `current`, the farmer's own rotation scored the same way
+`OptimizerResponse`: up to 3 `plans` plus `current`, the farmer's own rotation scored the same way
 (rank 0, null if it cannot be scored). `plans[0]` (rank 1) is the best solution found; it is
 optimal for the model only when `proven_optimal` is true. Ranks 2–3 are alternatives that drop at
 least two (field, rotation) choices of each better plan (the only one if it has one), not the second
@@ -155,7 +155,7 @@ and third best solutions. The server picks the mode from the selected area (75 h
 threshold, not a regulatory one): at 75 ha or more each field carries exactly one rotation, so
 `allocations` holds one entry per field with the field's area; under 75 ha a field of 10 ha or more
 may be divided between up to 3 rotations of at least 5 ha each (an area split, not a planting map),
-so `allocations` holds one or more entries per field, summing to its area. Each `FarmPlan`
+so `allocations` holds one or more entries per field, summing to its area. Each `OptimizerPlan`
 also gives the area-weighted mean `score` (0–100 decision metrics, not probabilities, same four
 parts as `ScoreBreakdown`), `score_range` (the spread across weather windows: worst / median / best) with the
 `worst` and `best` windows named, crop areas per plan year, and `rules`. Each `RuleCheck` row

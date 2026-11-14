@@ -7,7 +7,7 @@ import { CROP_COLORS } from "@/lib/crops";
 import { cropFor, hexField, layoutField } from "@/lib/field-plan";
 import type { NonFarmland } from "@/lib/land-cover";
 import { formatNumber } from "@/lib/format";
-import { polygonAreaHa } from "@/lib/geo";
+import { fieldAreaHa } from "@/lib/geo";
 import { useAppLocale } from "@/lib/localized";
 import { Button } from "@/components/ui/button";
 import { CropDot } from "@/components/ui/crop-chip";
@@ -23,10 +23,13 @@ const STEP_MS = 1800;
 export function FieldPlan({
   center,
   boundary,
+  parts = [],
   strategy,
 }: {
   center: LatLon;
   boundary: LatLon[] | null;
+  /** Further pieces of the same field. */
+  parts?: LatLon[][];
   /** The page's selected rotation; the plan restarts at its first season when it changes. */
   strategy: Strategy;
 }) {
@@ -46,7 +49,7 @@ export function FieldPlan({
     setShownId(strategy.id);
     setSeason(0);
   }
-  const hexes = useMemo(() => hexField(center, boundary), [center, boundary]);
+  const hexes = useMemo(() => hexField(center, boundary, parts), [center, boundary, parts]);
   const [nonFarmland, setNonFarmland] = useState<Map<string, NonFarmland>>(() => new Map());
   const layout = useMemo(
     () => layoutField(hexes, new Set(nonFarmland.keys()), seasons),
@@ -108,6 +111,7 @@ export function FieldPlan({
         layout={layout}
         plots={plots}
         boundary={boundary}
+        parts={parts}
         onNonFarmland={setNonFarmland}
         fitKey={strategy.id}
         onUnavailable={setMapUnavailable}
@@ -235,7 +239,7 @@ export function FieldPlan({
       <p className="text-sm text-ink-muted">
         {boundary
           ? t("noteDrawn", {
-              area: formatNumber(polygonAreaHa(boundary), locale, 1),
+              area: formatNumber(fieldAreaHa({ boundary, parts }), locale, 1),
               ha: formatNumber(layout.farmedHa, locale, 0),
               plots: seasons,
             })

@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import type { Crop, CropOutlook, RiskLevel, Zone } from "@/lib/contracts";
 import { formatNumber } from "@/lib/format";
-import { useAppLocale } from "@/lib/localized";
+import { useAppLocale, useLocalized } from "@/lib/localized";
 import { useUnitLabel } from "@/lib/use-unit-label";
 import { ConfidenceBadge, RiskBadge } from "@/components/ui/badges";
 import { CheckIcon } from "@/components/ui/icons";
@@ -44,6 +44,7 @@ export function defaultPair(zones: Zone[], crop: Crop): [string, string] {
  */
 export function ZoneCompare({ zones, crop, ids }: { zones: Zone[]; crop: Crop; ids: [string, string] }) {
   const t = useTranslations("Feed.compare");
+  const l = useLocalized();
   const tc = useTranslations("Crops");
   const tz = useTranslations("Feed.zone");
   const locale = useAppLocale();
@@ -68,6 +69,7 @@ export function ZoneCompare({ zones, crop, ids }: { zones: Zone[]; crop: Crop; i
         <RiskBadge level={o.quality.level} />
         {o.quality.flags.map((f) => (
           <span key={f.code} className="text-xs text-ink-muted">
+            <span className="font-medium text-ink">{l(f.label)}:</span>{" "}
             {t("flagDays", { observed: f.days_observed, normal: n(f.days_normal, 1) })}
           </span>
         ))}

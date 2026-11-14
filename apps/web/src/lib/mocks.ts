@@ -1,6 +1,6 @@
-import type { FarmPlanResponse, FieldAnalysis, SourcingRegion } from "@/lib/contracts";
-import farmPlanJson from "@/mocks/farm_plan.mock.json";
+import type { FieldAnalysis, OptimizerResponse, SourcingRegion } from "@/lib/contracts";
 import fieldAnalysisJson from "@/mocks/field_analysis.mock.json";
+import optimizerJson from "@/mocks/optimizer.mock.json";
 import sourcingRegionJson from "@/mocks/sourcing_region.mock.json";
 
 // JSON imports widen literals ("maize" -> string), so we cast once here. The files are
@@ -8,5 +8,5 @@ import sourcingRegionJson from "@/mocks/sourcing_region.mock.json";
 // Every object has `mock: true`: never present these numbers as real in the pitch.
 export const mockFieldAnalysis = fieldAnalysisJson as unknown as FieldAnalysis;
 export const mockSourcingRegion = sourcingRegionJson as unknown as SourcingRegion;
-// The API's own example for the demo farm near Aiud, copied from contracts/examples/farm_plan.mock.json.
-export const mockFarmPlan = farmPlanJson as unknown as FarmPlanResponse;
+// The API's own example for the demo farm near Aiud, copied from contracts/examples/optimizer.mock.json.
+export const mockOptimizer = optimizerJson as unknown as OptimizerResponse;
