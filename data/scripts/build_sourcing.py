@@ -549,7 +549,6 @@ def build(zip_path: Path) -> tuple[SourcingRegion, pd.DataFrame]:
         reference_crops=REFERENCE,
         zones=out_zones,
         recommendation=recommendation(t, county),
-        scenario=scenario(),
         caveats=CAVEATS,
         sources=SOURCES,
         validation=validation,

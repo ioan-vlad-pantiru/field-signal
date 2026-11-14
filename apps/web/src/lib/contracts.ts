@@ -240,7 +240,10 @@ export interface SourcingRegion {
   reference_crops: Crop[];
   zones: Zone[];
   recommendation: SourcingRecommendation;
-  scenario: AdoptionScenario;
+  /**
+   * what-if for adding a crop; not shown to buyers today
+   */
+  scenario?: AdoptionScenario | null;
   caveats: Localized[];
   sources: DataSource[];
   validation?: Validation | null;

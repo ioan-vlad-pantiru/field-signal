@@ -17,7 +17,7 @@ from api.contracts import (
 from api.main import app
 
 POINT = LatLon(lat=46.30, lon=23.75)
-THREE_CROPS = [Crop.MAIZE, Crop.SOYBEAN, Crop.WHEAT]
+THREE_CROPS = [Crop.MAIZE, Crop.PEA, Crop.WHEAT]
 
 
 def _field(i: int, area: float = 10.0, last: Crop | None = None) -> PlanField:
@@ -37,13 +37,13 @@ def three_crop_rotation(monkeypatch: pytest.MonkeyPatch) -> list[int]:
         calls.append(1)
         analysis = run_field_analysis(request)
         strategies = [
-            s.model_copy(update={"sequence": THREE_CROPS}) if s.id == "soy-break" else s
+            s.model_copy(update={"sequence": THREE_CROPS}) if s.id == "pea-break" else s
             for s in analysis.strategies
         ]
         best = max(strategies, key=lambda s: s.score.total)
         top = best.score.model_copy(update={"total": 99.0})
         strategies = [
-            s.model_copy(update={"score": top}) if s.id == "soy-break" else s for s in strategies
+            s.model_copy(update={"score": top}) if s.id == "pea-break" else s for s in strategies
         ]
         return analysis.model_copy(update={"strategies": strategies})
 
@@ -65,7 +65,7 @@ def test_stagger_gives_three_equal_fields_three_crops_each_year(
 
 
 def test_last_crop_is_not_repeated(three_crop_rotation: list[int]) -> None:
-    fields = [_field(1, last=Crop.MAIZE), _field(2, last=Crop.SOYBEAN), _field(3, last=Crop.WHEAT)]
+    fields = [_field(1, last=Crop.MAIZE), _field(2, last=Crop.PEA), _field(3, last=Crop.WHEAT)]
     plan = farm_plan.plan_farm(_request(fields))
     for f, p in zip(fields, plan.fields, strict=True):
         assert p.crops[0] != f.last_crop

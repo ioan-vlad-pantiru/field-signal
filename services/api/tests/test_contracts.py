@@ -3,7 +3,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from api.contracts import FeatureRow, FieldAnalysis, SourcingRegion
+from api.contracts import Crop, FeatureRow, FieldAnalysis, SourcingRegion
 from api.main import app
 
 client = TestClient(app)
@@ -40,15 +40,12 @@ def test_analyze_field_rejects_unknown_crop() -> None:
     assert response.status_code == 422
 
 
-def test_sourcing_region_returns_valid_mock() -> None:
+def test_sourcing_region_is_valid() -> None:
     response = client.get("/v1/sourcing/region", params={"season": 2025})
     assert response.status_code == 200
     body = SourcingRegion.model_validate(response.json())
-    assert body.mock is True
     assert body.zones
-    s = body.scenario
-    for r in (s.added_area_ha, s.added_production_t, s.added_protein_t):
-        assert r.low <= r.mid <= r.high
+    assert Crop.SOYBEAN not in body.reference_crops
 
 
 def test_feature_row_example_is_valid() -> None:

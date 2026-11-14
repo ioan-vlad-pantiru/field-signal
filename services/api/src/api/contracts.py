@@ -335,7 +335,9 @@ class SourcingRegion(Contract):
     reference_crops: list[Crop]
     zones: list[Zone]
     recommendation: SourcingRecommendation
-    scenario: AdoptionScenario
+    scenario: AdoptionScenario | None = Field(
+        default=None, description="what-if for adding a crop; not shown to buyers today"
+    )
     caveats: list[Localized]
     sources: list[DataSource]
     validation: Validation | None = None

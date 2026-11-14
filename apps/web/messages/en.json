@@ -389,7 +389,7 @@
   },
   "Feed": {
     "title": "Where to buy feed this year",
-    "intro": "See which communes are likely to have enough maize, wheat or soybean this year, and where quality could be a problem.",
+    "intro": "See which communes are likely to have enough maize, wheat or barley this year, and where quality could be a problem.",
     "loading": "Loading zones…",
     "regionLine": "{region} · season {season} · {count} communes",
     "cropToggle": "Choose the crop",
@@ -416,7 +416,7 @@
       "winterCover": "Soil covered in winter",
       "model": "Model version: {version}",
       "lowerRiskTitle": "What can lower this risk",
-      "lowerRiskMaize": "Rotations with soybean or sunflower usually lower this risk over 3 years. Compare them for a field in this commune.",
+      "lowerRiskMaize": "Rotations with peas or sunflower usually lower this risk over 3 years. Compare them for a field in this commune.",
       "lowerRiskOther": "Not growing the same crop two years in a row usually lowers this risk over 3 years. Compare rotations for a field in this commune.",
       "compareHere": "Compare rotations here"
     },
@@ -439,31 +439,6 @@
     },
     "recommendationTitle": "Recommendation",
     "assumptions": "Assumptions",
-    "scenarioTitle": "If more farmers grew soybean",
-    "adoption": {
-      "title": "How much more {crop} the area could supply, estimated",
-      "hint": "Move the slider: the share of suppliers who add the crop to their rotation.",
-      "sliderLabel": "Suppliers adding {crop}",
-      "area": "Extra area",
-      "production": "Extra production",
-      "protein": "Extra protein",
-      "rangeLabel": "Between {low} and {high} {unit}, most likely {mid} {unit}",
-      "range": "between {low} and {high} {unit}",
-      "assumptions": "Assumptions",
-      "linear": "Results grow in proportion to the adoption share, starting from the scenario computed for {base}%.",
-      "cropLabel": "Which crop to add",
-      "choice": {
-        "soy": "Soybean",
-        "pea": "Feed pea",
-        "both": "Both"
-      },
-      "bothName": "{a} and {b}",
-      "peaArea": "Feed pea: the same extra area as the soybean scenario (the same share of land changes crop).",
-      "peaYield": "Feed pea yield: {low} to {high} t/ha, most likely {mid} t/ha. Placeholder value, to verify with an agronomist.",
-      "peaProtein": "Feed pea protein as harvested: {low} to {high}% (crop table, low confidence). To verify with an agronomist.",
-      "bothSum": "Both: the same extra area, half soybean and half feed pea. Harvest and protein are the sum of the two halves.",
-      "soyScenario": "Soybean values come from the scenario computed by the model."
-    },
     "caveatsTitle": "Keep in mind",
     "metaTitle": "Feed buyer",
     "actionsTitle": "What to do",
@@ -497,8 +472,7 @@
       "bad": "{count, plural, one {commune} other {communes}} will likely be short of {crop}"
     },
     "listTitle": "All communes, safest first",
-    "listHint": "Tap a commune to see why. Tick two to compare them.",
-    "scenarioHint": "How much extra feed the area could supply if more farmers changed their rotation."
+    "listHint": "Tap a commune to see why. Tick two to compare them."
   },
   "About": {
     "title": "About Field Signal",
@@ -506,7 +480,7 @@
     "judgment": "The tool supports the farmer's judgment. It does not replace it.",
     "whatTitle": "What it does",
     "what": {
-      "farmer": "For farmers: compares your current rotation with two alternatives (at least one with soybean or peas) and shows, year by year, how each would have done.",
+      "farmer": "For farmers: compares your current rotation with two alternatives (at least one with peas) and shows, year by year, how each would have done.",
       "buyer": "For feed buyers: shows, by commune, the risk of not finding enough harvest, quality risks (aflatoxins, fusarium, harvest rain) and environmental impact.",
       "transparency": "Every number shows its source, period, assumptions and confidence next to it."
     },
@@ -648,7 +622,7 @@
     "start": "Draw your field",
     "buyer": {
       "title": "Feed buyers",
-      "text": "See, commune by commune, where maize, wheat and soybean are likely this year, and at what quality risk.",
+      "text": "See, commune by commune, where maize, wheat and barley are likely this year, and at what quality risk.",
       "cta": "Open the buyer view"
     },
     "imageAlt": "Satellite view of Transylvania in summer: farmland in the centre, ringed by the forested Carpathians.",
@@ -708,7 +682,7 @@
       },
       "alternatives": {
         "title": "Two rotations that did better",
-        "text": "At least one with soybean or peas."
+        "text": "At least one with peas."
       },
       "plan": {
         "title": "A plan for your plots",
@@ -1063,51 +1037,6 @@
     "download": "Download the APIA list for {year}"
   },
   "FeedExtra": {
-    "need": {
-      "title": "How much of your soy could come from here",
-      "hint": "Compare the extra local soy from the slider above with what you buy in a year.",
-      "inputLabel": "Soy you buy per year (tonnes)",
-      "inputPlaceholder": "e.g. 20000",
-      "private": "Stays in this browser only. It is never sent to us or anyone else.",
-      "formLabel": "What you buy",
-      "form": {
-        "beans": "Soybeans",
-        "meal": "Soybean meal"
-      },
-      "supply": "With {pct}% of suppliers adding soybean: {low}–{high} t of extra beans a year.",
-      "coverage": "Local soy could cover {low}–{high}% of what you buy (most likely {mid}%)",
-      "more": "In this scenario the area could grow more soy than you buy today.",
-      "empty": "Enter how much soy you buy in a year to see what share local farms could cover.",
-      "assumptions": "How this is worked out",
-      "assumeSlider": "The extra soy is the scenario above, scaled in a straight line with the slider.",
-      "assumeMeal": "For meal: {low}–{high} t of meal per t of beans after crushing. This is a typical crushing yield; check it with your crusher.",
-      "assumeAll": "It assumes all the extra soy could be bought by you. In practice it is shared with other buyers and some is kept as seed."
-    },
-    "quality": {
-      "title": "Soy quality: what to know",
-      "intro": "The concern is fair: the quality of local soy varies more from year to year than that of a large, steady import supply. Research from Central Europe shows where the difference comes from and what a buyer can do about it.",
-      "driversTitle": "What decides the protein",
-      "driverSeason": "Mostly the season and the variety. Protein tends to be lower in seasons with heavy rain while the beans fill, or when the plants fix little nitrogen. Warm seasons with moderate rain give good protein.",
-      "driverGerman": "In German field trials, average protein was 41.6%, close to Brazil's 40.9%.",
-      "driverVariety": "High-protein varieties kept 46–55% protein even in difficult conditions.",
-      "actionsTitle": "What you can do",
-      "action1": "Buy from communes and seasons without a rain warning during bean fill. The quality column on this page shows it for soybean.",
-      "action2": "Contract on a protein specification and on named high-protein varieties.",
-      "action3": "Test protein when the soy arrives, lot by lot.",
-      "importsTitle": "Also good to know: imported soy and the new EU rules",
-      "importsChain": "Soy bought close to home can mean a shorter chain: no sea freight and no exchange-rate risk on the purchase.",
-      "eudr": "The EU Deforestation Regulation (EUDR) covers soy. Under the rules agreed so far, it applies to large companies from 30 December 2026. They must show that the soy was not grown on land deforested after 31 December 2020, and give the location of the plots where it was grown.",
-      "trace": "Soy from this area can be linked to the APIA parcel outlines that Field Signal maps.",
-      "eudrCheck": "Check the current EUDR rules before relying on these dates: the Commission reviewed them in 2026.",
-      "sourcesTitle": "Sources",
-      "source": {
-        "german": "Soybean in central and south Germany (Agronomy, 2020)",
-        "central": "Protein variation of soybean in Central Europe (AGRIS)",
-        "varieties": "High-protein soybean genotypes (2024)",
-        "eudrDonau": "EUDR postponement (Donau Soja)",
-        "eudrArthurCox": "EUDR one-year postponement agreed (Arthur Cox)"
-      }
-    },
     "validation": {
       "title": "How the risk did in past years",
       "summary": "of {total} past seasons called right",

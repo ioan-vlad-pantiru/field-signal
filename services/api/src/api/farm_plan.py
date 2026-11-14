@@ -268,12 +268,12 @@ def _check_legumes(
             en="Legumes every year" if ok else "Years without legumes",
         ),
         detail=Localized(
-            ro=f"Suprafața cu soia, mazăre sau măzăriche: {per_year}. Leguminoasele fixează "
-            "azot în sol și reduc nevoia de îngrășământ. Ele pot conta și pentru eco-schema "
-            "pentru teren arabil; vă rugăm să verificați condițiile cu APIA.",
-            en=f"Area under soybean, pea or vetch: {per_year}. Legumes fix nitrogen in the soil "
-            "and cut fertiliser needs. They may also count towards the arable eco-scheme; "
-            "please check the conditions with APIA.",
+            ro=f"Suprafața cu mazăre, măzăriche sau alte leguminoase: {per_year}. "
+            "Leguminoasele fixează azot în sol și reduc nevoia de îngrășământ. Ele pot conta "
+            "și pentru eco-schema pentru teren arabil; vă rugăm să verificați condițiile cu APIA.",
+            en=f"Area under peas, vetch or other legumes: {per_year}. Legumes fix nitrogen "
+            "in the soil and cut fertiliser needs. They may also count towards the arable "
+            "eco-scheme; please check the conditions with APIA.",
         ),
     )
 

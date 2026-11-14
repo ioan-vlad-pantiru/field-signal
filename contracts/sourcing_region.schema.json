@@ -637,7 +637,16 @@
       "$ref": "#/$defs/SourcingRecommendation"
     },
     "scenario": {
-      "$ref": "#/$defs/AdoptionScenario"
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AdoptionScenario"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "what-if for adding a crop; not shown to buyers today"
     },
     "caveats": {
       "items": {
@@ -671,7 +680,6 @@
     "reference_crops",
     "zones",
     "recommendation",
-    "scenario",
     "caveats",
     "sources"
   ],

@@ -900,28 +900,28 @@
       }
     },
     {
-      "id": "soy-break",
+      "id": "pea-break",
       "name": {
-        "ro": "Cu soia",
-        "en": "With soybean"
+        "ro": "Cu mazăre",
+        "en": "With peas"
       },
       "is_current": false,
       "sequence": [
         "maize",
-        "soybean",
+        "pea",
         "wheat"
       ],
       "score": {
-        "total": 55.4,
-        "yield_stability": 43.0,
+        "total": 69.6,
+        "yield_stability": 70.0,
         "water": 62.0,
         "soil_health": 70.0,
-        "low_risk": 52.0
+        "low_risk": 76.0
       },
       "score_range": {
-        "low": 47.4,
-        "mid": 55.4,
-        "high": 61.4
+        "low": 61.6,
+        "mid": 69.6,
+        "high": 75.6
       },
       "confidence": "medium",
       "replay": [
@@ -934,7 +934,7 @@
         },
         {
           "year": 2002,
-          "crop": "soybean",
+          "crop": "pea",
           "status": "good",
           "reasons": [],
           "evidence_level": "low"
@@ -965,7 +965,7 @@
         },
         {
           "year": 2005,
-          "crop": "soybean",
+          "crop": "pea",
           "status": "good",
           "reasons": [],
           "evidence_level": "low"
@@ -986,19 +986,9 @@
         },
         {
           "year": 2008,
-          "crop": "soybean",
-          "status": "watch",
-          "reasons": [
-            {
-              "code": "heat_at_flowering",
-              "label": {
-                "ro": "Caniculă la înflorire",
-                "en": "Heat at flowering"
-              },
-              "value": 10.0,
-              "unit": "days"
-            }
-          ],
+          "crop": "pea",
+          "status": "good",
+          "reasons": [],
           "evidence_level": "low"
         },
         {
@@ -1017,7 +1007,7 @@
         },
         {
           "year": 2011,
-          "crop": "soybean",
+          "crop": "pea",
           "status": "good",
           "reasons": [],
           "evidence_level": "low"
@@ -1048,28 +1038,9 @@
         },
         {
           "year": 2014,
-          "crop": "soybean",
-          "status": "bad",
-          "reasons": [
-            {
-              "code": "heat_at_flowering",
-              "label": {
-                "ro": "Caniculă la înflorire",
-                "en": "Heat at flowering"
-              },
-              "value": 16.0,
-              "unit": "days"
-            },
-            {
-              "code": "summer_dry",
-              "label": {
-                "ro": "Vară secetoasă",
-                "en": "Dry summer"
-              },
-              "value": 136.0,
-              "unit": "mm"
-            }
-          ],
+          "crop": "pea",
+          "status": "good",
+          "reasons": [],
           "evidence_level": "low"
         },
         {
@@ -1098,19 +1069,9 @@
         },
         {
           "year": 2017,
-          "crop": "soybean",
-          "status": "watch",
-          "reasons": [
-            {
-              "code": "heat_at_flowering",
-              "label": {
-                "ro": "Caniculă la înflorire",
-                "en": "Heat at flowering"
-              },
-              "value": 14.0,
-              "unit": "days"
-            }
-          ],
+          "crop": "pea",
+          "status": "good",
+          "reasons": [],
           "evidence_level": "medium"
         },
         {
@@ -1139,19 +1100,9 @@
         },
         {
           "year": 2020,
-          "crop": "soybean",
-          "status": "watch",
-          "reasons": [
-            {
-              "code": "heat_at_flowering",
-              "label": {
-                "ro": "Caniculă la înflorire",
-                "en": "Heat at flowering"
-              },
-              "value": 19.0,
-              "unit": "days"
-            }
-          ],
+          "crop": "pea",
+          "status": "good",
+          "reasons": [],
           "evidence_level": "medium"
         },
         {
@@ -1189,28 +1140,9 @@
         },
         {
           "year": 2023,
-          "crop": "soybean",
-          "status": "bad",
-          "reasons": [
-            {
-              "code": "heat_at_flowering",
-              "label": {
-                "ro": "Caniculă la înflorire",
-                "en": "Heat at flowering"
-              },
-              "value": 11.0,
-              "unit": "days"
-            },
-            {
-              "code": "summer_dry",
-              "label": {
-                "ro": "Vară secetoasă",
-                "en": "Dry summer"
-              },
-              "value": 156.0,
-              "unit": "mm"
-            }
-          ],
+          "crop": "pea",
+          "status": "good",
+          "reasons": [],
           "evidence_level": "medium"
         },
         {
@@ -1249,8 +1181,8 @@
       ],
       "explanation": {
         "why": {
-          "ro": "[MOCK] With soybean: comparată pe 25 de sezoane cu datele NASA ale zonei.",
-          "en": "[MOCK] With soybean: compared over 25 seasons of NASA data for this area."
+          "ro": "[MOCK] With peas: comparată pe 25 de sezoane cu datele NASA ale zonei.",
+          "en": "[MOCK] With peas: compared over 25 seasons of NASA data for this area."
         },
         "evidence": [
           {
@@ -1258,7 +1190,7 @@
               "ro": "Sezoane slabe în reluare",
               "en": "Poor seasons in the replay"
             },
-            "value": 4.0,
+            "value": 2.0,
             "unit": "seasons",
             "source": "NASA POWER"
           },

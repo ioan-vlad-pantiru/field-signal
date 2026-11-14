@@ -6,7 +6,7 @@
   "reference_crops": [
     "maize",
     "wheat",
-    "soybean"
+    "barley"
   ],
   "zones": [
     {
@@ -125,7 +125,7 @@
           "model_version": "mock-0"
         },
         {
-          "crop": "soybean",
+          "crop": "barley",
           "area_ha": 727.0,
           "availability": {
             "level": "low",
@@ -280,7 +280,7 @@
           "model_version": "mock-0"
         },
         {
-          "crop": "soybean",
+          "crop": "barley",
           "area_ha": 1274.0,
           "availability": {
             "level": "high",
@@ -435,7 +435,7 @@
           "model_version": "mock-0"
         },
         {
-          "crop": "soybean",
+          "crop": "barley",
           "area_ha": 466.0,
           "availability": {
             "level": "high",
@@ -590,7 +590,7 @@
           "model_version": "mock-0"
         },
         {
-          "crop": "soybean",
+          "crop": "barley",
           "area_ha": 1812.0,
           "availability": {
             "level": "medium",
@@ -745,7 +745,7 @@
           "model_version": "mock-0"
         },
         {
-          "crop": "soybean",
+          "crop": "barley",
           "area_ha": 2237.0,
           "availability": {
             "level": "medium",
@@ -900,7 +900,7 @@
           "model_version": "mock-0"
         },
         {
-          "crop": "soybean",
+          "crop": "barley",
           "area_ha": 447.0,
           "availability": {
             "level": "low",
@@ -1055,7 +1055,7 @@
           "model_version": "mock-0"
         },
         {
-          "crop": "soybean",
+          "crop": "barley",
           "area_ha": 2151.0,
           "availability": {
             "level": "medium",
@@ -1210,7 +1210,7 @@
           "model_version": "mock-0"
         },
         {
-          "crop": "soybean",
+          "crop": "barley",
           "area_ha": 2284.0,
           "availability": {
             "level": "medium",
@@ -1365,7 +1365,7 @@
           "model_version": "mock-0"
         },
         {
-          "crop": "soybean",
+          "crop": "barley",
           "area_ha": 2323.0,
           "availability": {
             "level": "high",
@@ -1520,7 +1520,7 @@
           "model_version": "mock-0"
         },
         {
-          "crop": "soybean",
+          "crop": "barley",
           "area_ha": 1729.0,
           "availability": {
             "level": "medium",
@@ -1571,10 +1571,6 @@
     },
     "actions": [
       {
-        "ro": "Contracte cu fermieri care introduc soia",
-        "en": "Contract soy adopters"
-      },
-      {
         "ro": "Testați loturile pentru aflatoxine",
         "en": "Test lots for aflatoxins"
       }
@@ -1587,35 +1583,7 @@
       }
     ]
   },
-  "scenario": {
-    "crop": "soybean",
-    "adoption_pct": 25.0,
-    "added_area_ha": {
-      "low": 915.0,
-      "mid": 1144.0,
-      "high": 1258.0
-    },
-    "added_production_t": {
-      "low": 1556.0,
-      "mid": 2402.0,
-      "high": 3145.0
-    },
-    "added_protein_t": {
-      "low": 513.0,
-      "mid": 817.0,
-      "high": 1101.0
-    },
-    "assumptions": [
-      {
-        "ro": "Soia o dată la 3 ani pe terenul fermierilor care adoptă rotația.",
-        "en": "Soybean once every 3 years on adopting farmers' land."
-      },
-      {
-        "ro": "Randament 1,7-2,5 t/ha; proteină 33-35% la recoltare (de verificat).",
-        "en": "Yield 1.7-2.5 t/ha; protein 33-35% as harvested (to verify)."
-      }
-    ]
-  },
+  "scenario": null,
   "caveats": [
     {
       "ro": "DATE DEMONSTRATIVE (mock).",
@@ -1655,5 +1623,6 @@
       "is_nasa": false,
       "url": "https://data.jrc.ec.europa.eu/"
     }
-  ]
+  ],
+  "validation": null
 }

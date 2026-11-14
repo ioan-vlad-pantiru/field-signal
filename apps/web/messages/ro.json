@@ -389,7 +389,7 @@
   },
   "Feed": {
     "title": "De unde cumpărați furaje anul acesta",
-    "intro": "Vedeți ce comune vor avea probabil destul porumb, grâu sau soia anul acesta și unde calitatea ar putea fi o problemă.",
+    "intro": "Vedeți ce comune vor avea probabil destul porumb, grâu sau orz anul acesta și unde calitatea ar putea fi o problemă.",
     "loading": "Încărcăm zonele…",
     "regionLine": "{region} · sezonul {season} · {count} comune",
     "cropToggle": "Alegeți cultura",
@@ -416,7 +416,7 @@
       "winterCover": "Sol acoperit iarna",
       "model": "Versiunea modelului: {version}",
       "lowerRiskTitle": "Ce poate reduce riscul",
-      "lowerRiskMaize": "Rotațiile cu soia sau floarea-soarelui reduc de obicei acest risc în 3 ani. Comparați-le pentru un câmp din această comună.",
+      "lowerRiskMaize": "Rotațiile cu mazăre sau floarea-soarelui reduc de obicei acest risc în 3 ani. Comparați-le pentru un câmp din această comună.",
       "lowerRiskOther": "Dacă nu cultivați aceeași plantă doi ani la rând, riscul scade de obicei în 3 ani. Comparați rotațiile pentru un câmp din această comună.",
       "compareHere": "Comparați rotațiile aici"
     },
@@ -439,31 +439,6 @@
     },
     "recommendationTitle": "Recomandare",
     "assumptions": "Presupuneri",
-    "scenarioTitle": "Dacă mai mulți fermieri ar cultiva soia",
-    "adoption": {
-      "title": "Câtă {crop} în plus ar putea oferi zona, estimat",
-      "hint": "Mutați glisorul: ce procent dintre furnizori ar introduce cultura în rotație.",
-      "sliderLabel": "Furnizori care adaugă {crop}",
-      "area": "Suprafață în plus",
-      "production": "Producție în plus",
-      "protein": "Proteină în plus",
-      "rangeLabel": "Între {low} și {high} {unit}, cel mai probabil {mid} {unit}",
-      "range": "între {low} și {high} {unit}",
-      "assumptions": "Presupuneri",
-      "linear": "Rezultatele cresc proporțional cu procentul de adoptare, pornind de la scenariul calculat pentru {base}%.",
-      "cropLabel": "Ce cultură se adaugă",
-      "choice": {
-        "soy": "Soia",
-        "pea": "Mazăre furajeră",
-        "both": "Amândouă"
-      },
-      "bothName": "{a} și {b}",
-      "peaArea": "Mazăre furajeră: aceeași suprafață în plus ca în scenariul cu soia (aceeași parte din teren își schimbă cultura).",
-      "peaYield": "Producția la mazărea furajeră: între {low} și {high} t/ha, cel mai probabil {mid} t/ha. Valoare provizorie, de verificat cu un agronom.",
-      "peaProtein": "Proteina din mazărea furajeră la recoltare: între {low} și {high}% (tabelul culturilor, încredere scăzută). De verificat cu un agronom.",
-      "bothSum": "Amândouă: aceeași suprafață în plus, jumătate soia și jumătate mazăre furajeră. Producția și proteina sunt suma celor două jumătăți.",
-      "soyScenario": "Valorile pentru soia vin din scenariul calculat de model."
-    },
     "caveatsTitle": "De reținut",
     "metaTitle": "Cumpărători de furaje",
     "actionsTitle": "Ce puteți face",
@@ -497,8 +472,7 @@
       "bad": "{count, plural, one {comună e probabil să nu aibă} few {comune e probabil să nu aibă} other {de comune e probabil să nu aibă}} destul {crop}"
     },
     "listTitle": "Toate comunele, cele mai sigure primele",
-    "listHint": "Atingeți o comună ca să vedeți de ce. Bifați două ca să le comparați.",
-    "scenarioHint": "Câte furaje în plus ar putea da zona dacă mai mulți fermieri și-ar schimba rotația."
+    "listHint": "Atingeți o comună ca să vedeți de ce. Bifați două ca să le comparați."
   },
   "About": {
     "title": "Despre Field Signal",
@@ -506,7 +480,7 @@
     "judgment": "Instrumentul sprijină judecata fermierului. Nu o înlocuiește.",
     "whatTitle": "Ce face",
     "what": {
-      "farmer": "Pentru fermieri: compară rotația de acum cu două alternative (cel puțin una cu soia sau mazăre) și arată, an de an, cum ar fi mers fiecare.",
+      "farmer": "Pentru fermieri: compară rotația de acum cu două alternative (cel puțin una cu mazăre) și arată, an de an, cum ar fi mers fiecare.",
       "buyer": "Pentru cumpărătorii de furaje: arată pe comune riscul de a nu găsi destulă recoltă, riscurile de calitate (aflatoxine, fuzarioză, ploi la recoltare) și impactul asupra mediului.",
       "transparency": "Fiecare cifră are sursa, perioada, presupunerile și nivelul de încredere lângă ea."
     },
@@ -648,7 +622,7 @@
     "start": "Desenați câmpul",
     "buyer": {
       "title": "Cumpărători de furaje",
-      "text": "Vedeți, comună cu comună, unde vor fi probabil porumb, grâu și soia anul acesta și cu ce risc de calitate.",
+      "text": "Vedeți, comună cu comună, unde vor fi probabil porumb, grâu și orz anul acesta și cu ce risc de calitate.",
       "cta": "Deschideți pagina pentru cumpărători"
     },
     "imageAlt": "Transilvania văzută din satelit, vara: terenuri agricole în centru, înconjurate de Carpații împăduriți.",
@@ -708,7 +682,7 @@
       },
       "alternatives": {
         "title": "Două rotații care au mers mai bine",
-        "text": "Cel puțin una cu soia sau mazăre."
+        "text": "Cel puțin una cu mazăre."
       },
       "plan": {
         "title": "Un plan pentru parcele",
@@ -1063,51 +1037,6 @@
     "download": "Descărcați lista APIA pentru {year}"
   },
   "FeedExtra": {
-    "need": {
-      "title": "Cât din soia dumneavoastră ar putea veni de aici",
-      "hint": "Comparați soia locală în plus din cursorul de mai sus cu ceea ce cumpărați într-un an.",
-      "inputLabel": "Soia pe care o cumpărați pe an (tone)",
-      "inputPlaceholder": "de ex. 20000",
-      "private": "Rămâne doar în acest browser. Nu este trimisă nici nouă, nici altcuiva.",
-      "formLabel": "Ce cumpărați",
-      "form": {
-        "beans": "Boabe de soia",
-        "meal": "Șrot de soia"
-      },
-      "supply": "Dacă {pct}% dintre furnizori adaugă soia: {low}–{high} t de boabe în plus pe an.",
-      "coverage": "Soia locală ar putea acoperi {low}–{high}% din ce cumpărați (cel mai probabil {mid}%)",
-      "more": "În acest scenariu, zona ar putea produce mai multă soia decât cumpărați astăzi.",
-      "empty": "Introduceți câtă soia cumpărați într-un an ca să vedeți ce parte ar putea acoperi fermele locale.",
-      "assumptions": "Cum am calculat",
-      "assumeSlider": "Soia în plus este scenariul de mai sus, scalat în linie dreaptă cu cursorul.",
-      "assumeMeal": "Pentru șrot: {low}–{high} t de șrot la o tonă de boabe după procesare. Este un randament obișnuit; verificați-l cu procesatorul dumneavoastră.",
-      "assumeAll": "Presupunem că toată soia în plus ar putea fi cumpărată de dumneavoastră. În realitate, ea se împarte cu alți cumpărători, iar o parte rămâne sămânță."
-    },
-    "quality": {
-      "title": "Calitatea soiei: ce este bine de știut",
-      "intro": "Îngrijorarea este îndreptățită: calitatea soiei locale variază de la an la an mai mult decât cea a unui import mare și constant. Cercetările din Europa Centrală arată de unde vine diferența și ce poate face un cumpărător.",
-      "driversTitle": "Ce hotărăște conținutul de proteină",
-      "driverSeason": "În principal anul și soiul. Proteina tinde să fie mai mică în anii cu ploi multe cât timp se umplu boabele sau când plantele fixează puțin azot. Anii calzi, cu ploi moderate, dau proteină bună.",
-      "driverGerman": "În loturile experimentale din Germania, proteina medie a fost 41,6%, apropiată de cea din Brazilia (40,9%).",
-      "driverVariety": "Soiurile bogate în proteină au păstrat 46–55% proteină chiar și în condiții grele.",
-      "actionsTitle": "Ce puteți face",
-      "action1": "Cumpărați din comunele și anii fără avertizare de ploaie la umplerea boabelor. Coloana de calitate de pe această pagină o arată pentru soia.",
-      "action2": "Contractați pe o specificație de proteină și pe soiuri bogate în proteină, numite în contract.",
-      "action3": "Testați proteina la recepție, lot cu lot.",
-      "importsTitle": "Bine de știut și: soia din import și noile reguli UE",
-      "importsChain": "Soia cumpărată aproape poate însemna un lanț mai scurt: fără transport maritim și fără riscul cursului valutar la cumpărare.",
-      "eudr": "Regulamentul UE privind defrișările (EUDR) acoperă soia. Conform regulilor convenite până acum, se aplică marilor companii din 30 decembrie 2026. Acestea trebuie să arate că soia nu a crescut pe teren defrișat după 31 decembrie 2020 și să dea localizarea parcelelor pe care a crescut.",
-      "trace": "Soia din această zonă poate fi legată de contururile parcelelor APIA pe care Field Signal le cartografiază.",
-      "eudrCheck": "Verificați regulile EUDR în vigoare înainte să vă bazați pe aceste date: Comisia le-a revizuit în 2026.",
-      "sourcesTitle": "Surse",
-      "source": {
-        "german": "Soia în centrul și sudul Germaniei (Agronomy, 2020)",
-        "central": "Variația proteinei la soia în Europa Centrală (AGRIS)",
-        "varieties": "Genotipuri de soia bogate în proteină (2024)",
-        "eudrDonau": "Amânarea EUDR (Donau Soja)",
-        "eudrArthurCox": "Amânarea EUDR cu un an (Arthur Cox)"
-      }
-    },
     "validation": {
       "title": "Cum s-a descurcat riscul în anii trecuți",
       "summary": "din {total} ani trecuți estimați corect",
