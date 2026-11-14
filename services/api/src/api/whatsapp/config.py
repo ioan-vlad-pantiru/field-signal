@@ -5,7 +5,7 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import AliasChoices, Field
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from api.settings import REPO_ROOT
@@ -41,12 +41,11 @@ class BotSettings(BaseSettings):
         HERE / "demo_analysis.json", validation_alias="BOT_DEMO_ANALYSIS_PATH"
     )
 
-    # LLM (Azure OpenAI if AZURE_OPENAI_ENDPOINT is set, otherwise OpenAI)
-    azure_openai_endpoint: str | None = None
-    azure_openai_api_version: str = "2024-10-21"
-    azure_openai_api_key: str = ""
-    openai_api_key: str = Field("", validation_alias=AliasChoices("OPENAI_API_KEY"))
-    llm_model: str = "gpt-4.1-mini"  # Azure: the deployment name
+    # LLM: any OpenAI-compatible chat completions endpoint (Qwen on Alibaba Model Studio
+    # by default). The bot answers free-text questions only when LLM_API_KEY is set.
+    llm_base_url: str = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+    llm_api_key: str = ""
+    llm_model: str = "qwen-flash"
     llm_timeout_s: float = 20
     llm_max_tokens: int = 400
     knowledge_path: Path = Field(HERE / "knowledge.md", validation_alias="BOT_KNOWLEDGE_PATH")
@@ -55,10 +54,6 @@ class BotSettings(BaseSettings):
     session_ttl_s: int = Field(7200, validation_alias="BOT_SESSION_TTL_S")
     history_turns: int = Field(8, validation_alias="BOT_HISTORY_TURNS")
     default_lang: str = Field("ro", validation_alias="BOT_DEFAULT_LANG")
-
-    @property
-    def llm_api_key(self) -> str:
-        return self.azure_openai_api_key if self.azure_openai_endpoint else self.openai_api_key
 
 
 @lru_cache

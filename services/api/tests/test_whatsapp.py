@@ -49,7 +49,6 @@ def env(monkeypatch: pytest.MonkeyPatch) -> Any:
     monkeypatch.setenv("PUBLIC_WEBHOOK_URL", URL)
     monkeypatch.setenv("TWILIO_VALIDATE_SIGNATURE", "true")
     monkeypatch.setenv("BOT_DEFAULT_LANG", "ro")
-    monkeypatch.delenv("AZURE_OPENAI_ENDPOINT", raising=False)
     get_settings.cache_clear()
     wr._store = None
     yield

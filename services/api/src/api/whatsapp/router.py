@@ -25,7 +25,7 @@ from twilio.twiml.messaging_response import MessagingResponse
 
 from . import messages as m
 from .analysis_client import AnalysisUnavailable, analyze
-from .assistant import ChatModel, OpenAIChatModel, build_system_prompt
+from .assistant import ChatModel, CompatibleChatModel, build_system_prompt
 from .config import BotSettings, get_settings
 from .models import Lang
 from .sender import Sender, TwilioSender
@@ -52,7 +52,7 @@ def get_store(settings: Settings) -> SessionStore:
 
 @lru_cache
 def _llm_singleton() -> ChatModel:
-    return OpenAIChatModel(get_settings())
+    return CompatibleChatModel(get_settings())
 
 
 def get_llm(settings: Settings) -> ChatModel | None:

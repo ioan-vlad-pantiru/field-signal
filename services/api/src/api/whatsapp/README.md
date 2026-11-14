@@ -8,7 +8,7 @@ A chat assistant that explains Field Signal to farmers and talks them through th
 | "de ce 2" / "why 2" | Evidence, benefits, risks, gaps, confidence | Fixed template, instant |
 | "bună", "ajutor", "help" | Welcome: what Field Signal is, how to use it | Fixed template |
 | "en" / "ro" | Switch language (Romanian default) | |
-| Anything else ("ce e NDVI?", "de ce soia?", "cum funcționează?") | Grounded chat answer | LLM, sent via Twilio REST in the background |
+| Anything else ("ce e NDVI?", "de ce soia?", "cum funcționează?") | Grounded chat answer | LLM (Qwen), sent via Twilio REST in the background |
 
 **Grounding:** the LLM only sees `knowledge.md` plus the computed results for the farmer's field.
 The prompt forbids new numbers, marks advice as options, and sends anything uncertain to an agronomist.
@@ -32,8 +32,9 @@ All of these can go in the repo-root `.env`.
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` | Twilio console → Account info |
 | `TWILIO_WHATSAPP_FROM` | sandbox number, default `whatsapp:+14155238886` (check yours in the console) |
 | `PUBLIC_WEBHOOK_URL` | exact URL set in the sandbox (signature check uses it) |
-| `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_KEY`, `LLM_MODEL` | Azure OpenAI; `LLM_MODEL` = deployment name |
-| or `OPENAI_API_KEY`, `LLM_MODEL` | OpenAI instead of Azure |
+| `LLM_API_KEY` | key for the chat model; without it the bot only sends the fixed templates |
+| `LLM_BASE_URL` | OpenAI-compatible endpoint, default Alibaba Model Studio (Qwen) `https://dashscope-intl.aliyuncs.com/compatible-mode/v1` |
+| `LLM_MODEL` | model id, default `qwen-flash` |
 | `FIELDSIGNAL_RESULTS_BASE_URL` | web app for the "Full results" link, default `https://fieldsignal.land` |
 | `BOT_FALLBACK_TO_DEMO` | `true` (default): serve `demo_analysis.json` if the analysis fails |
 | `TWILIO_VALIDATE_SIGNATURE` | `false` only for local curl tests |

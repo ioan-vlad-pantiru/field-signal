@@ -11,7 +11,7 @@ import logging
 from functools import lru_cache
 from typing import Protocol
 
-from openai import AsyncAzureOpenAI, AsyncOpenAI
+import httpx
 
 from .config import BotSettings
 from .models import FieldAnalysis, Lang
@@ -44,26 +44,25 @@ class ChatModel(Protocol):
     async def complete(self, system: str, history: list[dict[str, str]]) -> str: ...
 
 
-class OpenAIChatModel:
+class CompatibleChatModel:
+    """Chat completions over HTTP against an OpenAI-compatible endpoint (e.g. Qwen)."""
+
     def __init__(self, s: BotSettings) -> None:
-        if s.azure_openai_endpoint:
-            self._client: AsyncOpenAI = AsyncAzureOpenAI(
-                azure_endpoint=s.azure_openai_endpoint,
-                api_key=s.llm_api_key,
-                api_version=s.azure_openai_api_version,
-            )
-        else:
-            self._client = AsyncOpenAI(api_key=s.llm_api_key)
         self._s = s
+        self._url = f"{s.llm_base_url.rstrip('/')}/chat/completions"
 
     async def complete(self, system: str, history: list[dict[str, str]]) -> str:
-        resp = await self._client.chat.completions.create(
-            model=self._s.llm_model,
-            messages=[{"role": "system", "content": system}, *history],  # type: ignore[list-item]
-            max_completion_tokens=self._s.llm_max_tokens,
-            timeout=self._s.llm_timeout_s,
-        )
-        return (resp.choices[0].message.content or "").strip()
+        body = {
+            "model": self._s.llm_model,
+            "messages": [{"role": "system", "content": system}, *history],
+            "max_tokens": self._s.llm_max_tokens,
+        }
+        headers = {"Authorization": f"Bearer {self._s.llm_api_key}"}
+        async with httpx.AsyncClient(timeout=self._s.llm_timeout_s) as client:
+            resp = await client.post(self._url, json=body, headers=headers)
+            resp.raise_for_status()
+            content = resp.json()["choices"][0]["message"].get("content") or ""
+        return str(content).strip()
 
 
 @lru_cache
