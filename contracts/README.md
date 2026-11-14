@@ -146,11 +146,12 @@ backwards as the field's history, an assumption stated in `caveats`.
 
 `FarmPlanResponse`: up to 3 `plans` plus `current`, the farmer's own rotation scored the same way
 (rank 0, null if it cannot be scored). `plans[0]` (rank 1) is the best solution found; it is
-optimal for the model only when `proven_optimal` is true. Ranks 2–3 are alternatives that differ
-from each better plan in at least two rotation choices, not the second and third best solutions.
-Each `FarmPlan` gives hectares per rotation per field (`allocations`: an area split, not a planting
-map), the area-weighted mean `score` (0–100 decision metrics, not probabilities, same four parts as
-`ScoreBreakdown`), `score_range` (the spread across weather windows: worst / median / best) with the
+optimal for the model only when `proven_optimal` is true. Ranks 2–3 are alternatives that change
+the rotation of at least two fields (of the only field on a one-field farm) against each better
+plan, not the second and third best solutions. A drawn field is a parcel with exactly one rotation:
+`allocations` holds exactly one entry per field, its `area_ha` the field's area. Each `FarmPlan`
+also gives the area-weighted mean `score` (0–100 decision metrics, not probabilities, same four
+parts as `ScoreBreakdown`), `score_range` (the spread across weather windows: worst / median / best) with the
 `worst` and `best` windows named, crop areas per plan year, and `rules`. Each `RuleCheck` row
 (`max_crop_share`, `max_two_crops_share`, `legume_share`) names its `source` (profile and year, e.g.
 `GAEC 7 2026`, `PD-04 2026`), the limit, the worst-year value, `applies` (true only for the practice

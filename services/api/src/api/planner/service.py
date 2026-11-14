@@ -1,6 +1,7 @@
 """Farm plan service (plan §3.9): FarmPlanRequest -> FarmPlanResponse.
 
 fields -> pieces -> candidates -> mock outcomes and scores -> CP-SAT optimizer -> response.
+A drawn field is a parcel with exactly one rotation (plan §9); farm rules span the fields.
 Scoring calls the mock world model itself (cached per grid point, crop and last two crops), so
 outcomes and scores are timed as one stage. Every stage time is logged at INFO.
 
@@ -319,16 +320,16 @@ def _caveats(
             "proves it.",
         ),
         _l(
-            "Locurile 2 și 3 sunt alternative care diferă prin cel puțin două alegeri de rotație, "
-            "nu următoarele cele mai bune soluții.",
-            "Ranks 2 and 3 are alternatives that differ in at least two rotation choices, not the "
-            "next-best solutions.",
+            "Locurile 2 și 3 sunt alternative care schimbă rotația a cel puțin două câmpuri (a "
+            "singurului câmp, la o fermă cu un câmp), nu următoarele cele mai bune soluții.",
+            "Ranks 2 and 3 are alternatives that change the rotation of at least two fields (of "
+            "the only field on a one-field farm), not the next-best solutions.",
         ),
         _l(
-            "Rezultatul este o împărțire a suprafeței pe câmp, nu o hartă de semănat: nu se "
-            "decide ce parte a câmpului primește fiecare rotație.",
-            "The result is an area split per field, not a planting map: which part of a field "
-            "gets each rotation is not decided.",
+            "Fiecare câmp are o singură rotație, o cultură pe an pe toată suprafața sa; regulile "
+            "fermei se calculează pe ansamblul câmpurilor.",
+            "Each field carries one rotation, one crop per year on its whole area; the farm rules "
+            "are computed across fields.",
         ),
         _l(
             "Intervalele de revenire sunt verificate în plan și față de istoricul culturilor, nu "
@@ -395,14 +396,31 @@ def _eco_caveat(request: FarmPlanRequest, solve: optimizer.FarmSolve) -> Localiz
             "no PD-04 rule."
         )
         if request.eco_practice == "legume_share":
-            n, back = optimizer.MAX_ROTATIONS, CROPS["pea"].min_return_years
+            n = CROPS["pea"].min_return_years
             ro += (
-                f" Un câmp are cel mult {n} rotații, iar mazărea revine pe același câmp abia după "
-                f"{back} ani, deci o fermă cu un singur câmp nu poate cultiva mazăre în fiecare an."
+                " Un câmp are o singură cultură pe an, iar mazărea revine pe același câmp abia "
+                f"după {n} ani, deci ferma are nevoie de cel puțin {n} câmpuri ca să cultive "
+                "mazăre în fiecare an."
             )
             en += (
-                f" A field carries at most {n} rotations and pea returns to a field only after "
-                f"{back} years, so a one-field farm cannot grow pea every year."
+                " A field grows one crop a year and pea returns to a field only after "
+                f"{n} years, so the farm needs at least {n} fields to grow pea every year."
+            )
+        else:
+            one, two = (
+                r for r in optimizer.RULES_2026 if r.practice == "diversification"
+            )  # max_crop_share, max_two_crops_share
+            ro += (
+                " Un câmp are o singură cultură pe an, deci cea mai mare cultură a anului ocupă "
+                f"cel puțin cel mai mare câmp: niciun câmp nu poate depăși {one.limit_pct} % din "
+                f"fermă, iar peste {two.above // 10} ha cele mai mari două culturi trebuie să "
+                f"rămână sub {two.limit_pct} %, ceea ce cere cel puțin trei câmpuri."
+            )
+            en += (
+                " A field grows one crop a year, so the largest crop of a year covers at least the "
+                f"largest field: no field may exceed {one.limit_pct} % of the farm, and above "
+                f"{two.above // 10} ha the two largest crops must stay under {two.limit_pct} %, "
+                "which needs at least three fields."
             )
         return _l(ro, en)
     return _l(

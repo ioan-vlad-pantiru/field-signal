@@ -18,6 +18,10 @@ EXAMPLE = Path(__file__).resolve().parents[3] / "contracts/examples/farm_plan.mo
 # Demo farm near Aiud (46.30 N, 23.75 E): about 37 ha and 8 ha, as in test_planner_model.py.
 FIELD_A = [(46.3000, 23.7460), (46.3003, 23.7538), (46.2953, 23.7546), (46.2948, 23.7457)]
 FIELD_B = [(46.3022, 23.7560), (46.3024, 23.7607), (46.3004, 23.7609), (46.3002, 23.7558)]
+# Two more parcels (about 20 ha and 10 ha): one rotation per field, so a PD-04 practice needs
+# enough fields (three crops a year above 30 ha; pea every year needs pea's return interval).
+FIELD_C = [(46.2930, 23.7460), (46.2930, 23.7540), (46.2900, 23.7540), (46.2900, 23.7460)]
+FIELD_D = [(46.2890, 23.7460), (46.2890, 23.7520), (46.2870, 23.7520), (46.2870, 23.7460)]
 
 
 def _field(fid: str, boundary: list[tuple[float, float]], **kw: Any) -> dict[str, Any]:
@@ -61,6 +65,7 @@ def test_demo_farm(demo: FarmPlanResponse) -> None:
     assert demo.current is not None and demo.current.rank == 0
     for p in [*demo.plans, demo.current]:
         assert p.confidence == "low"
+        assert sorted(a.field_id for a in p.allocations) == ["f1", "f2"]  # one rotation per field
         area = sum(a.area_ha for a in p.allocations)
         assert area == pytest.approx(demo.total_area_ha)
         assert p.score_range.low <= p.score_range.mid <= p.score_range.high
@@ -80,6 +85,8 @@ def test_default_enforces_no_eco_rule(demo: FarmPlanResponse) -> None:
     assert "No eco-scheme (PD-04) rule was enforced" in en
     assert "assumed from the current rotation" in en
     assert "best solution found" in en and "alternatives" in en
+    assert "Each field carries one rotation, one crop per year on its whole area" in en
+    assert "area split" not in en and "which part of a field" not in en
     assert "shown as optimal only when the solver proves it" in en
     assert "the weather of its NASA POWER cell" in en and "whole farm" not in en
     assert "just across the border" in en
@@ -98,7 +105,9 @@ def test_default_enforces_no_eco_rule(demo: FarmPlanResponse) -> None:
     ],
 )
 def test_eco_scheme_applies_the_chosen_practice_only(practice: str, rules: set[str]) -> None:
-    res = _plan(_body(eco_scheme=True, eco_practice=practice))
+    body = _body(eco_scheme=True, eco_practice=practice)
+    body["fields"] += [_field("f3", FIELD_C), _field("f4", FIELD_D)]
+    res = _plan(body)
     assert res.plans
     for p in res.plans:
         applied = {(r.id, r.source) for r in p.rules if r.applies}
@@ -106,6 +115,16 @@ def test_eco_scheme_applies_the_chosen_practice_only(practice: str, rules: set[s
         assert all(r.passed for r in p.rules if r.applies)
     assert res.current is not None and not any(r.applies for r in res.current.rules)
     assert "One PD-04 practice was enforced" in _en(res)
+
+
+def test_two_field_farm_drops_diversification() -> None:
+    # 45 ha, two parcels: at most two crops a year, so the 90 % two-crop limit cannot hold.
+    res = _plan(_body(eco_scheme=True, eco_practice="diversification"))
+    assert res.plans and not any(r.applies for p in res.plans for r in p.rules)
+    en = _en(res)
+    assert "No plan meeting the selected PD-04 practice (crop diversification)" in en
+    assert "above 30 ha the two largest crops must stay under 90 %" in en
+    assert "at least three fields" in en
 
 
 def test_priorities_change_the_plan() -> None:
@@ -171,7 +190,8 @@ def test_dropped_practice_explains_why(monkeypatch: pytest.MonkeyPatch) -> None:
     assert res.plans == [] and res.current is not None
     en = _en(res)
     assert "No plan meeting the selected PD-04 practice (legume share)" in en
-    assert "at most 3 rotations and pea returns to a field only after 4 years" in en
+    assert "pea returns to a field only after 4 years" in en
+    assert "the farm needs at least 4 fields to grow pea every year" in en
     assert "infeasible" not in en
 
 

@@ -159,29 +159,19 @@
         }
       ],
       "confidence": "low",
-      "proven_optimal": false
+      "proven_optimal": true
     },
     {
       "rank": 2,
       "allocations": [
         {
           "field_id": "f1",
-          "area_ha": 30.7,
+          "area_ha": 36.6,
           "sequence": [
             "pea",
             "barley",
             "sunflower",
             "barley"
-          ]
-        },
-        {
-          "field_id": "f1",
-          "area_ha": 5.9,
-          "sequence": [
-            "sunflower",
-            "barley",
-            "pea",
-            "wheat"
           ]
         },
         {
@@ -196,26 +186,26 @@
         }
       ],
       "score": {
-        "total": 77.4,
-        "yield_stability": 71.6,
+        "total": 77.5,
+        "yield_stability": 71.8,
         "water": 99.4,
         "soil_health": 68.4,
-        "low_risk": 54.2
+        "low_risk": 54.3
       },
       "score_range": {
-        "low": 72.8,
-        "mid": 77.6,
-        "high": 79.2
+        "low": 72.6,
+        "mid": 77.8,
+        "high": 79.3
       },
       "worst": {
         "start_season": 2000,
         "end_season": 2003,
-        "total": 72.8
+        "total": 72.6
       },
       "best": {
         "start_season": 2014,
         "end_season": 2017,
-        "total": 79.2
+        "total": 79.3
       },
       "yearly_areas": [
         {
@@ -223,18 +213,13 @@
           "areas": [
             {
               "crop": "pea",
-              "area_ha": 30.7,
-              "share_pct": 68.2
+              "area_ha": 36.6,
+              "share_pct": 81.3
             },
             {
               "crop": "wheat",
               "area_ha": 8.4,
               "share_pct": 18.7
-            },
-            {
-              "crop": "sunflower",
-              "area_ha": 5.9,
-              "share_pct": 13.1
             }
           ]
         },
@@ -253,13 +238,13 @@
           "areas": [
             {
               "crop": "sunflower",
-              "area_ha": 30.7,
-              "share_pct": 68.2
+              "area_ha": 36.6,
+              "share_pct": 81.3
             },
             {
               "crop": "pea",
-              "area_ha": 14.3,
-              "share_pct": 31.8
+              "area_ha": 8.4,
+              "share_pct": 18.7
             }
           ]
         },
@@ -268,13 +253,8 @@
           "areas": [
             {
               "crop": "barley",
-              "area_ha": 39.1,
-              "share_pct": 86.9
-            },
-            {
-              "crop": "wheat",
-              "area_ha": 5.9,
-              "share_pct": 13.1
+              "area_ha": 45.0,
+              "share_pct": 100.0
             }
           ]
         }
@@ -336,10 +316,10 @@
           "field_id": "f1",
           "area_ha": 36.6,
           "sequence": [
-            "pea",
-            "barley",
             "sunflower",
-            "barley"
+            "barley",
+            "pea",
+            "wheat"
           ]
         },
         {
@@ -354,33 +334,33 @@
         }
       ],
       "score": {
-        "total": 77.4,
-        "yield_stability": 71.8,
-        "water": 99.4,
-        "soil_health": 68.4,
-        "low_risk": 53.8
+        "total": 77.0,
+        "yield_stability": 70.6,
+        "water": 99.3,
+        "soil_health": 68.1,
+        "low_risk": 53.5
       },
       "score_range": {
-        "low": 72.7,
-        "mid": 77.9,
-        "high": 79.2
+        "low": 73.3,
+        "mid": 77.4,
+        "high": 79.0
       },
       "worst": {
         "start_season": 2000,
         "end_season": 2003,
-        "total": 72.7
+        "total": 73.3
       },
       "best": {
         "start_season": 2014,
         "end_season": 2017,
-        "total": 79.2
+        "total": 79.0
       },
       "yearly_areas": [
         {
           "plan_year": 1,
           "areas": [
             {
-              "crop": "pea",
+              "crop": "sunflower",
               "area_ha": 36.6,
               "share_pct": 81.3
             },
@@ -410,14 +390,9 @@
           "plan_year": 3,
           "areas": [
             {
-              "crop": "sunflower",
-              "area_ha": 36.6,
-              "share_pct": 81.3
-            },
-            {
               "crop": "pea",
-              "area_ha": 8.4,
-              "share_pct": 18.7
+              "area_ha": 45.0,
+              "share_pct": 100.0
             }
           ]
         },
@@ -425,9 +400,14 @@
           "plan_year": 4,
           "areas": [
             {
+              "crop": "wheat",
+              "area_ha": 36.6,
+              "share_pct": 81.3
+            },
+            {
               "crop": "barley",
-              "area_ha": 45.0,
-              "share_pct": 100.0
+              "area_ha": 8.4,
+              "share_pct": 18.7
             }
           ]
         }
@@ -672,12 +652,12 @@
       "en": "Rank 1 is the best solution found; it is shown as optimal only when the solver proves it."
     },
     {
-      "ro": "Locurile 2 și 3 sunt alternative care diferă prin cel puțin două alegeri de rotație, nu următoarele cele mai bune soluții.",
-      "en": "Ranks 2 and 3 are alternatives that differ in at least two rotation choices, not the next-best solutions."
+      "ro": "Locurile 2 și 3 sunt alternative care schimbă rotația a cel puțin două câmpuri (a singurului câmp, la o fermă cu un câmp), nu următoarele cele mai bune soluții.",
+      "en": "Ranks 2 and 3 are alternatives that change the rotation of at least two fields (of the only field on a one-field farm), not the next-best solutions."
     },
     {
-      "ro": "Rezultatul este o împărțire a suprafeței pe câmp, nu o hartă de semănat: nu se decide ce parte a câmpului primește fiecare rotație.",
-      "en": "The result is an area split per field, not a planting map: which part of a field gets each rotation is not decided."
+      "ro": "Fiecare câmp are o singură rotație, o cultură pe an pe toată suprafața sa; regulile fermei se calculează pe ansamblul câmpurilor.",
+      "en": "Each field carries one rotation, one crop per year on its whole area; the farm rules are computed across fields."
     },
     {
       "ro": "Intervalele de revenire sunt verificate în plan și față de istoricul culturilor, nu peste sfârșitul planului: planul nu se presupune repetat.",
