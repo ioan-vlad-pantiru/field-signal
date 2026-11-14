@@ -32,6 +32,8 @@ known-first-party = ["api", "farm_data", "farm_ml"]
 
 [tool.ruff.lint.per-file-ignores]
 "*.ipynb" = ["E501"]
+# The assistant system prompt is prose; one rule per line reads better unwrapped.
+"services/api/src/api/whatsapp/assistant.py" = ["E501"]
 
 [tool.mypy]
 python_version = "3.12"
@@ -39,3 +41,7 @@ strict = true
 plugins = ["pydantic.mypy"]
 mypy_path = "services/api/src"
 explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+module = ["twilio.*"]
+ignore_missing_imports = true

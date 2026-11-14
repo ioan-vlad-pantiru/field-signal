@@ -5,8 +5,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from api import accounts, mocks
+from api.analysis import run_field_analysis
 from api.contracts import FieldAnalysis, FieldRequest, SourcingRegion
 from api.settings import get_settings
+from api.whatsapp.router import router as whatsapp_router
 
 settings = get_settings()
 
@@ -20,6 +22,7 @@ app.add_middleware(
 )
 
 app.include_router(accounts.router)
+app.include_router(whatsapp_router)
 
 
 class Health(BaseModel):
@@ -35,7 +38,7 @@ def health() -> Health:
 @app.post("/v1/fields/analyze", tags=["farmer"])
 def analyze_field(request: FieldRequest) -> FieldAnalysis:
     """Farmer screen. Currently returns MOCK data (mock=true) shaped like the real response."""
-    return mocks.field_analysis(round(request.location.lat, 2), round(request.location.lon, 2))
+    return run_field_analysis(request)
 
 
 @app.get("/v1/sourcing/region", tags=["buyer"])

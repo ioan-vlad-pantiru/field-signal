@@ -1,0 +1,95 @@
+{
+  "_comment": "MOCK VALUES for wiring and offline testing only. Replace with the cached /v1/fields/analyze response for the demo field (Sântimbru/Aiud) before the pitch. The numbers are not real results.",
+  "ro": {
+    "analysis_id": "demo-santimbru",
+    "place_label": "Sântimbru, Alba",
+    "main_risk": "secetă și căldură la înflorirea porumbului (iulie)",
+    "data_period": "2001–2025",
+    "resolution_note": "Pixeli NASA de câțiva km",
+    "strategies": [
+      {
+        "id": 1, "name": "Rotația actuală", "is_current": true,
+        "sequence": ["porumb", "grâu", "porumb"],
+        "score": 52, "score_low": 44, "score_high": 60, "confidence": "medium",
+        "why": "Porumbul de două ori în 3 ani prinde des iulie secetos.",
+        "evidence": [
+          {"label": "Zile >32 °C la înflorirea porumbului", "value": "[mock] 8/an", "period": "2001–2025", "source": "NASA POWER"},
+          {"label": "Ani cu umiditate scăzută a solului în iulie", "value": "[mock] 9 din 10", "period": "2015–2025", "source": "SMAP"}
+        ],
+        "benefits": ["Cultură cunoscută, piață sigură la fabrica de furaje"],
+        "risks": ["Risc de aflatoxine în anii calzi și secetoși"],
+        "gaps": ["Nu cunoaștem irigarea și hibridul folosit"]
+      },
+      {
+        "id": 2, "name": "Cu soia", "is_current": false,
+        "sequence": ["porumb", "soia", "grâu"],
+        "score": 68, "score_low": 58, "score_high": 76, "confidence": "medium",
+        "why": "Soia fixează azot și reduce anii cu porumb expus la secetă.",
+        "evidence": [
+          {"label": "Zile >32 °C la înflorirea porumbului", "value": "[mock] 8/an", "period": "2001–2025", "source": "NASA POWER"}
+        ],
+        "benefits": ["Mai puțin îngrășământ cu azot pentru grâul următor", "Proteină cerută de fabrica de furaje"],
+        "risks": ["Soia are și ea nevoie de apă în august"],
+        "gaps": ["Randamentul soiei local nu e validat"]
+      },
+      {
+        "id": 3, "name": "Cu mazăre furajeră și cultură de acoperire", "is_current": false,
+        "sequence": ["porumb", "mazăre + muștar", "grâu"],
+        "score": 63, "score_low": 51, "score_high": 72, "confidence": "low",
+        "why": "Mazărea se recoltează înainte de vârful căldurii din iulie.",
+        "evidence": [
+          {"label": "Zile fără vegetație după recoltare", "value": "[mock] 70/an", "period": "2001–2025", "source": "MODIS"}
+        ],
+        "benefits": ["Sol acoperit peste iarnă", "Azot pentru grâu"],
+        "risks": ["Mazărea e sensibilă la seceta de primăvară"],
+        "gaps": ["Puține date locale pentru mazărea furajeră"]
+      }
+    ]
+  },
+  "en": {
+    "analysis_id": "demo-santimbru",
+    "place_label": "Sântimbru, Alba",
+    "main_risk": "drought and heat at maize flowering (July)",
+    "data_period": "2001–2025",
+    "resolution_note": "NASA pixels are kilometres wide",
+    "strategies": [
+      {
+        "id": 1, "name": "Current rotation", "is_current": true,
+        "sequence": ["maize", "wheat", "maize"],
+        "score": 52, "score_low": 44, "score_high": 60, "confidence": "medium",
+        "why": "Maize twice in 3 years often meets a dry July.",
+        "evidence": [
+          {"label": "Days >32 °C at maize flowering", "value": "[mock] 8/yr", "period": "2001–2025", "source": "NASA POWER"},
+          {"label": "Years with low July soil moisture", "value": "[mock] 9 of 10", "period": "2015–2025", "source": "SMAP"}
+        ],
+        "benefits": ["Familiar crop with a sure market at the feed mill"],
+        "risks": ["Aflatoxin risk in hot, dry years"],
+        "gaps": ["We don't know your irrigation or hybrid"]
+      },
+      {
+        "id": 2, "name": "With soybean", "is_current": false,
+        "sequence": ["maize", "soybean", "wheat"],
+        "score": 68, "score_low": 58, "score_high": 76, "confidence": "medium",
+        "why": "Soybean fixes nitrogen and cuts the years maize is exposed to drought.",
+        "evidence": [
+          {"label": "Days >32 °C at maize flowering", "value": "[mock] 8/yr", "period": "2001–2025", "source": "NASA POWER"}
+        ],
+        "benefits": ["Less nitrogen fertiliser for the next wheat", "Protein the feed mill needs"],
+        "risks": ["Soybean also needs water in August"],
+        "gaps": ["Local soybean yield is not validated"]
+      },
+      {
+        "id": 3, "name": "With feed peas and a cover crop", "is_current": false,
+        "sequence": ["maize", "peas + mustard", "wheat"],
+        "score": 63, "score_low": 51, "score_high": 72, "confidence": "low",
+        "why": "Peas are harvested before the July heat peak.",
+        "evidence": [
+          {"label": "Bare-soil days after harvest", "value": "[mock] 70/yr", "period": "2001–2025", "source": "MODIS"}
+        ],
+        "benefits": ["Soil covered over winter", "Nitrogen for the wheat"],
+        "risks": ["Peas are sensitive to spring drought"],
+        "gaps": ["Little local data for feed peas"]
+      }
+    ]
+  }
+}
