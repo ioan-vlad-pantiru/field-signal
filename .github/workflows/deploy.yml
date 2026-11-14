@@ -1,7 +1,7 @@
 name: Deploy
 
-# Every push to main that passes CI ships both apps to Azure Container Apps, behind the
-# Cloudflare front door on https://fieldsignal.land. Azure login is OIDC (no stored password):
+# Every push to main that passes CI ships both apps to Azure Container Apps:
+# https://fieldsignal.land (web) and https://api.fieldsignal.land (API). Azure login is OIDC (no stored password):
 # repo secrets AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID.
 on:
   workflow_run:
@@ -67,8 +67,7 @@ jobs:
           context: .
           file: apps/web/Dockerfile
           push: true
-          # The browser reaches the API through the front door at the same origin.
-          build-args: NEXT_PUBLIC_API_URL=/api
+          build-args: NEXT_PUBLIC_API_URL=https://api.fieldsignal.land
           tags: ${{ env.REGISTRY }}/field-signal:${{ env.TAG }}
           cache-from: type=gha,scope=web
           cache-to: type=gha,scope=web,mode=max
@@ -81,12 +80,12 @@ jobs:
 
       - name: Smoke test
         run: |
-          for path in /api/health /ro /en/feed; do
+          for url in https://api.fieldsignal.land/health "$PUBLIC_URL/ro" "$PUBLIC_URL/en/feed"; do
             for attempt in 1 2 3 4 5 6; do
-              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$PUBLIC_URL$path") || true
+              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$url") || true
               [ "$code" = 200 ] && break
               sleep 10
             done
-            echo "$code $path"
+            echo "$code $url"
             [ "$code" = 200 ] || exit 1
           done
