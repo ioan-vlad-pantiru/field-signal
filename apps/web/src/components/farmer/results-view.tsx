@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { FieldAnalysis, LatLon } from "@/lib/contracts";
 import type { DataOrigin } from "@/lib/api";
-import { useLocalized } from "@/lib/localized";
 import { placeShifts, rankStrategies, replayYears, verdict as buildVerdict } from "@/lib/results";
 import { Disclosure } from "@/components/ui/disclosure";
 import { Section } from "@/components/ui/section";
@@ -19,6 +18,7 @@ import { Rotations } from "./results/rotations";
 import { SectionNav, type SectionId } from "./results/section-nav";
 import { ShiftList } from "./results/shift";
 import { LAPTOP, useMediaQuery } from "./results/use-media-query";
+import { useRotationName } from "./results/rotation-name";
 import { Verdict } from "./results/verdict";
 
 /**
@@ -43,15 +43,18 @@ export function ResultsView({
   origin,
   boundary,
   onBack,
+  placeName = null,
 }: {
   analysis: FieldAnalysis;
   origin: DataOrigin;
   /** The field the farmer drew, if any; the field plan fills it with hexagons. */
   boundary: LatLon[] | null;
   onBack: () => void;
+  /** The place the farmer searched or drew at; preferred over the API's commune and county. */
+  placeName?: string | null;
 }) {
   const t = useTranslations("Results");
-  const l = useLocalized();
+  const nameOf = useRotationName();
   const laptop = useMediaQuery(LAPTOP);
 
   const ranked = useMemo(() => rankStrategies(analysis.strategies), [analysis.strategies]);
@@ -71,7 +74,7 @@ export function ResultsView({
       {analysis.mock ? <DemoBanner origin={origin} /> : null}
 
       <div className={analysis.mock ? "mt-6" : ""}>
-        <ResultsHeader analysis={analysis} boundary={boundary} onBack={onBack} />
+        <ResultsHeader analysis={analysis} boundary={boundary} placeName={placeName} onBack={onBack} />
       </div>
 
       <div className="mt-8 md:mt-10 print:mt-4">
@@ -112,7 +115,7 @@ export function ResultsView({
                   label={t("planRotation")}
                   value={selected.id}
                   onChange={setSelectedId}
-                  options={ranked.map((s) => ({ value: s.id, label: l(s.name) }))}
+                  options={ranked.map((s) => ({ value: s.id, label: nameOf(s) }))}
                 />
               </div>
               <label className="flex flex-col gap-1 sm:hidden">
@@ -124,13 +127,13 @@ export function ResultsView({
                 >
                   {ranked.map((s) => (
                     <option key={s.id} value={s.id}>
-                      {l(s.name)}
+                      {nameOf(s)}
                     </option>
                   ))}
                 </select>
               </label>
             </div>
-            <p className="hidden font-semibold print:block">{l(selected.name)}</p>
+            <p className="hidden font-semibold print:block">{nameOf(selected)}</p>
             <FieldPlan center={analysis.location.point} boundary={boundary} strategy={selected} />
             <ul className="hidden flex-wrap gap-2 print:flex">
               {analysis.sources.map((s) => (

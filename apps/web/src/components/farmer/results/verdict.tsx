@@ -6,7 +6,7 @@ import type { Strategy } from "@/lib/contracts";
 import { formatNumber } from "@/lib/format";
 import { useAppLocale, useLocalized } from "@/lib/localized";
 import type { Verdict as VerdictData } from "@/lib/results";
-import { CropSequence } from "@/components/ui/crop-chip";
+import { CropSequence } from "./crop-sequence";
 
 /** The answer first, as one sentence in seasons, then the crops and the fit scores under it. */
 export function Verdict({ verdict, start }: { verdict: VerdictData<Strategy>; start: number }) {

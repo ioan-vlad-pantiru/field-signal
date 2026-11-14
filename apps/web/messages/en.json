@@ -183,14 +183,14 @@
       "evidence": "Evidence"
     },
     "verdict": {
-      "fewer": "With the {name} rotation you would have had <b>{best, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}} instead of {current}</b> since {start}.",
-      "same": "{name} fits your priorities best. Since {start} it would have had as many poor seasons as your rotation: <b>{count}</b>.",
-      "more": "{name} fits your priorities best, though since {start} it would have had <b>{best, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}} against {current}</b> with your rotation.",
+      "fewer": "With the “{name}” rotation you would have had <b>{best, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}} instead of {current}</b> since {start}.",
+      "same": "“{name}” fits your priorities best. Since {start} it would have had as many poor seasons as your rotation: <b>{count}</b>.",
+      "more": "“{name}” fits your priorities best, though since {start} it would have had <b>{best, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}} against {current}</b> with your rotation.",
       "keep": "Your current rotation already fits your priorities best. Since {start} it had <b>{count, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}}</b>.",
       "fit": "Fits your priorities {best} of 100; your rotation now {current}",
       "fitKeep": "Fits your priorities {score} of 100",
       "seeRotations": "Compare the rotations",
-      "fewerNone": "With the {name} rotation you would have had <b>no poor seasons instead of {current}</b> since {start}.",
+      "fewerNone": "With the “{name}” rotation you would have had <b>no poor seasons instead of {current}</b> since {start}.",
       "keepNone": "Your current rotation already fits your priorities best. Since {start} it had <b>no poor seasons</b>."
     },
     "shift": {

@@ -138,7 +138,42 @@ export function FieldPlan({
         </li>
       </ul>
 
-      <div className="relative overflow-x-auto print:break-inside-avoid">
+      {/* Phone: one block per plot, its crop in each season, so nothing scrolls sideways. */}
+      <ul aria-label={t("tableCaption")} className="flex flex-col divide-y divide-line border-y border-line sm:hidden">
+        {layout.plots.map((plot, p) => (
+          <li key={plot.id} className="flex flex-col gap-2 py-3">
+            <p className="font-semibold">
+              {t("plot")} {plot.id}{" "}
+              <span className="font-normal tabular-nums text-ink-muted">
+                · {t("area", { ha: formatNumber(plot.areaHa, locale, 0) })}
+              </span>
+            </p>
+            <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+              {Array.from({ length: seasons }, (_, i) => {
+                const crop: Crop = cropFor(sequence, p, i);
+                return (
+                  <div
+                    key={i}
+                    className={`flex items-baseline gap-2 rounded-lg px-2 py-1 ${i === season ? "bg-surface-sunken" : ""}`}
+                  >
+                    <dt className={`tabular-nums ${i === season ? "font-semibold" : "text-ink-muted"}`}>
+                      {firstSeason + i}
+                    </dt>
+                    <dd className="flex min-w-0 items-start gap-1.5 leading-snug">
+                      <span className="inline-flex shrink-0 self-start pt-[0.45em]">
+                        <CropDot crop={crop} />
+                      </span>
+                      <span className="min-w-0 break-words">{ts(crop)}</span>
+                    </dd>
+                  </div>
+                );
+              })}
+            </dl>
+          </li>
+        ))}
+      </ul>
+
+      <div className="relative hidden overflow-x-auto sm:block print:break-inside-avoid">
         <table className="w-full min-w-[22rem] border-collapse text-left text-sm">
           <caption className="sr-only">{t("tableCaption")}</caption>
           <thead className="border-b border-line">

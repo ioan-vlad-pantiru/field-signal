@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { FieldAnalysis, LatLon } from "@/lib/contracts";
 import { formatNumber } from "@/lib/format";
-import { polygonAreaHa } from "@/lib/geo";
+import { polygonAreaHa, polygonCentroid } from "@/lib/geo";
 import { useAppLocale } from "@/lib/localized";
 import { Button } from "@/components/ui/button";
 import { ArrowLeftIcon } from "@/components/ui/icons";
@@ -13,16 +13,20 @@ import { ArrowLeftIcon } from "@/components/ui/icons";
 export function ResultsHeader({
   analysis,
   boundary,
+  placeName,
   onBack,
 }: {
   analysis: FieldAnalysis;
   boundary: LatLon[] | null;
+  placeName: string | null;
   onBack: () => void;
 }) {
   const t = useTranslations("Results");
   const locale = useAppLocale();
   const { location } = analysis;
-  const place = [location.commune, location.county].filter(Boolean).join(", ") || location.label;
+  const place = placeName || [location.commune, location.county].filter(Boolean).join(", ") || location.label;
+  // The drawn field is where the farmer is; the API may answer for a nearby point (or the mock's).
+  const point = boundary ? polygonCentroid(boundary) : location.point;
   const period = t("period", { start: analysis.period_start, end: analysis.period_end });
   const meta = boundary
     ? t("meta", { area: t("area", { ha: formatNumber(polygonAreaHa(boundary), locale, 1) }), period })
@@ -38,8 +42,8 @@ export function ResultsHeader({
   async function copyLink() {
     // The flow opens at a place from ?lat=&lon=&place=, so the link brings a colleague to this spot.
     const url = new URL(window.location.pathname, window.location.origin);
-    url.searchParams.set("lat", location.point.lat.toFixed(5));
-    url.searchParams.set("lon", location.point.lon.toFixed(5));
+    url.searchParams.set("lat", point.lat.toFixed(5));
+    url.searchParams.set("lon", point.lon.toFixed(5));
     url.searchParams.set("place", place);
     try {
       await navigator.clipboard.writeText(url.toString());
