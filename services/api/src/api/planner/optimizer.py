@@ -19,7 +19,7 @@ Signatures (T5 builds on these):
         eco_practice: str | None = None,   # None (default) | "diversification" | "legume_share"
         risk_aversion: float = 0.3,        # 0-1; lambda = round(100 * risk_aversion)
         *, top: int = 3, max_time_s: float = 3.0, num_workers: int = 0,
-        prune_above: int = PRUNE_ABOVE,
+        prune_above: int = PRUNE_ABOVE, split_prune_above: int = SPLIT_PRUNE_ABOVE,
         farm_ha: float | None = None,     # unrounded farm area; None: the pieces' sum
     ) -> FarmSolve
     splits(farm_ha: float) -> bool                  # split mode: farm_ha < SPLIT_BELOW_HA
@@ -31,13 +31,16 @@ Signatures (T5 builds on these):
 
 `scores` holds, per piece, the candidates valid for its field (crop history applied). A field's
 score for a rotation is the sum of its pieces' score x area; only rotations every piece of the
-field has are offered. Above `prune_above` (field, rotation) pairs, `solve_farm` keeps
-`MAX_CANDIDATES` per field itself (both modes); `FarmSolve.pruned` is true only when that removed
-a pair. An allocation is `{(piece_id, rotation_id): area_tenths_ha}`; in parcel mode every piece
-is on its full area under its field's rotation. The helpers work for any allocation, including
-the farmer's current rotation (call `rule_checks` with `eco_practice=None`: nothing applies).
-`area_mean(allocation, scores)` gives the farm score per scenario on the 0-1000 scale; divide by
-10 for 0-100.
+field has are offered. Above `prune_above` (field, rotation) pairs in parcel mode, or
+`split_prune_above` (piece, rotation) pairs in split mode, `solve_farm` keeps `MAX_CANDIDATES`
+per field itself; `FarmSolve.pruned` is true only when that removed a pair. Split mode has a floor
+(plan §10.11): parcel mode's plans for the same request are solved first, join the split model
+and hint it; they are returned (`FarmSolve.floor`) when the split search finds fewer plans or a
+lower best objective. An allocation is `{(piece_id, rotation_id): area_tenths_ha}`; in parcel
+mode every piece is on its full area under its field's rotation. The helpers work for any
+allocation, including the farmer's current rotation (call `rule_checks` with `eco_practice=None`:
+nothing applies). `area_mean(allocation, scores)` gives the farm score per scenario on the 0-1000
+scale; divide by 10 for 0-100.
 
 Rule rows are a provisional rule check, never a statement of compliance. GAEC 7 figures are
 reported with `applies = False` and never enforced; PD-04 enforces exactly one practice, and only
@@ -52,7 +55,7 @@ from __future__ import annotations
 import logging
 from collections import Counter, defaultdict
 from collections.abc import Collection, Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from itertools import chain, combinations
 
 from ortools.sat.python import cp_model
@@ -85,6 +88,12 @@ SPLIT_PRESOLVE = {"cp_model_probing_level": 0, "find_big_linear_overlap": False}
 # parcel mode stopped UNKNOWN on a 74 ha 5-year farm with diversification and split mode stopped
 # UNKNOWN or FEASIBLE on most farms above the threshold, where the pruned solves reach a plan.
 PRUNE_ABOVE = 500
+# Split mode prunes on its own model size, in (piece, rotation) pairs, measured 14 Nov 2026 in
+# Docker at 0.5 CPU (service scores, 3 s per solve): unpruned, the 4-year models (about 3000 pairs)
+# stopped UNKNOWN with no plan and the 3-year demo (952) took 6.7-9.1 s per request (median 8.4 s,
+# 5 runs); pruned to 680-720 pairs they reach split plans, the 3-year demo in 4.7-9.2 s (median
+# 6.2 s).
+SPLIT_PRUNE_ABOVE = 700
 MAX_CANDIDATES = 40  # per field when pruned
 # ponytail: ceiling of roughly 800 ha; merge cells into coarser pieces when larger farms matter.
 MAX_PIECES = 150  # more pieces: ValueError here, 422 at the API
@@ -150,6 +159,9 @@ class FarmSolve:
     # (INFEASIBLE, or UNKNOWN when out of time), so the plans come from one retry without it
     pruned: bool
     times_s: list[float] = field(default_factory=list)  # wall time per solve
+    # Split mode only: `plans` are parcel mode's (each field whole), not proven optimal, because the
+    # split search found fewer plans in time, or plans that score lower (plan §10.11).
+    floor: bool = False
 
 
 def is_proven_optimal(status: cp_model.CpSolverStatus, pruned: bool, first_solve: bool) -> bool:
@@ -174,6 +186,7 @@ def solve_farm(
     max_time_s: float = 3.0,
     num_workers: int = 0,
     prune_above: int = PRUNE_ABOVE,
+    split_prune_above: int = SPLIT_PRUNE_ABOVE,
     farm_ha: float | None = None,
 ) -> FarmSolve:
     if eco_practice is not None and eco_practice not in ECO_PRACTICES:
@@ -181,33 +194,44 @@ def solve_farm(
     if len(pieces) > MAX_PIECES:
         raise ValueError(f"{len(pieces)} pieces; at most {MAX_PIECES} are planned")
     by_field = _field_scores(pieces, scores)
-    kept = _prune(by_field) if len(by_field) > prune_above else by_field
-    pruned = len(kept) < len(by_field)
+    whole = _prune(by_field) if len(by_field) > prune_above else by_field  # parcel mode's model
+    whole_pruned = len(whole) < len(by_field)
+    kept, pruned = whole, whole_pruned
     split = splits(sum(a for _, _, a in pieces) / 10 if farm_ha is None else farm_ha)
-    if split:  # the split model works per piece, on the rotations its field kept
+    if split:  # per piece, on its field's rotations; pruned on its own size, in piece pairs
         field_of = {p: f for p, f, _ in pieces}
-        kept = {k: list(s) for k, s in scores.items() if (field_of.get(k[0]), k[1]) in kept}
+        kept = {k: list(s) for k, s in scores.items() if (field_of.get(k[0]), k[1]) in by_field}
+        narrow = _prune(by_field) if len(kept) > split_prune_above else by_field
+        kept = {k: s for k, s in kept.items() if (field_of[k[0]], k[1]) in narrow}
+        pruned = len(narrow) < len(by_field)
     lam = round(100 * risk_aversion)
     times: list[float] = []
     for practice in dict.fromkeys((eco_practice, None)):  # no plan: retry once without it
-        plans, status, t = _rank(
-            pieces,
-            kept,
-            legumes,
-            practice,
-            lam,
-            top,
-            max_time_s,
-            num_workers,
-            pruned,
-            split,
-            len(by_field),
+        args = (legumes, practice, lam, top, max_time_s, num_workers)
+        # Split mode's floor (plan §10.11): parcel mode's plans for the same request, solved first.
+        floor, floor_status, t = (
+            _rank(pieces, whole, *args, whole_pruned, False, len(by_field))
+            if split
+            else ([], "", [])
         )
         times += t
+        floor.sort(key=lambda p: -p.objective)
+        hint = floor[0].allocation if floor else None
+        # The floor's rotations join the split model: its best plan is a feasible split answer.
+        model = {**kept, **{k: list(scores[k]) for q in floor for k in q.allocation}}
+        plans, status, t = _rank(pieces, model, *args, pruned, split, len(by_field), hint)
+        times += t
+        plans.sort(key=lambda p: -p.objective)  # a time-limited solve can find them out of order
+        # Split plans only when as many as the floor's and the best scores at least the floor's.
+        on_floor = bool(floor) and (
+            len(plans) < len(floor) or plans[0].objective < floor[0].objective
+        )
+        if on_floor:
+            plans, status = [replace(p, proven_optimal=False) for p in floor], floor_status
+            pruned = whole_pruned  # the floor's own model
         if plans:
             break
-    plans.sort(key=lambda p: -p.objective)  # a time-limited solve can find them out of order
-    return FarmSolve(plans, status, practice, practice != eco_practice, pruned, times)
+    return FarmSolve(plans, status, practice, practice != eco_practice, pruned, times, on_floor)
 
 
 def _rank(
@@ -222,6 +246,7 @@ def _rank(
     pruned: bool,
     split: bool,
     candidates: int,  # (field, rotation) pairs before pruning, for the log
+    hint: Mapping[Key, int] | None = None,
 ) -> tuple[list[Plan], str, list[float]]:
     m = cp_model.CpModel()
     field_area: dict[str, int] = defaultdict(int)
@@ -259,6 +284,12 @@ def _rank(
         for f, us in per_field.items():
             cap = 1 if field_area[f] < WHOLE_FIELD_BELOW else MAX_ROTATIONS
             m.add(cp_model.LinearExpr.sum(us) <= cap)
+        if hint:  # the floor's best plan; at 0.5 CPU it led to more OPTIMAL split solves
+            on_hint = {(field_of[p], r) for p, r in hint}
+            for key, v in x.items():
+                m.add_hint(v, hint.get(key, 0))
+            for key, u in use.items():
+                m.add_hint(u, key in on_hint)
     else:  # one rotation per field, on its whole area
         x = use = {k: m.new_bool_var(f"x_{k[0]}_{k[1]}") for k in scores}
         for f in field_area:

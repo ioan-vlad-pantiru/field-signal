@@ -252,6 +252,24 @@ def test_dropped_practice_explains_why(monkeypatch: pytest.MonkeyPatch) -> None:
         assert ("Pea every year needs at least 4 rotations" in en) is (body is split)
 
 
+def test_split_search_out_of_time_keeps_fields_whole(monkeypatch: pytest.MonkeyPatch) -> None:
+    """§10.11: the split solves (stubbed) find no plan in time; the 45 ha farm still gets parcel
+    mode's plans, not proven optimal, and a caveat says why."""
+    real = optimizer._rank
+
+    def no_split(*args: Any) -> Any:
+        return ([], "UNKNOWN", [3.0]) if args[9] else real(*args)
+
+    monkeypatch.setattr(optimizer, "_rank", no_split)
+    res = _plan(_body())
+    assert len(res.plans) == 3
+    for p in res.plans:
+        assert sorted(a.field_id for a in p.allocations) == ["f1", "f2"] and not p.proven_optimal
+    whole = [c for c in res.caveats if "Every field is kept whole in these plans" in c.en]
+    assert len(whole) == 1 and "fiecare câmp rămâne întreg" in whole[0].ro
+    assert "only the plans found until then" not in _en(res)
+
+
 def test_rule_checks_count_soybean_as_legume() -> None:
     rots = ["soybean>wheat>maize", "wheat>maize>soybean", "maize>soybean>wheat"]
     alloc = {(f"p{i}", r): 100 for i, r in enumerate(rots)}

@@ -385,6 +385,15 @@ def _caveats(
                 "year.",
             )
         )
+    if solve.floor:
+        out.append(
+            _l(
+                "În aceste planuri fiecare câmp rămâne întreg: în limita de timp, căutarea care "
+                "poate împărți câmpurile nu a găsit planuri cu un scor cel puțin la fel de mare.",
+                "Every field is kept whole in these plans: within the time limit, the search that "
+                "may split fields found no plans scoring at least as high.",
+            )
+        )
     if solve.status == "UNKNOWN":
         out.append(
             _l(

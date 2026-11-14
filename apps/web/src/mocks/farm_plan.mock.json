@@ -25,24 +25,24 @@
           "field_id": "f2",
           "area_ha": 8.4,
           "sequence": [
+            "sunflower",
             "barley",
             "pea",
-            "wheat",
             "barley"
           ]
         }
       ],
       "score": {
-        "total": 77.5,
-        "yield_stability": 71.7,
-        "water": 99.4,
-        "soil_health": 68.4,
-        "low_risk": 54.6
+        "total": 77.6,
+        "yield_stability": 72.3,
+        "water": 99.2,
+        "soil_health": 68.2,
+        "low_risk": 55.1
       },
       "score_range": {
         "low": 73.9,
-        "mid": 78.0,
-        "high": 79.2
+        "mid": 78.1,
+        "high": 79.6
       },
       "worst": {
         "start_season": 2000,
@@ -52,7 +52,7 @@
       "best": {
         "start_season": 2004,
         "end_season": 2007,
-        "total": 79.2
+        "total": 79.6
       },
       "yearly_areas": [
         {
@@ -60,13 +60,8 @@
           "areas": [
             {
               "crop": "sunflower",
-              "area_ha": 36.6,
-              "share_pct": 81.3
-            },
-            {
-              "crop": "barley",
-              "area_ha": 8.4,
-              "share_pct": 18.7
+              "area_ha": 45.0,
+              "share_pct": 100.0
             }
           ]
         },
@@ -75,13 +70,8 @@
           "areas": [
             {
               "crop": "barley",
-              "area_ha": 36.6,
-              "share_pct": 81.3
-            },
-            {
-              "crop": "pea",
-              "area_ha": 8.4,
-              "share_pct": 18.7
+              "area_ha": 45.0,
+              "share_pct": 100.0
             }
           ]
         },
@@ -90,13 +80,8 @@
           "areas": [
             {
               "crop": "pea",
-              "area_ha": 36.6,
-              "share_pct": 81.3
-            },
-            {
-              "crop": "wheat",
-              "area_ha": 8.4,
-              "share_pct": 18.7
+              "area_ha": 45.0,
+              "share_pct": 100.0
             }
           ]
         },
@@ -159,7 +144,7 @@
         }
       ],
       "confidence": "low",
-      "proven_optimal": true
+      "proven_optimal": false
     },
     {
       "rank": 2,
@@ -188,34 +173,34 @@
           "field_id": "f2",
           "area_ha": 8.4,
           "sequence": [
-            "wheat",
-            "barley",
             "pea",
+            "barley",
+            "sunflower",
             "barley"
           ]
         }
       ],
       "score": {
-        "total": 77.4,
-        "yield_stability": 71.6,
-        "water": 99.4,
-        "soil_health": 68.4,
-        "low_risk": 54.2
+        "total": 77.6,
+        "yield_stability": 72.2,
+        "water": 99.2,
+        "soil_health": 68.2,
+        "low_risk": 55.0
       },
       "score_range": {
-        "low": 72.8,
-        "mid": 77.6,
-        "high": 79.2
+        "low": 72.9,
+        "mid": 77.8,
+        "high": 79.5
       },
       "worst": {
         "start_season": 2000,
         "end_season": 2003,
-        "total": 72.8
+        "total": 72.9
       },
       "best": {
         "start_season": 2014,
         "end_season": 2017,
-        "total": 79.2
+        "total": 79.5
       },
       "yearly_areas": [
         {
@@ -223,13 +208,8 @@
           "areas": [
             {
               "crop": "pea",
-              "area_ha": 30.7,
-              "share_pct": 68.2
-            },
-            {
-              "crop": "wheat",
-              "area_ha": 8.4,
-              "share_pct": 18.7
+              "area_ha": 39.1,
+              "share_pct": 86.9
             },
             {
               "crop": "sunflower",
@@ -253,13 +233,13 @@
           "areas": [
             {
               "crop": "sunflower",
-              "area_ha": 30.7,
-              "share_pct": 68.2
+              "area_ha": 39.1,
+              "share_pct": 86.9
             },
             {
               "crop": "pea",
-              "area_ha": 14.3,
-              "share_pct": 31.8
+              "area_ha": 5.9,
+              "share_pct": 13.1
             }
           ]
         },
@@ -347,7 +327,7 @@
           "area_ha": 8.4,
           "sequence": [
             "barley",
-            "wheat",
+            "sunflower",
             "pea",
             "barley"
           ]
@@ -355,25 +335,25 @@
       ],
       "score": {
         "total": 77.4,
-        "yield_stability": 71.8,
-        "water": 99.4,
-        "soil_health": 68.4,
-        "low_risk": 53.8
+        "yield_stability": 72.1,
+        "water": 99.2,
+        "soil_health": 68.2,
+        "low_risk": 53.9
       },
       "score_range": {
-        "low": 72.7,
-        "mid": 77.9,
-        "high": 79.2
+        "low": 73.1,
+        "mid": 77.8,
+        "high": 79.0
       },
       "worst": {
         "start_season": 2000,
         "end_season": 2003,
-        "total": 72.7
+        "total": 73.1
       },
       "best": {
-        "start_season": 2014,
-        "end_season": 2017,
-        "total": 79.2
+        "start_season": 2004,
+        "end_season": 2007,
+        "total": 79.0
       },
       "yearly_areas": [
         {
@@ -400,7 +380,7 @@
               "share_pct": 81.3
             },
             {
-              "crop": "wheat",
+              "crop": "sunflower",
               "area_ha": 8.4,
               "share_pct": 18.7
             }
@@ -502,32 +482,32 @@
         "sequence": [
           "maize",
           "wheat",
-          "sunflower",
+          "maize",
           "maize"
         ]
       }
     ],
     "score": {
-      "total": 44.7,
-      "yield_stability": 43.4,
-      "water": 80.6,
-      "soil_health": 14.7,
-      "low_risk": 19.8
+      "total": 43.1,
+      "yield_stability": 40.2,
+      "water": 79.5,
+      "soil_health": 14.6,
+      "low_risk": 16.7
     },
     "score_range": {
-      "low": 33.5,
-      "mid": 44.5,
-      "high": 51.3
+      "low": 31.9,
+      "mid": 43.2,
+      "high": 49.9
     },
     "worst": {
       "start_season": 2000,
       "end_season": 2003,
-      "total": 33.5
+      "total": 31.9
     },
     "best": {
-      "start_season": 2006,
-      "end_season": 2009,
-      "total": 51.3
+      "start_season": 2016,
+      "end_season": 2019,
+      "total": 49.9
     },
     "yearly_areas": [
       {
@@ -555,13 +535,8 @@
         "areas": [
           {
             "crop": "maize",
-            "area_ha": 36.6,
-            "share_pct": 81.3
-          },
-          {
-            "crop": "sunflower",
-            "area_ha": 8.4,
-            "share_pct": 18.7
+            "area_ha": 45.0,
+            "share_pct": 100.0
           }
         ]
       },

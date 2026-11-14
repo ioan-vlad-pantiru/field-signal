@@ -5,6 +5,7 @@ figures (run with `-s` to see them)."""
 import logging
 import random
 import time
+from dataclasses import replace
 from itertools import pairwise
 from typing import Any
 
@@ -27,6 +28,7 @@ from api.planner.crops import LEGUMES as CROP_LEGUMES
 from api.planner.optimizer import (
     MAX_PIECES,
     RULES_2026,
+    SPLIT_PRUNE_ABOVE,
     FarmSolve,
     Plan,
     area_mean,
@@ -249,17 +251,50 @@ def test_without_farm_ha_the_pieces_sum_decides(tenths: int, split: bool) -> Non
     (check_blocks if split else check_parcels)(result, pieces)
 
 
+@pytest.mark.parametrize("cut", [SPLIT_PRUNE_ABOVE, 0])
 @pytest.mark.parametrize("practice", [None, "diversification", "legume_share"])
-def test_splitting_never_scores_below_one_rotation_per_field(practice: str | None) -> None:
-    """§10.4: same farm and scores (40 ha, four 10 ha fields), both modes OPTIMAL; the unsplit
-    plan stays feasible in split mode, so its best objective is never below parcel mode's."""
+def test_splitting_never_scores_below_one_rotation_per_field(
+    practice: str | None, cut: int
+) -> None:
+    """§10.4, §10.11: same farm and scores (40 ha, four 10 ha fields), both modes OPTIMAL; the
+    floor's rotations join the split model even when it is pruned (cut 0), so the unsplit plan stays
+    feasible there and the best split plan, returned, is never below parcel mode's."""
     pieces, scores = farm({f: [50, 50] for f in "WXYZ"}, 3, 5)
-    split = solve_farm(pieces, scores, LEGUMES, practice, top=1, max_time_s=SLOW)
+    split = solve_farm(
+        pieces, scores, LEGUMES, practice, top=1, max_time_s=SLOW, split_prune_above=cut
+    )
     parcel = solve_farm(pieces, scores, LEGUMES, practice, top=1, max_time_s=SLOW, farm_ha=75)
     for r in (split, parcel):
         assert r.plans[0].status == "OPTIMAL" and r.eco_practice == practice
     check_parcels(parcel, pieces)
+    assert split.pruned == (cut == 0) and not split.floor
     assert split.plans[0].objective >= parcel.plans[0].objective
+
+
+@pytest.mark.parametrize("split_finds", ["nothing", "less"])
+def test_split_mode_falls_back_to_the_floor(
+    monkeypatch: pytest.MonkeyPatch, split_finds: str
+) -> None:
+    """§10.11: the split solve (stubbed) finds no plan in time, or scores below the floor; parcel
+    mode's plans come back, flagged and not proven optimal."""
+    pieces, scores = farm(DEMO, 3, 5)
+    parcel = solve_farm(pieces, scores, LEGUMES, top=1, max_time_s=SLOW, farm_ha=75)
+    real = optimizer._rank
+
+    def stub(*args: Any) -> tuple[list[Plan], str, list[float]]:
+        plans, status, t = real(*args)
+        if not args[9]:  # the floor's parcel solve
+            return plans, status, t
+        if split_finds == "nothing":
+            return [], "UNKNOWN", t
+        return [replace(p, objective=parcel.plans[0].objective - 1) for p in plans], status, t
+
+    monkeypatch.setattr(optimizer, "_rank", stub)
+    result = solve_farm(pieces, scores, LEGUMES, top=1, max_time_s=SLOW)
+    assert result.floor and result.status == "OPTIMAL" and not result.eco_dropped
+    assert [p.objective for p in result.plans] == [p.objective for p in parcel.plans]
+    assert parcel.plans[0].proven_optimal and not result.plans[0].proven_optimal
+    check_parcels(result, pieces)
 
 
 def test_too_many_pieces_is_refused() -> None:
@@ -422,7 +457,7 @@ def test_pruned_versus_unpruned_gap() -> None:
     pieces, scores = farm(DEMO, 3, SCENARIOS[3])
     for risk in (0.0, 1.0):
         full = solve_farm(pieces, scores, LEGUMES, risk_aversion=risk, top=1, max_time_s=SLOW)
-        cut = solve_farm(pieces, scores, LEGUMES, risk_aversion=risk, top=1, prune_above=0)
+        cut = solve_farm(pieces, scores, LEGUMES, risk_aversion=risk, top=1, split_prune_above=0)
         assert full.plans[0].status == "OPTIMAL" and cut.pruned
         assert cut.plans[0].objective <= full.plans[0].objective
         gap = 100 * (full.plans[0].objective - cut.plans[0].objective) / full.plans[0].objective
@@ -454,8 +489,10 @@ def test_one_log_line_per_solve(caplog: pytest.LogCaptureFixture) -> None:
         result = solve_farm(pieces, scores, LEGUMES, top=2, max_time_s=SLOW)
     lines = [r.getMessage() for r in caplog.records if r.getMessage().startswith("farm solve")]
     print("\n" + "\n".join(lines))
-    assert len(lines) == len(result.times_s) == 2
-    for keys in ("mode=split", "status=OPTIMAL", "gap=0.0000%", "candidates=", "pieces=7"):
+    assert len(lines) == len(result.times_s) == 4  # the floor's two parcel solves, then split
+    assert ["mode=parcel" in line for line in lines] == [True, True, False, False]
+    assert all("mode=split" in line for line in lines[2:])
+    for keys in ("status=OPTIMAL", "gap=0.0000%", "candidates=", "pieces=7"):
         assert all(keys in line for line in lines)
 
 
@@ -472,7 +509,7 @@ def test_an_invalid_model_raises_and_is_not_retried(
     pieces, scores = farm(DEMO, 3, 2)
     with pytest.raises(RuntimeError, match="rejected the farm model"):
         solve_farm(pieces, scores, LEGUMES, "diversification")
-    assert len(calls) == 1  # neither "no plan" nor the retry without the practice
+    assert len(calls) == 1  # the floor's first solve: neither "no plan" nor any retry
     assert "CP-SAT rejected the model" in caplog.text
 
 
