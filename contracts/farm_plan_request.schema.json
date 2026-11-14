@@ -1,0 +1,156 @@
+{
+  "$defs": {
+    "Crop": {
+      "enum": [
+        "maize",
+        "wheat",
+        "barley",
+        "soybean",
+        "sunflower",
+        "pea",
+        "cover_mustard",
+        "cover_phacelia",
+        "cover_vetch",
+        "fallow"
+      ],
+      "title": "Crop",
+      "type": "string"
+    },
+    "FarmField": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "unique within the request",
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "boundary": {
+          "items": {
+            "$ref": "#/$defs/LatLon"
+          },
+          "maxItems": 500,
+          "minItems": 3,
+          "title": "Boundary",
+          "type": "array"
+        },
+        "current_rotation": {
+          "description": "a cycle, as in FieldRequest; the last two entries are taken as the field's last two crops",
+          "items": {
+            "$ref": "#/$defs/Crop"
+          },
+          "maxItems": 4,
+          "minItems": 2,
+          "title": "Current Rotation",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "boundary",
+        "current_rotation"
+      ],
+      "title": "FarmField",
+      "type": "object"
+    },
+    "LatLon": {
+      "additionalProperties": false,
+      "properties": {
+        "lat": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Lat",
+          "type": "number"
+        },
+        "lon": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Lon",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lat",
+        "lon"
+      ],
+      "title": "LatLon",
+      "type": "object"
+    },
+    "Priority": {
+      "enum": [
+        "yield",
+        "water",
+        "soil",
+        "risk"
+      ],
+      "title": "Priority",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "fields": {
+      "items": {
+        "$ref": "#/$defs/FarmField"
+      },
+      "maxItems": 10,
+      "minItems": 1,
+      "title": "Fields",
+      "type": "array"
+    },
+    "priorities": {
+      "additionalProperties": {
+        "minimum": 0,
+        "type": "number"
+      },
+      "description": "non-negative weights per priority; normalised server-side, all zero = equal",
+      "propertyNames": {
+        "$ref": "#/$defs/Priority"
+      },
+      "title": "Priorities",
+      "type": "object"
+    },
+    "risk_aversion": {
+      "default": 0.3,
+      "description": "0 = best average, 1 = best worst weather window",
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Risk Aversion",
+      "type": "number"
+    },
+    "plan_years": {
+      "default": 4,
+      "maximum": 4,
+      "minimum": 3,
+      "title": "Plan Years",
+      "type": "integer"
+    },
+    "legume_rule": {
+      "default": true,
+      "description": "enforce the optional legume share (eco-scheme) every plan year",
+      "title": "Legume Rule",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "fields",
+    "priorities"
+  ],
+  "title": "FarmPlanRequest",
+  "type": "object",
+  "$id": "https://field-signal/contracts/farm_plan_request/0.2.0"
+}

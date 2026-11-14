@@ -17,11 +17,11 @@ Conventions
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import Literal
+from typing import Annotated, Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-SCHEMA_VERSION = "0.1.0"
+SCHEMA_VERSION = "0.2.0"
 
 
 class Contract(BaseModel):
@@ -334,6 +334,39 @@ class ModelPrediction(Contract):
     cv_metric_value: float | None = None
 
 
+class RotationOutcome(Contract):
+    """One row of world-model output for the farm planner (handoff 2b): yearly physical summaries
+    for one grid point, rotation, weather window and plan year. `Range` low/mid/high = P10/P50/P90
+    over ensemble members. Null = not predicted; the planner drops a rotation whose scores need it.
+    Scores are not part of this row: the planner owns normalisation, weights and rules.
+    `crop` is the main crop of this plan year."""
+
+    grid_point_id: str = Field(
+        description="'{lat:.5f}_{lon:.5f}' of the centre of the 0.0025° (about 250 m) grid cell"
+    )
+    rotation: str = Field(description="crop sequence joined by '>', e.g. 'maize>wheat>pea'")
+    weather_start_season: int = Field(
+        description="scenario id: first harvest season of the weather window, e.g. 1987"
+    )
+    plan_year: int = Field(ge=1, le=4, description="year inside the plan, 1-based")
+    crop: Crop
+    season: int = Field(description="harvest year of the weather used: start + plan_year - 1")
+    yield_rel: Range | None = Field(
+        default=None, description="yield relative to the crop's local normal (1.0 = normal)"
+    )
+    ndvi_peak: Range | None = Field(default=None, description="peak-season NDVI")
+    ndvi_offseason: Range | None = Field(
+        default=None, description="mean NDVI outside the crop's season (soil cover)"
+    )
+    rootzone_sm_critical: Range | None = Field(
+        default=None, description="root-zone soil moisture in the crop's critical months"
+    )
+    et_season_mm: Range | None = Field(
+        default=None, description="evapotranspiration over the crop's season"
+    )
+    model_version: str = Field(description="'mock-0' for the mock world model")
+
+
 class FeatureRow(Contract):
     """One row of the feature table `data/cache/features/<zone_type>.parquet` (handoff 1),
     built by `data/scripts/build_features.py`. Zone values are means over the zone's cropland
@@ -379,6 +412,114 @@ class FeatureRow(Contract):
         default=None, description="vs linear trend of the county x crop record"
     )
     crops_yaml_version: str
+
+
+# --------------------------------------------------------------------------- farm planner
+
+
+class FarmField(Contract):
+    id: str = Field(min_length=1, max_length=40, description="unique within the request")
+    name: str | None = Field(default=None, max_length=80)
+    boundary: list[LatLon] = Field(min_length=3, max_length=500)
+    current_rotation: list[Crop] = Field(
+        min_length=2,
+        max_length=4,
+        description="a cycle, as in FieldRequest; the last two entries are taken as the field's "
+        "last two crops",
+    )
+
+
+class FarmPlanRequest(Contract):
+    fields: list[FarmField] = Field(min_length=1, max_length=10)
+    priorities: dict[Priority, Annotated[float, Field(ge=0)]] = Field(
+        description="non-negative weights per priority; normalised server-side, all zero = equal"
+    )
+    risk_aversion: float = Field(
+        default=0.3, ge=0, le=1, description="0 = best average, 1 = best worst weather window"
+    )
+    plan_years: int = Field(default=4, ge=3, le=4)
+    legume_rule: bool = Field(
+        default=True, description="enforce the optional legume share (eco-scheme) every plan year"
+    )
+
+    @model_validator(mode="after")
+    def _unique_field_ids(self) -> Self:
+        if len({f.id for f in self.fields}) != len(self.fields):
+            raise ValueError("field ids must be unique")
+        return self
+
+
+class Allocation(Contract):
+    """Hectares of one rotation on one field."""
+
+    field_id: str
+    area_ha: float = Field(ge=0)
+    sequence: list[Crop] = Field(min_length=3, max_length=4, description="one crop per plan year")
+
+
+class CropArea(Contract):
+    crop: Crop
+    area_ha: float = Field(ge=0)
+    share_pct: float = Field(ge=0, le=100, description="share of the whole farm area")
+
+
+class YearAreas(Contract):
+    plan_year: int = Field(ge=1, le=4)
+    areas: list[CropArea]
+
+
+class RuleCheck(Contract):
+    """A farm-level crop rule (payment conditions, simplified; not verified against the 2026
+    APIA guide). `max_*` rules are upper limits; `summer_cover` and `legume_share` are lower
+    limits."""
+
+    id: Literal["max_crop_share", "max_two_crops_share", "summer_cover", "legume_share"]
+    limit_pct: float = Field(ge=0, le=100)
+    value_pct: float = Field(ge=0, le=100, description="worst plan year")
+    applies: bool = Field(description="false when the farm is too small or the rule is off")
+    passed: bool = Field(description="value_pct meets limit_pct; computed even when not applied")
+
+
+class ScenarioScore(Contract):
+    start_season: int = Field(description="first harvest season of the weather window")
+    end_season: int = Field(description="last harvest season of the weather window")
+    total: float = Field(ge=0, le=100)
+
+
+class FarmPlan(Contract):
+    """One farm plan. `score`: mean over weather windows, area-weighted. `score_range`: low =
+    worst weather window, mid = median, high = best (0-100). `confidence`: always 'low' on the mock
+    world model; the rule for the real model is still open."""
+
+    rank: int = Field(ge=0, description="1 = best; 0 = the farmer's current rotation (baseline)")
+    allocations: list[Allocation]
+    score: ScoreBreakdown
+    score_range: Range
+    worst: ScenarioScore
+    best: ScenarioScore
+    yearly_areas: list[YearAreas]
+    rules: list[RuleCheck]
+    confidence: Confidence
+    proven_optimal: bool = Field(
+        description="true only when CP-SAT proved the plan optimal; false for the baseline"
+    )
+
+
+class FarmPlanResponse(Contract):
+    schema_version: str = SCHEMA_VERSION
+    mock: bool = False
+    model_version: str = Field(description="world model behind the scores; 'mock-0' for the mock")
+    plan_years: int = Field(ge=3, le=4)
+    total_area_ha: float = Field(ge=0)
+    scenario_count: int = Field(ge=0, description="number of weather windows scored")
+    scenario_first: int = Field(description="start season of the first weather window")
+    scenario_last: int = Field(description="start season of the last weather window")
+    plans: list[FarmPlan] = Field(max_length=3, description="best first; empty if none is feasible")
+    current: FarmPlan | None = Field(
+        default=None, description="the farmer's current rotation; null when it cannot be scored"
+    )
+    caveats: list[Localized]
+    sources: list[DataSource]
 
 
 # --------------------------------------------------------------------------- farmer accounts
@@ -428,4 +569,7 @@ EXPORTED: dict[str, type[Contract]] = {
     "account": Account,
     "saved_field_input": SavedFieldInput,
     "saved_field": SavedField,
+    "rotation_outcome": RotationOutcome,
+    "farm_plan_request": FarmPlanRequest,
+    "farm_plan_response": FarmPlanResponse,
 }

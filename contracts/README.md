@@ -1,7 +1,7 @@
 # contracts
 
 Shared data formats between `data/` (Bogdan), `ml/` (Răzvan), `services/api/` and `apps/web/` (Vlad).
-Agree here before changing anything downstream. Version: **0.1.0** (13 Nov 2026).
+Agree here before changing anything downstream. Version: **0.2.0** (14 Nov 2026; adds the farm planner contracts, nothing removed or renamed).
 
 ```
  data/  ──(1) features.parquet──▶  ml/  ──(2) predictions.parquet──▶  services/api  ──(3) JSON──▶  apps/web
@@ -12,8 +12,10 @@ Agree here before changing anything downstream. Version: **0.1.0** (13 Nov 2026)
 |---|---|---|---|
 | 1 | Features: zone × crop × season | Parquet | this file (below) |
 | 2 | Model predictions | Parquet or JSON Lines, one `ModelPrediction` per row | `model_prediction.schema.json` |
+| 2b | World model → farm planner | Parquet or JSON Lines, one `RotationOutcome` per row | `rotation_outcome.schema.json` |
 | 3a | Farmer screen | `POST /v1/fields/analyze` → `FieldAnalysis` | `field_request.schema.json`, `field_analysis.schema.json` |
 | 3b | Buyer screen | `GET /v1/sourcing/region?season=2025` → `SourcingRegion` | `sourcing_region.schema.json` |
+| 3c | Farm plan | `POST /v1/farm/plan` → `FarmPlanResponse` | `farm_plan_request.schema.json`, `farm_plan_response.schema.json` |
 
 **Source of truth:** the pydantic models in `services/api/src/api/contracts.py`. Do not edit the
 `*.schema.json` files or `apps/web/src/lib/contracts.ts` by hand; regenerate them:
@@ -93,6 +95,23 @@ top_drivers [Reason], model_version, cv_metric_name, cv_metric_value`.
   as `code`.
 - `cv_metric_*`: leave-one-year-out score, so the app can show how good the model is.
 
+## (2b) World-model outcomes for the farm planner: `RotationOutcome`
+
+One row per `grid_point_id × rotation × weather_start_season × plan_year` (see
+`rotation_outcome.schema.json`). The world model (`ml/`) owns everything up to these yearly physical
+summaries; the planner (`services/api/src/api/planner/`) owns normalisation, weights and rules, so
+the rows carry no scores.
+
+- `grid_point_id`: `"{lat:.5f}_{lon:.5f}"` of the centre of a 0.0025° (about 250 m) cell of the
+  SoilGrids raster grid (west 20.2, north 48.3).
+- `rotation`: the crop sequence joined by `>`, e.g. `maize>wheat>pea`.
+- `weather_start_season`: the scenario id, the first harvest season of a window of `plan_years`
+  consecutive seasons from the weather record; `season = weather_start_season + plan_year − 1`.
+- `yield_rel`, `ndvi_peak`, `ndvi_offseason`, `rootzone_sm_critical`, `et_season_mm`: `Range` with
+  low/mid/high = P10/P50/P90 over ensemble members; null = not predicted, and the planner then drops
+  that rotation for that grid point.
+- `model_version`: `"mock-0"` while the declared mock world model stands in for the real one.
+
 ## (3a) Field cells: per-hexagon farmland mask (proposal, #22)
 
 `FieldAnalysis.field_cells` is optional: `null` (the default, and every current mock) means the
@@ -111,3 +130,17 @@ can extend beyond ring 3. Serving drawn fields needs either the web to centre it
 | `cropland_fraction` | float 0–1 | share of the hexagon mapped as cropland |
 
 The map behind the fractions (e.g. EUCROPMAP) and its year go in `FieldAnalysis.sources`.
+
+## (3c) Farm plan: `POST /v1/farm/plan`
+
+`FarmPlanRequest`: 1–10 fields (`id`, optional `name`, drawn `boundary`, `current_rotation` as a
+cycle), shared `priorities` (non-negative weights, normalised server-side), `risk_aversion` 0–1
+(default 0.3), `plan_years` 3 or 4 (default 4), `legume_rule` (default on).
+
+`FarmPlanResponse`: up to 3 ranked `plans` (best first, rank 1–3) plus `current`, the farmer's own
+rotation scored the same way (rank 0, null if it cannot be scored). Each `FarmPlan` gives hectares
+per rotation per field (`allocations`), the area-weighted mean `score` (0–100, same four parts as
+`ScoreBreakdown`), `score_range` (worst / median / best weather window) with the `worst` and `best`
+windows named, crop areas per plan year, the farm-level rule checks (payment conditions, simplified
+and unverified) and `confidence`, which is `low` for every plan built on the mock world model.
+`mock` is true and `model_version` is `"mock-0"` until the real world model is wired.

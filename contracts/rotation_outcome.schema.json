@@ -1,0 +1,156 @@
+{
+  "$defs": {
+    "Crop": {
+      "enum": [
+        "maize",
+        "wheat",
+        "barley",
+        "soybean",
+        "sunflower",
+        "pea",
+        "cover_mustard",
+        "cover_phacelia",
+        "cover_vetch",
+        "fallow"
+      ],
+      "title": "Crop",
+      "type": "string"
+    },
+    "Range": {
+      "additionalProperties": false,
+      "description": "An estimate with its uncertainty. `low <= mid <= high`.",
+      "properties": {
+        "low": {
+          "title": "Low",
+          "type": "number"
+        },
+        "mid": {
+          "title": "Mid",
+          "type": "number"
+        },
+        "high": {
+          "title": "High",
+          "type": "number"
+        }
+      },
+      "required": [
+        "low",
+        "mid",
+        "high"
+      ],
+      "title": "Range",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One row of world-model output for the farm planner (handoff 2b): yearly physical summaries\nfor one grid point, rotation, weather window and plan year. `Range` low/mid/high = P10/P50/P90\nover ensemble members. Null = not predicted; the planner drops a rotation whose scores need it.\nScores are not part of this row: the planner owns normalisation, weights and rules.\n`crop` is the main crop of this plan year.",
+  "properties": {
+    "grid_point_id": {
+      "description": "'{lat:.5f}_{lon:.5f}' of the centre of the 0.0025° (about 250 m) grid cell",
+      "title": "Grid Point Id",
+      "type": "string"
+    },
+    "rotation": {
+      "description": "crop sequence joined by '>', e.g. 'maize>wheat>pea'",
+      "title": "Rotation",
+      "type": "string"
+    },
+    "weather_start_season": {
+      "description": "scenario id: first harvest season of the weather window, e.g. 1987",
+      "title": "Weather Start Season",
+      "type": "integer"
+    },
+    "plan_year": {
+      "description": "year inside the plan, 1-based",
+      "maximum": 4,
+      "minimum": 1,
+      "title": "Plan Year",
+      "type": "integer"
+    },
+    "crop": {
+      "$ref": "#/$defs/Crop"
+    },
+    "season": {
+      "description": "harvest year of the weather used: start + plan_year - 1",
+      "title": "Season",
+      "type": "integer"
+    },
+    "yield_rel": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Range"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "yield relative to the crop's local normal (1.0 = normal)"
+    },
+    "ndvi_peak": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Range"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "peak-season NDVI"
+    },
+    "ndvi_offseason": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Range"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "mean NDVI outside the crop's season (soil cover)"
+    },
+    "rootzone_sm_critical": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Range"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "root-zone soil moisture in the crop's critical months"
+    },
+    "et_season_mm": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Range"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "evapotranspiration over the crop's season"
+    },
+    "model_version": {
+      "description": "'mock-0' for the mock world model",
+      "title": "Model Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "grid_point_id",
+    "rotation",
+    "weather_start_season",
+    "plan_year",
+    "crop",
+    "season",
+    "model_version"
+  ],
+  "title": "RotationOutcome",
+  "type": "object",
+  "$id": "https://field-signal/contracts/rotation_outcome/0.2.0"
+}

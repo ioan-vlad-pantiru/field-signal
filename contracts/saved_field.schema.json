@@ -149,5 +149,5 @@
   ],
   "title": "SavedField",
   "type": "object",
-  "$id": "https://field-signal/contracts/saved_field/0.1.0"
+  "$id": "https://field-signal/contracts/saved_field/0.2.0"
 }

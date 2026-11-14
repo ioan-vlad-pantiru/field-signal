@@ -15,6 +15,9 @@ const NAMES = [
   "account",
   "saved_field_input",
   "saved_field",
+  "farm_plan_request",
+  "farm_plan_response",
+  "rotation_outcome",
 ];
 const OUT = "apps/web/src/lib/contracts.ts";
 

@@ -1,0 +1,488 @@
+{
+  "$defs": {
+    "Allocation": {
+      "additionalProperties": false,
+      "description": "Hectares of one rotation on one field.",
+      "properties": {
+        "field_id": {
+          "title": "Field Id",
+          "type": "string"
+        },
+        "area_ha": {
+          "minimum": 0,
+          "title": "Area Ha",
+          "type": "number"
+        },
+        "sequence": {
+          "description": "one crop per plan year",
+          "items": {
+            "$ref": "#/$defs/Crop"
+          },
+          "maxItems": 4,
+          "minItems": 3,
+          "title": "Sequence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "field_id",
+        "area_ha",
+        "sequence"
+      ],
+      "title": "Allocation",
+      "type": "object"
+    },
+    "Confidence": {
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "title": "Confidence",
+      "type": "string"
+    },
+    "Crop": {
+      "enum": [
+        "maize",
+        "wheat",
+        "barley",
+        "soybean",
+        "sunflower",
+        "pea",
+        "cover_mustard",
+        "cover_phacelia",
+        "cover_vetch",
+        "fallow"
+      ],
+      "title": "Crop",
+      "type": "string"
+    },
+    "CropArea": {
+      "additionalProperties": false,
+      "properties": {
+        "crop": {
+          "$ref": "#/$defs/Crop"
+        },
+        "area_ha": {
+          "minimum": 0,
+          "title": "Area Ha",
+          "type": "number"
+        },
+        "share_pct": {
+          "description": "share of the whole farm area",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Share Pct",
+          "type": "number"
+        }
+      },
+      "required": [
+        "crop",
+        "area_ha",
+        "share_pct"
+      ],
+      "title": "CropArea",
+      "type": "object"
+    },
+    "DataSource": {
+      "additionalProperties": false,
+      "properties": {
+        "dataset": {
+          "description": "e.g. 'NASA POWER'",
+          "title": "Dataset",
+          "type": "string"
+        },
+        "product": {
+          "description": "e.g. 'T2M_MAX, daily'",
+          "title": "Product",
+          "type": "string"
+        },
+        "resolution": {
+          "description": "e.g. '0.5° x 0.625°' or '250 m'",
+          "title": "Resolution",
+          "type": "string"
+        },
+        "period": {
+          "description": "e.g. '2001-2025'",
+          "title": "Period",
+          "type": "string"
+        },
+        "is_nasa": {
+          "title": "Is Nasa",
+          "type": "boolean"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        }
+      },
+      "required": [
+        "dataset",
+        "product",
+        "resolution",
+        "period",
+        "is_nasa"
+      ],
+      "title": "DataSource",
+      "type": "object"
+    },
+    "FarmPlan": {
+      "additionalProperties": false,
+      "description": "One farm plan. `score`: mean over weather windows, area-weighted. `score_range`: low =\nworst weather window, mid = median, high = best (0-100). `confidence`: always 'low' on the mock\nworld model; the rule for the real model is still open.",
+      "properties": {
+        "rank": {
+          "description": "1 = best; 0 = the farmer's current rotation (baseline)",
+          "minimum": 0,
+          "title": "Rank",
+          "type": "integer"
+        },
+        "allocations": {
+          "items": {
+            "$ref": "#/$defs/Allocation"
+          },
+          "title": "Allocations",
+          "type": "array"
+        },
+        "score": {
+          "$ref": "#/$defs/ScoreBreakdown"
+        },
+        "score_range": {
+          "$ref": "#/$defs/Range"
+        },
+        "worst": {
+          "$ref": "#/$defs/ScenarioScore"
+        },
+        "best": {
+          "$ref": "#/$defs/ScenarioScore"
+        },
+        "yearly_areas": {
+          "items": {
+            "$ref": "#/$defs/YearAreas"
+          },
+          "title": "Yearly Areas",
+          "type": "array"
+        },
+        "rules": {
+          "items": {
+            "$ref": "#/$defs/RuleCheck"
+          },
+          "title": "Rules",
+          "type": "array"
+        },
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        },
+        "proven_optimal": {
+          "description": "true only when CP-SAT proved the plan optimal; false for the baseline",
+          "title": "Proven Optimal",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "rank",
+        "allocations",
+        "score",
+        "score_range",
+        "worst",
+        "best",
+        "yearly_areas",
+        "rules",
+        "confidence",
+        "proven_optimal"
+      ],
+      "title": "FarmPlan",
+      "type": "object"
+    },
+    "Localized": {
+      "additionalProperties": false,
+      "properties": {
+        "ro": {
+          "title": "Ro",
+          "type": "string"
+        },
+        "en": {
+          "title": "En",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ro",
+        "en"
+      ],
+      "title": "Localized",
+      "type": "object"
+    },
+    "Range": {
+      "additionalProperties": false,
+      "description": "An estimate with its uncertainty. `low <= mid <= high`.",
+      "properties": {
+        "low": {
+          "title": "Low",
+          "type": "number"
+        },
+        "mid": {
+          "title": "Mid",
+          "type": "number"
+        },
+        "high": {
+          "title": "High",
+          "type": "number"
+        }
+      },
+      "required": [
+        "low",
+        "mid",
+        "high"
+      ],
+      "title": "Range",
+      "type": "object"
+    },
+    "RuleCheck": {
+      "additionalProperties": false,
+      "description": "A farm-level crop rule (payment conditions, simplified; not verified against the 2026\nAPIA guide). `max_*` rules are upper limits; `summer_cover` and `legume_share` are lower\nlimits.",
+      "properties": {
+        "id": {
+          "enum": [
+            "max_crop_share",
+            "max_two_crops_share",
+            "summer_cover",
+            "legume_share"
+          ],
+          "title": "Id",
+          "type": "string"
+        },
+        "limit_pct": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Limit Pct",
+          "type": "number"
+        },
+        "value_pct": {
+          "description": "worst plan year",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Value Pct",
+          "type": "number"
+        },
+        "applies": {
+          "description": "false when the farm is too small or the rule is off",
+          "title": "Applies",
+          "type": "boolean"
+        },
+        "passed": {
+          "description": "value_pct meets limit_pct; computed even when not applied",
+          "title": "Passed",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "limit_pct",
+        "value_pct",
+        "applies",
+        "passed"
+      ],
+      "title": "RuleCheck",
+      "type": "object"
+    },
+    "ScenarioScore": {
+      "additionalProperties": false,
+      "properties": {
+        "start_season": {
+          "description": "first harvest season of the weather window",
+          "title": "Start Season",
+          "type": "integer"
+        },
+        "end_season": {
+          "description": "last harvest season of the weather window",
+          "title": "End Season",
+          "type": "integer"
+        },
+        "total": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Total",
+          "type": "number"
+        }
+      },
+      "required": [
+        "start_season",
+        "end_season",
+        "total"
+      ],
+      "title": "ScenarioScore",
+      "type": "object"
+    },
+    "ScoreBreakdown": {
+      "additionalProperties": false,
+      "description": "0-100, higher is better for the farmer.",
+      "properties": {
+        "total": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Total",
+          "type": "number"
+        },
+        "yield_stability": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Yield Stability",
+          "type": "number"
+        },
+        "water": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Water",
+          "type": "number"
+        },
+        "soil_health": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Soil Health",
+          "type": "number"
+        },
+        "low_risk": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Low Risk",
+          "type": "number"
+        }
+      },
+      "required": [
+        "total",
+        "yield_stability",
+        "water",
+        "soil_health",
+        "low_risk"
+      ],
+      "title": "ScoreBreakdown",
+      "type": "object"
+    },
+    "YearAreas": {
+      "additionalProperties": false,
+      "properties": {
+        "plan_year": {
+          "maximum": 4,
+          "minimum": 1,
+          "title": "Plan Year",
+          "type": "integer"
+        },
+        "areas": {
+          "items": {
+            "$ref": "#/$defs/CropArea"
+          },
+          "title": "Areas",
+          "type": "array"
+        }
+      },
+      "required": [
+        "plan_year",
+        "areas"
+      ],
+      "title": "YearAreas",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "0.2.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "mock": {
+      "default": false,
+      "title": "Mock",
+      "type": "boolean"
+    },
+    "model_version": {
+      "description": "world model behind the scores; 'mock-0' for the mock",
+      "title": "Model Version",
+      "type": "string"
+    },
+    "plan_years": {
+      "maximum": 4,
+      "minimum": 3,
+      "title": "Plan Years",
+      "type": "integer"
+    },
+    "total_area_ha": {
+      "minimum": 0,
+      "title": "Total Area Ha",
+      "type": "number"
+    },
+    "scenario_count": {
+      "description": "number of weather windows scored",
+      "minimum": 0,
+      "title": "Scenario Count",
+      "type": "integer"
+    },
+    "scenario_first": {
+      "description": "start season of the first weather window",
+      "title": "Scenario First",
+      "type": "integer"
+    },
+    "scenario_last": {
+      "description": "start season of the last weather window",
+      "title": "Scenario Last",
+      "type": "integer"
+    },
+    "plans": {
+      "description": "best first; empty if none is feasible",
+      "items": {
+        "$ref": "#/$defs/FarmPlan"
+      },
+      "maxItems": 3,
+      "title": "Plans",
+      "type": "array"
+    },
+    "current": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FarmPlan"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "the farmer's current rotation; null when it cannot be scored"
+    },
+    "caveats": {
+      "items": {
+        "$ref": "#/$defs/Localized"
+      },
+      "title": "Caveats",
+      "type": "array"
+    },
+    "sources": {
+      "items": {
+        "$ref": "#/$defs/DataSource"
+      },
+      "title": "Sources",
+      "type": "array"
+    }
+  },
+  "required": [
+    "model_version",
+    "plan_years",
+    "total_area_ha",
+    "scenario_count",
+    "scenario_first",
+    "scenario_last",
+    "plans",
+    "caveats",
+    "sources"
+  ],
+  "title": "FarmPlanResponse",
+  "type": "object",
+  "$id": "https://field-signal/contracts/farm_plan_response/0.2.0"
+}

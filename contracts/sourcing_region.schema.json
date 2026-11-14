@@ -532,7 +532,7 @@
   "additionalProperties": false,
   "properties": {
     "schema_version": {
-      "default": "0.1.0",
+      "default": "0.2.0",
       "title": "Schema Version",
       "type": "string"
     },
@@ -596,5 +596,5 @@
   ],
   "title": "SourcingRegion",
   "type": "object",
-  "$id": "https://field-signal/contracts/sourcing_region/0.1.0"
+  "$id": "https://field-signal/contracts/sourcing_region/0.2.0"
 }
