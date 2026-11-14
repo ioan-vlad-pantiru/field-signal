@@ -57,6 +57,32 @@ def test_sliver_merges_into_largest_piece() -> None:
     assert [(p.grid_point_id, p.area_tenths_ha) for p in ps] == [("46.29875_23.74875", 47)]
 
 
+@pytest.mark.parametrize(
+    ("boundary", "error"),
+    [
+        # 0.2° x 0.5° triangle: about 80 x 200 cells in its box, refused before clipping.
+        ([(46.0, 23.5), (46.0, 24.0), (45.8, 24.0)], r"1\d{4} grid cells"),
+        # Bow tie: the 2nd and 4th edges cross.
+        ([(46.300, 23.745), (46.300, 23.755), (46.292, 23.745), (46.292, 23.755)], "crosses"),
+        # The last vertex sits on the first edge.
+        ([(46.300, 23.745), (46.300, 23.755), (46.292, 23.750), (46.300, 23.750)], "crosses"),
+        # A spike: the boundary runs out to 23.760 and straight back.
+        ([(46.3, 23.745), (46.3, 23.755), (46.3, 23.76), (46.3, 23.755), (46.29, 23.75)], "cross"),
+        ([(46.3, 23.745), (46.3, 23.745), (46.292, 23.75), (46.3, 23.745)], "3 distinct"),
+    ],
+    ids=["huge-box", "bow-tie", "touching", "spike", "two-vertices"],
+)
+def test_bad_boundaries_are_refused(boundary: list[tuple[float, float]], error: str) -> None:
+    with pytest.raises(ValueError, match=error):
+        grid.pieces("x", boundary)
+
+
+def test_closed_ring_and_repeated_vertex_give_the_same_pieces() -> None:
+    ref = grid.pieces("A", FIELD_A)
+    assert grid.pieces("A", [*FIELD_A, FIELD_A[0]]) == ref
+    assert grid.pieces("A", [FIELD_A[0], *FIELD_A]) == ref
+
+
 def _score(rows: list[RotationOutcome], weights: dict[Priority, float]) -> ScoreBreakdown:
     s = scoring.score(rows, weights)
     assert s is not None

@@ -28,6 +28,7 @@ from api.planner.weather import OutsideCoverage
 STEP = 0.0025
 WEST, NORTH = 20.2, 48.3
 COLS, ROWS = 3840, 1880
+MAX_BOX_CELLS = 10_000  # cells clipped per field at most (about 54 000 ha of bounding box)
 _A, _E2 = 6378137.0, 0.00669437999014  # WGS84 semi-major axis (m), first eccentricity squared
 
 Point = tuple[float, float]  # (x, y) = (lon, lat)
@@ -90,6 +91,45 @@ def _clip(poly: list[Point], box: tuple[float, float, float, float]) -> list[Poi
     return poly
 
 
+def _orient(a: Point, b: Point, c: Point) -> float:
+    return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
+
+
+def _within(a: Point, b: Point, c: Point) -> bool:
+    """c, collinear with a-b, lies on the segment a-b."""
+    return min(a[0], b[0]) <= c[0] <= max(a[0], b[0]) and min(a[1], b[1]) <= c[1] <= max(a[1], b[1])
+
+
+def _simple(poly: list[Point]) -> bool:
+    """No edge touches another except a neighbour at their shared vertex, and no edge folds back
+    onto its neighbour."""
+    n = len(poly)
+    for k in range(n):  # a vertex where the boundary turns back on itself (a spike)
+        a, b, c = poly[k - 1], poly[k], poly[(k + 1) % n]
+        if (
+            _orient(a, b, c) == 0
+            and (a[0] - b[0]) * (c[0] - b[0]) + (a[1] - b[1]) * (c[1] - b[1]) > 0
+        ):
+            return False
+    # ponytail: O(n²) pair scan, about 0.1 s at the contract's 500 vertices; sweep line if more.
+    for i in range(n):
+        p, q = poly[i], poly[(i + 1) % n]
+        for j in range(i + 2, n - (i == 0)):  # skip the edge itself and its two neighbours
+            r, s = poly[j], poly[(j + 1) % n]
+            d1, d2, d3, d4 = _orient(r, s, p), _orient(r, s, q), _orient(p, q, r), _orient(p, q, s)
+            if (d1 * d2 < 0 and d3 * d4 < 0) or any(
+                d == 0 and _within(*seg, pt)
+                for d, seg, pt in (
+                    (d1, (r, s), p),
+                    (d2, (r, s), q),
+                    (d3, (p, q), r),
+                    (d4, (p, q), s),
+                )
+            ):
+                return False
+    return True
+
+
 def _apportion(exact: dict[str, float]) -> dict[str, int]:
     """Round areas (0.1 ha) by largest remainder so they sum to the rounded total; a piece that
     rounds to 0 is merged into the field's largest piece."""
@@ -111,11 +151,19 @@ def _apportion(exact: dict[str, float]) -> dict[str, int]:
 
 def pieces(field_id: str, boundary: Sequence[tuple[float, float]]) -> list[Piece]:
     """Cut a field polygon, `(lat, lon)` vertices, by the grid cells it touches. Raises
-    OutsideCoverage when a vertex lies outside the grid, ValueError for a field under 0.05 ha."""
-    poly = [(lon, lat) for lat, lon in boundary]
+    OutsideCoverage when a vertex lies outside the grid; ValueError for a bounding box over
+    MAX_BOX_CELLS cells, a polygon that is not simple, or a field under 0.05 ha."""
+    pts = [(lon, lat) for lat, lon in boundary]
+    poly = [p for i, p in enumerate(pts) if p != pts[i - 1]]  # drop closing and repeated vertices
+    if len(poly) < 3:
+        raise ValueError("a field needs at least 3 distinct vertices")
     lats, lons = [p[1] for p in poly], [p[0] for p in poly]
     r0, c0 = _cell(max(lats), min(lons))
     r1, c1 = _cell(min(lats), max(lons))
+    if (cells := (r1 - r0 + 1) * (c1 - c0 + 1)) > MAX_BOX_CELLS:
+        raise ValueError(f"the field's bounding box spans {cells} grid cells (max {MAX_BOX_CELLS})")
+    if not _simple(poly):
+        raise ValueError("the boundary crosses or touches itself")
     mx, my = metres_per_degree((min(lats) + max(lats)) / 2)
     exact: dict[str, float] = {}
     for r in range(r0, r1 + 1):
