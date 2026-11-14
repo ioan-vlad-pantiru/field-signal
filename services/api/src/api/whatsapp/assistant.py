@@ -53,6 +53,7 @@ class CompatibleChatModel:
 
     async def complete(self, system: str, history: list[dict[str, str]]) -> str:
         body = {
+            **self._s.llm_extra_body,
             "model": self._s.llm_model,
             "messages": [{"role": "system", "content": system}, *history],
             "max_tokens": self._s.llm_max_tokens,

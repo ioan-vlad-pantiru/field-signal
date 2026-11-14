@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
+from typing import Any
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -41,11 +42,14 @@ class BotSettings(BaseSettings):
         HERE / "demo_analysis.json", validation_alias="BOT_DEMO_ANALYSIS_PATH"
     )
 
-    # LLM: any OpenAI-compatible chat completions endpoint (Qwen on Alibaba Model Studio
-    # by default). The bot answers free-text questions only when LLM_API_KEY is set.
-    llm_base_url: str = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+    # LLM: any OpenAI-compatible chat completions endpoint (Qwen on CCRO Labs inference by
+    # default). The bot answers free-text questions only when LLM_API_KEY is set.
+    llm_base_url: str = "https://local-inference-api.ccrolabs.com/v1"
     llm_api_key: str = ""
-    llm_model: str = "qwen-flash"
+    llm_model: str = "qwen"
+    # Extra JSON merged into each request. The default turns off Qwen's thinking step, which
+    # otherwise spends the token budget before any answer is written.
+    llm_extra_body: dict[str, Any] = {"chat_template_kwargs": {"enable_thinking": False}}
     llm_timeout_s: float = 20
     llm_max_tokens: int = 400
     knowledge_path: Path = Field(HERE / "knowledge.md", validation_alias="BOT_KNOWLEDGE_PATH")

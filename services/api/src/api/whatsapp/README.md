@@ -33,8 +33,9 @@ All of these can go in the repo-root `.env`.
 | `TWILIO_WHATSAPP_FROM` | sandbox number, default `whatsapp:+14155238886` (check yours in the console) |
 | `PUBLIC_WEBHOOK_URL` | exact URL set in the sandbox (signature check uses it) |
 | `LLM_API_KEY` | key for the chat model; without it the bot only sends the fixed templates |
-| `LLM_BASE_URL` | OpenAI-compatible endpoint, default Alibaba Model Studio (Qwen) `https://dashscope-intl.aliyuncs.com/compatible-mode/v1` |
-| `LLM_MODEL` | model id, default `qwen-flash` |
+| `LLM_BASE_URL` | OpenAI-compatible endpoint, default `https://local-inference-api.ccrolabs.com/v1` (Qwen) |
+| `LLM_MODEL` | model id, default `qwen` |
+| `LLM_EXTRA_BODY` | JSON merged into each request; default turns off Qwen thinking |
 | `FIELDSIGNAL_RESULTS_BASE_URL` | web app for the "Full results" link, default `https://fieldsignal.land` |
 | `BOT_FALLBACK_TO_DEMO` | `true` (default): serve `demo_analysis.json` if the analysis fails |
 | `TWILIO_VALIDATE_SIGNATURE` | `false` only for local curl tests |
