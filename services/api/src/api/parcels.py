@@ -27,8 +27,9 @@ SOURCE = "APIA LPIS 2025 (data.gov.ro, CC BY 4.0)"
 # A phone screen at field zoom is about 0.03 degrees across; this leaves room for a laptop.
 MAX_SPAN_DEG = 0.08
 MAX_PARCELS = 2500
-# Neighbouring parcels rarely share an edge exactly: gaps this narrow (m) are closed when joining.
-GAP_M = 3.0
+# Neighbouring strips are often split by a farm track or an unfarmed edge. Joining grows each
+# parcel by GAP_M and shrinks the result back, which closes gaps up to about twice that (16 m).
+GAP_M = 8.0
 MAX_CORNERS = 500
 
 

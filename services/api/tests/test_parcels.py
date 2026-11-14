@@ -94,3 +94,20 @@ def test_merge_refuses_parcels_far_apart(client: TestClient) -> None:
 
 def test_merge_unknown_parcel(client: TestClient) -> None:
     assert client.post("/v1/parcels/merge", json={"ids": [1, 99]}).status_code == 404
+
+
+def test_merge_closes_a_farm_track(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # Two strips 10 m apart (a track between them): one field.
+    gap = 10 / 111_320 / 0.69
+    left = [(23.70, 46.30), (23.701, 46.30), (23.701, 46.301), (23.70, 46.301)]
+    right = [
+        (23.701 + gap, 46.30),
+        (23.702 + gap, 46.30),
+        (23.702 + gap, 46.301),
+        (23.701 + gap, 46.301),
+    ]
+    path = tmp_path / "track.sqlite"
+    parcels.write_db(path, [(1, 0.8, "TA", left), (2, 0.8, "TA", right)])
+    monkeypatch.setattr(get_settings(), "parcels_path", path)
+    parcels._connect.cache_clear()
+    assert TestClient(app).post("/v1/parcels/merge", json={"ids": [1, 2]}).status_code == 200
