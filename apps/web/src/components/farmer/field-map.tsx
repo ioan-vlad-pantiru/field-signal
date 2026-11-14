@@ -8,7 +8,7 @@ import type { LatLon, Parcel } from "@/lib/contracts";
 import { useParcelBrush } from "@/components/map/parcel-brush";
 import { setBasemap, useMap, type Basemap } from "@/components/map/use-map";
 
-/** draw: tap adds a field corner · locked: a drawn field is set. */
+/** draw: tap parcels to choose the field · locked: the field is set. */
 export type MapMode = "draw" | "locked";
 
 /** A place to move the camera to, e.g. a commune from the search or the farmer's location. */
@@ -40,11 +40,8 @@ function drawData(corners: LatLon[], closed: boolean, parts: LatLon[][] = []): D
       { type: "Feature", properties: { kind: "edge" }, geometry: { type: "LineString", coordinates: closedRing } },
     ];
   });
-  const features: DrawData["features"] = coords.map((c, i) => ({
-    type: "Feature",
-    properties: { kind: "corner", first: i === 0 },
-    geometry: { type: "Point", coordinates: c },
-  }));
+  // The field comes from APIA parcels and cannot be edited by hand: no corner handles.
+  const features: DrawData["features"] = [];
   if (coords.length >= 3) {
     features.unshift({
       type: "Feature",
@@ -98,14 +95,36 @@ function token(name: string, fallback: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
 }
 
+/** Maps whose first "load" has fired: their style is set up for good. */
+function hasLayers(map: MapLibreMap): boolean {
+  try {
+    return (map.getStyle()?.layers?.length ?? 0) > 0;
+  } catch {
+    return false; // no style yet
+  }
+}
+
+const loadedMaps = new WeakSet<MapLibreMap>();
+
+/**
+ * Run once the map's style is up. `isStyleLoaded()` is also false while any source is still
+ * loading (e.g. the parcel outlines), and "load" fires only once: waiting for it then would never
+ * run, and a field chosen from parcels was never drawn. After the first load, run at once.
+ */
 function whenStyleReady(map: MapLibreMap, run: () => void) {
-  if (map.isStyleLoaded()) run();
-  else map.once("load", run);
+  if (loadedMaps.has(map) || map.isStyleLoaded() || hasLayers(map)) {
+    run();
+    return;
+  }
+  map.once("load", () => {
+    loadedMaps.add(map);
+    run();
+  });
 }
 
 /**
- * The field step's map. In "draw" mode each tap adds a corner of the farmer's field, drawn live
- * as an outline and fill; once locked, a pin marks the field's centre.
+ * The field step's map. In "draw" mode the farmer taps their APIA parcels to choose the field;
+ * once locked, the field is drawn as an outline and fill, and a pin marks its centre.
  */
 export function FieldMap({
   value,
@@ -114,7 +133,6 @@ export function FieldMap({
   closed,
   parts = [],
   others = [],
-  onAddCorner,
   onTapParcel,
   selected = [],
   brush = false,
@@ -134,7 +152,6 @@ export function FieldMap({
   parts?: LatLon[][];
   /** Other fields in the same analysis, shown for orientation. */
   others?: LatLon[][];
-  onAddCorner: (point: LatLon) => void;
   /** Tapping a declared APIA parcel selects or unselects it (only before any corner is placed). */
   onTapParcel?: (parcel: Parcel) => void;
   /** Parcels selected so far, highlighted. */
@@ -162,13 +179,13 @@ export function FieldMap({
   const pickable = showParcels && corners.length === 0;
   const brushing = pickable && brush && onBrushParcels !== undefined;
   const selectedIds = useRef(new Set<number>());
-  const handlers = useRef({ onAddCorner, onTapParcel, onBrushParcels, onParcelsShown, mode, pickable, brushing });
+  const handlers = useRef({ onTapParcel, onBrushParcels, onParcelsShown, mode, pickable, brushing });
   /** The parcels on screen, by id, with their full outlines. */
   const loaded = useRef(new Map<number, Parcel>());
 
   useEffect(() => {
-    handlers.current = { onAddCorner, onTapParcel, onBrushParcels, onParcelsShown, mode, pickable, brushing };
-  }, [onAddCorner, onTapParcel, onBrushParcels, onParcelsShown, mode, pickable, brushing]);
+    handlers.current = { onTapParcel, onBrushParcels, onParcelsShown, mode, pickable, brushing };
+  }, [onTapParcel, onBrushParcels, onParcelsShown, mode, pickable, brushing]);
 
   useEffect(() => {
     selectedIds.current = new Set(selected.map((p) => p.id));
@@ -179,10 +196,6 @@ export function FieldMap({
     const pin = new Marker({ color: "#1f6b45", draggable: false, className: "field-pin" })
       .setLngLat([value.lon, value.lat])
       .addTo(map);
-    const round = (lng: number, lat: number): LatLon => ({
-      lat: Number(lat.toFixed(5)),
-      lon: Number(lng.toFixed(5)),
-    });
     map.on("click", (event) => {
       const h = handlers.current;
       // In drag-to-select, taps are handled with the drag (see the brush effect).
@@ -195,14 +208,14 @@ export function FieldMap({
           return;
         }
       }
-      h.onAddCorner(round(event.lngLat.lng, event.lngLat.lat));
+      // A field is made from the farmer's APIA parcels only: a tap on open ground does nothing.
     });
     map.on("mousemove", "fs-parcels-area", () => {
       if (handlers.current.pickable && !handlers.current.brushing) map.getCanvas().style.cursor = "pointer";
     });
     map.on("mouseleave", "fs-parcels-area", () => {
       if (handlers.current.brushing) return;
-      map.getCanvas().style.cursor = handlers.current.mode === "draw" ? "crosshair" : "";
+      map.getCanvas().style.cursor = "";
     });
     whenStyleReady(map, () => {
       const field = token("--field", "#1f6b45");
@@ -312,7 +325,7 @@ export function FieldMap({
     const pin = marker.current;
     if (pin) pin.getElement().style.visibility = mode === "draw" ? "hidden" : "visible";
     if (!map) return;
-    map.getCanvas().style.cursor = mode === "draw" ? "crosshair" : "";
+    map.getCanvas().style.cursor = "";
     // Fields are tens of hectares: zoom in to field scale so a few taps trace one parcel.
     if (mode === "draw" && map.getZoom() < DRAW_ZOOM) {
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

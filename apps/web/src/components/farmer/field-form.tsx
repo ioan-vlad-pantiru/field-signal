@@ -139,13 +139,6 @@ export function FieldForm({
     setAdded((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function finishDrawing() {
-    if (corners.length < 3 || areaHa < MIN_FIELD_HA || areaHa > MAX_FIELD_HA) return;
-    const c = polygonCentroid(corners);
-    setPoint({ lat: Number(c.lat.toFixed(4)), lon: Number(c.lon.toFixed(4)) });
-    setMode("locked");
-  }
-
   function tapParcel(parcel: Parcel) {
     setPickNote(null);
     setSelected((prev) =>
@@ -287,11 +280,6 @@ export function FieldForm({
           closed={mode === "locked"}
           others={others}
           parts={parts}
-          onAddCorner={(c) => {
-            setPickNote(null);
-            setSelected([]);
-            setCorners((prev) => [...prev, c]);
-          }}
           onTapParcel={tapParcel}
           selected={selected}
           brush={brush}
@@ -338,9 +326,7 @@ export function FieldForm({
           >
             {selected.length > 0
               ? t("parcel.selected", { count: selected.length, ha: formatNumber(selectedHa, locale, 1) })
-              : corners.length === 0
-              ? t(parcelsShown ? (brush ? "parcel.brushHint" : "parcel.mapHint") : "draw.mapHint")
-              : `${t("draw.cornerCount", { corners: corners.length })} · ${t("draw.area", { ha: formatNumber(areaHa, locale, 1) })}`}
+              : t(parcelsShown ? (brush ? "parcel.brushHint" : "parcel.mapHint") : "parcel.zoomHint")}
           </p>
         ) : null}
         {basemap === "satellite" && !mapFailed ? (
@@ -379,7 +365,6 @@ export function FieldForm({
               setPlace(name);
             }}
             mode={mode}
-            corners={corners}
             areaHa={areaHa}
             parcelsShown={parcelsShown}
             brush={brush}
@@ -393,13 +378,6 @@ export function FieldForm({
               setSelected([]);
               setPickNote(null);
             }}
-            onUndo={() => setCorners((prev) => prev.slice(0, -1))}
-            onClear={() => {
-              setCorners([]);
-              setParts([]);
-            }}
-            onDone={finishDrawing}
-            onEdit={() => setMode("draw")}
             onRestart={() => {
               setCorners([]);
               setParts([]);
@@ -449,7 +427,7 @@ export function FieldForm({
         <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 -mx-4 border-t border-line bg-surface px-4 py-3 shadow-3 sm:bottom-0 lg:mx-0 lg:px-0 lg:shadow-none">
           {!boundary && !onlyAdded ? (
             <p className="mb-2 text-center text-sm font-medium text-ink-muted" aria-live="polite">
-              {mode === "draw" && corners.length >= 3 ? t("needDone") : t("needField")}
+              {t("needField")}
             </p>
           ) : null}
           <div className="flex gap-2">

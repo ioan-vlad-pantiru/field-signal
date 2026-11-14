@@ -72,8 +72,8 @@
       "priorities": "Priorities"
     },
     "field": {
-      "title": "Draw your field",
-      "hint": "Find your place, then tap each corner of your field on the map."
+      "title": "Choose your field",
+      "hint": "Find your place, then tap the parcels of your field on the map."
     },
     "search": {
       "label": "Find your commune",
@@ -92,24 +92,13 @@
       "map": "Map"
     },
     "draw": {
-      "hint": "Tap the map at each corner of your field, one after another. You need at least 3 corners.",
-      "mapHint": "Tap each corner of your field",
-      "cornerCount": "{corners, plural, =0 {No corners yet} one {1 corner} other {# corners}}",
-      "tooSmall": "Too small: the field is under {min} ha. Draw it larger: each hexagon is 1 ha.",
-      "tooBig": "Too large: the field is over {max} ha. Draw a single field.",
-      "undo": "Undo last corner",
-      "clear": "Clear all",
-      "done": "Done",
       "yourField": "Your field",
-      "area": "{ha} ha",
-      "edit": "Edit",
-      "restart": "Start over"
+      "area": "{ha} ha"
     },
     "mapLabel": "Map for drawing your field",
     "mapUnavailable": "The map cannot be shown in this browser, so the field cannot be drawn here. Please try another browser or device.",
     "coordinates": "{lat}° N · {lon}° E",
-    "needField": "Draw your field on the map to continue.",
-    "needDone": "Press Done when all corners are in place.",
+    "needField": "Choose your field's parcels on the map to continue.",
     "pinnedFromFeed": "Pinned from the feed screen: {place}",
     "continue": "Continue",
     "back": "Back",
@@ -191,21 +180,24 @@
     },
     "assistantField": "My field",
     "parcel": {
-      "hint": "Tap your parcels to select them, or switch on “Drag to select” to select many at once. Then use them as one field (they do not need to touch), or add each as its own field. These are the parcels declared to APIA; if yours is not there, tap the corners of your field instead.",
+      "hint": "Tap your parcels to select them, or switch on “Drag to select” to select many at once. Then use them as one field (they do not need to touch), or add each as its own field. These are the parcels declared to APIA.",
       "mapHint": "Tap your parcels",
       "selected": "{count, plural, one {# parcel} other {# parcels}} selected · {ha} ha",
       "use": "Use as my field",
       "joining": "Joining parcels…",
       "clear": "Clear selection",
-      "tooSmall": "Together that is {ha} ha. A field needs at least {min} ha: also tap the parcels next to it, or tap the corners to draw your field.",
+      "tooSmall": "Together that is {ha} ha. A field needs at least {min} ha: also tap the parcels next to it.",
       "tooBig": "That is {ha} ha, over {max} ha. Select fewer parcels.",
-      "failed": "Could not join the parcels. Try again, or tap the corners to draw your field.",
+      "failed": "Could not join the parcels. Try again.",
       "brush": "Drag to select",
       "brushHint": "Drag over your parcels",
       "brushHelp": "Drag over your parcels to select them. Start a drag on a green parcel to unselect. Use two fingers to move the map, or switch off “Drag to select”.",
       "separate": "Add each as its own field",
       "separateSmall": "{count, plural, one {# parcel is} other {# parcels are}} under {min} ha, too small for a field of {count, plural, one {its} other {their}} own: they are still selected. Use them as one field together, or with the parcels next to them.",
-      "separateFull": "You can analyse up to {max} fields together. The parcels left are still selected."
+      "separateFull": "You can analyse up to {max} fields together. The parcels left are still selected.",
+      "zoomHint": "Zoom in to see your parcels",
+      "zoomHelp": "Zoom in on your farm to see the parcels declared to APIA, then tap yours. Parcel outlines are available for Alba county for now.",
+      "restart": "Choose other parcels"
     }
   },
   "Results": {
@@ -351,7 +343,7 @@
       "mapLabel": "Your field in {year}: {crop}",
       "mapUnavailable": "The map cannot be shown in this browser. The seasons below still hold the whole plan.",
       "seasons": "The rotation's seasons on this field",
-      "noteField": "Your field as you drew it, {area} ha. Each season the whole field grows that year's crop; the plan repeats every {years} years. Crop heights on the map are exaggerated.",
+      "noteField": "Your field, {area} ha, from your APIA parcels. Each season the whole field grows that year's crop; the plan repeats every {years} years.",
       "notePin": "The circle marks your pin; draw the field's outline to see its real shape. Each season the whole field grows that year's crop; the plan repeats every {years} years."
     },
     "fields": {
@@ -657,7 +649,7 @@
   "Home": {
     "title": "Which crops will do best on your field?",
     "lead": "We replay the last 25 seasons on your own land, so you can plan the next one.",
-    "start": "Draw your field",
+    "start": "Choose your field",
     "buyer": {
       "title": "Feed buyers",
       "text": "See, commune by commune, where maize, wheat and barley are likely this year, and at what quality risk.",
@@ -673,8 +665,8 @@
     "current": "Your rotation now",
     "steps": {
       "field": {
-        "title": "Draw your field",
-        "text": "Find it on the satellite map and tap its corners."
+        "title": "Choose your field",
+        "text": "Find it on the satellite map and tap your parcels."
       },
       "rotation": {
         "title": "Say what you grow",
@@ -691,7 +683,7 @@
       "rotations": "rotations side by side"
     },
     "whatTitle": "What is Field Signal?",
-    "whatText": "A tool for farmers in Romania. You draw your field and tell us what you grow. We replay every season since 2001 on it, with the droughts, wet springs and heat waves, and show which rotation would have held up best.",
+    "whatText": "A tool for farmers in Romania. You choose your field and tell us what you grow. We replay every season since 2001 on it, with the droughts, wet springs and heat waves, and show which rotation would have held up best.",
     "whatJudgment": "Built on public data from NASA satellites and weather records, checked against official county yields.",
     "lookTitle": "What we look at on your field",
     "look": {
@@ -736,11 +728,11 @@
     "farmer": {
       "title": "Farmers",
       "text": "Plan next season with 25 years of seasons behind you.",
-      "cta": "Draw your field"
+      "cta": "Choose your field"
     },
     "limitsTitle": "What it cannot see",
     "ctaTitle": "Ready to see your field?",
-    "ctaText": "Draw it on the map. No account needed."
+    "ctaText": "Tap your parcels on the map. No account needed."
   },
   "Account": {
     "title": "My account",
@@ -775,7 +767,7 @@
     },
     "fields": {
       "title": "My fields",
-      "empty": "Draw a field on the map, see its 25 seasons, then save it here. You can keep as many as you farm.",
+      "empty": "Choose a field on the map, see its 25 seasons, then save it here. You can keep as many as you farm.",
       "add": "Add a field",
       "rename": "Rename",
       "renameLabel": "Field name",
@@ -788,12 +780,12 @@
       "area": "{ha} ha",
       "updated": "Updated {date}",
       "importTitle": "A field on this device",
-      "importText": "You drew a field near {place} ({ha} ha) before signing in.",
-      "importTextNoPlace": "You drew a field of {ha} ha before signing in.",
+      "importText": "You chose a field near {place} ({ha} ha) before signing in.",
+      "importTextNoPlace": "You chose a field of {ha} ha before signing in.",
       "import": "Add it to my fields",
       "summary": "{count, plural, one {# field} other {# fields}} · {ha} ha · {places, plural, =0 {} one {# commune} other {# communes}}",
       "emptyTitle": "No fields yet",
-      "drawFirst": "Draw your first field",
+      "drawFirst": "Choose your first field",
       "mapLabel": "Map of your {count, plural, one {field} other {# fields}}",
       "search": "Find a field",
       "searchPlaceholder": "Name or commune",
@@ -827,7 +819,7 @@
     "picker": {
       "title": "Your fields",
       "all": "All fields ({count})",
-      "new": "Or draw a new field below.",
+      "new": "Or choose a new field below.",
       "pickHint": "Tick one or several to analyse them together.",
       "openOne": "Open field",
       "openMany": "Analyse {count} fields"
