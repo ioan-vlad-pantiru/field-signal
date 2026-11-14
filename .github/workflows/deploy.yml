@@ -1,0 +1,92 @@
+name: Deploy
+
+# Every push to main that passes CI ships both apps to Azure Container Apps, behind the
+# Cloudflare front door on https://fieldsignal.land. Azure login is OIDC (no stored password):
+# repo secrets AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+env:
+  RG: rg-field-signal
+  ACR: fieldsignal952178
+  REGISTRY: fieldsignal952178.azurecr.io
+  PUBLIC_URL: https://fieldsignal.land
+
+jobs:
+  deploy:
+    # Only after a green CI run of a push to main (or a manual run).
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Image tag
+        run: echo "TAG=$(git rev-parse --short HEAD)" >> "$GITHUB_ENV"
+
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Log in to the registry
+        run: az acr login -n "$ACR"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build and push API
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: services/api/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/field-signal-api:${{ env.TAG }}
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,scope=api,mode=max
+
+      - name: Build and push web
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          push: true
+          # The browser reaches the API through the front door at the same origin.
+          build-args: NEXT_PUBLIC_API_URL=/api
+          tags: ${{ env.REGISTRY }}/field-signal:${{ env.TAG }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,scope=web,mode=max
+
+      - name: Roll out
+        run: |
+          az extension add -n containerapp --upgrade -y --only-show-errors
+          az containerapp update -g "$RG" -n field-signal-api --image "$REGISTRY/field-signal-api:$TAG" -o none
+          az containerapp update -g "$RG" -n field-signal --image "$REGISTRY/field-signal:$TAG" -o none
+
+      - name: Smoke test
+        run: |
+          for path in /api/health /ro /en/feed; do
+            for attempt in 1 2 3 4 5 6; do
+              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$PUBLIC_URL$path") || true
+              [ "$code" = 200 ] && break
+              sleep 10
+            done
+            echo "$code $path"
+            [ "$code" = 200 ] || exit 1
+          done
