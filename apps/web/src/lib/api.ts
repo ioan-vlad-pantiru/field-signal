@@ -9,6 +9,7 @@ import type {
   SourcingRegion,
 } from "@/lib/contracts";
 import { mockSourcingRegion } from "@/lib/mocks";
+import type { BriefFacts } from "@/lib/stocks";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const TIMEOUT_MS = 5000;
@@ -170,5 +171,29 @@ export async function mergeParcels(
     return { ok: true, data };
   } catch (error) {
     return { ok: false, reason: error instanceof ApiRequestError && error.status === 422 ? "not_touching" : "failed" };
+  }
+}
+
+/**
+ * The LLM-written executive summary for the stocks report, or null: no LLM configured, a number the
+ * guard could not verify, a timeout or any other failure. The report then keeps its rule-based
+ * summary, so this never throws. Own fetch and timeout: the LLM can take up to 20 s.
+ */
+export async function getStocksBrief(
+  facts: BriefFacts,
+  lang: "ro" | "en",
+): Promise<{ text: string; source: "llm" } | null> {
+  try {
+    const response = await fetch(`${API_URL}/v1/sourcing/brief`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lang, facts }),
+      signal: AbortSignal.timeout(25000),
+    });
+    if (!response.ok) return null;
+    const body = (await response.json()) as { text: string | null };
+    return body.text ? { text: body.text, source: "llm" } : null;
+  } catch {
+    return null;
   }
 }

@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from pydantic import BaseModel
 
-from api import accounts, assistant, farm, farm_plan, parcels, sourcing
+from api import accounts, assistant, farm, farm_plan, parcels, sourcing, stocks
 from api.analysis import run_field_analysis
 from api.contracts import (
     FieldAnalysis,
@@ -46,6 +46,7 @@ app.include_router(assistant.router)
 app.include_router(farm_plan.router)
 app.include_router(parcels.router)
 app.include_router(farm.router)
+app.include_router(stocks.router)
 app.include_router(whatsapp_router)
 
 
