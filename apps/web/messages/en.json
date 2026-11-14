@@ -313,7 +313,8 @@
         "water": "water",
         "woods": "woods",
         "built_up": "built-up land"
-      }
+      },
+      "mapUnavailable": "The map cannot be shown in this browser. The plot table below still holds the whole plan."
     }
   },
   "Feed": {

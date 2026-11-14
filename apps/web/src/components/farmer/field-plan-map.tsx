@@ -7,6 +7,7 @@ import { CROP_COLORS, CROP_HEIGHT_M } from "@/lib/crops";
 import type { FieldLayout, Hex } from "@/lib/field-plan";
 import { polygonCentroid, radiusMetres } from "@/lib/geo";
 import { findNonFarmland, type NonFarmland } from "@/lib/land-cover";
+import { useTranslations } from "next-intl";
 import { SATELLITE_ATTRIBUTION, useMap } from "@/components/map/use-map";
 
 /** Crops are a few metres tall at most; exaggerate so the difference reads from above. */
@@ -69,17 +70,31 @@ function fieldBounds(layout: FieldLayout, boundary: LatLon[] | null): LngLatBoun
   return points.reduce((b, p) => b.extend(p), new LngLatBounds(points[0], points[0]));
 }
 
-/** Frame the field with some padding; scaled to the map so it works from phone to laptop. */
+/**
+ * Frame the field with some padding, scaled to the map so it works from phone to laptop.
+ * The zoom is worked out from the field's size in metres: MapLibre's cameraForBounds measures the
+ * tilted view and leaves a small field as a dot in the middle.
+ */
 function fitField(map: MapLibreMap, bounds: LngLatBounds) {
   const { clientWidth: w, clientHeight: h } = map.getContainer();
-  const pad = Math.round(Math.min(w, h) * 0.14);
-  const camera = map.cameraForBounds(bounds, {
-    padding: { top: pad + 24, bottom: pad, left: pad, right: pad },
-    bearing: FIT_BEARING,
-  });
-  if (!camera) return;
+  const center = bounds.getCenter();
+  const sw = bounds.getSouthWest();
+  const ne = bounds.getNorthEast();
+  const metresPerDegLat = 111_320;
+  const metresPerDegLon = metresPerDegLat * Math.cos((center.lat * Math.PI) / 180);
+  const widthM = Math.max((ne.lng - sw.lng) * metresPerDegLon, 50);
+  const heightM = Math.max((ne.lat - sw.lat) * metresPerDegLat, 50);
+  // Leave room around the field, more in depth: the tilt magnifies the near edge.
+  const metresPerPixel = Math.max(widthM / (w * 0.55), heightM / (h * 0.5));
+  const zoom = Math.log2((156_543.03 * Math.cos((center.lat * Math.PI) / 180)) / metresPerPixel);
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  map.easeTo({ ...camera, pitch: FIT_PITCH, bearing: FIT_BEARING, duration: reduced ? 0 : 900 });
+  map.easeTo({
+    center,
+    zoom: Math.min(18, Math.max(12, zoom)),
+    pitch: FIT_PITCH,
+    bearing: FIT_BEARING,
+    duration: reduced ? 0 : 900,
+  });
 }
 
 function whenStyleReady(map: MapLibreMap, run: () => void) {
@@ -99,6 +114,7 @@ export function FieldPlanMap({
   onNonFarmland,
   label,
   fitKey,
+  onUnavailable,
 }: {
   center: LatLon;
   layout: FieldLayout;
@@ -109,9 +125,12 @@ export function FieldPlanMap({
   label: string;
   /** Re-frame the field when this changes, such as the selected rotation. */
   fitKey: string;
+  /** Told when the browser cannot draw the map, so the caller can drop the map legend. */
+  onUnavailable?: (unavailable: boolean) => void;
 }) {
+  const t = useTranslations("Results.plan");
   const focus = boundary ? polygonCentroid(boundary) : center;
-  const { container, map } = useMap([focus.lon, focus.lat], boundary ? zoomFor(boundary) : 14.6, {
+  const { container, map, failed } = useMap([focus.lon, focus.lat], boundary ? zoomFor(boundary) : 14.6, {
     satellite: true,
   });
   const markers = useRef<Marker[]>([]);
@@ -181,6 +200,10 @@ export function FieldPlanMap({
     // Layers are set up once; data updates happen in the effect below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map]);
+
+  useEffect(() => {
+    onUnavailable?.(failed);
+  }, [failed, onUnavailable]);
 
   // Keep a picture of the settled map for print: a WebGL canvas often prints blank, and
   // `beforeprint` is too late to wait for a frame. Capture inside a render, while the buffer is live.
@@ -258,8 +281,16 @@ export function FieldPlanMap({
     return () => cancelAnimationFrame(frame);
   }, [map, layout, plots]);
 
+  if (failed) {
+    return (
+      <p role="status" className="rounded-[16px] bg-surface-sunken px-4 py-3 text-ink-muted">
+        {t("mapUnavailable")}
+      </p>
+    );
+  }
+
   return (
-    <div className="relative">
+    <div className="relative print:break-inside-avoid">
       <div
         ref={container}
         role="img"
@@ -268,7 +299,7 @@ export function FieldPlanMap({
       />
       {snapshot ? (
         // eslint-disable-next-line @next/next/no-img-element -- a data URL of the live map, print only
-        <img src={snapshot} alt={label} className="hidden h-[7.5cm] w-full rounded-[16px] object-cover print:block" />
+        <img src={snapshot} alt={label} className="hidden h-[5.5cm] w-full rounded-[16px] object-cover print:block" />
       ) : null}
       {/* The imagery licence asks for a clearly visible credit, not one behind the (i) button. */}
       <p className="absolute bottom-2 left-2 z-[1] print:static print:mt-1 print:bg-transparent print:px-0 max-w-[calc(100%-3.5rem)] rounded-md bg-surface/90 px-2 py-0.5 text-xs leading-snug text-ink">

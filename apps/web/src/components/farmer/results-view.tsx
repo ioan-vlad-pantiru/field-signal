@@ -103,8 +103,8 @@ export function ResultsView({
           />
         </Section>
 
-        <Section id="plan" title={t("planTitle")} hint={t("planHint")} className={`${SECTION} print:mt-6 print:border-t-0 print:pt-0`}>
-          <div className="flex flex-col gap-6">
+        <Section id="plan" title={t("planTitle")} hint={t("planHint")} className={`${SECTION} print:mt-6 print:border-t-0 print:pt-0 print:[&>p]:hidden`}>
+          <div className="flex flex-col gap-6 print:gap-2">
             <div className="no-print">
               {/* Names are too long for a segmented control on a phone; a native select fits them. */}
               <div className="hidden sm:block">

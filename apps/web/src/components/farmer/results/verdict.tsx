@@ -34,7 +34,7 @@ export function Verdict({ verdict, start }: { verdict: VerdictData<Strategy>; st
     <section aria-labelledby="verdict" className="flex flex-col gap-4">
       <p
         id="verdict"
-        className="max-w-[24ch] font-display text-[1.875rem] font-medium leading-[1.12] tracking-tight text-balance md:max-w-[28ch] md:text-[2.75rem] print:max-w-none print:text-[20pt]"
+        className="max-w-[24ch] font-display text-[1.875rem] font-medium leading-[1.12] tracking-tight text-balance md:max-w-[28ch] md:text-[2.75rem] print:max-w-none print:text-[18pt]"
       >
         {sentence}
       </p>
