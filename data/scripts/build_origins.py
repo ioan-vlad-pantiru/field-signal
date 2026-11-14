@@ -765,6 +765,20 @@ def advice(
                 ro="Nicio origine nu e în alertă acum", en="No origin is on alert right now"
             )
         text = L(ro=waiting_ro, en=waiting_en)
+        exp = psd_series(psd, "Ukraine", "Oilseed, Soybean", "Exports")
+        if short and short[0].id == "ua":
+            y = int(short[0].current_season)
+            change = 100 * (exp[y] / exp[y - 1] - 1) if y in exp and y - 1 in exp else None
+            nxt = min(o.next_reading for o in origins if o.next_reading and o.confidence != "low")
+            ro_n, en_n = day_text(date.fromisoformat(nxt))
+            fewer_ro = f"USDA vede exporturi cu {abs(change):.0f}% mai mici. " if change else ""
+            fewer_en = f"USDA sees {abs(change):.0f}% less exported. " if change else ""
+            text = L(
+                ro=f"{fewer_ro}Rezervați devreme loturile ucrainene sau planificați mai mult din "
+                f"America de Sud pentru iarnă. Următoarea verificare: {ro_n}.",
+                en=f"{fewer_en}Book Ukrainian lots early, or plan more from South America for "
+                f"the winter. Next check: {en_n}.",
+            )
     actions = []
     ua = by.get("ua")
     if ua and ua.current:
