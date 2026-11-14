@@ -66,12 +66,7 @@
     "title": "Despre câmpul dumneavoastră",
     "intro": "Spuneți-ne unde este câmpul și ce cultivați. Vă arătăm cum ar fi mers trei rotații în ultimii 25 de ani.",
     "whereTitle": "Unde este câmpul?",
-    "whereHint": "Puneți un ac pe hartă sau desenați conturul câmpului dumneavoastră.",
-    "modeLabel": "Cum alegeți câmpul",
-    "mode": {
-      "pin": "Pun un ac",
-      "draw": "Desenez câmpul"
-    },
+    "whereHint": "Desenați pe hartă conturul câmpului dumneavoastră.",
     "draw": {
       "hint": "Atingeți harta în fiecare colț al câmpului, pe rând. Sunt necesare cel puțin 3 colțuri.",
       "progress": "{corners, plural, =0 {Niciun colț încă} one {1 colț} few {# colțuri} other {# de colțuri}} · {ha} ha",
@@ -84,11 +79,11 @@
       "area": "{ha} ha",
       "corners": "{corners} colțuri, desenat de dumneavoastră",
       "edit": "Modifică",
-      "remove": "Folosesc doar acul"
+      "restart": "Reiau desenul"
     },
     "mapLabel": "Hartă pentru alegerea câmpului",
     "coordinates": "{lat}° N · {lon}° E",
-    "resetPin": "Înapoi la Aiud",
+    "needField": "Desenați câmpul pe hartă pentru a continua.",
     "pinnedFromFeed": "Acul a fost pus din ecranul Furaje: {place}",
     "rotationTitle": "Rotația de acum",
     "rotationHint": "Ce cultivați an de an pe acest câmp. Între 2 și 4 culturi.",

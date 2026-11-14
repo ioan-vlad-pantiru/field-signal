@@ -36,10 +36,10 @@ export function FieldForm({
   initial: FieldRequest | null;
   /** The field the farmer drew last time, if any. */
   initialBoundary: LatLon[] | null;
-  /** Where the pin starts when there is no earlier request (e.g. a pin passed from the feed screen). */
+  /** Where the map opens when there is no earlier request (e.g. a point passed from the feed screen). */
   startPoint?: LatLon | null;
-  /** `boundary` is the drawn field (null with a pin only); the API still receives a point. */
-  onSubmit: (request: FieldRequest, boundary: LatLon[] | null) => void;
+  /** `boundary` is the drawn field; the API still receives a point, its centroid. */
+  onSubmit: (request: FieldRequest, boundary: LatLon[]) => void;
 }) {
   const t = useTranslations("Field");
   const tc = useTranslations("Crops");
@@ -58,7 +58,7 @@ export function FieldForm({
   );
   const [irrigated, setIrrigated] = useState(initial?.irrigated ?? false);
   const [corners, setCorners] = useState<LatLon[]>(initialBoundary ?? []);
-  const [mode, setMode] = useState<MapMode>(initialBoundary ? "locked" : "pin");
+  const [mode, setMode] = useState<MapMode>(initialBoundary ? "locked" : "draw");
   const areaHa = polygonAreaHa(corners);
   const tooSmall = corners.length >= 3 && areaHa < MIN_FIELD_HA;
   const tooBig = areaHa > MAX_FIELD_HA;
@@ -74,16 +74,13 @@ export function FieldForm({
     setPoint({ lat: Number(c.lat.toFixed(4)), lon: Number(c.lon.toFixed(4)) });
     setMode("locked");
   }
-  function switchToPin() {
-    setCorners([]);
-    setMode("pin");
-  }
 
   const canAdd = rotation.length < MAX_ROTATION;
   const canRemove = rotation.length > MIN_ROTATION;
 
   function submit(event: FormEvent) {
     event.preventDefault();
+    if (!boundary) return;
     onSubmit(
       {
         location: point,
@@ -103,29 +100,8 @@ export function FieldForm({
         </h2>
         <p className="mb-3 text-ink-muted">{t("whereHint")}</p>
 
-        <div role="radiogroup" aria-label={t("modeLabel")} className="mb-3 grid grid-cols-2 gap-1 rounded-full bg-surface-sunken p-1">
-          {(["pin", "draw"] as const).map((m) => {
-            const active = m === "pin" ? mode === "pin" : mode !== "pin";
-            return (
-              <button
-                key={m}
-                type="button"
-                role="radio"
-                aria-checked={active}
-                onClick={() => (m === "pin" ? switchToPin() : mode === "pin" ? startDrawing() : undefined)}
-                className={`press min-h-11 rounded-full px-3 font-semibold ${
-                  active ? "bg-surface text-ink shadow-1" : "text-ink-muted hover:text-ink"
-                }`}
-              >
-                {t(`mode.${m}`)}
-              </button>
-            );
-          })}
-        </div>
-
         <FieldMap
           value={point}
-          onChange={setPoint}
           mode={mode}
           corners={corners}
           closed={mode === "locked"}
@@ -192,32 +168,22 @@ export function FieldForm({
               </button>
               <button
                 type="button"
-                onClick={switchToPin}
+                onClick={startDrawing}
                 className="press min-h-11 rounded-full border border-line bg-surface px-4 font-medium hover:border-field"
               >
-                {t("draw.remove")}
+                {t("draw.restart")}
               </button>
             </div>
           </div>
         ) : null}
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm text-ink-muted">
-          <span className="tabular-nums">
+        {boundary ? (
+          <p className="mt-2 text-sm tabular-nums text-ink-muted">
             {t("coordinates", {
               lat: formatNumber(point.lat, locale, 3),
               lon: formatNumber(point.lon, locale, 3),
             })}
-          </span>
-          <button
-            type="button"
-            onClick={() => {
-              switchToPin();
-              setPoint(DEFAULT_POINT);
-            }}
-            className="press min-h-11 rounded-lg px-2 font-medium text-field underline-offset-2 hover:underline"
-          >
-            {t("resetPin")}
-          </button>
-        </div>
+          </p>
+        ) : null}
       </Card>
 
       <Card>
@@ -302,9 +268,15 @@ export function FieldForm({
       </Card>
 
       <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 sm:bottom-4">
+        {!boundary ? (
+          <p className="mb-2 rounded-xl bg-surface px-3 py-2 text-center text-sm font-medium text-ink-muted shadow-1" aria-live="polite">
+            {t("needField")}
+          </p>
+        ) : null}
         <button
           type="submit"
-          className="press min-h-14 w-full rounded-2xl bg-field px-6 text-lg font-semibold text-on-field shadow-lg hover:bg-field-strong"
+          disabled={!boundary}
+          className="press min-h-14 w-full rounded-2xl bg-field px-6 text-lg font-semibold text-on-field shadow-lg hover:bg-field-strong disabled:opacity-40"
         >
           {t("analyze")}
         </button>

@@ -5,8 +5,8 @@ import { LngLatBounds, Marker, type GeoJSONSource, type Map as MapLibreMap } fro
 import type { LatLon } from "@/lib/contracts";
 import { useMap } from "@/components/map/use-map";
 
-/** pin: tap moves the pin · draw: tap adds a field corner · locked: a drawn field is set. */
-export type MapMode = "pin" | "draw" | "locked";
+/** draw: tap adds a field corner · locked: a drawn field is set. */
+export type MapMode = "draw" | "locked";
 
 const DRAW = "fs-draw";
 const DRAW_ZOOM = 14;
@@ -47,12 +47,11 @@ function whenStyleReady(map: MapLibreMap, run: () => void) {
 }
 
 /**
- * The field step's map. In "pin" mode a tap moves the pin (it can also be dragged); in "draw"
- * mode each tap adds a corner of the farmer's field, drawn live as an outline and fill.
+ * The field step's map. In "draw" mode each tap adds a corner of the farmer's field, drawn live
+ * as an outline and fill; once locked, a pin marks the field's centre.
  */
 export function FieldMap({
   value,
-  onChange,
   mode,
   corners,
   closed,
@@ -60,38 +59,33 @@ export function FieldMap({
   label,
 }: {
   value: LatLon;
-  onChange: (point: LatLon) => void;
   mode: MapMode;
   corners: LatLon[];
   closed: boolean;
   onAddCorner: (point: LatLon) => void;
   label: string;
 }) {
-  const { container, map } = useMap([value.lon, value.lat], 11);
+  // Fields are tens of hectares: open at field scale so a few taps trace one parcel.
+  const { container, map } = useMap([value.lon, value.lat], DRAW_ZOOM);
   const marker = useRef<Marker | null>(null);
-  const handlers = useRef({ onChange, onAddCorner, mode });
+  const handlers = useRef({ onAddCorner, mode });
 
   useEffect(() => {
-    handlers.current = { onChange, onAddCorner, mode };
-  }, [onChange, onAddCorner, mode]);
+    handlers.current = { onAddCorner, mode };
+  }, [onAddCorner, mode]);
 
   useEffect(() => {
     if (!map) return;
-    const pin = new Marker({ color: "#1f6b45", draggable: true, className: "field-pin" })
+    const pin = new Marker({ color: "#1f6b45", draggable: false, className: "field-pin" })
       .setLngLat([value.lon, value.lat])
       .addTo(map);
     const round = (lng: number, lat: number): LatLon => ({
       lat: Number(lat.toFixed(5)),
       lon: Number(lng.toFixed(5)),
     });
-    pin.on("dragend", () => {
-      const { lng, lat } = pin.getLngLat();
-      handlers.current.onChange(round(lng, lat));
-    });
     map.on("click", (event) => {
       const point = round(event.lngLat.lng, event.lngLat.lat);
       if (handlers.current.mode === "draw") handlers.current.onAddCorner(point);
-      else if (handlers.current.mode === "pin") handlers.current.onChange(point);
     });
     whenStyleReady(map, () => {
       const field = token("--field", "#1f6b45");
@@ -148,10 +142,7 @@ export function FieldMap({
   // While drawing, the pin steps aside; the drawn field speaks for itself.
   useEffect(() => {
     const pin = marker.current;
-    if (pin) {
-      pin.getElement().style.visibility = mode === "draw" ? "hidden" : "visible";
-      pin.setDraggable(mode === "pin");
-    }
+    if (pin) pin.getElement().style.visibility = mode === "draw" ? "hidden" : "visible";
     if (!map) return;
     map.getCanvas().style.cursor = mode === "draw" ? "crosshair" : "";
     // Fields are tens of hectares: zoom in to field scale so a few taps trace one parcel.
