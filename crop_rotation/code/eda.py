@@ -8,7 +8,7 @@ INTERIM = ROOT / "data" / "interim"
 DOCS = ROOT / "docs"
 TARGET = ["wheat", "barley", "maize", "sunflower", "soybeans", "dry_pulses", "rapeseed"]
 VOCAB = set(TARGET) | {"other", "non_crop"}
-N_POINTS, N_HLS_MONTHS = 299_987, 130
+N_HLS_MONTHS = 130
 
 
 def md(df):
@@ -27,9 +27,8 @@ def run(name, fn, *args):
 def load():
     pts = pl.read_parquet(INTERIM / "points.parquet")
     cr = pl.read_parquet(INTERIM / "crops.parquet")
-    assert pts.height == N_POINTS, pts.height
-    assert pts["point_id"].n_unique() == N_POINTS
-    assert cr.height == N_POINTS * 8, cr.height
+    assert pts["point_id"].n_unique() == pts.height
+    assert cr.height == pts.height * 8, cr.height
     assert set(cr["crop"].unique()) == VOCAB, set(cr["crop"].unique())
     assert set(cr["year"].unique()) == set(range(2017, 2025))
     return pts, cr
@@ -41,12 +40,12 @@ def sec1(pts):
             .agg(pl.len().alias("points"),
                  pl.col("cell_id").n_unique().alias("cells touching this unit"))
             .sort(["points", "nuts3"], descending=[True, False]).collect())
-    assert country.height == 7
-    assert nuts.height == 100
+    assert country.height == 7, country.height
+    assert nuts.height == pts['nuts3'].n_unique()
     assert country["points"].sum() == pts.height == nuts["points"].sum()
     counties = (pts.filter(pl.col("county") != "").group_by("county")
                 .agg(pl.len().alias("points")).sort(["points", "county"], descending=[True, False]))
-    assert counties.height == 10
+    assert counties["points"].sum() == (pts["country"] == "RO").sum(), counties["points"].sum()
     return country, nuts, counties
 
 
@@ -64,7 +63,7 @@ def sec2(pts, cr):
             .fill_null(0.0)
             .select(["nuts3"] + TARGET + ["other", "non_crop"])
             .sort("nuts3"))
-    assert wide.height == 100
+    assert wide.height == chk['nuts3'].n_unique()
     return wide
 
 
@@ -78,14 +77,14 @@ def build_presence(pts):
                   on=["point_id", "date"], how="left")
             .with_columns(pl.col("present").fill_null(0).cast(pl.UInt8))
             .collect(engine="streaming"))
-    assert pres.height == N_POINTS * N_HLS_MONTHS, pres.height
+    assert pres.height == len(pts) * N_HLS_MONTHS, pres.height
     assert set(pres["present"].unique().to_list()) == {0, 1}
     out = pres.select("point_id",
                       pl.col("date").dt.year().cast(pl.Int16).alias("year"),
                       pl.col("date").dt.month().cast(pl.UInt8).alias("month"),
                       "present")
     out.write_parquet(INTERIM / "hls_presence.parquet")
-    assert pl.scan_parquet(INTERIM / "hls_presence.parquet").select(pl.len()).collect().item() == N_POINTS * N_HLS_MONTHS
+    assert pl.scan_parquet(INTERIM / "hls_presence.parquet").select(pl.len()).collect().item() == len(pts) * N_HLS_MONTHS
     return pres
 
 
@@ -114,7 +113,7 @@ def sec3(pts, cr, pres):
     wide = (m.select("nuts3", "month", pl.col("missing").round(4))
             .pivot(on="month", index="nuts3", values="missing", aggregate_function="first")
             .sort("nuts3"))
-    assert wide.height == 100 and wide.width == 13
+    assert wide.height == m['nuts3'].n_unique() and wide.width == 13
     months = [f"{i:02d}" for i in range(1, 13)]
     table = (labels.join(pc, on="nuts3", how="left").join(wide, on="nuts3", how="left")
              .select(["nuts3", "points", "mean_confidence_target", "null_conf_share",
@@ -123,7 +122,7 @@ def sec3(pts, cr, pres):
              .with_columns(pl.col("mean_confidence_target").round(2),
                            pl.col("null_conf_share").round(4),
                            pl.col("other_non_crop_share").round(4)))
-    assert table.height == 100
+    assert table.height == wide.height
 
     full = (pres.lazy()
             .with_columns(pl.col("date").dt.strftime("%m").alias("month"))
@@ -142,7 +141,7 @@ def sec4(cr):
            .filter(pl.col("c1").is_not_null(), pl.col("c2").is_not_null())
            .with_columns(pl.concat_str(["crop", "c1", "c2"], separator=" > ").alias("sequence")))
     n = seq.select(pl.len()).collect().item()
-    assert n == N_POINTS * 6, n
+    assert n == cr.height // 8 * 6, n
     top = (seq.group_by("sequence").agg(pl.len().alias("count"))
            .sort(["count", "sequence"], descending=[True, False]).head(20).collect())
     assert top.height == 20

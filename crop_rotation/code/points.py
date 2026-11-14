@@ -290,6 +290,85 @@ def main(region="full", pilot=False):
     write_atomic(pd.DataFrame(rows, columns=list(schema.STRATA_COLUMNS)), strata)
     print(f"pass B: {len(points)} points, {len(crops)} point-years")
     return points, crops
+def _cell_key(lon, lat):
+    """Global 250 m MODIS cell key, the same integer _tile_candidates assigns."""
+    sx, sy = Transformer.from_crs("EPSG:4326", MODIS, always_xy=True).transform(
+        np.asarray(lon, float), np.asarray(lat, float))
+    return np.floor(sx / GRID).astype(np.int64) * 10_000_000 + np.floor(sy / GRID).astype(np.int64)
+
+
+def extend(total=300_000):
+    """Append points for the NUTS3 the first wave under-covered.
+
+    Append-only: cached raw data is addressed by row position, so existing rows must keep
+    their order and none may be dropped. Targets are proportional to eligible candidates
+    per NUTS3, which fills the eastern regions the tile-order quota never reached.
+    """
+    old_p = pd.read_parquet(INTERIM / "points.parquet")
+    old_c = pd.read_parquet(INTERIM / "crops.parquet")
+    pairs, tiles = _inventory(); nuts_rows, countries = _load_nuts()
+    keep = np.array([r["country"] in FULL_COUNTRIES or r["code"].startswith(("AT1", "RS12"))
+                     for r in nuts_rows], dtype=bool)
+    _CTX.update(pairs=pairs, nuts=nuts_rows, keep=keep)
+    workers = int(os.environ.get("POINTS_WORKERS") or min(16, os.cpu_count() or 1))
+    ctx = mp.get_context("fork")
+    print(f"extend: scanning {len(tiles)} tiles on {workers} workers")
+    with ProcessPoolExecutor(max_workers=workers, mp_context=ctx) as ex:
+        cands = [c for c in ex.map(_tile_candidates, tiles) if c is not None]
+    if not cands: raise SystemExit("extend: no eligible candidates")
+    per_nuts, per_stratum = Counter(), Counter()
+    for c in cands:
+        for i, n in zip(*np.unique(c["nidx"], return_counts=True)):
+            per_nuts[nuts_rows[int(i)]["code"]] += int(n)
+        for k, n in zip(*np.unique(c["keys"], return_counts=True)):
+            per_stratum[int(k)] += int(n)
+    have = Counter(old_p["nuts3"])
+    elig_total = sum(per_nuts.values())
+    left = {k: max(0, int(round(total * v / elig_total)) - have.get(k, 0)) for k, v in per_nuts.items()}
+    print(f"extend: {len(per_nuts)} NUTS3 with candidates, {sum(left.values())} points to add")
+    used = set(_cell_key(old_p["lon"].to_numpy(), old_p["lat"].to_numpy()).tolist())  # no 250 m duplicates
+    jobs = []
+    for c in sorted(cands, key=lambda c: c["tile"]):
+        rng = np.random.default_rng(int.from_bytes(hashlib.sha256(c["tile"].encode()).digest()[:8], "big"))
+        sel = []
+        for i in np.unique(c["nidx"]):
+            code = nuts_rows[int(i)]["code"]; want = left[code]
+            if want <= 0: continue
+            cand = np.nonzero(c["nidx"] == i)[0]
+            chosen = pick(cand[rng.permutation(len(cand))], c["cell"], used, want)
+            sel.extend(chosen); left[code] = want - len(chosen)
+        if sel:
+            idx = np.array(sorted(sel))
+            jobs.append((c["tile"], {k: c[k][idx] for k in ("rows", "cols", "modal", "nidx", "xs", "ys", "sx", "sy")}))
+    del cands
+    point_rows, crop_rows = [], []
+    with ProcessPoolExecutor(max_workers=workers, mp_context=ctx) as ex:
+        for p, c in ex.map(_tile_crop_rows, jobs):
+            point_rows.extend(p); crop_rows.extend(c)
+    if not point_rows: raise SystemExit("extend produced no points; refusing to write")
+    new_p, new_c = _frames(point_rows, crop_rows)
+    points = pd.concat([old_p, new_p], ignore_index=True).astype(schema.POINTS_COLUMNS)
+    crops = pd.concat([old_c, new_c], ignore_index=True)
+    if not points.iloc[:len(old_p)].reset_index(drop=True).equals(old_p.reset_index(drop=True)):
+        raise SystemExit("extend: existing rows changed; refusing to write (cache is row-addressed)")
+    done = Counter(zip(points["country"], points["modal_crop"]))
+    cid = {c: i for i, c in enumerate(countries)}
+    probs = {k: min(1.0, done[(countries[k // 8], _TARGET[k % 8 - 1])] / n)
+             for k, n in per_stratum.items() if n}
+    points["inclusion_probability"] = [probs[cid[c] * 8 + _TARGET.index(m) + 1]
+                                       for c, m in zip(points["country"], points["modal_crop"])]
+    qmap, short = quotas(per_stratum, total)
+    rows = [{"country": countries[k // 8], "crop": _TARGET[k % 8 - 1], "n_eligible": per_stratum[k],
+             "quota": qmap[k], "sampled": done[(countries[k // 8], _TARGET[k % 8 - 1])],
+             "shortfall": max(0, qmap[k] - done[(countries[k // 8], _TARGET[k % 8 - 1])])}
+            for k in sorted(per_stratum)]
+    strata = pd.DataFrame(rows, columns=list(schema.STRATA_COLUMNS))
+    write_atomic(strata, INTERIM / "strata_counts.parquet")
+    write_atomic(points, INTERIM / "points.parquet"); write_atomic(crops, INTERIM / "crops.parquet")
+    print(f"extend: {len(new_p)} points added, {len(points)} total, {len(per_nuts)} NUTS3 covered")
+    return points
+
+
 def _self_check():
     import tempfile
     with tempfile.TemporaryDirectory() as td:
@@ -327,6 +406,8 @@ def _self_check():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="points.py"); parser.add_argument("--self-check", action="store_true")
     parser.add_argument("--region", choices=("alba", "full"), default="full"); parser.add_argument("--pilot", action="store_true")
+    parser.add_argument("--extend", action="store_true")
     args = parser.parse_args()
     if args.self_check: _self_check()
+    elif args.extend: extend()
     else: main(args.region, args.pilot)

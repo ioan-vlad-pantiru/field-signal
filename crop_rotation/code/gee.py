@@ -8,7 +8,7 @@ from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-import numpy as np, pandas as pd, requests, env
+import numpy as np, pandas as pd, requests, env, schema
 
 ROOT = Path(__file__).resolve().parent.parent
 POINTS_PATH = ROOT / "data/interim/points.parquet"
@@ -20,9 +20,8 @@ WORKERS = int(os.environ.get("GEE_WORKERS", "2"))
 EMPTY_OK = {"eucropmap"}  # EU-only product; RS12 points have no coverage
 TARGET_BYTES = 40_000_000  # a larger first response shrinks the remaining chunks
 MAX_ATTEMPTS = 6
-TILE_SCALE = 2  # 576-band embedding mosaics exceed the default per-tile memory
-EMB, EUCM, MOD13 = ("GOOGLE/SATELLITE_EMBEDDING/V1/ANNUAL", "JRC/D5/EUCROPMAP/V1",
-                    "MODIS/061/MOD13Q1")
+TILE_SCALE = 2  # SMAP carries hundreds of bands; the default per-tile memory won't hold it
+EUCM, MOD13 = "JRC/D5/EUCROPMAP/V1", "MODIS/061/MOD13Q1"
 L30, S30 = "NASA/HLS/HLSL30/v002", "NASA/HLS/HLSS30/v002"
 SMAP, SRTM = "NASA/SMAP/SPL4SMGP/008", "USGS/SRTMGL1_003"
 # Fmask bits 1..4: cloud, adjacent-to-cloud, cloud-shadow, snow/ice. All corrupt
@@ -59,16 +58,6 @@ def _init():
 
 def probe(ee):
     """Resolve every asset and assert the band assumptions before bulk extraction."""
-    emb = ee.ImageCollection(EMB).sort("system:time_start")
-    eb = emb.first().bandNames().getInfo()
-    _req(eb == [f"A{i:02d}" for i in range(64)], f"{EMB}: expected A00..A63, got {eb}")
-    mm = emb.reduceColumns(ee.Reducer.minMax(), ["system:time_start"]).getInfo()
-    _req(mm.get("min"), f"{EMB}: no image times found")
-    y0, y1 = _year(mm["min"]), _year(mm["max"])
-    years = [y for y in range(y0, y1 + 1)
-             if emb.filter(ee.Filter.calendarRange(y, y, "year")).size().getInfo() > 0]
-    _req(len(years) == y1 - y0 + 1,
-         f"{EMB}: missing years between {y0} and {y1}: present {years}")
     cm = ee.ImageCollection(EUCM)
     cm_years = sorted({_year(t) for t in (cm.aggregate_array("system:time_start").getInfo() or [])})
     _req(cm_years == [2018, 2022], f"{EUCM}: expected years [2018, 2022], got {cm_years}")
@@ -86,22 +75,12 @@ def probe(ee):
         need = {f"{v}_{d}cm_mean" for d in ("0-5", "5-15", "15-30")}
         _req(need <= b, f"soilgrids {v}: missing {sorted(need - b)}")
     _req("elevation" in ee.Image(SRTM).bandNames().getInfo(), f"{SRTM}: missing elevation")
-    return {"embedding_bands": eb, "embedding_years": years}
 
 def _rename(col, names, label):
     img = col.toBands()
     n = img.bandNames().size().getInfo()
     _req(n == len(names), f"{label}: toBands gave {n} bands, expected {len(names)}")
     return img.rename(names)
-
-def _embedding(ee, info):
-    # The collection is ~10k tiles per year with 64 bands each, not one image per
-    # year, so toBands() is unusable: mosaic each year, then concatenate the years.
-    imgs = [ee.ImageCollection(EMB).filter(ee.Filter.calendarRange(y, y, "year")).mosaic()
-            .rename([f"{b}_{y}" for b in info["embedding_bands"]])
-            for y in info["embedding_years"]]
-    _req(len(imgs) == len(info["embedding_years"]), "embedding: no annual mosaics")
-    return ee.Image.cat(imgs)
 
 def _eucropmap(ee):
     imgs = [ee.ImageCollection(EUCM).filterDate(f"{y}-01-01", f"{y+1}-01-01").first()
@@ -174,7 +153,7 @@ def _features(ee, frame, key):
         for k, lo, la in zip(frame[key], frame["lon"], frame["lat"])])
 
 def _fetch(ee, image, frame, key, dataset, cid, scale):
-    # Explicit EPSG:4326 + scale: embedding tile projections vary per tile.
+    # Explicit EPSG:4326 + scale: the collections differ in native projection.
     table = image.reduceRegions(_features(ee, frame, key), ee.Reducer.first(),
                                 crs="EPSG:4326", scale=scale, tileScale=TILE_SCALE)
     status = None
@@ -193,6 +172,7 @@ def _fetch(ee, image, frame, key, dataset, cid, scale):
             time.sleep(min(60.0, 2 ** attempt) + random.random())
 
 _RULES = {
+    # AlphaEarth dropped 2026-11-14; the rule stays so any leftover parts still parse.
     "embedding": (r"A(\d{2})_(\d{4})", lambda m: (f"A{m[1]}", m[2])),
     "eucropmap": (r"classification_(\d{4})", lambda m: ("classification", m[1])),
     "modis_ndvi": (r"(\d{4}-\d{2}-\d{2})", lambda m: ("ndvi", m[1])),
@@ -257,8 +237,28 @@ def _tune(size, nbytes):
     return size if nbytes <= TARGET_BYTES else max(200, min(size, int(size * TARGET_BYTES / nbytes)))
 
 def _run_dataset(dataset, image, frame, key, ee, stats, scale):
-    todo = np.flatnonzero(~_covered(dataset, len(frame)))
-    stats[dataset]["skipped"] = len(list((RAW / dataset).glob(f"part-{dataset}-p*.parquet")))
+    if key == "cell_id":
+        # Cell frames are re-derived from points, so a new point can sort into the middle
+        # of the cell list and shift every index; resume by cell id, not by row range.
+        orig = frame
+        have = set()
+        for p in (RAW / dataset).glob("part-*.parquet"):
+            have |= set(pd.read_parquet(p, columns=["cell_id"])["cell_id"])
+        # Cells already documented as masked by SMAP's land mask are never requested:
+        # Earth Engine fails rather than returning nulls over the open sea there.
+        frame = frame[~frame["cell_id"].isin(have | set(schema.SMAP_UNCOVERED_CELLS))]
+        todo = np.arange(len(frame))
+        stats[dataset]["skipped"] = len(have)
+        if len(frame) < 50:
+            # A handful of features makes EE evaluate the whole image in one tile and it
+            # dies with "User memory limit exceeded"; pad with cells already on disk.
+            if len(frame):
+                pad = orig[orig["cell_id"].isin(have)][["cell_id", "lon", "lat"]].head(50)
+                _retry_cells(dataset, image, frame, ee, scale, pad)
+            return
+    else:
+        todo = np.flatnonzero(~_covered(dataset, len(frame)))
+        stats[dataset]["skipped"] = len(list((RAW / dataset).glob(f"part-{dataset}-p*.parquet")))
     if not len(todo): return
     size, first = CHUNK, True
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
@@ -267,7 +267,8 @@ def _run_dataset(dataset, image, frame, key, ee, stats, scale):
             while len(pending) < WORKERS and pos < len(todo):
                 idx = _chunks(todo[pos:], size)[0]  # honour a tuned size immediately
                 pos += len(idx)
-                cid = f"p{idx[0]:06d}-{idx[-1] + 1:06d}"
+                cid = (f"c{frame['cell_id'].iloc[idx[0]]}" if key == "cell_id"
+                       else f"p{idx[0]:06d}-{idx[-1] + 1:06d}")
                 fut = pool.submit(_fetch, ee, image, frame.iloc[idx], key, dataset, cid, scale)
                 pending[fut] = (idx, cid)
             for fut in wait(pending, return_when=FIRST_COMPLETED)[0]:
@@ -294,6 +295,14 @@ def _run_dataset(dataset, image, frame, key, ee, stats, scale):
                         print(f"{dataset}: first response {len(payload)/2**20:.1f} MiB, "
                               f"chunk size -> {new}")
                     size, first = new, False
+    if key == "cell_id":
+        done = set()
+        for p in (RAW / dataset).glob("part-*.parquet"):
+            done |= set(pd.read_parquet(p, columns=["cell_id"])["cell_id"])
+        missing = frame[~frame["cell_id"].isin(done)]
+        if len(missing):
+            _retry_cells(dataset, image, missing, ee, scale,
+                         frame[~frame["cell_id"].isin(set(missing["cell_id"]))][["cell_id", "lon", "lat"]].head(50))
 
 def _cells(points):
     try:
@@ -306,7 +315,36 @@ def _cells(points):
     # cell centre; upgrade when weather.py exposes cell centres.
     out = points[["lon", "lat"]].copy()
     out["cell_id"] = ids["smap_cell"].to_numpy()
-    return out.groupby("cell_id", as_index=False)[["lon", "lat"]].mean()
+    grp = out.groupby("cell_id")
+    # Coastal cells can have a mean position in water, where SMAP masks sm_rootzone;
+    # keep every point's coordinates so such a cell can be retried on land.
+    pos = {k: list(zip(g["lon"], g["lat"])) for k, g in grp}
+    cells = grp[["lon", "lat"]].mean().reset_index()
+    cells["positions"] = cells["cell_id"].map(pos)
+    return cells
+
+def _retry_cells(dataset, image, missing, ee, scale, pad):
+    """Cells whose mean position fell on a masked pixel: retry at each point's position.
+
+    A request carrying a single feature makes Earth Engine evaluate the whole 426-band
+    image in one tile and it dies with "User memory limit exceeded" at every tileScale and
+    band subset; padding with 50 already-fetched cells splits the work and succeeds.
+    """
+    wrote = 0
+    for _, row in missing.iterrows():
+        for lon, lat in row["positions"]:
+            one = pd.DataFrame([{"cell_id": row["cell_id"], "lon": float(lon), "lat": float(lat)}])
+            frame = pd.concat([one, pad[pad["cell_id"] != row["cell_id"]]], ignore_index=True)
+            payload = _fetch(ee, image, frame, "cell_id", dataset, f"c{row['cell_id']}", scale)
+            df = _parse(payload.decode("utf-8"), dataset, "cell_id")
+            df = df[df["cell_id"] == row["cell_id"]]
+            if len(df) and df["value"].notna().any():
+                _write_atomic(df, RAW / dataset / f"part-{dataset}-c{row['cell_id']}.parquet")
+                wrote += 1
+                break
+        else:
+            print(f"{dataset}: cell {row['cell_id']} masked at every point position", flush=True)
+    if wrote: print(f"{dataset}: recovered {wrote} cell(s) by resampling on land", flush=True)
 
 def _report(stats):
     print(f"\n{'dataset':12} {'rows':>10} {'parts':>6} {'MiB':>8}  "
@@ -323,11 +361,11 @@ def main(region: str = "full", pilot: bool = False):
     if not POINTS_PATH.is_file():
         raise SystemExit(f"missing input: {POINTS_PATH}; run step 2 (points.py) first")
     points = pd.read_parquet(POINTS_PATH)
-    info, cells = probe(ee), _cells(points)  # fail on missing weather.py before bulk
-    print(f"gee: {len(points)} points, {len(cells)} cells, region={region}, "
-          f"pilot={pilot}, embedding years={info['embedding_years']}")
-    jobs = [("embedding", _embedding(ee, info), points, "point_id", 10),
-            ("eucropmap", _eucropmap(ee), points, "point_id", 10),
+    probe(ee); cells = _cells(points)  # fail on a missing asset or weather.py before bulk
+    print(f"gee: {len(points)} points, {len(cells)} cells, region={region}, pilot={pilot}")
+    # AlphaEarth embeddings dropped 2026-11-14 at the user's request; parts already on
+    # disk stay there, unreferenced, in case they are wanted again.
+    jobs = [("eucropmap", _eucropmap(ee), points, "point_id", 10),
             ("modis_ndvi", _modis(ee, "NDVI"), points, "point_id", 250),
             ("modis_qa", _modis(ee, "SummaryQA"), points, "point_id", 250),
             ("hls_ndvi", _hls(ee), points, "point_id", 30),

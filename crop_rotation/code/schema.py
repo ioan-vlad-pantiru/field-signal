@@ -15,7 +15,6 @@ nullable dtypes (UInt8 / Float32) so NA survives the parquet round-trip.
 """
 
 DATASETS = (
-    "embedding",
     "eucropmap",
     "modis_ndvi",
     "modis_qa",

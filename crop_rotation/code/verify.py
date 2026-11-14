@@ -40,6 +40,16 @@ def main():
     need(set(points.loc[~points["holdout"], "nuts3"]).isdisjoint(holdout_nuts),
          "no non-holdout point in a HOLDOUT_NUTS3")
 
+    # Every ROI NUTS3 must be represented: the first wave filled country quotas from the
+    # lowest-numbered tiles and silently skipped eastern regions, which no check caught.
+    import geopandas as gpd
+    gdf = gpd.read_file(INTERIM / "nutsrg_3.json", driver="GeoJSON")
+    roi = {str(c) for c in gdf["id"].astype(str) if len(str(c)) == 5
+           and (str(c)[:2] in {"RO", "HU", "BG", "HR", "SK"} or str(c).startswith(("AT1", "RS12")))}
+    need(roi <= set(points["nuts3"]), f"every ROI NUTS3 has points (missing {sorted(roi - set(points['nuts3']))[:5]})")
+    thin = sorted(c for c in holdout_nuts if (points["nuts3"] == c).sum() < 100)
+    need(not thin, f"each holdout NUTS3 has >=100 points (thin: {thin})")
+
     years = sorted(crops["year"].unique())
     need(list(years) == list(schema.HRL_YEARS), f"crops cover exactly HRL_YEARS ({years})")
     need(len(crops) == len(points) * len(schema.HRL_YEARS),
@@ -60,16 +70,6 @@ def main():
     prob = points["inclusion_probability"]
     need(bool(prob.between(0, 1).all()) and bool((prob > 0).all()),
          "inclusion_probability in (0,1]")
-
-    emb_files = sorted((RAW / "embedding").glob("part-*.parquet"))
-    need(bool(emb_files), "embedding parts present")
-    emb_years = set()
-    rows = 0
-    for f in emb_files:
-        d = pd.read_parquet(f, columns=["date_or_year", "variable"])
-        emb_years |= set(d["date_or_year"].unique()); rows += len(d)
-    need(rows == len(points) * len(emb_years) * 64,
-         f"embedding rows == points x years({len(emb_years)}) x 64 bands ({rows:,})")
 
     power = pd.concat(pd.read_parquet(f, columns=["cell_id"]) for f in (RAW / "power").glob("*.parquet"))
     smap = pd.concat(pd.read_parquet(f, columns=["cell_id"]) for f in (RAW / "smap_sm").glob("*.parquet"))
