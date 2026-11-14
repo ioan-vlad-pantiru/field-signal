@@ -2,10 +2,10 @@
 for points the AppEEARS task does not cover (or before it finishes).
 
 The cube is not in the repo (a large raster); pass its folder. One NetCDF per year, 2001-2026:
-Microsoft Planetary Computer collection `modis-13Q1-061` (MOD13Q1 Terra + MYD13Q1 Aqua v061,
-16-day composites), bands 250m_16_days_NDVI and 250m_16_days_EVI as raw int16, loaded with
-odc-stac on a 0.01 deg EPSG:4326 grid (nearest resampling, one slice per solar day) over
-16-31 E, 41.2-48.8 N.
+Microsoft Planetary Computer collection `modis-13Q1-061` (v061 16-day composites: MOD13Q1
+Terra from 2000-12-18, MYD13Q1 Aqua from 2002-07-04), bands 250m_16_days_NDVI and
+250m_16_days_EVI as raw int16, loaded with odc-stac on a 0.01 deg EPSG:4326 grid (nearest
+resampling, one slice per solar day) over 16-31 E, 41.2-48.8 N.
 
     uv run --package farm-data python -m farm_data.modis_cube <cube_dir>
 
@@ -14,7 +14,10 @@ zone_id, point, date (composite start), ndvi, evi (x 0.0001; fill dropped), reli
 the cube has no QA layer, so cloud/snow composites cannot be screened out), satellite
 (MOD13Q1 composites start on day-of-year 1+16k = terra, MYD13Q1 on 9+16k = aqua).
 
-Caveat: each value is one 0.01 deg cell (~1 km), coarser than the 250 m pixel AppEEARS returns.
+Caveat: odc-stac read the source COGs' 2x overview (~463 m pixels), so each value is the overview
+pixel nearest the centre of the 0.01 deg cell holding the point (up to ~0.005 deg from the point),
+not the native 232 m pixel AppEEARS returns. Checked against the COG for point 1213#0, 2012-07-03
+and 2012-07-11: cube 5695 / 5008 = overview pixel; native pixel 5700 / 4669.
 """
 
 from __future__ import annotations
