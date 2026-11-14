@@ -12,9 +12,10 @@ the trained LSTM (`api.planner.world_model`, Răzvan's model) through the planne
   and root-zone soil moisture at flowering for the current rotation's crop of each year;
 - soil: SoilGrids 0-30 cm at the point (the model's own soil input).
 
-Falls back to the mock (`mock=true`) when the model's inputs are not deployed or the point is
-outside the planner grid. Crops the planner does not simulate (soybean, cover crops) in a current
-rotation are scored as their nearest planner crop, said in the caveats.
+Falls back to the mock (`mock=true`) only when the model's inputs are not deployed (development)
+or `PLANNER_WORLD_MODEL=mock`; a point outside the planner grid raises `weather.OutsideCoverage`.
+Crops the planner does not simulate (soybean, cover crops) in a current rotation are scored as
+their nearest planner crop, said in the caveats.
 """
 
 from __future__ import annotations
@@ -120,11 +121,9 @@ def run(request: FieldRequest) -> FieldAnalysis:
     lat, lon = request.location.lat, request.location.lon
     if not wm.available() or models.is_mock():
         return mocks.field_analysis(round(lat, 2), round(lon, 2))
-    try:
-        point = grid.grid_point(lat, lon)
-        weather.cell_id(lat, lon)
-    except weather.OutsideCoverage:
-        return mocks.field_analysis(round(lat, 2), round(lon, 2))
+    # Outside the model's grid: weather.OutsideCoverage propagates (the endpoint answers 422).
+    point = grid.grid_point(lat, lon)
+    weather.cell_id(lat, lon)
     weights = tuple(sorted((str(p), float(w)) for p, w in request.priorities.items()))
     return _analyze(point, lat, lon, tuple(str(c) for c in request.current_rotation), weights)
 
@@ -287,7 +286,8 @@ def _season(cell: str, year: int, crop: str, row: RotationOutcome, shown: str) -
         crop=Crop(shown),
         status=status,
         reasons=reasons,
-        evidence_level=Confidence.MEDIUM if 2016 <= year <= 2024 else Confidence.LOW,
+        # Every season is the same model on the same NASA POWER record: one evidence level.
+        evidence_level=Confidence.MEDIUM,
     )
 
 

@@ -18,7 +18,7 @@ import { Explanation } from "./explanation";
 import { useRotationName } from "./rotation-name";
 
 const STATUS_MARK: Record<Status, { swatch: string; mark: string }> = {
-  good: { swatch: "bg-surface-sunken", mark: "" },
+  good: { swatch: "bg-status-good-tint", mark: "" },
   watch: { swatch: "bg-status-watch text-on-status", mark: "!" },
   bad: { swatch: "bg-status-bad text-on-status", mark: "×" },
   no_data: { swatch: "border border-dashed border-line", mark: "" },
@@ -87,7 +87,10 @@ export function Rotations({
           watch: ts("watch"),
           bad: ts("bad"),
           no_data: ts("no_data"),
-          lowEvidence: t("weakEvidence"),
+          // Only when a season here actually rests on weaker evidence.
+          ...(ranked.some((r) => r.replay.some((o) => o.evidence_level === "low"))
+            ? { lowEvidence: t("weakEvidence") }
+            : {}),
         }}
       />
 

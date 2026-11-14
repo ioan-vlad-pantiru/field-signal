@@ -12,6 +12,7 @@ import { ConfidenceBadge, ToneBadge } from "@/components/ui/badges";
 import { RangeBar } from "@/components/ui/charts";
 import { CropDot } from "@/components/ui/crop-chip";
 import { Disclosure } from "@/components/ui/disclosure";
+import { Button } from "@/components/ui/button";
 import { NoticeBar } from "@/components/ui/notice-bar";
 import { Section } from "@/components/ui/section";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -36,7 +37,16 @@ function Pill({ children }: { children: ReactNode }) {
  * All submitted fields planned together (`POST /v1/farm/optimize`), below the per-field results. Its own
  * loading and error state: a slow solve or a rejected request never touches the per-field results.
  */
-export function OptimizerSection({ state, names }: { state: OptimizerState; names: string[] }) {
+export function OptimizerSection({
+  state,
+  names,
+  onRetry,
+}: {
+  state: OptimizerState;
+  names: string[];
+  /** Run the farm plan again after a failure. */
+  onRetry?: () => void;
+}) {
   const t = useTranslations("Optimizer");
   return (
     <Section id="farm-plan" title={t("title")} hint={t("hint")} className="print:hidden">
@@ -54,7 +64,14 @@ export function OptimizerSection({ state, names }: { state: OptimizerState; name
           <Skeleton className="h-24 w-full" />
         </div>
       ) : state.status === "error" ? (
-        <NoticeBar>{t(state.invalid ? "invalid" : "error")}</NoticeBar>
+        <div className="flex flex-col items-start gap-3">
+          <NoticeBar>{t(state.invalid ? "invalid" : "error")}</NoticeBar>
+          {!state.invalid && onRetry ? (
+            <Button variant="secondary" onClick={onRetry}>
+              {t("retry")}
+            </Button>
+          ) : null}
+        </div>
       ) : (
         <OptimizerBody data={state.result.data} origin={state.result.origin} names={names} />
       )}
@@ -83,7 +100,7 @@ function OptimizerBody({ data, origin, names }: { data: OptimizerResponse; origi
           count: data.scenario_count,
           first: data.scenario_first,
           last: data.scenario_last + data.plan_years - 1,
-          model: data.model_version,
+          model: modelLabel(data.model_version, t),
         })}
       </p>
 
@@ -276,4 +293,11 @@ function Rules({ rules }: { rules: RuleCheck[] }) {
       </ul>
     </div>
   );
+}
+
+/** "lstm-monthly_delta-x5" reads as "Field Signal crop model, 5 runs"; anything else as is. */
+function modelLabel(version: string, t: (key: string, values?: Record<string, number>) => string): string {
+  const lstm = /^lstm-.+?(?:-x(\d+))?$/.exec(version);
+  if (!lstm) return version;
+  return t("modelName", { runs: Number(lstm[1] ?? 1) });
 }

@@ -25,7 +25,7 @@ from __future__ import annotations
 from collections import defaultdict
 from statistics import pvariance
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from api.analysis import run_field_analysis
 from api.contracts import (
@@ -41,6 +41,7 @@ from api.contracts import (
     PlanField,
     Strategy,
 )
+from api.planner.weather import OutsideCoverage
 
 router = APIRouter(prefix="/v1/farm")
 
@@ -332,5 +333,9 @@ def _caveats(mock: bool) -> list[Localized]:
 
 @router.post("/plan", tags=["farmer"])
 def farm_plan(request: FarmPlanRequest) -> FarmPlan:
-    """A rotation per field, staggered across the farm. Built on MOCK analyses while mock=true."""
-    return plan_farm(request)
+    """A rotation per field, staggered across the farm, built on each field's trained-model
+    analysis; 422 when a field is outside the area the model covers."""
+    try:
+        return plan_farm(request)
+    except OutsideCoverage as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e

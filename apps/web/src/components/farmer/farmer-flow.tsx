@@ -377,7 +377,7 @@ function Flow({
             }
           />
           )}
-          <OptimizerSection state={farm} names={fields.map(fieldLabel)} />
+          <OptimizerSection state={farm} names={fields.map(fieldLabel)} onRetry={() => startOptimizer(fields)} />
         </div>
       );
     }

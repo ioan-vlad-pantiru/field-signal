@@ -19,6 +19,7 @@ from api.contracts import (
 )
 from api.planner import jobs
 from api.planner.service import PlanRejected, plan_farm
+from api.planner.weather import OutsideCoverage
 from api.settings import get_settings
 from api.whatsapp.router import router as whatsapp_router
 
@@ -59,8 +60,12 @@ def health() -> Health:
 
 @app.post("/v1/fields/analyze", tags=["farmer"])
 def analyze_field(request: FieldRequest) -> FieldAnalysis:
-    """Farmer screen. Currently returns MOCK data (mock=true) shaped like the real response."""
-    return run_field_analysis(request)
+    """Farmer screen: the trained model's analysis of one field (`api.field_model`); 422 when the
+    field is outside the area the model covers."""
+    try:
+        return run_field_analysis(request)
+    except OutsideCoverage as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
 
 
 @app.get("/v1/sourcing/region", tags=["buyer"])
