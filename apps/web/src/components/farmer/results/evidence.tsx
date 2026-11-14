@@ -9,7 +9,6 @@ import { Sparkline } from "@/components/ui/charts";
 import { InfoTip } from "@/components/ui/info-tip";
 import { SourceChip } from "@/components/ui/source-chip";
 import { TONE_CLASSES, TONE_ICONS, type Tone } from "@/components/ui/tone";
-import { STILL } from "./still";
 
 /** How far from the mean (as a share of it) still counts as "normal". */
 const NORMAL_BAND = 0.1;
@@ -23,7 +22,7 @@ export function Evidence({ analysis }: { analysis: FieldAnalysis }) {
       <div>
         <h3 className="text-lg font-semibold">{t("indicatorsTitle")}</h3>
         <p className="mt-1 max-w-[65ch] text-ink-muted">{t("indicatorsHint")}</p>
-        <ul className={`mt-5 grid gap-x-8 gap-y-8 sm:grid-cols-2 ${STILL}`}>
+        <ul className={`mt-5 grid gap-x-8 gap-y-8 sm:grid-cols-2`}>
           {analysis.indicators.map((indicator) => (
             <IndicatorItem key={indicator.id} indicator={indicator} />
           ))}

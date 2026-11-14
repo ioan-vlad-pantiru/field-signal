@@ -71,7 +71,7 @@ export function FieldPlan({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         <div>
           <p className="text-sm text-ink-muted">{t("season")}</p>
           <p className="text-3xl font-semibold tracking-tight tabular-nums" aria-live="polite">
@@ -107,6 +107,7 @@ export function FieldPlan({
         plots={plots}
         boundary={boundary}
         onNonFarmland={setNonFarmland}
+        fitKey={strategy.id}
         label={t("mapLabel", {
           year,
           plots: plots.map((p) => `${p.id}: ${p.label}`).join(", "),

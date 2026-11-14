@@ -65,8 +65,6 @@ export function Sparkline({
         <path
           key={d}
           d={d}
-          pathLength={1}
-          className="draw"
           fill="none"
           stroke="var(--field)"
           strokeWidth={2}
@@ -80,8 +78,6 @@ export function Sparkline({
           cy={y(last.value)}
           r={3.5}
           fill="var(--wheat)"
-          className="rise"
-          style={{ animationDelay: "700ms" }}
         />
       ) : null}
     </svg>
