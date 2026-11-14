@@ -140,7 +140,6 @@ function PlanView({
         ? t(plan.proven_optimal ? "bestOptimal" : "best")
         : t("alternative", { n: plan.rank - 1 });
   const diff = current ? Math.round(plan.score.total - current.score.total) : null;
-  const fieldIds = [...new Set(plan.allocations.map((a) => a.field_id))];
   const { worst, best, score_range: range } = plan;
 
   return (
@@ -178,20 +177,17 @@ function PlanView({
       </div>
 
       <div>
-        <h4 className="font-semibold">{t("areaSplit")}</h4>
-        <p className="text-sm text-ink-muted">{t("areaSplitHint")}</p>
+        <h4 className="font-semibold">{t("perField")}</h4>
+        <p className="text-sm text-ink-muted">{t("perFieldHint")}</p>
+        {/* One allocation per field (one rotation per parcel); a list, should the API ever send more. */}
         <ul className="mt-2 flex flex-col divide-y divide-line">
-          {fieldIds.map((id) => (
-            <li key={id} className="flex flex-col gap-1.5 py-2">
-              <p className="font-medium">{fieldName(id)}</p>
-              {plan.allocations
-                .filter((a) => a.field_id === id)
-                .map((a, i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <span className="w-16 shrink-0 pt-0.5 tabular-nums">{t("ha", { ha: formatNumber(a.area_ha, locale, 1) })}</span>
-                    <CropSequence sequence={a.sequence} />
-                  </div>
-                ))}
+          {plan.allocations.map((a, i) => (
+            <li key={i} className="flex flex-col gap-1.5 py-2">
+              <p>
+                <span className="font-medium">{fieldName(a.field_id)}</span>{" "}
+                <span className="tabular-nums text-ink-muted">· {t("ha", { ha: formatNumber(a.area_ha, locale, 1) })}</span>
+              </p>
+              <CropSequence sequence={a.sequence} />
             </li>
           ))}
         </ul>

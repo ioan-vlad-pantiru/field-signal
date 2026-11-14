@@ -26,6 +26,13 @@ describe("Farm plan strings", () => {
     });
   }
 
+  // One rotation per parcel (optimizer plan §9): no string may suggest a field is split between rotations.
+  for (const locale of ["en", "ro"]) {
+    it(`${locale}: no area split within a field`, () => {
+      for (const [key, text] of farmPlan(locale)) assert.doesNotMatch(text, /split|împăr/i, key);
+    });
+  }
+
   it("en and ro have the same keys", () => {
     assert.deepEqual(
       farmPlan("en").map(([key]) => key),
