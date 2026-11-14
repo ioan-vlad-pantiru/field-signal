@@ -397,16 +397,16 @@
     "window": "sezoanele {start}–{end}",
     "median": "mediana",
     "perField": "Rotațiile pe câmpuri",
-    "perFieldHint": "Fiecare rând este o rotație pe numărul de hectare indicat: o singură cultură pe an, în această ordine începând cu anul 1. O fermă de 75 ha sau mai mult păstrează o singură rotație pe fiecare câmp. Sub 75 ha, un câmp de 10 ha sau mai mult poate fi împărțit între cel mult 3 rotații de cel puțin 5 ha fiecare; unde se află fiecare parte în câmp alegeți dumneavoastră.",
+    "perFieldHint": "Fiecare rând este o rotație: o cultură pe an, în această ordine începând cu anul 1. Fiecare câmp păstrează o singură rotație și schimbă cultura în fiecare an, cum cere regula UE de rotație a culturilor (BCAM/GAEC 7).",
     "ha": "{ha} ha",
-    "details": "Părțile scorului, ponderea culturilor și verificarea provizorie a regulilor",
+    "details": "Părțile scorului, ponderea culturilor și verificarea regulilor",
     "shares": "Ponderea culturilor în fermă, pe an de plan",
     "year": "Anul {n}",
     "pct": "{value} %",
     "caveats": "Ce nu vă spune acest plan",
     "rules": {
-      "title": "Verificare provizorie a regulilor",
-      "hint": "Verificări simplificate ale ponderii culturilor în cel mai slab an al planului. Nu vă spun dacă ferma se califică pentru plăți.",
+      "title": "Verificarea regulilor",
+      "hint": "Verificări ale culturilor fermei în anul cel mai nefavorabil al planului, după ghidurile APIA 2026. Nu vă spun dacă ferma primește plăți.",
       "max_crop_share": "Cultura principală cel mult {limit} % din fermă",
       "max_two_crops_share": "Primele două culturi cel mult {limit} % împreună",
       "legume_share": "Leguminoase cel puțin {limit} % din fermă",
@@ -416,7 +416,10 @@
       "belowThreshold": "Ferma este sub pragul de suprafață al regulii",
       "applied": "Impusă în acest plan",
       "notApplied": "Neimpusă",
-      "unverified": "Neverificată"
+      "unverified": "Neverificată",
+      "crop_change": "Cultura se schimbă în fiecare an pe fiecare câmp",
+      "metByRotation": "Nu este necesar când cultura se schimbă în fiecare an (rotație, BCAM/GAEC 7)",
+      "onlyWithEcoScheme": "Doar dacă aplicați eco-schema PD-04"
     },
     "retry": "Încearcă din nou",
     "modelName": "modelul de culturi Field Signal{runs, plural, one {} other {, # rulări}}"

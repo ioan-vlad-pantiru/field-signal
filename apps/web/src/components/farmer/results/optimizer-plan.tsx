@@ -268,28 +268,46 @@ function YearShares({ plan }: { plan: OptimizerPlan }) {
   );
 }
 
-const RULE_TONE = { within: "good", outside: "watch", belowThreshold: "nodata" } as const;
+const RULE_TONE = {
+  within: "good",
+  outside: "watch",
+  belowThreshold: "nodata",
+  metByRotation: "nodata",
+  onlyWithEcoScheme: "nodata",
+} as const;
 
 function Rules({ rules }: { rules: RuleCheck[] }) {
   const t = useTranslations("Optimizer.rules");
   const locale = useAppLocale();
   const pct = (v: number) => formatNumber(v, locale, 1);
+  const rotationMet = rules.some((r) => r.id === "crop_change" && r.passed);
+  const ecoScheme = rules.some((r) => r.applies);
   return (
     <div>
       <h4 className="font-semibold">{t("title")}</h4>
       <p className="text-sm text-ink-muted">{t("hint")}</p>
       <ul className="mt-2 flex flex-col divide-y divide-line">
-        {rules.map((rule, i) => (
-          <li key={i} className="flex flex-col gap-1.5 py-2">
-            <p>{t(rule.id, { limit: pct(rule.limit_pct) })}</p>
-            <p className="text-sm tabular-nums text-ink-muted">{t("value", { value: pct(rule.value_pct), source: rule.source })}</p>
-            <div className="flex flex-wrap gap-1.5">
-              <ToneBadge tone={RULE_TONE[ruleStatus(rule)]} label={t(ruleStatus(rule))} />
-              <Pill>{t(rule.applies ? "applied" : "notApplied")}</Pill>
-              {rule.verified ? null : <Pill>{t("unverified")}</Pill>}
-            </div>
-          </li>
-        ))}
+        {rules.map((rule, i) => {
+          // GAEC 7 is met by rotation OR diversification: with the rotation met, the
+          // diversification shares are not needed, so they never read as a failure.
+          const status =
+            rotationMet && rule.source.startsWith("GAEC 7") && rule.id !== "crop_change"
+              ? "metByRotation"
+              : rule.source.startsWith("PD-04") && !ecoScheme
+                ? "onlyWithEcoScheme" // voluntary: never a failure unless the farmer joined it
+                : ruleStatus(rule);
+          return (
+            <li key={i} className="flex flex-col gap-1.5 py-2">
+              <p>{t(rule.id, { limit: pct(rule.limit_pct) })}</p>
+              <p className="text-sm tabular-nums text-ink-muted">{t("value", { value: pct(rule.value_pct), source: rule.source })}</p>
+              <div className="flex flex-wrap gap-1.5">
+                <ToneBadge tone={RULE_TONE[status]} label={t(status)} />
+                {rule.applies ? <Pill>{t("applied")}</Pill> : null}
+                {rule.verified ? null : <Pill>{t("unverified")}</Pill>}
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

@@ -1,19 +1,26 @@
 import type { Crop } from "@/lib/contracts";
 
-/** Crops a farmer can pick for the current rotation (the brief's feed crops plus cover crops). */
-export const ROTATION_CROPS = [
-  "maize",
-  "wheat",
-  "barley",
-  "soybean",
-  "sunflower",
-  "pea",
-  "cover_mustard",
-  "cover_phacelia",
-  "cover_vetch",
-] as const satisfies readonly Crop[];
+/**
+ * Crops a farmer can pick for the current rotation: exactly the crops the trained crop model learned
+ * (EU HRL crop types: maize, wheat, barley, sunflower, dry pulses as pea) and scores itself. Soybean,
+ * rapeseed and cover crops are left out: the model either did not learn them or the planner does
+ * not score them, and the results must never stand in one crop for another.
+ */
+export const ROTATION_CROPS = ["maize", "wheat", "barley", "sunflower", "pea"] as const satisfies readonly Crop[];
 
 export const DEFAULT_ROTATION: Crop[] = ["maize", "wheat", "maize"];
+
+/**
+ * A rotation saved before the picker was narrowed may hold crops the model does not score: keep
+ * the supported ones in order; fewer than two left falls back to the default rotation.
+ */
+export function supportedRotation<T extends { current_rotation: Crop[] }>(request: T): T {
+  const kept = request.current_rotation.filter((c): c is (typeof ROTATION_CROPS)[number] =>
+    (ROTATION_CROPS as readonly Crop[]).includes(c),
+  );
+  const rotation = kept.length >= 2 ? kept.slice(0, 4) : DEFAULT_ROTATION;
+  return { ...request, current_rotation: rotation };
+}
 export const MIN_ROTATION = 2;
 export const MAX_ROTATION = 4;
 

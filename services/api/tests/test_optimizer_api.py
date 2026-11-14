@@ -90,16 +90,15 @@ def test_default_enforces_no_eco_rule(demo: OptimizerResponse) -> None:
     assert demo.current is not None
     for p in [*demo.plans, demo.current]:
         assert p.rules and not any(r.applies for r in p.rules)
-        assert not any(r.verified for r in p.rules)
+        assert all(r.verified for r in p.rules)
     en = _en(demo)
-    assert "GAEC 7 reading is provisional" in en
+    assert "GAEC 7 asks for rotation" in en and "APIA 2026 guides" in en
     assert "Soil cover" in en and "Eligibility and exemptions are not checked" in en
     assert "No eco-scheme (PD-04) rule was enforced" in en
     assert "assumed from the current rotation" in en
     assert "best solution found" in en and "alternatives" in en
-    assert "The selected fields total 44." in en or "The selected fields total 45." in en
-    assert "under 75 ha (a product threshold, not a regulatory one)" in en
-    assert "Areas are hectares, not drawn boundaries" in en
+    assert "Each field carries one rotation" in en and "as the EU crop rotation rule" in en
+    assert "Areas are hectares, not drawn boundaries" not in en
     assert "Rule shares are computed over the selected fields only" in en
     assert "area split" not in en and "which part of a field" not in en
     assert "shown as optimal only when the solver proves it" in en
@@ -134,50 +133,31 @@ def test_eco_scheme_applies_the_chosen_practice_only(practice: str, rules: set[s
     assert "One PD-04 practice was enforced" in _en(res)
 
 
-@pytest.mark.parametrize("ha", [74.99, 75.01])
-def test_mode_follows_the_unrounded_area(ha: float) -> None:
-    rect = _rectangle(ha)
-    assert grid.area_ha(rect) == pytest.approx(ha, abs=1e-6)
+@pytest.mark.parametrize("ha", [20.0, 74.99])
+def test_without_the_eco_scheme_every_field_stays_whole(ha: float) -> None:
     body = _body()
-    body["fields"] = [_field("f1", rect)]
+    body["fields"] = [_field("f1", _rectangle(ha))]
     res = _plan(body)
-    assert res.total_area_ha == 75.0  # allocations stay in 0.1 ha on both sides
-    en = _en(res)
-    assert f"The selected fields total {ha:.2f} ha" in en
-    split = ha < 75
-    assert ("under 75 ha" in en) is split and ("75 ha or more" in en) is not split
-    assert ("Areas are hectares, not drawn boundaries" in en) is split
     assert res.plans
     for p in res.plans:
-        assert {a.field_id for a in p.allocations} == {"f1"}
-        assert (len(p.allocations) <= 3) if split else (len(p.allocations) == 1)
-        assert all(a.area_ha >= 5 for a in p.allocations)
+        assert len(p.allocations) == 1 and p.allocations[0].field_id == "f1"
+        crop_change = next(r for r in p.rules if r.id == "crop_change")
+        assert crop_change.passed and crop_change.value_pct == 0
+    assert "Each field carries one rotation" in _en(res)
 
 
-@pytest.mark.parametrize("ha", [74.99, 75.01])
-def test_one_field_diversification_needs_a_split(ha: float) -> None:
+@pytest.mark.parametrize(("ha", "rotations"), [(20.0, 2), (40.0, 3)])
+def test_one_field_diversification_splits_by_the_rule_bands(ha: float, rotations: int) -> None:
+    """PD-04 diversification on one field: 2 crops a year between 10 and 30 ha, 3 above 30 ha."""
     body = _body(eco_scheme=True, eco_practice="diversification")
     body["fields"] = [_field("f1", _rectangle(ha))]
     res = _plan(body)
     assert res.plans
-    if ha < 75:  # split mode: the practice is met by dividing the field
-        assert "One PD-04 practice was enforced: crop diversification" in _en(res)
-        for p in res.plans:
-            assert len(p.allocations) >= 3  # three crops a year above 30 ha
-            assert all(r.passed for r in p.rules if r.applies)
-            assert {r.id for r in p.rules if r.applies} == {"max_crop_share", "max_two_crops_share"}
-        return
-    # 75 ha or more: one rotation on the one field, the practice dropped with its reason.
-    assert all(len(p.allocations) == 1 for p in res.plans)
-    assert not any(r.applies for p in res.plans for r in p.rules)
-    en, ro = _en(res), "\n".join(c.ro for c in res.caveats)
-    assert "No plan meeting the selected PD-04 practice (crop diversification)" in en
-    assert "At 75 ha or more each field carries one rotation" in en
-    assert "which needs at least three fields" in en
-    assert "Splitting a field is not available at 75 ha or more." in en
-    assert "draw a large field as several parcels" in en
-    assert "Împărțirea unui câmp nu este disponibilă la 75 ha sau mai mult." in ro
-    assert "infeasible" not in en.lower()
+    assert "One PD-04 practice was enforced: crop diversification" in _en(res)
+    assert f"may be divided between up to {rotations} rotations" in _en(res)
+    for p in res.plans:
+        assert len(p.allocations) == rotations
+        assert all(r.passed for r in p.rules if r.applies)
 
 
 def test_priorities_change_the_plan() -> None:
@@ -248,10 +228,9 @@ def test_dropped_practice_explains_why(monkeypatch: pytest.MonkeyPatch) -> None:
         en = _en(res)
         assert "No plan meeting the selected PD-04 practice (legume share)" in en
         assert "infeasible" not in en.lower()
-        assert ("the farm needs at least 4 fields to grow pea every year" in en) is (body is parcel)
-        assert ("Splitting a field is not available at 75 ha or more" in en) is (body is parcel)
-        assert ("draw a large field as several parcels" in en) is (body is parcel)
-        assert ("Pea every year needs at least 4 rotations" in en) is (body is split)
+        # Legumes never split a field: one rotation each, pea back only after 4 years.
+        assert "the farm needs at least 4 fields to grow pea every year" in en
+        assert "75 ha" not in en
 
 
 def test_split_search_out_of_time_keeps_fields_whole(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -263,7 +242,7 @@ def test_split_search_out_of_time_keeps_fields_whole(monkeypatch: pytest.MonkeyP
         return ([], "UNKNOWN", [3.0]) if args[9] else real(*args)
 
     monkeypatch.setattr(optimizer, "_rank", no_split)
-    res = _plan(_body())
+    res = _plan(_body(eco_scheme=True, eco_practice="diversification"))
     assert len(res.plans) == 3
     for p in res.plans:
         assert sorted(a.field_id for a in p.allocations) == ["f1", "f2"] and not p.proven_optimal

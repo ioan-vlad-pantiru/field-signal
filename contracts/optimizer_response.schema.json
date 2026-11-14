@@ -252,10 +252,11 @@
     },
     "RuleCheck": {
       "additionalProperties": false,
-      "description": "A provisional farm-level crop rule check (payment conditions, simplified): not a statement\nof GAEC 7 or PD-04 compliance. `max_*` rules are upper limits; `legume_share` is a lower\nlimit.",
+      "description": "A provisional farm-level crop rule check (payment conditions, simplified): not a statement\nof GAEC 7 or PD-04 compliance. `max_*` and `crop_change` (share of the farm growing the same\ncrop as the year before) are upper limits; `legume_share` is a lower limit.",
       "properties": {
         "id": {
           "enum": [
+            "crop_change",
             "max_crop_share",
             "max_two_crops_share",
             "legume_share"
