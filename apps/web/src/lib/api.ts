@@ -19,7 +19,7 @@ export interface Loaded<T> {
 }
 
 /** The API answered but rejected the request (4xx): a real error, not a reason to fall back. */
-class ApiRequestError extends Error {
+export class ApiRequestError extends Error {
   constructor(
     readonly path: string,
     readonly status: number,

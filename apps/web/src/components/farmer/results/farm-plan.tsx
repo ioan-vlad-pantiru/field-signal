@@ -6,6 +6,7 @@ import type { DataOrigin, Loaded } from "@/lib/api";
 import type { FarmPlan, FarmPlanResponse, RuleCheck } from "@/lib/contracts";
 import { CROP_COLORS } from "@/lib/crops";
 import { formatNumber } from "@/lib/format";
+import { ruleStatus } from "@/lib/results";
 import { useAppLocale, useLocalized } from "@/lib/localized";
 import { ConfidenceBadge, ToneBadge } from "@/components/ui/badges";
 import { RangeBar } from "@/components/ui/charts";
@@ -20,7 +21,8 @@ import { CropSequence } from "./crop-sequence";
 
 export type FarmPlanState =
   | { status: "loading" }
-  | { status: "error" }
+  /** `invalid`: the API refused the fields (422); anything else is a generic failure. */
+  | { status: "error"; invalid: boolean }
   | { status: "done"; result: Loaded<FarmPlanResponse> };
 
 const BREAKDOWN = ["yield_stability", "water", "soil_health", "low_risk"] as const;
@@ -46,7 +48,7 @@ export function FarmPlanSection({ state, names }: { state: FarmPlanState; names:
           <Skeleton className="h-24 w-full" />
         </div>
       ) : state.status === "error" ? (
-        <NoticeBar>{t("error")}</NoticeBar>
+        <NoticeBar>{t(state.invalid ? "invalid" : "error")}</NoticeBar>
       ) : (
         <FarmPlanBody data={state.result.data} origin={state.result.origin} names={names} />
       )}
@@ -247,6 +249,8 @@ function YearShares({ plan }: { plan: FarmPlan }) {
   );
 }
 
+const RULE_TONE = { within: "good", outside: "watch", belowThreshold: "nodata" } as const;
+
 function Rules({ rules }: { rules: RuleCheck[] }) {
   const t = useTranslations("FarmPlan.rules");
   const locale = useAppLocale();
@@ -261,7 +265,7 @@ function Rules({ rules }: { rules: RuleCheck[] }) {
             <p>{t(rule.id, { limit: pct(rule.limit_pct) })}</p>
             <p className="text-sm tabular-nums text-ink-muted">{t("value", { value: pct(rule.value_pct), source: rule.source })}</p>
             <div className="flex flex-wrap gap-1.5">
-              <ToneBadge tone={rule.passed ? "good" : "watch"} label={t(rule.passed ? "within" : "outside")} />
+              <ToneBadge tone={RULE_TONE[ruleStatus(rule)]} label={t(ruleStatus(rule))} />
               <Pill>{t(rule.applies ? "applied" : "notApplied")}</Pill>
               {rule.verified ? null : <Pill>{t("unverified")}</Pill>}
             </div>

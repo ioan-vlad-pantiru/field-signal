@@ -344,8 +344,9 @@
     "hint": "Toate câmpurile dumneavoastră împreună: cum să împărțiți suprafața între rotații, testat pe vremea din anii trecuți.",
     "loading": "Facem planul fermei…",
     "error": "Planul fermei nu a putut fi făcut pentru aceste câmpuri. Rezultatele fiecărui câmp de mai sus nu sunt afectate.",
+    "invalid": "Aceste câmpuri nu au putut fi planificate: un câmp este în afara zonei acoperite, este prea mare sau conturul lui nu este valid. Rezultatele fiecărui câmp de mai sus nu sunt afectate.",
     "meta": "Plan pe {years} ani · {ha} ha · {count, plural, one {o fereastră meteo din trecut} few {# ferestre meteo din trecut} other {# de ferestre meteo din trecut}}, sezoanele {first}–{last} · model {model}",
-    "none": "Niciun plan nu se potrivește acestor câmpuri și reguli.",
+    "none": "Nu s-a găsit niciun plan pentru aceste câmpuri. Vedeți notele de mai jos.",
     "best": "Cea mai bună soluție găsită",
     "bestOptimal": "Cea mai bună soluție găsită, optimă pentru model",
     "alternative": "Alternativa {n}",
@@ -374,6 +375,7 @@
       "value": "Cel mai slab an al planului: {value} % · regula: {source}",
       "within": "În limită",
       "outside": "În afara limitei",
+      "belowThreshold": "Ferma este sub pragul de suprafață al regulii",
       "applied": "Impusă în acest plan",
       "notApplied": "Neimpusă",
       "unverified": "Neverificată"
