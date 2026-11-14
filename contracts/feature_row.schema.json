@@ -1,0 +1,316 @@
+{
+  "$defs": {
+    "Crop": {
+      "enum": [
+        "maize",
+        "wheat",
+        "barley",
+        "soybean",
+        "sunflower",
+        "pea",
+        "cover_mustard",
+        "cover_phacelia",
+        "cover_vetch",
+        "fallow"
+      ],
+      "title": "Crop",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One row of the feature table `data/cache/features/<zone_type>.parquet` (handoff 1),\nbuilt by `data/scripts/build_features.py`. Zone values are means over the zone's cropland\nsample points. Missing = null.",
+  "properties": {
+    "zone_id": {
+      "description": "SIRUTA, 'field:46.30,23.75' or 'county:AB'",
+      "title": "Zone Id",
+      "type": "string"
+    },
+    "zone_type": {
+      "enum": [
+        "field",
+        "commune",
+        "county"
+      ],
+      "title": "Zone Type",
+      "type": "string"
+    },
+    "crop": {
+      "$ref": "#/$defs/Crop"
+    },
+    "season": {
+      "description": "harvest year",
+      "title": "Season",
+      "type": "integer"
+    },
+    "lat": {
+      "title": "Lat",
+      "type": "number"
+    },
+    "lon": {
+      "title": "Lon",
+      "type": "number"
+    },
+    "crop_area_ha": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "INS AGR108A (counties) or EUCROPMAP (communes, 2018+)",
+      "title": "Crop Area Ha"
+    },
+    "hot_days_flowering": {
+      "description": "POWER T2M_MAX >= crop heat threshold",
+      "minimum": 0,
+      "title": "Hot Days Flowering",
+      "type": "integer"
+    },
+    "max_tmax_flowering_c": {
+      "title": "Max Tmax Flowering C",
+      "type": "number"
+    },
+    "rain_flowering_mm": {
+      "minimum": 0,
+      "title": "Rain Flowering Mm",
+      "type": "number"
+    },
+    "rain_season_mm": {
+      "description": "sowing -> harvest",
+      "minimum": 0,
+      "title": "Rain Season Mm",
+      "type": "number"
+    },
+    "rh_flowering_pct": {
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Rh Flowering Pct",
+      "type": "number"
+    },
+    "wet_days_flowering": {
+      "description": "days with rain >= 1 mm",
+      "minimum": 0,
+      "title": "Wet Days Flowering",
+      "type": "integer"
+    },
+    "rain_harvest_mm": {
+      "minimum": 0,
+      "title": "Rain Harvest Mm",
+      "type": "number"
+    },
+    "frost_days_winter": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "T2M_MIN <= -15 °C, Dec-Feb; winter crops only",
+      "title": "Frost Days Winter"
+    },
+    "et0_season_mm": {
+      "description": "FAO-56 Penman-Monteith from POWER",
+      "minimum": 0,
+      "title": "Et0 Season Mm",
+      "type": "number"
+    },
+    "water_deficit_mm": {
+      "description": "et0_season_mm - rain_season_mm",
+      "title": "Water Deficit Mm",
+      "type": "number"
+    },
+    "gwetroot_critical": {
+      "description": "POWER root-zone wetness",
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Gwetroot Critical",
+      "type": "number"
+    },
+    "smap_rootzone_critical": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "SMAP L4 m³/m³; null before 2015",
+      "title": "Smap Rootzone Critical"
+    },
+    "smap_rootzone_anomaly": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "z-score, 2015-2025",
+      "title": "Smap Rootzone Anomaly"
+    },
+    "ndvi_peak": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": -1,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Ndvi Peak"
+    },
+    "ndvi_peak_anomaly": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "z-score, same zone+crop",
+      "title": "Ndvi Peak Anomaly"
+    },
+    "ndvi_usable_share": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "null when the source has no reliability layer",
+      "title": "Ndvi Usable Share"
+    },
+    "soc_g_per_kg": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Soc G Per Kg"
+    },
+    "ph_h2o": {
+      "anyOf": [
+        {
+          "maximum": 14,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Ph H2O"
+    },
+    "clay_pct": {
+      "anyOf": [
+        {
+          "maximum": 100,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Clay Pct"
+    },
+    "sand_pct": {
+      "anyOf": [
+        {
+          "maximum": 100,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Sand Pct"
+    },
+    "yield_t_ha": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "INS AGR110A, counties",
+      "title": "Yield T Ha"
+    },
+    "yield_anomaly_pct": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "vs linear trend of the county x crop record",
+      "title": "Yield Anomaly Pct"
+    },
+    "crops_yaml_version": {
+      "title": "Crops Yaml Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "zone_id",
+    "zone_type",
+    "crop",
+    "season",
+    "lat",
+    "lon",
+    "hot_days_flowering",
+    "max_tmax_flowering_c",
+    "rain_flowering_mm",
+    "rain_season_mm",
+    "rh_flowering_pct",
+    "wet_days_flowering",
+    "rain_harvest_mm",
+    "et0_season_mm",
+    "water_deficit_mm",
+    "gwetroot_critical",
+    "crops_yaml_version"
+  ],
+  "title": "FeatureRow",
+  "type": "object",
+  "$id": "https://field-signal/contracts/feature_row/0.1.0"
+}

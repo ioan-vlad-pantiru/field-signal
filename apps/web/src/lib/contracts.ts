@@ -62,6 +62,10 @@ export interface FieldAnalysis {
   strategies: [Strategy, Strategy, Strategy, ...Strategy[]];
   caveats: Localized[];
   sources: DataSource[];
+  /**
+   * per-hexagon farmland mask; null = not computed
+   */
+  field_cells?: FieldCell[] | null;
 }
 
 export interface Location {
@@ -210,6 +214,20 @@ export interface Evidence {
 export interface LocalRisk {
   text: Localized;
   needs_local_review?: boolean;
+}
+/**
+ * One 1 ha hexagon of the field plan (`apps/web/src/lib/field-plan.ts`).
+ */
+
+export interface FieldCell {
+  /**
+   * axial 'q,r' of a pointy-top 1 ha hexagon; '0,0' is centred on location.point
+   */
+  id: string;
+  /**
+   * share of the hexagon mapped as cropland; source in `sources`
+   */
+  cropland_fraction: number;
 }
 
 export type RiskLevel = "low" | "medium" | "high";

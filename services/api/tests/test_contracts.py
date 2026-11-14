@@ -1,6 +1,9 @@
+import json
+from pathlib import Path
+
 from fastapi.testclient import TestClient
 
-from api.contracts import FieldAnalysis, SourcingRegion
+from api.contracts import FeatureRow, FieldAnalysis, SourcingRegion
 from api.main import app
 
 client = TestClient(app)
@@ -46,3 +49,9 @@ def test_sourcing_region_returns_valid_mock() -> None:
     s = body.scenario
     for r in (s.added_area_ha, s.added_production_t, s.added_protein_t):
         assert r.low <= r.mid <= r.high
+
+
+def test_feature_row_example_is_valid() -> None:
+    path = Path(__file__).resolve().parents[3] / "contracts/examples/feature_row.example.json"
+    rows = [FeatureRow.model_validate(r) for r in json.loads(path.read_text())]
+    assert {r.zone_type for r in rows} == {"field", "commune", "county"}
