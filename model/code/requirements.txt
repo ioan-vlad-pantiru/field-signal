@@ -1,0 +1,16 @@
+earthengine-api==1.7.52
+geopandas==1.2.0
+pyogrio==0.13.0
+shapely==2.2.0
+pyproj==3.8.0
+rasterio==1.5.2
+scipy==1.18.1
+numpy==2.5.4
+pandas==3.1.1
+polars==2.1.0
+pyarrow==26.0.1
+requests==2.34.2
+torch==2.9.1
+mlflow==3.18.0
+PyYAML==6.0.3
+tqdm==4.70.1
