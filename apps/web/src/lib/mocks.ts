@@ -8,5 +8,5 @@ import sourcingRegionJson from "@/mocks/sourcing_region.mock.json";
 // Every object has `mock: true`: never present these numbers as real in the pitch.
 export const mockFieldAnalysis = fieldAnalysisJson as unknown as FieldAnalysis;
 export const mockSourcingRegion = sourcingRegionJson as unknown as SourcingRegion;
-// Provisional, written by hand for a demo farm near Aiud until the API's real example replaces it.
+// The API's own example for the demo farm near Aiud, copied from contracts/examples/farm_plan.mock.json.
 export const mockFarmPlan = farmPlanJson as unknown as FarmPlanResponse;
