@@ -1,4 +1,5 @@
 import time
+from typing import Any
 
 from fastapi.testclient import TestClient
 
@@ -10,7 +11,7 @@ FIELD = [(46.3000, 23.7460), (46.3003, 23.7538), (46.2953, 23.7546), (46.2948, 2
 OUTSIDE = [(40.0, 10.0), (40.0, 10.01), (39.99, 10.01), (39.99, 10.0)]
 
 
-def _body(boundary: list[tuple[float, float]]) -> dict:
+def _body(boundary: list[tuple[float, float]]) -> dict[str, Any]:
     return {
         "fields": [
             {
@@ -35,7 +36,7 @@ def _wait(job_id: str, timeout_s: float = 120) -> OptimizerJob:
     raise AssertionError("job did not finish")
 
 
-def test_job_returns_at_once_and_matches_the_synchronous_plan():
+def test_job_returns_at_once_and_matches_the_synchronous_plan() -> None:
     t = time.monotonic()
     r = client.post("/v1/farm/optimize/jobs", json=_body(FIELD))
     assert r.status_code == 202 and time.monotonic() - t < 2
@@ -50,7 +51,7 @@ def test_job_returns_at_once_and_matches_the_synchronous_plan():
     assert [p.score.total for p in done.result.plans] == [p.score.total for p in sync.plans]
 
 
-def test_rejected_job_and_unknown_id():
+def test_rejected_job_and_unknown_id() -> None:
     job = OptimizerJob.model_validate(
         client.post("/v1/farm/optimize/jobs", json=_body(OUTSIDE)).json()
     )
