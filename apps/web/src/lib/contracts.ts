@@ -1137,3 +1137,22 @@ export interface RuleCheck {
    */
   verified: boolean;
 }
+
+export type OptimizerJobStatus = "queued" | "running" | "done" | "rejected" | "failed";
+
+export interface OptimizerJob {
+  id: string;
+  status: OptimizerJobStatus;
+  /**
+   * seconds since the job was submitted
+   */
+  elapsed_s: number;
+  /**
+   * set when status is done
+   */
+  result?: OptimizerResponse | null;
+  /**
+   * why, when rejected or failed
+   */
+  detail?: string | null;
+}

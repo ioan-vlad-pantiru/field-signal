@@ -226,16 +226,31 @@ function Flow({
   /** The farm plan of the last run; a newer run makes older answers stale. */
   const [farm, setFarm] = useState<OptimizerState>({ status: "loading" });
   const farmRun = useRef(0);
+  const farmAbort = useRef<AbortController | null>(null);
+  // Stop polling a farm plan job when the farmer leaves the page.
+  useEffect(() => () => farmAbort.current?.abort(), []);
 
-  /** Not part of the per-field Promise.all: a slow solve or a 422 never holds up the per-field results. */
+  /**
+   * Not part of the per-field Promise.all: the farm plan runs as a background job on the API, so a
+   * slow plan or a 422 never holds up the per-field results, and the page stays usable meanwhile.
+   */
   function startOptimizer(list: SubmittedField[]) {
     const runId = ++farmRun.current;
+    farmAbort.current?.abort();
+    const abort = new AbortController();
+    farmAbort.current = abort;
     setFarm({ status: "loading" });
-    optimizeFarm(farmRequest(list, fieldLabel)).then(
+    optimizeFarm(farmRequest(list, fieldLabel), {
+      signal: abort.signal,
+      onProgress: (elapsedS) => {
+        if (farmRun.current === runId) setFarm({ status: "loading", elapsedS });
+      },
+    }).then(
       (result) => {
         if (farmRun.current === runId) setFarm({ status: "done", result });
       },
       (error: unknown) => {
+        if (abort.signal.aborted) return;
         const invalid = error instanceof ApiRequestError && error.status === 422;
         if (farmRun.current === runId) setFarm({ status: "error", invalid });
       },

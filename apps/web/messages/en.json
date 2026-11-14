@@ -390,7 +390,9 @@
   "Optimizer": {
     "title": "Farm plan",
     "hint": "All your fields planned together and tested against past weather.",
-    "loading": "Making the farm plan…",
+    "loading": "Running the crop model on your fields…",
+    "loadingHint": "It runs in the background: you can read the results for each field above meanwhile.",
+    "loadingBackground": "Still running ({s} s). It runs in the background: the rest of the page works meanwhile.",
     "error": "The farm plan could not be made for these fields. The results for each field above are not affected.",
     "invalid": "These fields could not be planned: a field is outside the covered area, too large, or its outline is not valid. The results for each field above are not affected.",
     "meta": "{years}-year plan · {ha} ha · {count, plural, one {# past weather window} other {# past weather windows}}, seasons {first}–{last} · model {model}",

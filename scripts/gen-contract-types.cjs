@@ -33,6 +33,7 @@ const NAMES = [
   "rotation_outcome",
   "optimizer_request",
   "optimizer_response",
+  "optimizer_job",
 ];
 const OUT = "apps/web/src/lib/contracts.ts";
 

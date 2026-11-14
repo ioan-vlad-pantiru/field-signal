@@ -601,6 +601,26 @@ class OptimizerResponse(Contract):
     sources: list[DataSource]
 
 
+class OptimizerJobStatus(StrEnum):
+    QUEUED = "queued"
+    RUNNING = "running"
+    DONE = "done"
+    REJECTED = "rejected"  # the fields cannot be planned (the synchronous endpoint's 422)
+    FAILED = "failed"
+
+
+class OptimizerJob(Contract):
+    """A farm plan computed in the background: `POST /v1/farm/optimize/jobs` returns it queued,
+    `GET /v1/farm/optimize/jobs/{id}` until `status` is done, rejected or failed. Jobs live in the
+    API's memory for 15 minutes; an unknown id is a 404 (expired, or the API restarted)."""
+
+    id: str
+    status: OptimizerJobStatus
+    elapsed_s: float = Field(ge=0, description="seconds since the job was submitted")
+    result: OptimizerResponse | None = Field(default=None, description="set when status is done")
+    detail: str | None = Field(default=None, description="why, when rejected or failed")
+
+
 # --------------------------------------------------------------------------- farmer accounts
 
 
@@ -887,4 +907,5 @@ EXPORTED: dict[str, type[Contract]] = {
     "rotation_outcome": RotationOutcome,
     "optimizer_request": OptimizerRequest,
     "optimizer_response": OptimizerResponse,
+    "optimizer_job": OptimizerJob,
 }

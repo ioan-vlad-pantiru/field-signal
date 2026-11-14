@@ -390,7 +390,9 @@
   "Optimizer": {
     "title": "Planul fermei",
     "hint": "Toate câmpurile dumneavoastră, planificate împreună și testate pe vremea din anii trecuți.",
-    "loading": "Facem planul fermei…",
+    "loading": "Rulăm modelul culturilor pe câmpurile tale…",
+    "loadingHint": "Rulează în fundal: între timp poți citi rezultatele fiecărui câmp de mai sus.",
+    "loadingBackground": "Încă rulează ({s} s). Rulează în fundal: restul paginii funcționează între timp.",
     "error": "Planul fermei nu a putut fi făcut pentru aceste câmpuri. Rezultatele fiecărui câmp de mai sus nu sunt afectate.",
     "invalid": "Aceste câmpuri nu au putut fi planificate: un câmp este în afara zonei acoperite, este prea mare sau conturul lui nu este valid. Rezultatele fiecărui câmp de mai sus nu sunt afectate.",
     "meta": "Plan pe {years} ani · {ha} ha · {count, plural, one {o fereastră meteo din trecut} few {# ferestre meteo din trecut} other {# de ferestre meteo din trecut}}, sezoanele {first}–{last} · model {model}",

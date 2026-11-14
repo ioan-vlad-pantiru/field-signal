@@ -12,10 +12,12 @@ from api.analysis import run_field_analysis
 from api.contracts import (
     FieldAnalysis,
     FieldRequest,
+    OptimizerJob,
     OptimizerRequest,
     OptimizerResponse,
     SourcingRegion,
 )
+from api.planner import jobs
 from api.planner.service import PlanRejected, plan_farm
 from api.settings import get_settings
 from api.whatsapp.router import router as whatsapp_router
@@ -76,3 +78,18 @@ def optimize_farm(request: OptimizerRequest) -> OptimizerResponse:
         return plan_farm(request)
     except PlanRejected as e:
         raise HTTPException(status_code=422, detail=str(e)) from e
+
+
+@app.post("/v1/farm/optimize/jobs", status_code=202, tags=["farmer"])
+def start_optimize_job(request: OptimizerRequest) -> OptimizerJob:
+    """The same farm plan as `/v1/farm/optimize`, run in a background worker process: returns the
+    job at once; poll `GET /v1/farm/optimize/jobs/{id}`. The web app uses this one."""
+    return jobs.submit(request)
+
+
+@app.get("/v1/farm/optimize/jobs/{job_id}", tags=["farmer"])
+def optimize_job(job_id: str) -> OptimizerJob:
+    job = jobs.get(job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Unknown or expired farm plan job.")
+    return job

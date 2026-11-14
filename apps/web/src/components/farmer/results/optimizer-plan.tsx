@@ -20,7 +20,8 @@ import { DemoBanner, EmptyState } from "@/components/ui/states";
 import { CropSequence } from "./crop-sequence";
 
 export type OptimizerState =
-  | { status: "loading" }
+  /** `elapsedS`: seconds the background job has been running, once the API reported it. */
+  | { status: "loading"; elapsedS?: number }
   /** `invalid`: the API refused the fields (422); anything else is a generic failure. */
   | { status: "error"; invalid: boolean }
   | { status: "done"; result: Loaded<OptimizerResponse> };
@@ -43,6 +44,11 @@ export function OptimizerSection({ state, names }: { state: OptimizerState; name
         <div className="flex flex-col gap-3" aria-busy="true">
           <p role="status" className="font-medium">
             {t("loading")}
+          </p>
+          <p className="text-sm text-ink-muted">
+            {state.elapsedS !== undefined && state.elapsedS >= 3
+              ? t("loadingBackground", { s: Math.round(state.elapsedS) })
+              : t("loadingHint")}
           </p>
           <Skeleton className="h-24 w-full" />
           <Skeleton className="h-24 w-full" />

@@ -2,6 +2,7 @@ import type {
   FieldAnalysis,
   FieldRequest,
   MergedParcels,
+  OptimizerJob,
   OptimizerRequest,
   OptimizerResponse,
   ParcelCollection,
@@ -74,18 +75,53 @@ export function getSourcingRegion(season = 2025): Promise<Loaded<SourcingRegion>
   );
 }
 
-/** One farm plan for all fields together: the trained world model runs per piece and the solver
- * then searches, about 25 s for a 45 ha farm on the API's 1 vCPU the first time, hence 90 s. */
-export function optimizeFarm(body: OptimizerRequest): Promise<Loaded<OptimizerResponse>> {
-  return withFallback(
-    () =>
-      request<OptimizerResponse>(
-        "/v1/farm/optimize",
-        { method: "POST", body: JSON.stringify(body) },
-        90_000,
-      ),
-    mockOptimizer,
-  );
+const JOB_POLL_MS = 2000;
+const JOB_MAX_MS = 5 * 60_000;
+
+/**
+ * One farm plan for all fields together, computed as a background job on the API (the trained
+ * world model can take half a minute on a big farm): starts the job, then polls it until it is
+ * done. The page stays usable meanwhile. `onProgress` gets the seconds since the job started;
+ * `signal` stops polling (a newer run replaced this one). A rejected job throws a 422
+ * `ApiRequestError`; an unreachable API falls back to the bundled mock plan.
+ */
+export function optimizeFarm(
+  body: OptimizerRequest,
+  { signal, onProgress }: { signal?: AbortSignal; onProgress?: (elapsedS: number) => void } = {},
+): Promise<Loaded<OptimizerResponse>> {
+  return withFallback(async () => {
+    const path = "/v1/farm/optimize/jobs";
+    let job = await request<OptimizerJob>(path, { method: "POST", body: JSON.stringify(body) });
+    const deadline = Date.now() + JOB_MAX_MS;
+    while (job.status === "queued" || job.status === "running") {
+      onProgress?.(job.elapsed_s);
+      await sleep(JOB_POLL_MS, signal);
+      if (Date.now() > deadline) throw new Error("The farm plan took too long.");
+      job = await request<OptimizerJob>(`${path}/${job.id}`);
+    }
+    if (job.status === "done" && job.result) return job.result;
+    if (job.status === "rejected") throw new ApiRequestError(path, 422);
+    throw new ApiRequestError(path, 500);
+  }, mockOptimizer).then((loaded) => {
+    // An aborted run never resolves into the page, not even with the fallback plan.
+    signal?.throwIfAborted();
+    return loaded;
+  });
+}
+
+function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) return reject(signal.reason);
+    const timer = setTimeout(resolve, ms);
+    signal?.addEventListener(
+      "abort",
+      () => {
+        clearTimeout(timer);
+        reject(signal.reason);
+      },
+      { once: true },
+    );
+  });
 }
 
 /** A map box in degrees. */
