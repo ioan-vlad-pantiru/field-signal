@@ -1,6 +1,7 @@
 """POST /v1/farm/plan through the API (plan §3.9, T5)."""
 
 import json
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -9,6 +10,8 @@ from fastapi.testclient import TestClient
 
 from api.contracts import FarmPlanResponse
 from api.main import app
+from api.planner import optimizer
+from api.planner.crops import RULE_LEGUMES
 
 client = TestClient(app)
 EXAMPLE = Path(__file__).resolve().parents[3] / "contracts/examples/farm_plan.mock.json"
@@ -77,6 +80,10 @@ def test_default_enforces_no_eco_rule(demo: FarmPlanResponse) -> None:
     assert "No eco-scheme (PD-04) rule was enforced" in en
     assert "assumed from the current rotation" in en
     assert "best solution found" in en and "alternatives" in en
+    assert "shown as optimal only when the solver proves it" in en
+    assert "the weather of its NASA POWER cell" in en and "whole farm" not in en
+    assert "just across the border" in en
+    assert "proven_optimal" not in en
     for c in demo.caveats:
         for text in (c.ro, c.en):
             assert "complian" not in text.lower() and "conform" not in text.lower()
@@ -149,3 +156,30 @@ def test_example_is_valid() -> None:
     assert res.mock is True and res.model_version == "mock-0" and res.plans
     web = EXAMPLE.parents[2] / "apps/web/src/mocks/farm_plan.mock.json"
     assert web.read_text() == EXAMPLE.read_text()
+
+
+def test_dropped_practice_explains_why(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The practice found no plan in time (or does not fit) and the retry found none either.
+    def no_plan(*args: Any, **kwargs: Any) -> optimizer.FarmSolve:
+        return optimizer.FarmSolve([], "UNKNOWN", None, True, False)
+
+    monkeypatch.setattr(optimizer, "solve_farm", no_plan)  # service calls it via the module
+    res = _plan(_body(eco_scheme=True, eco_practice="legume_share"))
+    assert res.plans == [] and res.current is not None
+    en = _en(res)
+    assert "No plan meeting the selected PD-04 practice (legume share)" in en
+    assert "at most 3 rotations and pea returns to a field only after 4 years" in en
+    assert "infeasible" not in en
+
+
+def test_rule_checks_count_soybean_as_legume() -> None:
+    rots = ["soybean>wheat>maize", "wheat>maize>soybean", "maize>soybean>wheat"]
+    alloc = {(f"p{i}", r): 100 for i, r in enumerate(rots)}
+    rows = optimizer.rule_checks(alloc, RULE_LEGUMES, None)
+    legume = next(r for r in rows if r.id == "legume_share")
+    assert legume.value_pct == pytest.approx(33.3) and legume.passed
+
+
+def test_stage_times_are_logged_at_info() -> None:
+    assert logging.getLogger("api.planner.service").isEnabledFor(logging.INFO)
+    assert logging.getLogger().handlers  # root handler, so they reach the console under uvicorn

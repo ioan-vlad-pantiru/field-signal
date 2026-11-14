@@ -35,7 +35,7 @@ from api.contracts import (
 from api.planner import candidates as cand
 from api.planner import grid, optimizer, scoring, weather
 from api.planner import mock_world_model as wm
-from api.planner.crops import CROPS, LEGUMES
+from api.planner.crops import CROPS, LEGUMES, RULE_LEGUMES
 
 log = logging.getLogger(__name__)
 
@@ -142,7 +142,7 @@ def _plan(
                 passed=r.passed,
                 verified=r.verified,
             )
-            for r in optimizer.rule_checks(allocation, LEGUMES, eco_practice)
+            for r in optimizer.rule_checks(allocation, RULE_LEGUMES, eco_practice)
         ],
         confidence=Confidence.LOW,  # mock world model
         proven_optimal=proven_optimal,
@@ -270,11 +270,18 @@ def _caveats(
             "takes the values of its cell.",
         ),
         _l(
-            "Vremea vine dintr-o singură celulă NASA POWER de circa 50 km, comună întregii ferme; "
-            "umiditatea din zona rădăcinilor este o valoare de model MERRA-2, nu o măsurătoare "
-            "în câmp.",
-            "Weather comes from one NASA POWER cell of about 50 km shared by the whole farm; "
-            "root-zone wetness is a MERRA-2 model value, not a field measurement.",
+            "Fiecare câmp primește vremea celulei sale NASA POWER (circa 50 km), comună tuturor "
+            "câmpurilor din aceeași celulă; umiditatea din zona rădăcinilor este o valoare de "
+            "model MERRA-2, nu o măsurătoare în câmp.",
+            "Each field takes the weather of its NASA POWER cell (about 50 km), shared by every "
+            "field in that cell; root-zone wetness is a MERRA-2 model value, not a field "
+            "measurement.",
+        ),
+        _l(
+            "Acoperirea este grila NASA POWER peste România: un câmp aflat chiar dincolo de "
+            "graniță, într-o celulă acoperită, este planificat cu aceleași date.",
+            "Coverage is the NASA POWER grid over Romania: a field just across the border that "
+            "falls in a covered cell is planned with the same data.",
         ),
         _l(
             f"Scenariile sunt un test de stres pe istoric ({first}-{last}), nu o prognoză; cel mai "
@@ -308,10 +315,10 @@ def _caveats(
         ),
         _eco_caveat(request, solve),
         _l(
-            "Locul 1 este cea mai bună soluție găsită; este optimă pentru acest model doar când "
-            "optimalitatea este dovedită (proven_optimal).",
-            "Rank 1 is the best solution found; it is optimal for this model only when proven "
-            "(proven_optimal).",
+            "Locul 1 este cea mai bună soluție găsită; este afișată ca optimă doar când solverul "
+            "o dovedește.",
+            "Rank 1 is the best solution found; it is shown as optimal only when the solver "
+            "proves it.",
         ),
         _l(
             "Locurile 2 și 3 sunt alternative care diferă prin cel puțin două alegeri de rotație, "
@@ -379,12 +386,27 @@ def _eco_caveat(request: FarmPlanRequest, solve: optimizer.FarmSolve) -> Localiz
         )
     name = PRACTICE_NAME[request.eco_practice]
     if solve.eco_dropped:
-        return _l(
-            f"Practica PD-04 aleasă ({name.ro}) a făcut problema imposibilă și a fost abandonată; "
-            "planurile nu impun nicio regulă PD-04.",
-            f"The chosen PD-04 practice ({name.en}) made the problem infeasible and was dropped; "
-            "the plans enforce no PD-04 rule.",
+        ro = (
+            f"Nu s-a găsit în limita de timp niciun plan care respectă practica PD-04 aleasă "
+            f"({name.ro}), sau practica nu se potrivește acestei ferme; a fost abandonată, iar "
+            "planurile nu impun nicio regulă PD-04."
         )
+        en = (
+            f"No plan meeting the selected PD-04 practice ({name.en}) was found within the time "
+            "limit, or the practice does not fit this farm; it was dropped and the plans enforce "
+            "no PD-04 rule."
+        )
+        if request.eco_practice == "legume_share":
+            n, back = optimizer.MAX_ROTATIONS, CROPS["pea"].min_return_years
+            ro += (
+                f" Un câmp are cel mult {n} rotații, iar mazărea revine pe același câmp abia după "
+                f"{back} ani, deci o fermă cu un singur câmp nu poate cultiva mazăre în fiecare an."
+            )
+            en += (
+                f" A field carries at most {n} rotations and pea returns to a field only after "
+                f"{back} years, so a one-field farm cannot grow pea every year."
+            )
+        return _l(ro, en)
     return _l(
         f"A fost impusă o singură practică PD-04: {name.ro}; cealaltă este doar raportată.",
         f"One PD-04 practice was enforced: {name.en}; the other is reported only.",

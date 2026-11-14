@@ -1,5 +1,7 @@
 """FastAPI application entrypoint."""
 
+import logging
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -18,6 +20,10 @@ from api.settings import get_settings
 from api.whatsapp.router import router as whatsapp_router
 
 settings = get_settings()
+# uvicorn configures only its own loggers: show this app's INFO logs (farm plan stage times),
+# keep third-party libraries at WARNING.
+logging.basicConfig(level=logging.WARNING, format="%(levelname)s:     %(name)s %(message)s")
+logging.getLogger("api").setLevel(logging.INFO)
 
 app = FastAPI(title=settings.app_name, version="0.1.0")
 app.add_middleware(

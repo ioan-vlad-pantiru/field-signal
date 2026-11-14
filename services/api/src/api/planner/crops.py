@@ -35,3 +35,6 @@ CROPS: dict[str, PlannerCrop] = {
     "pea": PlannerCrop(True, 4, "fabaceae", "spring", (3, 4), (5, 6), (6, 7), "low", 28.0),
 }
 LEGUMES = frozenset(c for c, v in CROPS.items() if v.is_legume)
+# Rule checks only: legume main crops of the contract that a farmer's current rotation may hold
+# (soybean is never proposed, but it counts towards the legume share of a baseline).
+RULE_LEGUMES = LEGUMES | {"soybean"}
