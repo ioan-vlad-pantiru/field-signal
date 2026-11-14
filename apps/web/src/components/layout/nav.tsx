@@ -12,6 +12,7 @@ import {
   FieldIcon,
   GlobeIcon,
   GridIcon,
+  LayersIcon,
   UserIcon,
 } from "@/components/ui/icons";
 
@@ -19,6 +20,7 @@ const ITEMS = [
   { href: "/field", key: "field", Icon: FieldIcon },
   { href: "/farm", key: "farm", Icon: GridIcon },
   { href: "/feed", key: "feed", Icon: BarnIcon },
+  { href: "/stocks", key: "stocks", Icon: LayersIcon },
   { href: "/about", key: "about", Icon: BookIcon },
   { href: "/account", key: "account", Icon: UserIcon },
 ] as const;
@@ -37,7 +39,7 @@ export function BottomNav() {
       aria-label={t("label")}
       className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
     >
-      <ul className="grid grid-cols-5">
+      <ul className="grid grid-cols-6">
         {ITEMS.map(({ href, key, Icon }) => {
           const active = isActive(href);
           return (
@@ -45,11 +47,11 @@ export function BottomNav() {
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={`flex min-h-16 flex-col items-center justify-center gap-0.5 text-sm font-medium ${
+                className={`flex min-h-16 flex-col items-center justify-center gap-0.5 text-xs font-medium ${
                   active ? "text-field" : "text-ink-muted"
                 }`}
               >
-                <span className={`rounded-full px-4 py-1 ${active ? "bg-field-tint" : ""}`}>
+                <span className={`rounded-full px-3 py-1 ${active ? "bg-field-tint" : ""}`}>
                   <Icon size={22} />
                 </span>
                 {t(key)}
@@ -76,12 +78,14 @@ export function TopNav() {
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={`flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full px-3 font-medium lg:px-4 ${
+                title={t(key)}
+                className={`flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full px-3 font-medium ${
                   active ? "bg-field-tint text-field" : "text-ink-muted hover:text-ink"
                 }`}
               >
-                <Icon size={18} className="hidden md:block" />
-                {t(key)}
+                {/* Six items: icons only on tablets, labels only at lg, both at xl. */}
+                <Icon size={18} className="lg:hidden xl:block" />
+                <span className="sr-only lg:not-sr-only">{t(key)}</span>
               </Link>
             </li>
           );
