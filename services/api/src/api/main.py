@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from pydantic import BaseModel
 
-from api import accounts, assistant, farm, farm_plan, mocks, parcels
+from api import accounts, assistant, farm, farm_plan, parcels, sourcing
 from api.analysis import run_field_analysis
 from api.contracts import FieldAnalysis, FieldRequest, SourcingRegion
 from api.settings import get_settings
@@ -49,6 +49,6 @@ def analyze_field(request: FieldRequest) -> FieldAnalysis:
 
 
 @app.get("/v1/sourcing/region", tags=["buyer"])
-def sourcing_region(season: int = 2025) -> SourcingRegion:
-    """Feed-buyer screen. Currently returns MOCK data (mock=true)."""
-    return mocks.sourcing_region(season)
+def sourcing_region(season: int | None = None) -> SourcingRegion:
+    """Feed-buyer screen: real numbers for Alba's communes when built, else demo (mock=true)."""
+    return sourcing.sourcing_region(season)
