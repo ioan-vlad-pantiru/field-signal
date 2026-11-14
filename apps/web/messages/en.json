@@ -1061,5 +1061,67 @@
     "downloadHint": "A checklist to copy by hand into AGI Online, parcel by parcel. It is not an official import file.",
     "downloadYear": "Year of the list",
     "download": "Download the APIA list for {year}"
+  },
+  "FeedExtra": {
+    "need": {
+      "title": "How much of your soy could come from here",
+      "hint": "Compare the extra local soy from the slider above with what you buy in a year.",
+      "inputLabel": "Soy you buy per year (tonnes)",
+      "inputPlaceholder": "e.g. 20000",
+      "private": "Stays in this browser only. It is never sent to us or anyone else.",
+      "formLabel": "What you buy",
+      "form": {
+        "beans": "Soybeans",
+        "meal": "Soybean meal"
+      },
+      "supply": "With {pct}% of suppliers adding soybean: {low}–{high} t of extra beans a year.",
+      "coverage": "Local soy could cover {low}–{high}% of what you buy (most likely {mid}%)",
+      "more": "In this scenario the area could grow more soy than you buy today.",
+      "empty": "Enter how much soy you buy in a year to see what share local farms could cover.",
+      "assumptions": "How this is worked out",
+      "assumeSlider": "The extra soy is the scenario above, scaled in a straight line with the slider.",
+      "assumeMeal": "For meal: {low}–{high} t of meal per t of beans after crushing. This is a typical crushing yield; check it with your crusher.",
+      "assumeAll": "It assumes all the extra soy could be bought by you. In practice it is shared with other buyers and some is kept as seed."
+    },
+    "quality": {
+      "title": "Soy quality: what to know",
+      "intro": "The concern is fair: the quality of local soy varies more from year to year than that of a large, steady import supply. Research from Central Europe shows where the difference comes from and what a buyer can do about it.",
+      "driversTitle": "What decides the protein",
+      "driverSeason": "Mostly the season and the variety. Protein tends to be lower in seasons with heavy rain while the beans fill, or when the plants fix little nitrogen. Warm seasons with moderate rain give good protein.",
+      "driverGerman": "In German field trials, average protein was 41.6%, close to Brazil's 40.9%.",
+      "driverVariety": "High-protein varieties kept 46–55% protein even in difficult conditions.",
+      "actionsTitle": "What you can do",
+      "action1": "Buy from communes and seasons without a rain warning during bean fill. The quality column on this page shows it for soybean.",
+      "action2": "Contract on a protein specification and on named high-protein varieties.",
+      "action3": "Test protein when the soy arrives, lot by lot.",
+      "importsTitle": "Also good to know: imported soy and the new EU rules",
+      "importsChain": "Soy bought close to home can mean a shorter chain: no sea freight and no exchange-rate risk on the purchase.",
+      "eudr": "The EU Deforestation Regulation (EUDR) covers soy. Under the rules agreed so far, it applies to large companies from 30 December 2026. They must show that the soy was not grown on land deforested after 31 December 2020, and give the location of the plots where it was grown.",
+      "trace": "Soy from this area can be linked to the APIA parcel outlines that Field Signal maps.",
+      "eudrCheck": "Check the current EUDR rules before relying on these dates: the Commission reviewed them in 2026.",
+      "sourcesTitle": "Sources",
+      "source": {
+        "german": "Soybean in central and south Germany (Agronomy, 2020)",
+        "central": "Protein variation of soybean in Central Europe (AGRIS)",
+        "varieties": "High-protein soybean genotypes (2024)",
+        "eudrDonau": "EUDR postponement (Donau Soja)",
+        "eudrArthurCox": "EUDR one-year postponement agreed (Arthur Cox)"
+      }
+    },
+    "validation": {
+      "title": "How the risk did in past years",
+      "summary": "of {total} past seasons called right",
+      "cropSummary": "{hits} of {total} right",
+      "hit": "Called right",
+      "miss": "Missed",
+      "seasonLabel": "{season}: {risk}, harvest {anomaly} against the trend. {result}.",
+      "honest": "We show the misses on purpose. No risk score gets every year right, and you should see where this one went wrong.",
+      "tableTitle": "See every season",
+      "colCrop": "Crop",
+      "colSeason": "Season",
+      "colRisk": "Risk we would have given",
+      "colYield": "Harvest vs trend",
+      "colResult": "Result"
+    }
   }
 }

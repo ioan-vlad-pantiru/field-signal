@@ -1061,5 +1061,67 @@
     "downloadHint": "O listă de verificare pe care o copiați de mână în AGI Online, parcelă cu parcelă. Nu este un fișier oficial de import.",
     "downloadYear": "Anul listei",
     "download": "Descărcați lista APIA pentru {year}"
+  },
+  "FeedExtra": {
+    "need": {
+      "title": "Cât din soia dumneavoastră ar putea veni de aici",
+      "hint": "Comparați soia locală în plus din cursorul de mai sus cu ceea ce cumpărați într-un an.",
+      "inputLabel": "Soia pe care o cumpărați pe an (tone)",
+      "inputPlaceholder": "de ex. 20000",
+      "private": "Rămâne doar în acest browser. Nu este trimisă nici nouă, nici altcuiva.",
+      "formLabel": "Ce cumpărați",
+      "form": {
+        "beans": "Boabe de soia",
+        "meal": "Șrot de soia"
+      },
+      "supply": "Dacă {pct}% dintre furnizori adaugă soia: {low}–{high} t de boabe în plus pe an.",
+      "coverage": "Soia locală ar putea acoperi {low}–{high}% din ce cumpărați (cel mai probabil {mid}%)",
+      "more": "În acest scenariu, zona ar putea produce mai multă soia decât cumpărați astăzi.",
+      "empty": "Introduceți câtă soia cumpărați într-un an ca să vedeți ce parte ar putea acoperi fermele locale.",
+      "assumptions": "Cum am calculat",
+      "assumeSlider": "Soia în plus este scenariul de mai sus, scalat în linie dreaptă cu cursorul.",
+      "assumeMeal": "Pentru șrot: {low}–{high} t de șrot la o tonă de boabe după procesare. Este un randament obișnuit; verificați-l cu procesatorul dumneavoastră.",
+      "assumeAll": "Presupunem că toată soia în plus ar putea fi cumpărată de dumneavoastră. În realitate, ea se împarte cu alți cumpărători, iar o parte rămâne sămânță."
+    },
+    "quality": {
+      "title": "Calitatea soiei: ce este bine de știut",
+      "intro": "Îngrijorarea este îndreptățită: calitatea soiei locale variază de la an la an mai mult decât cea a unui import mare și constant. Cercetările din Europa Centrală arată de unde vine diferența și ce poate face un cumpărător.",
+      "driversTitle": "Ce hotărăște conținutul de proteină",
+      "driverSeason": "În principal anul și soiul. Proteina tinde să fie mai mică în anii cu ploi multe cât timp se umplu boabele sau când plantele fixează puțin azot. Anii calzi, cu ploi moderate, dau proteină bună.",
+      "driverGerman": "În loturile experimentale din Germania, proteina medie a fost 41,6%, apropiată de cea din Brazilia (40,9%).",
+      "driverVariety": "Soiurile bogate în proteină au păstrat 46–55% proteină chiar și în condiții grele.",
+      "actionsTitle": "Ce puteți face",
+      "action1": "Cumpărați din comunele și anii fără avertizare de ploaie la umplerea boabelor. Coloana de calitate de pe această pagină o arată pentru soia.",
+      "action2": "Contractați pe o specificație de proteină și pe soiuri bogate în proteină, numite în contract.",
+      "action3": "Testați proteina la recepție, lot cu lot.",
+      "importsTitle": "Bine de știut și: soia din import și noile reguli UE",
+      "importsChain": "Soia cumpărată aproape poate însemna un lanț mai scurt: fără transport maritim și fără riscul cursului valutar la cumpărare.",
+      "eudr": "Regulamentul UE privind defrișările (EUDR) acoperă soia. Conform regulilor convenite până acum, se aplică marilor companii din 30 decembrie 2026. Acestea trebuie să arate că soia nu a crescut pe teren defrișat după 31 decembrie 2020 și să dea localizarea parcelelor pe care a crescut.",
+      "trace": "Soia din această zonă poate fi legată de contururile parcelelor APIA pe care Field Signal le cartografiază.",
+      "eudrCheck": "Verificați regulile EUDR în vigoare înainte să vă bazați pe aceste date: Comisia le-a revizuit în 2026.",
+      "sourcesTitle": "Surse",
+      "source": {
+        "german": "Soia în centrul și sudul Germaniei (Agronomy, 2020)",
+        "central": "Variația proteinei la soia în Europa Centrală (AGRIS)",
+        "varieties": "Genotipuri de soia bogate în proteină (2024)",
+        "eudrDonau": "Amânarea EUDR (Donau Soja)",
+        "eudrArthurCox": "Amânarea EUDR cu un an (Arthur Cox)"
+      }
+    },
+    "validation": {
+      "title": "Cum s-a descurcat riscul în anii trecuți",
+      "summary": "din {total} ani trecuți estimați corect",
+      "cropSummary": "{hits} din {total} corect",
+      "hit": "Estimat corect",
+      "miss": "Ratat",
+      "seasonLabel": "{season}: {risk}, recolta {anomaly} față de tendință. {result}.",
+      "honest": "Arătăm intenționat și anii ratați. Niciun scor de risc nu nimerește fiecare an, iar dumneavoastră trebuie să vedeți unde a greșit acesta.",
+      "tableTitle": "Vedeți fiecare an",
+      "colCrop": "Cultura",
+      "colSeason": "Anul",
+      "colRisk": "Riscul pe care l-am fi dat",
+      "colYield": "Recolta față de tendință",
+      "colResult": "Rezultat"
+    }
   }
 }

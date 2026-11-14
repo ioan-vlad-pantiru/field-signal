@@ -16,6 +16,8 @@ import { SourceChip } from "@/components/ui/source-chip";
 import { RISK_TONE, TONE_CLASSES, TONE_ICONS } from "@/components/ui/tone";
 import { DemoBanner, EmptyState, ErrorState } from "@/components/ui/states";
 import { AdoptionSlider } from "./adoption-slider";
+import { SoyImports, SoyQuality } from "./soy-imports";
+import { ValidationCard } from "./validation-card";
 import { CommuneTable } from "./commune-table";
 import { useMediaQuery } from "./use-media-query";
 import { ZoneCompare, defaultPair } from "./zone-compare";
@@ -247,6 +249,10 @@ function Region({ result }: { result: Loaded<SourcingRegion> }) {
           <StepCard step={region.zones.length >= 2 ? 3 : 2} title={t("scenarioTitle")} hint={t("scenarioHint")}>
             <AdoptionSlider scenario={region.scenario} />
           </StepCard>
+
+          <SoyImports scenario={region.scenario} />
+          <SoyQuality />
+          <ValidationCard validation={region.validation} />
 
           <section className="rounded-2xl bg-surface-sunken p-5 sm:p-6">
             <h2 className="text-lg font-semibold">{t("caveatsTitle")}</h2>

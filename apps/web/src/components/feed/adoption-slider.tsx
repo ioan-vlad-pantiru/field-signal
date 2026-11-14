@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import type { AdoptionScenario, Crop, Range } from "@/lib/contracts";
 import { formatNumber, scaleRange } from "@/lib/format";
@@ -13,6 +13,33 @@ import { Segmented } from "@/components/ui/segmented";
 import { Slider } from "@/components/ui/slider";
 
 const MAX_ADOPTION = 50;
+
+/*
+ * The slider's share, shared with cards mounted elsewhere on the page (SoyImports) without
+ * lifting state into the page. One slider per page.
+ */
+let sharedAdoption: number | null = null;
+const adoptionListeners = new Set<() => void>();
+
+function publishAdoption(pct: number) {
+  sharedAdoption = pct;
+  adoptionListeners.forEach((listener) => listener());
+}
+
+function subscribeAdoption(listener: () => void) {
+  adoptionListeners.add(listener);
+  return () => adoptionListeners.delete(listener);
+}
+
+/** The adoption share the slider shows now, or `fallback` before it has been moved. */
+export function useAdoptionPct(fallback: number): number {
+  const pct = useSyncExternalStore(
+    subscribeAdoption,
+    () => sharedAdoption,
+    () => null,
+  );
+  return pct ?? fallback;
+}
 const CHOICES = ["soy", "pea", "both"] as const;
 type Choice = (typeof CHOICES)[number];
 
@@ -26,7 +53,11 @@ export function AdoptionSlider({ scenario }: { scenario: AdoptionScenario }) {
   const tc = useTranslations("Crops");
   const locale = useAppLocale();
   const l = useLocalized();
-  const [pct, setPct] = useState(Math.round(scenario.adoption_pct));
+  const [pct, setPctState] = useState(Math.round(scenario.adoption_pct));
+  const setPct = (value: number) => {
+    setPctState(value);
+    publishAdoption(value);
+  };
   const [choice, setChoice] = useState<Choice>("soy");
 
   const soyCrop = scenario.crop;
