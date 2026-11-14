@@ -1,16 +1,7 @@
-import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Card, SectionTitle } from "@/components/ui/card";
-import {
-  BarnIcon,
-  BookIcon,
-  CrossIcon,
-  FieldIcon,
-  InfoIcon,
-  SatelliteIcon,
-  ShieldIcon,
-} from "@/components/ui/icons";
+import { Section } from "@/components/ui/section";
+import { SatelliteIcon } from "@/components/ui/icons";
 
 const SOURCES = [
   { key: "power", dataset: "NASA POWER", resolution: "0.5° × 0.625°", period: "2001–2025", nasa: true },
@@ -21,16 +12,8 @@ const SOURCES = [
   { key: "ins", dataset: "INS AGR110A", resolution: "—", period: "2001–2025", nasa: false },
 ] as const;
 
-const WHAT = [
-  { key: "farmer", Icon: FieldIcon },
-  { key: "buyer", Icon: BarnIcon },
-  { key: "transparency", Icon: BookIcon },
-] as const;
-
+const WHAT = ["farmer", "buyer", "transparency"] as const;
 const LIMITS = ["hail", "pests", "markets", "management", "scale"] as const;
-
-/** Stagger index for the .rise animation. */
-const at = (i: number) => ({ "--i": i }) as CSSProperties;
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/about">): Promise<Metadata> {
   const { locale } = await params;
@@ -44,109 +27,89 @@ export default async function AboutPage({ params }: PageProps<"/[locale]/about">
   const t = await getTranslations("About");
 
   return (
-    <article className="flex max-w-3xl flex-col gap-4">
-      <header className="rise" style={at(0)}>
-        <p className="font-semibold text-field">{t("eyebrow")}</p>
-        <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight sm:text-4xl">{t("title")}</h1>
-        <p className="mt-3 text-lg text-ink">{t("intro")}</p>
+    <article className="max-w-[720px]">
+      <header>
+        <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">{t("title")}</h1>
+        <p className="mt-4 text-lg">{t("intro")}</p>
+        <p className="mt-6 font-display text-xl font-semibold leading-snug">{t("judgment")}</p>
+        <p className="mt-2 text-ink-muted">{t("judgmentDetail")}</p>
       </header>
 
-      <aside
-        className="rise flex gap-3 rounded-[20px] border-2 border-field bg-field-tint p-4 sm:p-5"
-        style={at(1)}
-      >
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-field text-on-field">
-          <ShieldIcon size={22} />
-        </span>
-        <div>
-          <p className="font-display text-lg font-semibold leading-snug sm:text-xl">{t("judgment")}</p>
-          <p className="mt-1">{t("judgmentDetail")}</p>
-        </div>
-      </aside>
+      <Section title={t("whatTitle")}>
+        <dl className="flex flex-col gap-5">
+          {WHAT.map((key) => (
+            <div key={key}>
+              <dt className="font-semibold">{t(`whatCards.${key}`)}</dt>
+              <dd className="mt-1">{t(`what.${key}`)}</dd>
+            </div>
+          ))}
+        </dl>
+      </Section>
 
-      <SectionTitle>{t("whatTitle")}</SectionTitle>
-      <div className="grid gap-3 sm:grid-cols-3">
-        {WHAT.map(({ key, Icon }, i) => (
-          <Card key={key} className="rise" style={at(i + 2)}>
-            <span className="flex size-10 items-center justify-center rounded-xl bg-field-tint text-field">
-              <Icon size={22} />
-            </span>
-            <h3 className="mt-3 font-display font-semibold">{t(`whatCards.${key}`)}</h3>
-            <p className="mt-1">{t(`what.${key}`)}</p>
-          </Card>
-        ))}
-      </div>
-
-      <SectionTitle hint={t("sourcesHint")}>{t("sourcesTitle")}</SectionTitle>
-      <div className="rise overflow-x-auto rounded-[20px] border border-line bg-surface shadow-1" style={at(5)}>
-        <table className="w-full min-w-[34rem] text-left">
-          <thead className="bg-surface-sunken text-sm text-ink-muted">
-            <tr>
-              <th scope="col" className="px-4 py-2.5 font-semibold">{t("table.dataset")}</th>
-              <th scope="col" className="px-4 py-2.5 font-semibold">{t("table.use")}</th>
-              <th scope="col" className="px-4 py-2.5 font-semibold">{t("table.resolution")}</th>
-              <th scope="col" className="px-4 py-2.5 font-semibold">{t("table.period")}</th>
+      <Section title={t("sourcesTitle")} hint={t("sourcesHint")}>
+        {/* Phones drop the resolution and period columns and show them under each use instead. */}
+        <table className="w-full border-collapse text-left">
+          <thead className="text-sm text-ink-muted">
+            <tr className="border-b border-line">
+              <th scope="col" className="py-2 pr-4 font-medium">{t("table.dataset")}</th>
+              <th scope="col" className="py-2 pr-4 font-medium">{t("table.use")}</th>
+              <th scope="col" className="hidden py-2 pr-4 font-medium sm:table-cell">{t("table.resolution")}</th>
+              <th scope="col" className="hidden py-2 font-medium sm:table-cell">{t("table.period")}</th>
             </tr>
           </thead>
           <tbody>
             {SOURCES.map((s) => (
-              <tr key={s.key} className="border-t border-line align-top">
-                <th scope="row" className="px-4 py-3 font-semibold">
-                  <span className="whitespace-nowrap">{s.dataset}</span>
+              <tr key={s.key} className="border-b border-line align-top">
+                <th scope="row" className="py-3 pr-4 font-semibold">
+                  <span className="sm:whitespace-nowrap">{s.dataset}</span>
                   {s.nasa ? (
-                    <span className="mt-1 flex w-fit items-center gap-1 rounded-full bg-signal-tint px-2 py-0.5 text-xs font-medium text-signal">
+                    <span className="mt-1 flex w-fit items-center gap-1 text-sm font-normal text-signal">
                       <SatelliteIcon size={14} />
                       {t("table.nasaData")}
                     </span>
                   ) : (
-                    <span className="mt-1 block text-xs font-normal text-ink-muted">{t("table.otherData")}</span>
+                    <span className="mt-1 block text-sm font-normal text-ink-muted">{t("table.otherData")}</span>
                   )}
                 </th>
-                <td className="px-4 py-3">{t(`sources.${s.key}`)}</td>
-                <td className="whitespace-nowrap px-4 py-3 font-mono text-sm tabular-nums">{s.resolution}</td>
-                <td className="whitespace-nowrap px-4 py-3 font-mono text-sm tabular-nums">{s.period}</td>
+                <td className="py-3 pr-4">
+                  {t(`sources.${s.key}`)}
+                  <span className="mt-1 block text-sm tabular-nums text-ink-muted sm:hidden">
+                    {s.resolution} · {s.period}
+                  </span>
+                </td>
+                <td className="hidden whitespace-nowrap py-3 pr-4 tabular-nums sm:table-cell">{s.resolution}</td>
+                <td className="hidden whitespace-nowrap py-3 tabular-nums sm:table-cell">{s.period}</td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
-      <p className="flex gap-2 text-sm text-ink-muted">
-        <InfoIcon size={18} className="mt-0.5 shrink-0" />
-        <span>{t("nasaNote")}</span>
-      </p>
+        <p className="mt-4 text-sm text-ink-muted">{t("nasaNote")}</p>
+      </Section>
 
-      <SectionTitle hint={t("aiHint")}>{t("aiTitle")}</SectionTitle>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Card className="rise" style={at(6)}>
-          <h3 className="font-display font-semibold">{t("ai.modelTitle")}</h3>
-          <p className="mt-1">{t("ai.model")}</p>
-        </Card>
-        <Card className="rise" style={at(7)}>
-          <h3 className="font-display font-semibold">{t("ai.textTitle")}</h3>
-          <p className="mt-1">{t("ai.text")}</p>
-        </Card>
-      </div>
+      <Section title={t("aiTitle")} hint={t("aiHint")}>
+        <dl className="flex flex-col gap-5">
+          <div>
+            <dt className="font-semibold">{t("ai.modelTitle")}</dt>
+            <dd className="mt-1">{t("ai.model")}</dd>
+          </div>
+          <div>
+            <dt className="font-semibold">{t("ai.textTitle")}</dt>
+            <dd className="mt-1">{t("ai.text")}</dd>
+          </div>
+        </dl>
+      </Section>
 
-      <h3 className="mt-4 font-display text-lg font-semibold">{t("limitsTitle")}</h3>
-      <ul className="grid gap-3 sm:grid-cols-2">
-        {LIMITS.map((key, i) => (
-          <li
-            key={key}
-            className="rise flex items-start gap-3 rounded-[20px] border border-line bg-surface p-4 shadow-1"
-            style={at(i + 8)}
-          >
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-sunken text-ink-muted">
-              <CrossIcon size={16} />
-            </span>
-            <span>{t(`limits.${key}`)}</span>
-          </li>
-        ))}
-      </ul>
+      <Section title={t("limitsTitle")}>
+        <ul className="list-disc space-y-2 pl-5">
+          {LIMITS.map((key) => (
+            <li key={key}>{t(`limits.${key}`)}</li>
+          ))}
+        </ul>
+      </Section>
 
-      <SectionTitle>{t("demoTitle")}</SectionTitle>
-      <Card className="bg-wheat-tint">
+      <Section title={t("demoTitle")}>
         <p>{t("demo")}</p>
-      </Card>
+      </Section>
     </article>
   );
 }

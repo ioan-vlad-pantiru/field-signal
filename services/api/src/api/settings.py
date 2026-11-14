@@ -3,10 +3,16 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import SecretStr
+from pydantic import SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
+
+# Local web dev servers: 3000, plus 3010-3014 used by parallel worktrees.
+DEV_CORS_ORIGINS = [
+    "http://localhost:3000",
+    *(f"http://localhost:{port}" for port in range(3010, 3015)),
+]
 
 
 class Settings(BaseSettings):
@@ -23,6 +29,14 @@ class Settings(BaseSettings):
     earthdata_username: str | None = None
     earthdata_password: SecretStr | None = None
     llm_api_key: SecretStr | None = None
+
+    @model_validator(mode="after")
+    def _dev_cors_origins(self) -> "Settings":
+        # Only the development default widens. An explicit CORS_ORIGINS
+        # (as in production) is kept exactly as given.
+        if self.environment == "development" and "cors_origins" not in self.model_fields_set:
+            self.cors_origins = list(DEV_CORS_ORIGINS)
+        return self
 
 
 @lru_cache
