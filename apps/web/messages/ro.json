@@ -71,8 +71,8 @@
       "priorities": "Priorități"
     },
     "field": {
-      "title": "Desenați câmpul",
-      "hint": "Găsiți localitatea, apoi atingeți pe hartă fiecare colț al câmpului."
+      "title": "Alegeți câmpul",
+      "hint": "Găsiți locul, apoi atingeți parcelele câmpului pe hartă."
     },
     "search": {
       "label": "Căutați comuna",
@@ -91,24 +91,13 @@
       "map": "Hartă"
     },
     "draw": {
-      "hint": "Atingeți harta în fiecare colț al câmpului, pe rând. Sunt necesare cel puțin 3 colțuri.",
-      "mapHint": "Atingeți fiecare colț al câmpului",
-      "cornerCount": "{corners, plural, =0 {Niciun colț încă} one {1 colț} few {# colțuri} other {# de colțuri}}",
-      "tooSmall": "Prea mic: câmpul are sub {min} ha. Desenați-l mai mare: fiecare hexagon are 1 ha.",
-      "tooBig": "Prea mare: câmpul are peste {max} ha. Desenați o singură parcelă.",
-      "undo": "Anulați ultimul colț",
-      "clear": "Ștergeți tot",
-      "done": "Gata",
       "yourField": "Câmpul dumneavoastră",
-      "area": "{ha} ha",
-      "edit": "Modificați",
-      "restart": "Desenați din nou"
+      "area": "{ha} ha"
     },
     "mapLabel": "Hartă pentru desenarea câmpului",
     "mapUnavailable": "Harta nu poate fi afișată în acest browser, deci câmpul nu poate fi desenat aici. Vă rugăm să încercați alt browser sau alt dispozitiv.",
     "coordinates": "{lat}° N · {lon}° E",
-    "needField": "Desenați câmpul pe hartă pentru a continua.",
-    "needDone": "Apăsați Gata când toate colțurile sunt la locul lor.",
+    "needField": "Alegeți parcelele câmpului pe hartă pentru a continua.",
     "pinnedFromFeed": "Locul vine din ecranul Furaje: {place}",
     "continue": "Continuați",
     "back": "Înapoi",
@@ -190,21 +179,24 @@
     },
     "assistantField": "Câmpul meu",
     "parcel": {
-      "hint": "Atingeți parcelele dumneavoastră ca să le selectați sau porniți „Selectați trăgând” ca să alegeți mai multe deodată. Apoi folosiți-le ca un singur câmp (nu trebuie să se atingă) sau adăugați fiecare ca solă separată. Sunt parcelele declarate la APIA; dacă nu o găsiți pe a dumneavoastră, atingeți colțurile câmpului.",
+      "hint": "Atingeți parcelele ca să le selectați sau porniți „Selectare prin tragere” ca să selectați mai multe deodată. Apoi folosiți-le ca un singur câmp (nu trebuie să se atingă) sau adăugați-le ca câmpuri separate. Acestea sunt parcelele declarate la APIA.",
       "mapHint": "Atingeți parcelele dumneavoastră",
       "selected": "{count, plural, one {# parcelă selectată} few {# parcele selectate} other {# de parcele selectate}} · {ha} ha",
       "use": "Folosiți ca un câmp",
       "joining": "Unim parcelele…",
       "clear": "Anulați selecția",
-      "tooSmall": "Împreună au {ha} ha. Un câmp trebuie să aibă cel puțin {min} ha: atingeți și parcelele vecine sau atingeți colțurile ca să desenați câmpul.",
+      "tooSmall": "Împreună au {ha} ha. Un câmp are nevoie de cel puțin {min} ha: atingeți și parcelele de lângă.",
       "tooBig": "Au {ha} ha, peste {max} ha. Selectați mai puține parcele.",
-      "failed": "Nu am putut uni parcelele. Încercați din nou sau atingeți colțurile ca să desenați câmpul.",
+      "failed": "Parcelele nu au putut fi unite. Încercați din nou.",
       "brush": "Selectați trăgând",
       "brushHint": "Trageți peste parcelele dumneavoastră",
       "brushHelp": "Trageți peste parcelele dumneavoastră ca să le selectați. Începeți pe o parcelă verde ca să o deselectați. Mutați harta cu două degete sau opriți „Selectați trăgând”.",
       "separate": "Adăugați fiecare ca solă separată",
       "separateSmall": "{count, plural, one {O parcelă are} few {# parcele au} other {# de parcele au}} sub {min} ha, prea puțin pentru o solă separată: au rămas selectate. Folosiți-le împreună ca un câmp sau cu parcelele vecine.",
-      "separateFull": "Puteți analiza cel mult {max} câmpuri deodată. Parcelele rămase sunt încă selectate."
+      "separateFull": "Puteți analiza cel mult {max} câmpuri deodată. Parcelele rămase sunt încă selectate.",
+      "zoomHint": "Măriți harta ca să vedeți parcelele",
+      "zoomHelp": "Măriți harta pe ferma dumneavoastră ca să vedeți parcelele declarate la APIA, apoi atingeți-le pe ale dumneavoastră. Deocamdată contururile parcelelor sunt disponibile pentru județul Alba.",
+      "restart": "Alegeți alte parcele"
     }
   },
   "Results": {
@@ -350,7 +342,7 @@
       "mapLabel": "Câmpul dumneavoastră în {year}: {crop}",
       "mapUnavailable": "Harta nu poate fi afișată în acest browser. Sezoanele de mai jos conțin în continuare tot planul.",
       "seasons": "Sezoanele rotației pe acest câmp",
-      "noteField": "Câmpul așa cum l-ați desenat, {area} ha. În fiecare sezon tot câmpul are cultura acelui an; planul se repetă la fiecare {years} ani. Înălțimea culturilor pe hartă este exagerată.",
+      "noteField": "Câmpul dumneavoastră, {area} ha, din parcelele APIA. În fiecare sezon tot câmpul are cultura acelui an; planul se repetă la fiecare {years} ani. Înălțimea culturilor pe hartă este exagerată.",
       "notePin": "Cercul marchează punctul ales; desenați conturul câmpului ca să vedeți forma lui reală. În fiecare sezon tot câmpul are cultura acelui an; planul se repetă la fiecare {years} ani."
     },
     "fields": {
@@ -656,7 +648,7 @@
   "Home": {
     "title": "Ce culturi merg cel mai bine pe câmpul dumneavoastră?",
     "lead": "Refacem ultimele 25 de sezoane pe pământul dumneavoastră, ca să puteți planifica următorul.",
-    "start": "Desenați câmpul",
+    "start": "Alegeți câmpul",
     "buyer": {
       "title": "Cumpărători de furaje",
       "text": "Vedeți, comună cu comună, unde vor fi probabil porumb, grâu și orz anul acesta și cu ce risc de calitate.",
@@ -672,8 +664,8 @@
     "current": "Rotația de acum",
     "steps": {
       "field": {
-        "title": "Desenați câmpul",
-        "text": "Îl găsiți pe harta din satelit și atingeți colțurile."
+        "title": "Alegeți câmpul",
+        "text": "Găsiți-l pe harta din satelit și atingeți parcelele."
       },
       "rotation": {
         "title": "Spuneți ce cultivați",
@@ -690,7 +682,7 @@
       "rotations": "rotații puse alături"
     },
     "whatTitle": "Ce este Field Signal?",
-    "whatText": "Un instrument pentru fermierii din România. Desenați câmpul și ne spuneți ce cultivați. Refacem fiecare sezon din 2001 încoace pe el, cu secetele, primăverile ploioase și caniculele, și vă arătăm ce rotație ar fi rezistat cel mai bine.",
+    "whatText": "Un instrument pentru fermierii din România. Alegeți câmpul și ne spuneți ce cultivați. Refacem fiecare sezon din 2001 încoace pe el, cu secetele, primăverile ploioase și caniculele, și vă arătăm ce rotație ar fi rezistat cel mai bine.",
     "whatJudgment": "Construit pe date publice de la sateliții NASA și din înregistrările meteo, verificat cu producțiile oficiale pe județ.",
     "lookTitle": "Ce urmărim pe câmpul dumneavoastră",
     "look": {
@@ -735,11 +727,11 @@
     "farmer": {
       "title": "Fermieri",
       "text": "Planificați sezonul următor cu 25 de ani de sezoane în spate.",
-      "cta": "Desenați câmpul"
+      "cta": "Alegeți câmpul"
     },
     "limitsTitle": "Ce nu poate vedea",
     "ctaTitle": "Vreți să vedeți câmpul dumneavoastră?",
-    "ctaText": "Desenați-l pe hartă. Nu aveți nevoie de cont."
+    "ctaText": "Atingeți parcelele pe hartă. Nu aveți nevoie de cont."
   },
   "Account": {
     "title": "Contul meu",
@@ -774,7 +766,7 @@
     },
     "fields": {
       "title": "Câmpurile mele",
-      "empty": "Desenați un câmp pe hartă, vedeți cele 25 de sezoane, apoi salvați-l aici. Puteți păstra câte câmpuri lucrați.",
+      "empty": "Alegeți un câmp pe hartă, vedeți cele 25 de sezoane, apoi salvați-l aici. Puteți păstra câte câmpuri lucrați.",
       "add": "Adăugați un câmp",
       "rename": "Redenumiți",
       "renameLabel": "Numele câmpului",
@@ -787,12 +779,12 @@
       "area": "{ha} ha",
       "updated": "Actualizat {date}",
       "importTitle": "Un câmp pe acest dispozitiv",
-      "importText": "Ați desenat un câmp lângă {place} ({ha} ha) înainte să intrați în cont.",
-      "importTextNoPlace": "Ați desenat un câmp de {ha} ha înainte să intrați în cont.",
+      "importText": "Ați ales un câmp lângă {place} ({ha} ha) înainte să intrați în cont.",
+      "importTextNoPlace": "Ați ales un câmp de {ha} ha înainte să intrați în cont.",
       "import": "Adăugați-l la câmpurile mele",
       "summary": "{count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}} · {ha} ha · {places, plural, =0 {} one {# comună} few {# comune} other {# de comune}}",
       "emptyTitle": "Niciun câmp încă",
-      "drawFirst": "Desenați primul câmp",
+      "drawFirst": "Alegeți primul câmp",
       "mapLabel": "Harta {count, plural, one {câmpului} other {celor # câmpuri}}",
       "search": "Căutați un câmp",
       "searchPlaceholder": "Nume sau comună",
@@ -826,7 +818,7 @@
     "picker": {
       "title": "Câmpurile dvs.",
       "all": "Toate câmpurile ({count})",
-      "new": "Sau desenați un câmp nou mai jos.",
+      "new": "Sau alegeți un câmp nou mai jos.",
       "pickHint": "Bifați unul sau mai multe ca să le analizați împreună.",
       "openOne": "Deschideți câmpul",
       "openMany": "Analizați {count, plural, few {# câmpuri} other {# de câmpuri}}"

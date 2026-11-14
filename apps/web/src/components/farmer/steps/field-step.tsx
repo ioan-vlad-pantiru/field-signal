@@ -148,7 +148,6 @@ export function FieldStep({
   communes,
   onFocus,
   mode,
-  corners,
   areaHa,
   parcelsShown = false,
   brush = false,
@@ -159,17 +158,12 @@ export function FieldStep({
   onUseSelected,
   onAddSeparate,
   onClearSelected,
-  onUndo,
-  onClear,
-  onDone,
-  onEdit,
   onRestart,
 }: {
   communes: Commune[];
   /** `place` is the commune picked in the search; null for the farmer's own location. */
   onFocus: (point: LatLon, zoom: number, place: string | null) => void;
   mode: MapMode;
-  corners: LatLon[];
   areaHa: number;
   /** APIA parcel outlines are on the map and can be tapped. */
   parcelsShown?: boolean;
@@ -185,18 +179,11 @@ export function FieldStep({
   /** Make each selected parcel its own field (offered when several are selected). */
   onAddSeparate?: () => void;
   onClearSelected?: () => void;
-  onUndo: () => void;
-  onClear: () => void;
-  onDone: () => void;
-  onEdit: () => void;
   onRestart: () => void;
 }) {
   const t = useTranslations("Field");
   const locale = useAppLocale();
   const [locateFailed, setLocateFailed] = useState(false);
-  const tooSmall = corners.length >= 3 && areaHa < MIN_FIELD_HA;
-  const tooBig = areaHa > MAX_FIELD_HA;
-  const canFinish = corners.length >= 3 && !tooSmall && !tooBig;
 
   return (
     <div className="flex flex-col gap-4">
@@ -227,9 +214,9 @@ export function FieldStep({
 
       <div className="flex flex-col gap-2 border-t border-line pt-4">
         <p className="text-sm text-ink-muted">
-          {mode !== "draw" ? t("draw.yourField") : parcelsShown && corners.length === 0 ? t(brush ? "parcel.brushHelp" : "parcel.hint") : t("draw.hint")}
+          {mode !== "draw" ? t("draw.yourField") : parcelsShown ? t(brush ? "parcel.brushHelp" : "parcel.hint") : t("parcel.zoomHelp")}
         </p>
-        {selectedCount > 0 && mode === "draw" && corners.length === 0 ? (
+        {selectedCount > 0 && mode === "draw" ? (
           <div className="flex flex-col gap-3 rounded-2xl bg-field-tint p-4">
             <p className="font-semibold text-field-strong" aria-live="polite">
               {t("parcel.selected", { count: selectedCount, ha: formatNumber(selectedHa, locale, 1) })}
@@ -249,60 +236,24 @@ export function FieldStep({
             </div>
           </div>
         ) : null}
-        {pickNote && mode === "draw" && corners.length === 0 ? (
+        {pickNote && mode === "draw" ? (
           <p className="flex items-start gap-2 font-medium text-status-watch" aria-live="polite">
             <AlertIcon size={18} className="mt-0.5 shrink-0" />
             {pickNote}
           </p>
         ) : null}
-        <p aria-live="polite">
-          <span className="block font-display text-4xl font-semibold tabular-nums tracking-tight">
-            {t("draw.area", { ha: formatNumber(areaHa, locale, 1) })}
-          </span>
-          <span className="block text-ink-muted tabular-nums">
-            {t("draw.cornerCount", { corners: corners.length })}
-          </span>
-        </p>
-        {tooSmall || tooBig ? (
-          <p className="flex items-start gap-2 font-medium text-status-bad">
-            <AlertIcon size={18} className="mt-0.5 shrink-0" />
-            {tooSmall
-              ? t("draw.tooSmall", { min: MIN_FIELD_HA })
-              : t("draw.tooBig", {
-                  max: formatNumber(MAX_FIELD_HA, locale, 0),
-                })}
-          </p>
+        {mode !== "draw" ? (
+          <>
+            <p aria-live="polite" className="font-display text-4xl font-semibold tabular-nums tracking-tight">
+              {t("draw.area", { ha: formatNumber(areaHa, locale, 1) })}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="secondary" onClick={onRestart}>
+                {t("parcel.restart")}
+              </Button>
+            </div>
+          </>
         ) : null}
-        {mode === "draw" ? (
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="secondary"
-              disabled={corners.length === 0}
-              onClick={onUndo}
-            >
-              {t("draw.undo")}
-            </Button>
-            <Button
-              variant="secondary"
-              disabled={corners.length === 0}
-              onClick={onClear}
-            >
-              {t("draw.clear")}
-            </Button>
-            <Button disabled={!canFinish} onClick={onDone}>
-              {t("draw.done")}
-            </Button>
-          </div>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" onClick={onEdit}>
-              {t("draw.edit")}
-            </Button>
-            <Button variant="secondary" onClick={onRestart}>
-              {t("draw.restart")}
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   );
