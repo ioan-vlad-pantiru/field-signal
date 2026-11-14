@@ -342,7 +342,7 @@
       "mapLabel": "Your field in {year}: {crop}",
       "mapUnavailable": "The map cannot be shown in this browser. The seasons below still hold the whole plan.",
       "seasons": "The rotation's seasons on this field",
-      "noteField": "Your field, {area} ha, from your APIA parcels. Each season the whole field grows that year's crop; the plan repeats every {years} years. Crop heights on the map are exaggerated.",
+      "noteField": "Your field, {area} ha, from your APIA parcels. Each season the whole field grows that year's crop; the plan repeats every {years} years.",
       "notePin": "The circle marks your pin; draw the field's outline to see its real shape. Each season the whole field grows that year's crop; the plan repeats every {years} years."
     },
     "fields": {

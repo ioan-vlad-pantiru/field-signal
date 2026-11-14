@@ -3,14 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import { LngLatBounds, Marker, type GeoJSONSource, type Map as MapLibreMap } from "maplibre-gl";
 import type { Crop, LatLon } from "@/lib/contracts";
-import { CROP_COLORS, CROP_HEIGHT_M } from "@/lib/crops";
+import { CROP_COLORS } from "@/lib/crops";
 import { polygonCentroid, radiusMetres } from "@/lib/geo";
 import { useTranslations } from "next-intl";
 import { SATELLITE_ATTRIBUTION, useMap } from "@/components/map/use-map";
 
-/** Crops are a few metres tall at most; exaggerate so the difference reads from above. */
-const HEIGHT_EXAGGERATION = 4;
-const GROW_MS = 700;
+/** The season's crop fades in over the field: draped on the 3D terrain, never cut by a hill. */
+const FADE_MS = 600;
+const FILL_OPACITY = 0.6;
 const FIELD = "fs-field";
 /** Camera over the field: tilted enough to read the crop, turned a little like the arrival view. */
 const FIT_PITCH = 50;
@@ -38,7 +38,7 @@ function disc(center: LatLon): LatLon[] {
 function fieldData(outlines: LatLon[][], crop: Crop): FieldData {
   return {
     type: "Feature",
-    properties: { color: CROP_COLORS[crop], h: CROP_HEIGHT_M[crop] * HEIGHT_EXAGGERATION },
+    properties: { color: CROP_COLORS[crop] },
     geometry: { type: "MultiPolygon", coordinates: outlines.map((o) => [ring(o)]) },
   };
 }
@@ -88,9 +88,9 @@ function whenStyleReady(map: MapLibreMap, run: () => void) {
 }
 
 /**
- * The farmer's own field on the 3D satellite map, following the outline they drew (every part):
- * filled and raised in the colour of the season's crop, with the outline on top and the crop named
- * on the field.
+ * The farmer's own field on the 3D satellite map, following its outline (every part): filled in
+ * the colour of the season's crop and outlined, both draped on the terrain so they follow the
+ * ground on slopes, with the crop named on the field.
  */
 export function FieldPlanMap({
   center,
@@ -131,29 +131,20 @@ export function FieldPlanMap({
     if (!map) return;
     whenStyleReady(map, () => {
       map.addSource(FIELD, { type: "geojson", data: fieldData(outlines, crop) });
-      map.addLayer({
-        id: "fs-field-ground",
-        type: "fill",
-        source: FIELD,
-        paint: { "fill-color": "#000000", "fill-opacity": 0.25 },
-      });
+      // Fill and outline are draped on the terrain, so they follow every slope of the field.
+      // A raised (fill-extrusion) field sits at one height and a hillside cuts through it.
       map.addLayer({
         id: "fs-field-crop",
-        type: "fill-extrusion",
+        type: "fill",
         source: FIELD,
-        paint: {
-          "fill-extrusion-color": ["get", "color"],
-          "fill-extrusion-height": ["get", "h"],
-          "fill-extrusion-opacity": 0.72,
-          "fill-extrusion-vertical-gradient": true,
-        },
+        paint: { "fill-color": ["get", "color"], "fill-opacity": FILL_OPACITY },
       });
       map.addLayer({
         id: "fs-field-outline",
         type: "line",
         source: FIELD,
         layout: { "line-join": "round", "line-cap": "round" },
-        paint: { "line-color": "#ffffff", "line-width": 2.5, "line-opacity": 0.95 },
+        paint: { "line-color": "#ffffff", "line-width": 3, "line-opacity": 0.95 },
       });
     });
     return () => {
@@ -208,7 +199,7 @@ export function FieldPlanMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, boundsKey, fitKey]);
 
-  // New season or rotation: recolour, rename the crop on the field, and grow the crop in.
+  // New season or rotation: recolour, rename the crop on the field, and fade the crop in.
   useEffect(() => {
     if (!map) return;
     let frame = 0;
@@ -230,13 +221,13 @@ export function FieldPlanMap({
 
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const start = performance.now();
-      const grow = (now: number) => {
-        const k = reduced ? 1 : Math.min(1, (now - start) / GROW_MS);
+      const fade = (now: number) => {
+        const k = reduced ? 1 : Math.min(1, (now - start) / FADE_MS);
         const eased = 1 - Math.pow(1 - k, 3);
-        map.setPaintProperty("fs-field-crop", "fill-extrusion-height", ["*", ["get", "h"], eased]);
-        if (k < 1) frame = requestAnimationFrame(grow);
+        map.setPaintProperty("fs-field-crop", "fill-opacity", FILL_OPACITY * (0.25 + 0.75 * eased));
+        if (k < 1) frame = requestAnimationFrame(fade);
       };
-      frame = requestAnimationFrame(grow);
+      frame = requestAnimationFrame(fade);
     });
     return () => cancelAnimationFrame(frame);
     // `outlines` is rebuilt every render from the same props; the crop drives the update.

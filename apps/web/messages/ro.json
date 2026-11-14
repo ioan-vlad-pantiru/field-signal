@@ -342,7 +342,7 @@
       "mapLabel": "Câmpul dumneavoastră în {year}: {crop}",
       "mapUnavailable": "Harta nu poate fi afișată în acest browser. Sezoanele de mai jos conțin în continuare tot planul.",
       "seasons": "Sezoanele rotației pe acest câmp",
-      "noteField": "Câmpul dumneavoastră, {area} ha, din parcelele APIA. În fiecare sezon tot câmpul are cultura acelui an; planul se repetă la fiecare {years} ani. Înălțimea culturilor pe hartă este exagerată.",
+      "noteField": "Câmpul dumneavoastră, {area} ha, din parcelele APIA. În fiecare sezon tot câmpul are cultura acelui an; planul se repetă la fiecare {years} ani.",
       "notePin": "Cercul marchează punctul ales; desenați conturul câmpului ca să vedeți forma lui reală. În fiecare sezon tot câmpul are cultura acelui an; planul se repetă la fiecare {years} ani."
     },
     "fields": {
