@@ -463,6 +463,38 @@
     "openLink": "Vezi pe un câmp"
   },
   "Home": {
-    "placeholder": "Pagina de start"
+    "title": "Câmpul dumneavoastră are 25 de ani de istorie, văzută din spațiu.",
+    "lead": "Vedeți cum ar fi mers rotația dumneavoastră în fiecare sezon din 2001 încoace și ce ar fi mers mai bine.",
+    "start": "Desenați câmpul",
+    "buyer": "Cumpăr furaje",
+    "imageAlt": "Transilvania văzută din satelit, vara: terenuri agricole în centru, înconjurate de Carpații împăduriți.",
+    "imageCredit": "Transilvania, 2 iulie 2025. Imagine: NASA Worldview, MODIS pe satelitul Terra.",
+    "proofTitle": "Un câmp de lângă {place}, 25 de sezoane",
+    "proofSentence": "{current, plural, =0 {Niciun sezon slab} one {Un sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} cu {currentCrops}. {best, plural, =0 {Niciunul} one {Unul} other {#}} cu {bestCrops}.",
+    "proofHint": "Fiecare pătrat este un sezon, din {start} până în {end}. Sezoanele bune rămân gri; sunt marcate doar cele slabe.",
+    "proofDemo": "Exemplu cu date demonstrative, nu un rezultat real.",
+    "stripLabel": "{name}: {bad, plural, =0 {niciun sezon slab} one {un sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} și {watch, plural, =0 {niciun sezon de urmărit} one {un sezon de urmărit} few {# sezoane de urmărit} other {# de sezoane de urmărit}} din {total}",
+    "current": "Rotația de acum",
+    "stepsTitle": "Cum funcționează",
+    "steps": {
+      "field": {
+        "title": "Desenați câmpul",
+        "text": "Îl găsiți pe harta din satelit și atingeți colțurile."
+      },
+      "rotation": {
+        "title": "Spuneți ce cultivați",
+        "text": "Rotația dumneavoastră și ce contează cel mai mult: recolta, apa, solul sau riscul."
+      },
+      "result": {
+        "title": "Vedeți 25 de sezoane și un plan",
+        "text": "Rotația dumneavoastră lângă alte două, an cu an, și ce să cultivați unde."
+      }
+    },
+    "buyerTitle": "Cumpărați furaje?",
+    "buyerText": "Vedeți, comună cu comună, unde vor fi probabil disponibile porumb, grâu și soia anul acesta și cu ce risc de calitate.",
+    "buyerLink": "Deschideți pagina pentru cumpărători",
+    "limitsTitle": "Ce nu poate vedea",
+    "limitsLead": "Arată ce s-ar fi întâmplat în anii trecuți. Decizia pentru câmpul dumneavoastră vă aparține.",
+    "weakEvidence": "Dovezi mai slabe (înainte de 2015)"
   }
 }

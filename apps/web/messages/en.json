@@ -463,6 +463,38 @@
     "openLink": "See it on a field"
   },
   "Home": {
-    "placeholder": "Start page"
+    "title": "Your field has 25 years of history, seen from space.",
+    "lead": "See how your rotation would have done in every season since 2001, and what would have done better.",
+    "start": "Draw your field",
+    "buyer": "I buy feed",
+    "imageAlt": "Satellite view of Transylvania in summer: farmland in the centre, ringed by the forested Carpathians.",
+    "imageCredit": "Transylvania, 2 July 2025. Image: NASA Worldview, MODIS on Terra.",
+    "proofTitle": "One field near {place}, 25 seasons",
+    "proofSentence": "{current, plural, =0 {No poor seasons} one {1 poor season} other {# poor seasons}} with {currentCrops}. {best, plural, =0 {None} one {1} other {#}} with {bestCrops}.",
+    "proofHint": "Each square is one season, {start} to {end}. Good seasons stay grey; only weak ones are marked.",
+    "proofDemo": "Example with demo data, not a real result.",
+    "stripLabel": "{name}: {bad, plural, =0 {no poor seasons} one {1 poor season} other {# poor seasons}} and {watch, plural, =0 {no seasons to watch} one {1 season to watch} other {# seasons to watch}} out of {total}",
+    "current": "Your rotation now",
+    "stepsTitle": "How it works",
+    "steps": {
+      "field": {
+        "title": "Draw your field",
+        "text": "Find it on the satellite map and tap its corners."
+      },
+      "rotation": {
+        "title": "Say what you grow",
+        "text": "Your rotation, and what matters most to you: harvest, water, soil or risk."
+      },
+      "result": {
+        "title": "See 25 seasons and a plan",
+        "text": "Your rotation next to two others, year by year, and what to grow where."
+      }
+    },
+    "buyerTitle": "Buying feed?",
+    "buyerText": "See, commune by commune, where maize, wheat and soybean are likely to be available this year, and at what quality risk.",
+    "buyerLink": "Open the feed buyer view",
+    "limitsTitle": "What it cannot see",
+    "limitsLead": "It shows what would have happened in past years. The decision for your field stays yours.",
+    "weakEvidence": "Weaker evidence (before 2015)"
   }
 }

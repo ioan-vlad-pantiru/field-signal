@@ -12,6 +12,12 @@ const CELL: Record<Status, { className: string; mark: string }> = {
   no_data: { className: "border border-dashed border-line", mark: "" },
 };
 
+/** Weak-evidence seasons (before SMAP, 2015) keep their mark but in a fainter, tinted cell. */
+const FAINT: Partial<Record<Status, string>> = {
+  watch: "bg-status-watch-tint text-status-watch",
+  bad: "bg-status-bad-tint text-status-bad",
+};
+
 const HEIGHT = { sm: "h-4 text-[10px]", md: "h-6 text-xs", lg: "h-9 text-sm" } as const;
 
 function columns(count: number): CSSProperties {
@@ -58,12 +64,12 @@ export function SeasonStrip({
     >
       {years.map((year, col) => {
         const outcome = byYear.get(year);
-        const cell = CELL[outcome?.status ?? "no_data"];
+        const status = outcome?.status ?? "no_data";
+        const cell = CELL[status];
+        const tone = (outcome?.evidence_level === "low" && FAINT[status]) || cell.className;
         const selected = selectedYear === year;
         const dimmed = selectedYear != null && !selected;
-        const classes = `flex items-center justify-center rounded-[3px] font-bold leading-none ${HEIGHT[size]} ${cell.className} ${
-          outcome?.evidence_level === "low" ? "hatch" : ""
-        } ${selected ? "outline outline-2 outline-offset-1 outline-ink" : ""} ${dimmed ? "opacity-45" : ""} ${animate ? "season-in" : ""}`;
+        const classes = `flex items-center justify-center rounded-[3px] font-bold leading-none ${HEIGHT[size]} ${tone} ${selected ? "outline outline-2 outline-offset-1 outline-ink" : ""} ${dimmed ? "opacity-45" : ""} ${animate ? "season-in" : ""}`;
         const style = animate ? ({ "--col": col } as CSSProperties) : undefined;
         if (interactive && outcome) {
           return (
@@ -122,7 +128,7 @@ export function SeasonLegend({
   const items: { key: string; swatch: string; mark: string; text: string }[] = (
     ["good", "watch", "bad", "no_data"] as const
   ).map((status) => ({ key: status, swatch: CELL[status].className, mark: CELL[status].mark, text: labels[status] }));
-  if (labels.lowEvidence) items.push({ key: "low", swatch: "bg-surface-sunken hatch", mark: "", text: labels.lowEvidence });
+  if (labels.lowEvidence) items.push({ key: "low", swatch: FAINT.watch ?? "", mark: "!", text: labels.lowEvidence });
   return (
     <ul className={`flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-muted ${className}`}>
       {items.map((item) => (
