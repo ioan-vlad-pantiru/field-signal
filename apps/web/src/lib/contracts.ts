@@ -438,9 +438,13 @@ export interface FarmPlanRequest {
   risk_aversion?: number;
   plan_years?: number;
   /**
-   * enforce the optional legume share (eco-scheme) every plan year
+   * enforce one practice of the voluntary PD-04 eco-scheme (eco_practice); false = nothing from PD-04 is enforced
    */
-  legume_rule?: boolean;
+  eco_scheme?: boolean;
+  /**
+   * the one PD-04 practice enforced when eco_scheme is true; ignored otherwise. The two are alternatives, never enforced together
+   */
+  eco_practice?: "diversification" | "legume_share";
 }
 
 export interface FarmField {
@@ -455,12 +459,17 @@ export interface FarmField {
    */
   boundary: [LatLon, LatLon, LatLon, ...LatLon[]];
   /**
-   * a cycle, as in FieldRequest; the last two entries are taken as the field's last two crops
+   * the farmer's reference cycle, as in FieldRequest; scored as the baseline
    *
    * @minItems 2
    * @maxItems 4
    */
   current_rotation: [Crop, Crop] | [Crop, Crop, Crop] | [Crop, Crop, Crop, Crop];
+  /**
+   * observed crops of past seasons, most recent harvest last; null = unknown, then the cycle current_rotation is read backwards (an assumption, stated in caveats)
+   */
+  crop_history?:
+    [] | [Crop] | [Crop, Crop] | [Crop, Crop, Crop] | [Crop, Crop, Crop, Crop] | [Crop, Crop, Crop, Crop, Crop] | null;
 }
 
 export interface FarmPlanResponse {
@@ -485,7 +494,7 @@ export interface FarmPlanResponse {
    */
   scenario_last: number;
   /**
-   * best first; empty if none is feasible
+   * plans[0] is the best solution found (optimal for the model only when proven_optimal), the others are alternatives; empty if none is feasible
    *
    * @maxItems 3
    */
@@ -498,31 +507,37 @@ export interface FarmPlanResponse {
   sources: DataSource[];
 }
 /**
- * One farm plan. `score`: mean over weather windows, area-weighted. `score_range`: low =
- * worst weather window, mid = median, high = best (0-100). `confidence`: always 'low' on the mock
- * world model; the rule for the real model is still open.
+ * One farm plan. Scores are 0-100 decision metrics (higher is better), not probabilities.
+ * `score_range` is the spread across weather windows, not a confidence interval.
  */
 
 export interface FarmPlan {
   /**
-   * 1 = best; 0 = the farmer's current rotation (baseline)
+   * 1 = best solution found (optimal for the model only when proven_optimal); 2-3 = alternatives that differ in at least two rotation choices, not the next-best solutions; 0 = the farmer's current rotation
    */
   rank: number;
+  /**
+   * area split per field, not a planting map
+   */
   allocations: Allocation[];
   score: ScoreBreakdown;
   score_range: Range;
   worst: ScenarioScore;
   best: ScenarioScore;
   yearly_areas: YearAreas[];
+  /**
+   * provisional rule checks, not a statement of GAEC 7 or PD-04 compliance
+   */
   rules: RuleCheck[];
   confidence: Confidence;
   /**
-   * true only when CP-SAT proved the plan optimal; false for the baseline
+   * true only when the solver proved the plan optimal for the model (no candidate pruned); otherwise the plan is the best solution found; false for the baseline
    */
   proven_optimal: boolean;
 }
 /**
- * Hectares of one rotation on one field.
+ * Hectares of one rotation on one field: an area split, not a planting map (which part of
+ * the field gets the rotation is not decided).
  */
 
 export interface Allocation {
@@ -532,12 +547,12 @@ export interface Allocation {
    * one crop per plan year
    *
    * @minItems 3
-   * @maxItems 4
+   * @maxItems 5
    */
-  sequence: [Crop, Crop, Crop] | [Crop, Crop, Crop, Crop];
+  sequence: [Crop, Crop, Crop] | [Crop, Crop, Crop, Crop] | [Crop, Crop, Crop, Crop, Crop];
 }
 /**
- * 0-100, higher is better for the farmer.
+ * mean over weather windows, area-weighted; 0-100, not a probability
  */
 
 export interface ScenarioScore {
@@ -549,6 +564,9 @@ export interface ScenarioScore {
    * last harvest season of the weather window
    */
   end_season: number;
+  /**
+   * 0-100 decision metric, not a probability
+   */
   total: number;
 }
 
@@ -566,26 +584,34 @@ export interface CropArea {
   share_pct: number;
 }
 /**
- * A farm-level crop rule (payment conditions, simplified; not verified against the 2026
- * APIA guide). `max_*` rules are upper limits; `summer_cover` and `legume_share` are lower
- * limits.
+ * A provisional farm-level crop rule check (payment conditions, simplified): not a statement
+ * of GAEC 7 or PD-04 compliance. `max_*` rules are upper limits; `legume_share` is a lower
+ * limit.
  */
 
 export interface RuleCheck {
-  id: "max_crop_share" | "max_two_crops_share" | "summer_cover" | "legume_share";
+  id: "max_crop_share" | "max_two_crops_share" | "legume_share";
+  /**
+   * rule profile and year, e.g. 'GAEC 7 2026', 'PD-04 2026'
+   */
+  source: string;
   limit_pct: number;
   /**
    * worst plan year
    */
   value_pct: number;
   /**
-   * false when the farm is too small or the rule is off
+   * true only for the practice enforced in this request
    */
   applies: boolean;
   /**
    * value_pct meets limit_pct; computed even when not applied
    */
   passed: boolean;
+  /**
+   * the limit was read in the official document; false = unverified
+   */
+  verified: boolean;
 }
 
 export interface RotationOutcome {

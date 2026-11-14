@@ -45,7 +45,17 @@ def _plan(rank: int) -> FarmPlan:
         worst=ScenarioScore(start_season=2000, end_season=2002, total=40),
         best=ScenarioScore(start_season=2014, end_season=2016, total=75),
         yearly_areas=[],
-        rules=[RuleCheck(id="legume_share", limit_pct=2, value_pct=0, applies=True, passed=False)],
+        rules=[
+            RuleCheck(
+                id="legume_share",
+                source="PD-04 2026",
+                limit_pct=2,
+                value_pct=0,
+                applies=True,
+                passed=False,
+                verified=False,
+            )
+        ],
         confidence=Confidence.LOW,
         proven_optimal=rank > 0,
     )
@@ -53,14 +63,35 @@ def _plan(rank: int) -> FarmPlan:
 
 def test_farm_plan_request_round_trips_with_defaults() -> None:
     req = FarmPlanRequest.model_validate(REQUEST)
-    assert (req.risk_aversion, req.plan_years, req.legume_rule) == (0.3, 4, True)
+    assert (req.risk_aversion, req.plan_years) == (0.3, 4)
+    assert (req.eco_scheme, req.eco_practice) == (False, "diversification")
+    assert req.fields[0].crop_history is None
     assert FarmPlanRequest.model_validate_json(req.model_dump_json()) == req
+
+
+def test_farm_plan_request_accepts_five_years_and_history() -> None:
+    history = ["sunflower", "wheat", "barley", "pea", "maize"]
+    req = FarmPlanRequest.model_validate(
+        {
+            **REQUEST,
+            "fields": [{**FIELD, "crop_history": history}],
+            "plan_years": 5,
+            "eco_scheme": True,
+            "eco_practice": "legume_share",
+        }
+    )
+    assert req.plan_years == 5
+    assert req.fields[0].crop_history == history
 
 
 @pytest.mark.parametrize(
     "change",
     [
-        {"plan_years": 5},
+        {"plan_years": 6},
+        {"plan_years": 2},
+        {"eco_practice": "summer_cover"},
+        {"legume_rule": True},  # removed field
+        {"fields": [{**FIELD, "crop_history": ["maize"] * 6}]},
         {"risk_aversion": 1.5},
         {"priorities": {"yield": -1}},
         {"fields": []},
@@ -110,3 +141,12 @@ def test_generated_schema_is_in_sync(name: str) -> None:
     on_disk = json.loads((CONTRACTS_DIR / f"{name}.schema.json").read_text(encoding="utf-8"))
     on_disk.pop("$id")
     assert on_disk == EXPORTED[name].model_json_schema(mode="serialization")
+
+
+def test_rule_check_carries_verified_and_has_no_summer_cover() -> None:
+    rule = _plan(1).rules[0]
+    assert (rule.source, rule.verified) == ("PD-04 2026", False)
+    with pytest.raises(ValidationError):
+        RuleCheck.model_validate({**rule.model_dump(), "id": "summer_cover"})
+    with pytest.raises(ValidationError):
+        RuleCheck.model_validate({k: v for k, v in rule.model_dump().items() if k != "verified"})

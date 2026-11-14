@@ -107,8 +107,10 @@ the rows carry no scores.
 - `rotation`: the crop sequence joined by `>`, e.g. `maize>wheat>pea`.
 - `weather_start_season`: the scenario id, the first harvest season of a window of `plan_years`
   consecutive seasons from the weather record; `season = weather_start_season + plan_year − 1`.
+- `plan_year`: 1–5 (plans run 3, 4 or 5 years).
 - `yield_rel`, `ndvi_peak`, `ndvi_offseason`, `rootzone_sm_critical`, `et_season_mm`: `Range` with
-  low/mid/high = P10/P50/P90 over ensemble members; null = not predicted, and the planner then drops
+  low/mid/high = P10/P50/P90 over ensemble members, i.e. the spread across ensemble members for one
+  weather window (not across weather windows); null = not predicted, and the planner then drops
   that rotation for that grid point.
 - `model_version`: `"mock-0"` while the declared mock world model stands in for the real one.
 
@@ -133,14 +135,27 @@ The map behind the fractions (e.g. EUCROPMAP) and its year go in `FieldAnalysis.
 
 ## (3c) Farm plan: `POST /v1/farm/plan`
 
-`FarmPlanRequest`: 1–10 fields (`id`, optional `name`, drawn `boundary`, `current_rotation` as a
-cycle), shared `priorities` (non-negative weights, normalised server-side), `risk_aversion` 0–1
-(default 0.3), `plan_years` 3 or 4 (default 4), `legume_rule` (default on).
+`FarmPlanRequest`: 1–10 fields (`id`, optional `name`, drawn `boundary`, `current_rotation` as the
+farmer's reference cycle of 2–4 crops, optional `crop_history` of 0–5 observed crops with the most
+recent harvest last), shared `priorities` (non-negative weights, normalised server-side),
+`risk_aversion` 0–1 (default 0.3), `plan_years` 3, 4 or 5 (default 4), `eco_scheme` (default
+false: nothing from the voluntary PD-04 eco-scheme is enforced) and `eco_practice`
+(`diversification`, the default, or `legume_share`; read only when `eco_scheme` is true, and only
+that one practice is enforced). Without `crop_history`, the cycle `current_rotation` is read
+backwards as the field's history, an assumption stated in `caveats`.
 
-`FarmPlanResponse`: up to 3 ranked `plans` (best first, rank 1–3) plus `current`, the farmer's own
-rotation scored the same way (rank 0, null if it cannot be scored). Each `FarmPlan` gives hectares
-per rotation per field (`allocations`), the area-weighted mean `score` (0–100, same four parts as
-`ScoreBreakdown`), `score_range` (worst / median / best weather window) with the `worst` and `best`
-windows named, crop areas per plan year, the farm-level rule checks (payment conditions, simplified
-and unverified) and `confidence`, which is `low` for every plan built on the mock world model.
-`mock` is true and `model_version` is `"mock-0"` until the real world model is wired.
+`FarmPlanResponse`: up to 3 `plans` plus `current`, the farmer's own rotation scored the same way
+(rank 0, null if it cannot be scored). `plans[0]` (rank 1) is the best solution found; it is
+optimal for the model only when `proven_optimal` is true. Ranks 2–3 are alternatives that differ
+from each better plan in at least two rotation choices, not the second and third best solutions.
+Each `FarmPlan` gives hectares per rotation per field (`allocations`: an area split, not a planting
+map), the area-weighted mean `score` (0–100 decision metrics, not probabilities, same four parts as
+`ScoreBreakdown`), `score_range` (the spread across weather windows: worst / median / best) with the
+`worst` and `best` windows named, crop areas per plan year, and `rules`. Each `RuleCheck` row
+(`max_crop_share`, `max_two_crops_share`, `legume_share`) names its `source` (profile and year, e.g.
+`GAEC 7 2026`, `PD-04 2026`), the limit, the worst-year value, `applies` (true only for the practice
+enforced in this request), `passed` and `verified` (the limit was read in the official document).
+Rule rows are provisional checks, not a statement of GAEC 7 or PD-04 compliance. `confidence` is how
+far the model behind the numbers has been validated: `low` for every plan built on the mock world
+model; the rule for the real model is still open. `mock` is true and `model_version` is `"mock-0"`
+until the real world model is wired.

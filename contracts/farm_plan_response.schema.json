@@ -2,7 +2,7 @@
   "$defs": {
     "Allocation": {
       "additionalProperties": false,
-      "description": "Hectares of one rotation on one field.",
+      "description": "Hectares of one rotation on one field: an area split, not a planting map (which part of\nthe field gets the rotation is not decided).",
       "properties": {
         "field_id": {
           "title": "Field Id",
@@ -18,7 +18,7 @@
           "items": {
             "$ref": "#/$defs/Crop"
           },
-          "maxItems": 4,
+          "maxItems": 5,
           "minItems": 3,
           "title": "Sequence",
           "type": "array"
@@ -136,15 +136,16 @@
     },
     "FarmPlan": {
       "additionalProperties": false,
-      "description": "One farm plan. `score`: mean over weather windows, area-weighted. `score_range`: low =\nworst weather window, mid = median, high = best (0-100). `confidence`: always 'low' on the mock\nworld model; the rule for the real model is still open.",
+      "description": "One farm plan. Scores are 0-100 decision metrics (higher is better), not probabilities.\n`score_range` is the spread across weather windows, not a confidence interval.",
       "properties": {
         "rank": {
-          "description": "1 = best; 0 = the farmer's current rotation (baseline)",
+          "description": "1 = best solution found (optimal for the model only when proven_optimal); 2-3 = alternatives that differ in at least two rotation choices, not the next-best solutions; 0 = the farmer's current rotation",
           "minimum": 0,
           "title": "Rank",
           "type": "integer"
         },
         "allocations": {
+          "description": "area split per field, not a planting map",
           "items": {
             "$ref": "#/$defs/Allocation"
           },
@@ -152,10 +153,12 @@
           "type": "array"
         },
         "score": {
-          "$ref": "#/$defs/ScoreBreakdown"
+          "$ref": "#/$defs/ScoreBreakdown",
+          "description": "mean over weather windows, area-weighted; 0-100, not a probability"
         },
         "score_range": {
-          "$ref": "#/$defs/Range"
+          "$ref": "#/$defs/Range",
+          "description": "spread across weather windows: low = worst, mid = median, high = best"
         },
         "worst": {
           "$ref": "#/$defs/ScenarioScore"
@@ -171,6 +174,7 @@
           "type": "array"
         },
         "rules": {
+          "description": "provisional rule checks, not a statement of GAEC 7 or PD-04 compliance",
           "items": {
             "$ref": "#/$defs/RuleCheck"
           },
@@ -178,10 +182,11 @@
           "type": "array"
         },
         "confidence": {
-          "$ref": "#/$defs/Confidence"
+          "$ref": "#/$defs/Confidence",
+          "description": "how far the model behind the numbers has been validated; 'low' on the mock world model, the rule for the real model is still open"
         },
         "proven_optimal": {
-          "description": "true only when CP-SAT proved the plan optimal; false for the baseline",
+          "description": "true only when the solver proved the plan optimal for the model (no candidate pruned); otherwise the plan is the best solution found; false for the baseline",
           "title": "Proven Optimal",
           "type": "boolean"
         }
@@ -247,16 +252,20 @@
     },
     "RuleCheck": {
       "additionalProperties": false,
-      "description": "A farm-level crop rule (payment conditions, simplified; not verified against the 2026\nAPIA guide). `max_*` rules are upper limits; `summer_cover` and `legume_share` are lower\nlimits.",
+      "description": "A provisional farm-level crop rule check (payment conditions, simplified): not a statement\nof GAEC 7 or PD-04 compliance. `max_*` rules are upper limits; `legume_share` is a lower\nlimit.",
       "properties": {
         "id": {
           "enum": [
             "max_crop_share",
             "max_two_crops_share",
-            "summer_cover",
             "legume_share"
           ],
           "title": "Id",
+          "type": "string"
+        },
+        "source": {
+          "description": "rule profile and year, e.g. 'GAEC 7 2026', 'PD-04 2026'",
+          "title": "Source",
           "type": "string"
         },
         "limit_pct": {
@@ -273,7 +282,7 @@
           "type": "number"
         },
         "applies": {
-          "description": "false when the farm is too small or the rule is off",
+          "description": "true only for the practice enforced in this request",
           "title": "Applies",
           "type": "boolean"
         },
@@ -281,14 +290,21 @@
           "description": "value_pct meets limit_pct; computed even when not applied",
           "title": "Passed",
           "type": "boolean"
+        },
+        "verified": {
+          "description": "the limit was read in the official document; false = unverified",
+          "title": "Verified",
+          "type": "boolean"
         }
       },
       "required": [
         "id",
+        "source",
         "limit_pct",
         "value_pct",
         "applies",
-        "passed"
+        "passed",
+        "verified"
       ],
       "title": "RuleCheck",
       "type": "object"
@@ -307,6 +323,7 @@
           "type": "integer"
         },
         "total": {
+          "description": "0-100 decision metric, not a probability",
           "maximum": 100,
           "minimum": 0,
           "title": "Total",
@@ -370,7 +387,7 @@
       "additionalProperties": false,
       "properties": {
         "plan_year": {
-          "maximum": 4,
+          "maximum": 5,
           "minimum": 1,
           "title": "Plan Year",
           "type": "integer"
@@ -409,7 +426,7 @@
       "type": "string"
     },
     "plan_years": {
-      "maximum": 4,
+      "maximum": 5,
       "minimum": 3,
       "title": "Plan Years",
       "type": "integer"
@@ -436,7 +453,7 @@
       "type": "integer"
     },
     "plans": {
-      "description": "best first; empty if none is feasible",
+      "description": "plans[0] is the best solution found (optimal for the model only when proven_optimal), the others are alternatives; empty if none is feasible",
       "items": {
         "$ref": "#/$defs/FarmPlan"
       },

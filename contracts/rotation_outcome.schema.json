@@ -43,7 +43,7 @@
     }
   },
   "additionalProperties": false,
-  "description": "One row of world-model output for the farm planner (handoff 2b): yearly physical summaries\nfor one grid point, rotation, weather window and plan year. `Range` low/mid/high = P10/P50/P90\nover ensemble members. Null = not predicted; the planner drops a rotation whose scores need it.\nScores are not part of this row: the planner owns normalisation, weights and rules.\n`crop` is the main crop of this plan year.",
+  "description": "One row of world-model output for the farm planner (handoff 2b): yearly physical summaries\nfor one grid point, rotation, weather window and plan year. Each `Range` is the spread across\nensemble members (low/mid/high = P10/P50/P90) for one weather window, not across weather\nwindows. Null = not predicted; the planner drops a rotation whose scores need it. Scores are\nnot part of this row: the planner owns normalisation, weights and rules. `crop` is the main\ncrop of this plan year.",
   "properties": {
     "grid_point_id": {
       "description": "'{lat:.5f}_{lon:.5f}' of the centre of the 0.0025° (about 250 m) grid cell",
@@ -62,7 +62,7 @@
     },
     "plan_year": {
       "description": "year inside the plan, 1-based",
-      "maximum": 4,
+      "maximum": 5,
       "minimum": 1,
       "title": "Plan Year",
       "type": "integer"

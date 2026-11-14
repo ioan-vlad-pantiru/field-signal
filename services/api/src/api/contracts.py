@@ -336,10 +336,11 @@ class ModelPrediction(Contract):
 
 class RotationOutcome(Contract):
     """One row of world-model output for the farm planner (handoff 2b): yearly physical summaries
-    for one grid point, rotation, weather window and plan year. `Range` low/mid/high = P10/P50/P90
-    over ensemble members. Null = not predicted; the planner drops a rotation whose scores need it.
-    Scores are not part of this row: the planner owns normalisation, weights and rules.
-    `crop` is the main crop of this plan year."""
+    for one grid point, rotation, weather window and plan year. Each `Range` is the spread across
+    ensemble members (low/mid/high = P10/P50/P90) for one weather window, not across weather
+    windows. Null = not predicted; the planner drops a rotation whose scores need it. Scores are
+    not part of this row: the planner owns normalisation, weights and rules. `crop` is the main
+    crop of this plan year."""
 
     grid_point_id: str = Field(
         description="'{lat:.5f}_{lon:.5f}' of the centre of the 0.0025° (about 250 m) grid cell"
@@ -348,7 +349,7 @@ class RotationOutcome(Contract):
     weather_start_season: int = Field(
         description="scenario id: first harvest season of the weather window, e.g. 1987"
     )
-    plan_year: int = Field(ge=1, le=4, description="year inside the plan, 1-based")
+    plan_year: int = Field(ge=1, le=5, description="year inside the plan, 1-based")
     crop: Crop
     season: int = Field(description="harvest year of the weather used: start + plan_year - 1")
     yield_rel: Range | None = Field(
@@ -424,8 +425,13 @@ class FarmField(Contract):
     current_rotation: list[Crop] = Field(
         min_length=2,
         max_length=4,
-        description="a cycle, as in FieldRequest; the last two entries are taken as the field's "
-        "last two crops",
+        description="the farmer's reference cycle, as in FieldRequest; scored as the baseline",
+    )
+    crop_history: list[Crop] | None = Field(
+        default=None,
+        max_length=5,
+        description="observed crops of past seasons, most recent harvest last; null = unknown, "
+        "then the cycle current_rotation is read backwards (an assumption, stated in caveats)",
     )
 
 
@@ -437,9 +443,16 @@ class FarmPlanRequest(Contract):
     risk_aversion: float = Field(
         default=0.3, ge=0, le=1, description="0 = best average, 1 = best worst weather window"
     )
-    plan_years: int = Field(default=4, ge=3, le=4)
-    legume_rule: bool = Field(
-        default=True, description="enforce the optional legume share (eco-scheme) every plan year"
+    plan_years: int = Field(default=4, ge=3, le=5)
+    eco_scheme: bool = Field(
+        default=False,
+        description="enforce one practice of the voluntary PD-04 eco-scheme (eco_practice); "
+        "false = nothing from PD-04 is enforced",
+    )
+    eco_practice: Literal["diversification", "legume_share"] = Field(
+        default="diversification",
+        description="the one PD-04 practice enforced when eco_scheme is true; ignored otherwise. "
+        "The two are alternatives, never enforced together",
     )
 
     @model_validator(mode="after")
@@ -450,11 +463,12 @@ class FarmPlanRequest(Contract):
 
 
 class Allocation(Contract):
-    """Hectares of one rotation on one field."""
+    """Hectares of one rotation on one field: an area split, not a planting map (which part of
+    the field gets the rotation is not decided)."""
 
     field_id: str
     area_ha: float = Field(ge=0)
-    sequence: list[Crop] = Field(min_length=3, max_length=4, description="one crop per plan year")
+    sequence: list[Crop] = Field(min_length=3, max_length=5, description="one crop per plan year")
 
 
 class CropArea(Contract):
@@ -464,44 +478,62 @@ class CropArea(Contract):
 
 
 class YearAreas(Contract):
-    plan_year: int = Field(ge=1, le=4)
+    plan_year: int = Field(ge=1, le=5)
     areas: list[CropArea]
 
 
 class RuleCheck(Contract):
-    """A farm-level crop rule (payment conditions, simplified; not verified against the 2026
-    APIA guide). `max_*` rules are upper limits; `summer_cover` and `legume_share` are lower
-    limits."""
+    """A provisional farm-level crop rule check (payment conditions, simplified): not a statement
+    of GAEC 7 or PD-04 compliance. `max_*` rules are upper limits; `legume_share` is a lower
+    limit."""
 
-    id: Literal["max_crop_share", "max_two_crops_share", "summer_cover", "legume_share"]
+    id: Literal["max_crop_share", "max_two_crops_share", "legume_share"]
+    source: str = Field(description="rule profile and year, e.g. 'GAEC 7 2026', 'PD-04 2026'")
     limit_pct: float = Field(ge=0, le=100)
     value_pct: float = Field(ge=0, le=100, description="worst plan year")
-    applies: bool = Field(description="false when the farm is too small or the rule is off")
+    applies: bool = Field(description="true only for the practice enforced in this request")
     passed: bool = Field(description="value_pct meets limit_pct; computed even when not applied")
+    verified: bool = Field(
+        description="the limit was read in the official document; false = unverified"
+    )
 
 
 class ScenarioScore(Contract):
     start_season: int = Field(description="first harvest season of the weather window")
     end_season: int = Field(description="last harvest season of the weather window")
-    total: float = Field(ge=0, le=100)
+    total: float = Field(ge=0, le=100, description="0-100 decision metric, not a probability")
 
 
 class FarmPlan(Contract):
-    """One farm plan. `score`: mean over weather windows, area-weighted. `score_range`: low =
-    worst weather window, mid = median, high = best (0-100). `confidence`: always 'low' on the mock
-    world model; the rule for the real model is still open."""
+    """One farm plan. Scores are 0-100 decision metrics (higher is better), not probabilities.
+    `score_range` is the spread across weather windows, not a confidence interval."""
 
-    rank: int = Field(ge=0, description="1 = best; 0 = the farmer's current rotation (baseline)")
-    allocations: list[Allocation]
-    score: ScoreBreakdown
-    score_range: Range
+    rank: int = Field(
+        ge=0,
+        description="1 = best solution found (optimal for the model only when proven_optimal); "
+        "2-3 = alternatives that differ in at least two rotation choices, not the next-best "
+        "solutions; 0 = the farmer's current rotation",
+    )
+    allocations: list[Allocation] = Field(description="area split per field, not a planting map")
+    score: ScoreBreakdown = Field(
+        description="mean over weather windows, area-weighted; 0-100, not a probability"
+    )
+    score_range: Range = Field(
+        description="spread across weather windows: low = worst, mid = median, high = best"
+    )
     worst: ScenarioScore
     best: ScenarioScore
     yearly_areas: list[YearAreas]
-    rules: list[RuleCheck]
-    confidence: Confidence
+    rules: list[RuleCheck] = Field(
+        description="provisional rule checks, not a statement of GAEC 7 or PD-04 compliance"
+    )
+    confidence: Confidence = Field(
+        description="how far the model behind the numbers has been validated; 'low' on the mock "
+        "world model, the rule for the real model is still open"
+    )
     proven_optimal: bool = Field(
-        description="true only when CP-SAT proved the plan optimal; false for the baseline"
+        description="true only when the solver proved the plan optimal for the model (no "
+        "candidate pruned); otherwise the plan is the best solution found; false for the baseline"
     )
 
 
@@ -509,12 +541,16 @@ class FarmPlanResponse(Contract):
     schema_version: str = SCHEMA_VERSION
     mock: bool = False
     model_version: str = Field(description="world model behind the scores; 'mock-0' for the mock")
-    plan_years: int = Field(ge=3, le=4)
+    plan_years: int = Field(ge=3, le=5)
     total_area_ha: float = Field(ge=0)
     scenario_count: int = Field(ge=0, description="number of weather windows scored")
     scenario_first: int = Field(description="start season of the first weather window")
     scenario_last: int = Field(description="start season of the last weather window")
-    plans: list[FarmPlan] = Field(max_length=3, description="best first; empty if none is feasible")
+    plans: list[FarmPlan] = Field(
+        max_length=3,
+        description="plans[0] is the best solution found (optimal for the model only when "
+        "proven_optimal), the others are alternatives; empty if none is feasible",
+    )
     current: FarmPlan | None = Field(
         default=None, description="the farmer's current rotation; null when it cannot be scored"
     )
