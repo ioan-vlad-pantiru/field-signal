@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 
 from api.contracts import FarmPlanResponse
 from api.main import app
-from api.planner import optimizer
+from api.planner import grid, optimizer
 from api.planner.crops import RULE_LEGUMES
 
 client = TestClient(app)
@@ -22,6 +22,15 @@ FIELD_B = [(46.3022, 23.7560), (46.3024, 23.7607), (46.3004, 23.7609), (46.3002,
 # enough fields (three crops a year above 30 ha; pea every year needs pea's return interval).
 FIELD_C = [(46.2930, 23.7460), (46.2930, 23.7540), (46.2900, 23.7540), (46.2900, 23.7460)]
 FIELD_D = [(46.2890, 23.7460), (46.2890, 23.7520), (46.2870, 23.7520), (46.2870, 23.7460)]
+
+
+def _rectangle(ha: float) -> list[tuple[float, float]]:
+    """A 0.006° tall rectangle near Aiud whose width is scaled to `ha` with the grid's own
+    projection (the one `grid.area_ha` uses at the rectangle's middle latitude)."""
+    north, south, west = 46.300, 46.294, 23.740
+    mx, my = grid.metres_per_degree((north + south) / 2)
+    east = west + ha * 10_000 / (mx * my * (north - south))
+    return [(north, west), (north, east), (south, east), (south, west)]
 
 
 def _field(fid: str, boundary: list[tuple[float, float]], **kw: Any) -> dict[str, Any]:
@@ -65,7 +74,10 @@ def test_demo_farm(demo: FarmPlanResponse) -> None:
     assert demo.current is not None and demo.current.rank == 0
     for p in [*demo.plans, demo.current]:
         assert p.confidence == "low"
-        assert sorted(a.field_id for a in p.allocations) == ["f1", "f2"]  # one rotation per field
+        # 45 ha: split mode; f2 (8.4 ha) stays whole, f1 holds up to 3 rotations of 5 ha or more.
+        per_field = [a.field_id for a in p.allocations]
+        assert per_field.count("f2") == 1 and 1 <= per_field.count("f1") <= 3
+        assert all(a.area_ha >= 5 for a in p.allocations if a.field_id == "f1")
         area = sum(a.area_ha for a in p.allocations)
         assert area == pytest.approx(demo.total_area_ha)
         assert p.score_range.low <= p.score_range.mid <= p.score_range.high
@@ -85,7 +97,10 @@ def test_default_enforces_no_eco_rule(demo: FarmPlanResponse) -> None:
     assert "No eco-scheme (PD-04) rule was enforced" in en
     assert "assumed from the current rotation" in en
     assert "best solution found" in en and "alternatives" in en
-    assert "Each field carries one rotation, one crop per year on its whole area" in en
+    assert "The selected fields total 44." in en or "The selected fields total 45." in en
+    assert "under 75 ha (a product threshold, not a regulatory one)" in en
+    assert "Areas are hectares, not drawn boundaries" in en
+    assert "Rule shares are computed over the selected fields only" in en
     assert "area split" not in en and "which part of a field" not in en
     assert "shown as optimal only when the solver proves it" in en
     assert "the weather of its NASA POWER cell" in en and "whole farm" not in en
@@ -117,14 +132,50 @@ def test_eco_scheme_applies_the_chosen_practice_only(practice: str, rules: set[s
     assert "One PD-04 practice was enforced" in _en(res)
 
 
-def test_two_field_farm_drops_diversification() -> None:
-    # 45 ha, two parcels: at most two crops a year, so the 90 % two-crop limit cannot hold.
-    res = _plan(_body(eco_scheme=True, eco_practice="diversification"))
-    assert res.plans and not any(r.applies for p in res.plans for r in p.rules)
+@pytest.mark.parametrize("ha", [74.99, 75.01])
+def test_mode_follows_the_unrounded_area(ha: float) -> None:
+    rect = _rectangle(ha)
+    assert grid.area_ha(rect) == pytest.approx(ha, abs=1e-6)
+    body = _body()
+    body["fields"] = [_field("f1", rect)]
+    res = _plan(body)
+    assert res.total_area_ha == 75.0  # allocations stay in 0.1 ha on both sides
     en = _en(res)
+    assert f"The selected fields total {ha:.2f} ha" in en
+    split = ha < 75
+    assert ("under 75 ha" in en) is split and ("75 ha or more" in en) is not split
+    assert ("Areas are hectares, not drawn boundaries" in en) is split
+    assert res.plans
+    for p in res.plans:
+        assert {a.field_id for a in p.allocations} == {"f1"}
+        assert (len(p.allocations) <= 3) if split else (len(p.allocations) == 1)
+        assert all(a.area_ha >= 5 for a in p.allocations)
+
+
+@pytest.mark.parametrize("ha", [74.99, 75.01])
+def test_one_field_diversification_needs_a_split(ha: float) -> None:
+    body = _body(eco_scheme=True, eco_practice="diversification")
+    body["fields"] = [_field("f1", _rectangle(ha))]
+    res = _plan(body)
+    assert res.plans
+    if ha < 75:  # split mode: the practice is met by dividing the field
+        assert "One PD-04 practice was enforced: crop diversification" in _en(res)
+        for p in res.plans:
+            assert len(p.allocations) >= 3  # three crops a year above 30 ha
+            assert all(r.passed for r in p.rules if r.applies)
+            assert {r.id for r in p.rules if r.applies} == {"max_crop_share", "max_two_crops_share"}
+        return
+    # 75 ha or more: one rotation on the one field, the practice dropped with its reason.
+    assert all(len(p.allocations) == 1 for p in res.plans)
+    assert not any(r.applies for p in res.plans for r in p.rules)
+    en, ro = _en(res), "\n".join(c.ro for c in res.caveats)
     assert "No plan meeting the selected PD-04 practice (crop diversification)" in en
-    assert "above 30 ha the two largest crops must stay under 90 %" in en
-    assert "at least three fields" in en
+    assert "At 75 ha or more each field carries one rotation" in en
+    assert "which needs at least three fields" in en
+    assert "Splitting a field is not available at 75 ha or more." in en
+    assert "draw a large field as several parcels" in en
+    assert "Împărțirea unui câmp nu este disponibilă la 75 ha sau mai mult." in ro
+    assert "infeasible" not in en.lower()
 
 
 def test_priorities_change_the_plan() -> None:
@@ -186,13 +237,19 @@ def test_dropped_practice_explains_why(monkeypatch: pytest.MonkeyPatch) -> None:
         return optimizer.FarmSolve([], "UNKNOWN", None, True, False)
 
     monkeypatch.setattr(optimizer, "solve_farm", no_plan)  # service calls it via the module
-    res = _plan(_body(eco_scheme=True, eco_practice="legume_share"))
-    assert res.plans == [] and res.current is not None
-    en = _en(res)
-    assert "No plan meeting the selected PD-04 practice (legume share)" in en
-    assert "pea returns to a field only after 4 years" in en
-    assert "the farm needs at least 4 fields to grow pea every year" in en
-    assert "infeasible" not in en
+    split = _body(eco_scheme=True, eco_practice="legume_share")  # 45 ha
+    parcel = _body(eco_scheme=True, eco_practice="legume_share")  # about 76 ha
+    parcel["fields"] += [_field("f3", FIELD_C), _field("f4", FIELD_D)]
+    for body in (split, parcel):
+        res = _plan(body)
+        assert res.plans == [] and res.current is not None
+        en = _en(res)
+        assert "No plan meeting the selected PD-04 practice (legume share)" in en
+        assert "infeasible" not in en.lower()
+        assert ("the farm needs at least 4 fields to grow pea every year" in en) is (body is parcel)
+        assert ("Splitting a field is not available at 75 ha or more" in en) is (body is parcel)
+        assert ("draw a large field as several parcels" in en) is (body is parcel)
+        assert ("Pea every year needs at least 4 rotations" in en) is (body is split)
 
 
 def test_rule_checks_count_soybean_as_legume() -> None:

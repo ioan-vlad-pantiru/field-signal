@@ -513,11 +513,11 @@ export interface FarmPlanResponse {
 
 export interface FarmPlan {
   /**
-   * 1 = best solution found (optimal for the model only when proven_optimal); 2-3 = alternatives that change the rotation of at least two fields, not the next-best solutions; 0 = the farmer's current rotation
+   * 1 = best solution found (optimal for the model only when proven_optimal); 2-3 = alternatives that drop at least two (field, rotation) choices of every better plan (the only one if it has one), not the next-best solutions; 0 = the farmer's current rotation
    */
   rank: number;
   /**
-   * exactly one entry per field, with the field's area
+   * one entry per field on a farm of 75 ha or more; one or more per field (up to 3) on a smaller farm
    */
   allocations: Allocation[];
   score: ScoreBreakdown;
@@ -536,8 +536,9 @@ export interface FarmPlan {
   proven_optimal: boolean;
 }
 /**
- * The one rotation of one field: a drawn field is a parcel, one crop per year on its whole
- * area; `area_ha` is the field's area.
+ * Hectares of one rotation on one field. A farm of 75 ha or more: one allocation per field,
+ * on the field's whole area. A smaller farm: a field of 10 ha or more may hold up to 3 (at least
+ * 5 ha each), an area split, not a planting map (where each block lies is not decided).
  */
 
 export interface Allocation {

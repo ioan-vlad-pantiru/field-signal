@@ -11,6 +11,7 @@ Signatures (the service builds on these):
     grid_point(lat, lon) -> str              # "{lat:.5f}_{lon:.5f}" of the cell centre;
                                              # raises weather.OutsideCoverage outside the grid
     pieces(field_id, boundary) -> list[Piece]   # boundary: (lat, lon) vertices, open or closed
+    area_ha(boundary) -> float                  # unrounded field area, ha (the farm mode uses it)
     Piece(piece_id, field_id, grid_point_id, area_tenths_ha)
 
 The optimizer's piece tuples are `[(p.piece_id, p.field_id, p.area_tenths_ha) for p in ps]`.
@@ -149,10 +150,8 @@ def _apportion(exact: dict[str, float]) -> dict[str, int]:
             exact[big] += exact.pop(k)
 
 
-def pieces(field_id: str, boundary: Sequence[tuple[float, float]]) -> list[Piece]:
-    """Cut a field polygon, `(lat, lon)` vertices, by the grid cells it touches. Raises
-    OutsideCoverage when a vertex lies outside the grid; ValueError for a bounding box over
-    MAX_BOX_CELLS cells, a polygon that is not simple, or a field under 0.05 ha."""
+def _polygon(boundary: Sequence[tuple[float, float]]) -> tuple[list[Point], int, int, int, int]:
+    """The cleaned (lon, lat) polygon and its cell box (r0, c0, r1, c1); checks the boundary."""
     pts = [(lon, lat) for lat, lon in boundary]
     poly = [p for i, p in enumerate(pts) if p != pts[i - 1]]  # drop closing and repeated vertices
     if len(poly) < 3:
@@ -164,7 +163,28 @@ def pieces(field_id: str, boundary: Sequence[tuple[float, float]]) -> list[Piece
         raise ValueError(f"the field's bounding box spans {cells} grid cells (max {MAX_BOX_CELLS})")
     if not _simple(poly):
         raise ValueError("the boundary crosses or touches itself")
-    mx, my = metres_per_degree((min(lats) + max(lats)) / 2)
+    return poly, r0, c0, r1, c1
+
+
+def _metres(poly: Sequence[Point]) -> tuple[float, float]:
+    lats = [p[1] for p in poly]
+    return metres_per_degree((min(lats) + max(lats)) / 2)
+
+
+def area_ha(boundary: Sequence[tuple[float, float]]) -> float:
+    """The field's unrounded area in hectares, same polygon and projection as `pieces` (whose
+    pieces sum to this rounded to 0.1 ha). Same OutsideCoverage / ValueError as `pieces`."""
+    poly = _polygon(boundary)[0]
+    mx, my = _metres(poly)
+    return shoelace(poly) * mx * my / 10_000
+
+
+def pieces(field_id: str, boundary: Sequence[tuple[float, float]]) -> list[Piece]:
+    """Cut a field polygon, `(lat, lon)` vertices, by the grid cells it touches. Raises
+    OutsideCoverage when a vertex lies outside the grid; ValueError for a bounding box over
+    MAX_BOX_CELLS cells, a polygon that is not simple, or a field under 0.05 ha."""
+    poly, r0, c0, r1, c1 = _polygon(boundary)
+    mx, my = _metres(poly)
     exact: dict[str, float] = {}
     for r in range(r0, r1 + 1):
         for c in range(c0, c1 + 1):

@@ -75,6 +75,18 @@ def test_sliver_merges_into_largest_piece() -> None:
 def test_bad_boundaries_are_refused(boundary: list[tuple[float, float]], error: str) -> None:
     with pytest.raises(ValueError, match=error):
         grid.pieces("x", boundary)
+    with pytest.raises(ValueError, match=error):
+        grid.area_ha(boundary)
+
+
+def test_area_ha_is_the_unrounded_field_area() -> None:
+    for b in (FIELD_A, FIELD_B, FIELD_U):
+        assert (
+            abs(grid.area_ha(b) - sum(p.area_tenths_ha for p in grid.pieces("f", b)) / 10) <= 0.05
+        )
+    # The 0.01° square of test_projection_matches_geodesic_area: 856 317.5 m².
+    square = [(46.30, 23.75), (46.30, 23.76), (46.31, 23.76), (46.31, 23.75)]
+    assert grid.area_ha(square) == pytest.approx(85.63175, rel=5e-4)
 
 
 def test_closed_ring_and_repeated_vertex_give_the_same_pieces() -> None:

@@ -146,10 +146,13 @@ backwards as the field's history, an assumption stated in `caveats`.
 
 `FarmPlanResponse`: up to 3 `plans` plus `current`, the farmer's own rotation scored the same way
 (rank 0, null if it cannot be scored). `plans[0]` (rank 1) is the best solution found; it is
-optimal for the model only when `proven_optimal` is true. Ranks 2–3 are alternatives that change
-the rotation of at least two fields (of the only field on a one-field farm) against each better
-plan, not the second and third best solutions. A drawn field is a parcel with exactly one rotation:
-`allocations` holds exactly one entry per field, its `area_ha` the field's area. Each `FarmPlan`
+optimal for the model only when `proven_optimal` is true. Ranks 2–3 are alternatives that drop at
+least two (field, rotation) choices of each better plan (the only one if it has one), not the second
+and third best solutions. The server picks the mode from the selected area (75 ha is a product
+threshold, not a regulatory one): at 75 ha or more each field carries exactly one rotation, so
+`allocations` holds one entry per field with the field's area; under 75 ha a field of 10 ha or more
+may be divided between up to 3 rotations of at least 5 ha each (an area split, not a planting map),
+so `allocations` holds one or more entries per field, summing to its area. Each `FarmPlan`
 also gives the area-weighted mean `score` (0–100 decision metrics, not probabilities, same four
 parts as `ScoreBreakdown`), `score_range` (the spread across weather windows: worst / median / best) with the
 `worst` and `best` windows named, crop areas per plan year, and `rules`. Each `RuleCheck` row
