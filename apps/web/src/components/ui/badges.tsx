@@ -5,7 +5,7 @@ import { ShieldIcon } from "./icons";
 import type { Confidence, RiskLevel, Status } from "@/lib/contracts";
 import { RISK_TONE, STATUS_TONE, TONE_CLASSES, TONE_ICONS, type Tone } from "./tone";
 
-function ToneBadge({ tone, label, prefix }: { tone: Tone; label: string; prefix?: string }) {
+export function ToneBadge({ tone, label, prefix }: { tone: Tone; label: string; prefix?: string }) {
   const Icon = TONE_ICONS[tone];
   return (
     <span

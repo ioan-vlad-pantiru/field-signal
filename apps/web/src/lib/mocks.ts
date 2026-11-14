@@ -1,4 +1,5 @@
-import type { FieldAnalysis, SourcingRegion } from "@/lib/contracts";
+import type { FarmPlanResponse, FieldAnalysis, SourcingRegion } from "@/lib/contracts";
+import farmPlanJson from "@/mocks/farm_plan.mock.json";
 import fieldAnalysisJson from "@/mocks/field_analysis.mock.json";
 import sourcingRegionJson from "@/mocks/sourcing_region.mock.json";
 
@@ -7,3 +8,5 @@ import sourcingRegionJson from "@/mocks/sourcing_region.mock.json";
 // Every object has `mock: true`: never present these numbers as real in the pitch.
 export const mockFieldAnalysis = fieldAnalysisJson as unknown as FieldAnalysis;
 export const mockSourcingRegion = sourcingRegionJson as unknown as SourcingRegion;
+// Provisional, written by hand for a demo farm near Aiud until the API's real example replaces it.
+export const mockFarmPlan = farmPlanJson as unknown as FarmPlanResponse;

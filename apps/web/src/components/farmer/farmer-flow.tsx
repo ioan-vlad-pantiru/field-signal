@@ -1,11 +1,11 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { analyzeField, type Loaded } from "@/lib/api";
+import { analyzeField, planFarm, type Loaded } from "@/lib/api";
 import { fieldInput, updateField, useAccount } from "@/lib/account";
-import type { FieldAnalysis, LatLon, SavedField as AccountField } from "@/lib/contracts";
+import type { FarmPlanRequest, FieldAnalysis, LatLon, SavedField as AccountField } from "@/lib/contracts";
 import { Link } from "@/i18n/navigation";
 import { formatNumber } from "@/lib/format";
 import { useAppLocale } from "@/lib/localized";
@@ -17,6 +17,7 @@ import { FieldForm, type FormStep } from "./field-form";
 import { ResultsSkeleton, ResultsView } from "./results-view";
 import { SaveField } from "./save-field";
 import { MAX_FIELDS, toDraft, type SubmittedField } from "./draft-field";
+import { FarmPlanSection, type FarmPlanState } from "./results/farm-plan";
 import { FieldSwitcher } from "./results/field-switcher";
 import { useFieldLabel } from "./steps/field-list";
 import { CheckIcon } from "@/components/ui/icons";
@@ -36,6 +37,23 @@ function fromAccount(field: AccountField): SubmittedField {
 
 function fromLocal(field: SavedField): SubmittedField {
   return { request: field.request, boundary: field.boundary, place: field.near, accountId: null, name: null };
+}
+
+/**
+ * Every field in one farm-plan call, ids `f1`, `f2`, … in order. `crop_history` is left out (the API
+ * then reads the rotation backwards and says so) and so is `eco_scheme` (API default: nothing enforced).
+ */
+function farmRequest(list: SubmittedField[], name: (field: SubmittedField, index: number) => string): FarmPlanRequest {
+  return {
+    fields: list.map((f, i) => ({
+      id: `f${i + 1}`,
+      name: name(f, i),
+      boundary: f.boundary,
+      current_rotation: f.request.current_rotation,
+    })) as FarmPlanRequest["fields"],
+    priorities: list[0]?.request.priorities ?? {},
+    risk_aversion: 0.3,
+  };
 }
 
 /** A pin passed in the URL (`?lat=…&lon=…&place=…`), e.g. from the feed screen's zone sheet. */
@@ -197,6 +215,9 @@ function Flow({ pin, opened = null }: { pin: UrlPin | null; opened?: AccountFiel
   const [selected, setSelected] = useState(0);
   /** My fields entries updated by the last run. */
   const [updated, setUpdated] = useState<ReadonlySet<string>>(new Set());
+  /** The farm plan of the last run; a newer run makes older answers stale. */
+  const [farm, setFarm] = useState<FarmPlanState>({ status: "loading" });
+  const farmRun = useRef(0);
 
   async function run(submitted: SubmittedField[]) {
     const list = submitted.map((f) => ({
@@ -222,6 +243,17 @@ function Flow({ pin, opened = null }: { pin: UrlPin | null; opened?: AccountFiel
     if (!signedIn && lastField) {
       saveField({ request: lastField.request, boundary: lastField.boundary, near: lastField.place });
     }
+    // Not part of the Promise.all below: a slow solve or a 422 never holds up the per-field results.
+    const runId = ++farmRun.current;
+    setFarm({ status: "loading" });
+    planFarm(farmRequest(list, fieldLabel)).then(
+      (result) => {
+        if (farmRun.current === runId) setFarm({ status: "done", result });
+      },
+      () => {
+        if (farmRun.current === runId) setFarm({ status: "error" });
+      },
+    );
     try {
       const results = await Promise.all(list.map((f) => analyzeField(f.request)));
       setState({ step: "results", results });
@@ -285,6 +317,7 @@ function Flow({ pin, opened = null }: { pin: UrlPin | null; opened?: AccountFiel
               />
             }
           />
+          <FarmPlanSection state={farm} names={fields.map(fieldLabel)} />
         </div>
       );
     }

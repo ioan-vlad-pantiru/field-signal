@@ -1,0 +1,765 @@
+{
+  "schema_version": "0.2.0",
+  "mock": true,
+  "model_version": "mock-0",
+  "plan_years": 4,
+  "total_area_ha": 45.3,
+  "scenario_count": 41,
+  "scenario_first": 1982,
+  "scenario_last": 2022,
+  "plans": [
+    {
+      "rank": 1,
+      "allocations": [
+        {
+          "field_id": "f1",
+          "area_ha": 14.8,
+          "sequence": [
+            "pea",
+            "wheat",
+            "maize",
+            "sunflower"
+          ]
+        },
+        {
+          "field_id": "f1",
+          "area_ha": 12.4,
+          "sequence": [
+            "wheat",
+            "maize",
+            "sunflower",
+            "pea"
+          ]
+        },
+        {
+          "field_id": "f1",
+          "area_ha": 10.0,
+          "sequence": [
+            "sunflower",
+            "pea",
+            "wheat",
+            "maize"
+          ]
+        },
+        {
+          "field_id": "f2",
+          "area_ha": 8.1,
+          "sequence": [
+            "wheat",
+            "pea",
+            "maize",
+            "barley"
+          ]
+        }
+      ],
+      "score": {
+        "total": 64.0,
+        "yield_stability": 61,
+        "water": 58,
+        "soil_health": 74,
+        "low_risk": 63
+      },
+      "score_range": {
+        "low": 41,
+        "mid": 65,
+        "high": 79
+      },
+      "worst": {
+        "start_season": 2000,
+        "end_season": 2003,
+        "total": 41
+      },
+      "best": {
+        "start_season": 2014,
+        "end_season": 2017,
+        "total": 79
+      },
+      "yearly_areas": [
+        {
+          "plan_year": 1,
+          "areas": [
+            {
+              "crop": "wheat",
+              "area_ha": 20.5,
+              "share_pct": 45.3
+            },
+            {
+              "crop": "pea",
+              "area_ha": 14.8,
+              "share_pct": 32.7
+            },
+            {
+              "crop": "sunflower",
+              "area_ha": 10.0,
+              "share_pct": 22.1
+            }
+          ]
+        },
+        {
+          "plan_year": 2,
+          "areas": [
+            {
+              "crop": "pea",
+              "area_ha": 18.1,
+              "share_pct": 40.0
+            },
+            {
+              "crop": "wheat",
+              "area_ha": 14.8,
+              "share_pct": 32.7
+            },
+            {
+              "crop": "maize",
+              "area_ha": 12.4,
+              "share_pct": 27.4
+            }
+          ]
+        },
+        {
+          "plan_year": 3,
+          "areas": [
+            {
+              "crop": "maize",
+              "area_ha": 22.9,
+              "share_pct": 50.6
+            },
+            {
+              "crop": "sunflower",
+              "area_ha": 12.4,
+              "share_pct": 27.4
+            },
+            {
+              "crop": "wheat",
+              "area_ha": 10.0,
+              "share_pct": 22.1
+            }
+          ]
+        },
+        {
+          "plan_year": 4,
+          "areas": [
+            {
+              "crop": "sunflower",
+              "area_ha": 14.8,
+              "share_pct": 32.7
+            },
+            {
+              "crop": "pea",
+              "area_ha": 12.4,
+              "share_pct": 27.4
+            },
+            {
+              "crop": "maize",
+              "area_ha": 10.0,
+              "share_pct": 22.1
+            },
+            {
+              "crop": "barley",
+              "area_ha": 8.1,
+              "share_pct": 17.9
+            }
+          ]
+        }
+      ],
+      "rules": [
+        {
+          "id": "max_crop_share",
+          "source": "GAEC 7 2026",
+          "limit_pct": 75,
+          "value_pct": 50.6,
+          "applies": false,
+          "passed": true,
+          "verified": false
+        },
+        {
+          "id": "max_two_crops_share",
+          "source": "GAEC 7 2026",
+          "limit_pct": 95,
+          "value_pct": 78.0,
+          "applies": false,
+          "passed": true,
+          "verified": false
+        },
+        {
+          "id": "max_crop_share",
+          "source": "PD-04 2026",
+          "limit_pct": 70,
+          "value_pct": 50.6,
+          "applies": false,
+          "passed": true,
+          "verified": false
+        },
+        {
+          "id": "max_two_crops_share",
+          "source": "PD-04 2026",
+          "limit_pct": 90,
+          "value_pct": 78.0,
+          "applies": false,
+          "passed": true,
+          "verified": false
+        },
+        {
+          "id": "legume_share",
+          "source": "PD-04 2026",
+          "limit_pct": 2,
+          "value_pct": 0,
+          "applies": false,
+          "passed": false,
+          "verified": false
+        }
+      ],
+      "confidence": "low",
+      "proven_optimal": false
+    },
+    {
+      "rank": 2,
+      "allocations": [
+        {
+          "field_id": "f1",
+          "area_ha": 18.6,
+          "sequence": [
+            "pea",
+            "wheat",
+            "maize",
+            "barley"
+          ]
+        },
+        {
+          "field_id": "f1",
+          "area_ha": 18.6,
+          "sequence": [
+            "barley",
+            "pea",
+            "wheat",
+            "maize"
+          ]
+        },
+        {
+          "field_id": "f2",
+          "area_ha": 8.1,
+          "sequence": [
+            "sunflower",
+            "wheat",
+            "pea",
+            "maize"
+          ]
+        }
+      ],
+      "score": {
+        "total": 61.8,
+        "yield_stability": 58,
+        "water": 60,
+        "soil_health": 70,
+        "low_risk": 59
+      },
+      "score_range": {
+        "low": 38,
+        "mid": 62,
+        "high": 76
+      },
+      "worst": {
+        "start_season": 2000,
+        "end_season": 2003,
+        "total": 38
+      },
+      "best": {
+        "start_season": 2014,
+        "end_season": 2017,
+        "total": 76
+      },
+      "yearly_areas": [
+        {
+          "plan_year": 1,
+          "areas": [
+            {
+              "crop": "pea",
+              "area_ha": 18.6,
+              "share_pct": 41.1
+            },
+            {
+              "crop": "barley",
+              "area_ha": 18.6,
+              "share_pct": 41.1
+            },
+            {
+              "crop": "sunflower",
+              "area_ha": 8.1,
+              "share_pct": 17.9
+            }
+          ]
+        },
+        {
+          "plan_year": 2,
+          "areas": [
+            {
+              "crop": "wheat",
+              "area_ha": 26.7,
+              "share_pct": 58.9
+            },
+            {
+              "crop": "pea",
+              "area_ha": 18.6,
+              "share_pct": 41.1
+            }
+          ]
+        },
+        {
+          "plan_year": 3,
+          "areas": [
+            {
+              "crop": "maize",
+              "area_ha": 18.6,
+              "share_pct": 41.1
+            },
+            {
+              "crop": "wheat",
+              "area_ha": 18.6,
+              "share_pct": 41.1
+            },
+            {
+              "crop": "pea",
+              "area_ha": 8.1,
+              "share_pct": 17.9
+            }
+          ]
+        },
+        {
+          "plan_year": 4,
+          "areas": [
+            {
+              "crop": "maize",
+              "area_ha": 26.7,
+              "share_pct": 58.9
+            },
+            {
+              "crop": "barley",
+              "area_ha": 18.6,
+              "share_pct": 41.1
+            }
+          ]
+        }
+      ],
+      "rules": [
+        {
+          "id": "max_crop_share",
+          "source": "GAEC 7 2026",
+          "limit_pct": 75,
+          "value_pct": 58.9,
+          "applies": false,
+          "passed": true,
+          "verified": false
+        },
+        {
+          "id": "max_two_crops_share",
+          "source": "GAEC 7 2026",
+          "limit_pct": 95,
+          "value_pct": 100.0,
+          "applies": false,
+          "passed": false,
+          "verified": false
+        },
+        {
+          "id": "max_crop_share",
+          "source": "PD-04 2026",
+          "limit_pct": 70,
+          "value_pct": 58.9,
+          "applies": false,
+          "passed": true,
+          "verified": false
+        },
+        {
+          "id": "max_two_crops_share",
+          "source": "PD-04 2026",
+          "limit_pct": 90,
+          "value_pct": 100.0,
+          "applies": false,
+          "passed": false,
+          "verified": false
+        },
+        {
+          "id": "legume_share",
+          "source": "PD-04 2026",
+          "limit_pct": 2,
+          "value_pct": 0,
+          "applies": false,
+          "passed": false,
+          "verified": false
+        }
+      ],
+      "confidence": "low",
+      "proven_optimal": false
+    },
+    {
+      "rank": 3,
+      "allocations": [
+        {
+          "field_id": "f1",
+          "area_ha": 37.2,
+          "sequence": [
+            "wheat",
+            "pea",
+            "maize",
+            "sunflower"
+          ]
+        },
+        {
+          "field_id": "f2",
+          "area_ha": 8.1,
+          "sequence": [
+            "pea",
+            "maize",
+            "wheat",
+            "barley"
+          ]
+        }
+      ],
+      "score": {
+        "total": 60.0,
+        "yield_stability": 57,
+        "water": 55,
+        "soil_health": 72,
+        "low_risk": 56
+      },
+      "score_range": {
+        "low": 37,
+        "mid": 60,
+        "high": 75
+      },
+      "worst": {
+        "start_season": 1990,
+        "end_season": 1993,
+        "total": 37
+      },
+      "best": {
+        "start_season": 2004,
+        "end_season": 2007,
+        "total": 75
+      },
+      "yearly_areas": [
+        {
+          "plan_year": 1,
+          "areas": [
+            {
+              "crop": "wheat",
+              "area_ha": 37.2,
+              "share_pct": 82.1
+            },
+            {
+              "crop": "pea",
+              "area_ha": 8.1,
+              "share_pct": 17.9
+            }
+          ]
+        },
+        {
+          "plan_year": 2,
+          "areas": [
+            {
+              "crop": "pea",
+              "area_ha": 37.2,
+              "share_pct": 82.1
+            },
+            {
+              "crop": "maize",
+              "area_ha": 8.1,
+              "share_pct": 17.9
+            }
+          ]
+        },
+        {
+          "plan_year": 3,
+          "areas": [
+            {
+              "crop": "maize",
+              "area_ha": 37.2,
+              "share_pct": 82.1
+            },
+            {
+              "crop": "wheat",
+              "area_ha": 8.1,
+              "share_pct": 17.9
+            }
+          ]
+        },
+        {
+          "plan_year": 4,
+          "areas": [
+            {
+              "crop": "sunflower",
+              "area_ha": 37.2,
+              "share_pct": 82.1
+            },
+            {
+              "crop": "barley",
+              "area_ha": 8.1,
+              "share_pct": 17.9
+            }
+          ]
+        }
+      ],
+      "rules": [
+        {
+          "id": "max_crop_share",
+          "source": "GAEC 7 2026",
+          "limit_pct": 75,
+          "value_pct": 82.1,
+          "applies": false,
+          "passed": false,
+          "verified": false
+        },
+        {
+          "id": "max_two_crops_share",
+          "source": "GAEC 7 2026",
+          "limit_pct": 95,
+          "value_pct": 100.0,
+          "applies": false,
+          "passed": false,
+          "verified": false
+        },
+        {
+          "id": "max_crop_share",
+          "source": "PD-04 2026",
+          "limit_pct": 70,
+          "value_pct": 82.1,
+          "applies": false,
+          "passed": false,
+          "verified": false
+        },
+        {
+          "id": "max_two_crops_share",
+          "source": "PD-04 2026",
+          "limit_pct": 90,
+          "value_pct": 100.0,
+          "applies": false,
+          "passed": false,
+          "verified": false
+        },
+        {
+          "id": "legume_share",
+          "source": "PD-04 2026",
+          "limit_pct": 2,
+          "value_pct": 0,
+          "applies": false,
+          "passed": false,
+          "verified": false
+        }
+      ],
+      "confidence": "low",
+      "proven_optimal": false
+    }
+  ],
+  "current": {
+    "rank": 0,
+    "allocations": [
+      {
+        "field_id": "f1",
+        "area_ha": 37.2,
+        "sequence": [
+          "maize",
+          "wheat",
+          "maize",
+          "maize"
+        ]
+      },
+      {
+        "field_id": "f2",
+        "area_ha": 8.1,
+        "sequence": [
+          "maize",
+          "wheat",
+          "maize",
+          "maize"
+        ]
+      }
+    ],
+    "score": {
+      "total": 47.0,
+      "yield_stability": 55,
+      "water": 44,
+      "soil_health": 39,
+      "low_risk": 50
+    },
+    "score_range": {
+      "low": 27,
+      "mid": 49,
+      "high": 68
+    },
+    "worst": {
+      "start_season": 2000,
+      "end_season": 2003,
+      "total": 27
+    },
+    "best": {
+      "start_season": 2014,
+      "end_season": 2017,
+      "total": 68
+    },
+    "yearly_areas": [
+      {
+        "plan_year": 1,
+        "areas": [
+          {
+            "crop": "maize",
+            "area_ha": 45.3,
+            "share_pct": 100.0
+          }
+        ]
+      },
+      {
+        "plan_year": 2,
+        "areas": [
+          {
+            "crop": "wheat",
+            "area_ha": 45.3,
+            "share_pct": 100.0
+          }
+        ]
+      },
+      {
+        "plan_year": 3,
+        "areas": [
+          {
+            "crop": "maize",
+            "area_ha": 45.3,
+            "share_pct": 100.0
+          }
+        ]
+      },
+      {
+        "plan_year": 4,
+        "areas": [
+          {
+            "crop": "maize",
+            "area_ha": 45.3,
+            "share_pct": 100.0
+          }
+        ]
+      }
+    ],
+    "rules": [
+      {
+        "id": "max_crop_share",
+        "source": "GAEC 7 2026",
+        "limit_pct": 75,
+        "value_pct": 100.0,
+        "applies": false,
+        "passed": false,
+        "verified": false
+      },
+      {
+        "id": "max_two_crops_share",
+        "source": "GAEC 7 2026",
+        "limit_pct": 95,
+        "value_pct": 100.0,
+        "applies": false,
+        "passed": false,
+        "verified": false
+      },
+      {
+        "id": "max_crop_share",
+        "source": "PD-04 2026",
+        "limit_pct": 70,
+        "value_pct": 100.0,
+        "applies": false,
+        "passed": false,
+        "verified": false
+      },
+      {
+        "id": "max_two_crops_share",
+        "source": "PD-04 2026",
+        "limit_pct": 90,
+        "value_pct": 100.0,
+        "applies": false,
+        "passed": false,
+        "verified": false
+      },
+      {
+        "id": "legume_share",
+        "source": "PD-04 2026",
+        "limit_pct": 2,
+        "value_pct": 0,
+        "applies": false,
+        "passed": false,
+        "verified": false
+      }
+    ],
+    "confidence": "low",
+    "proven_optimal": false
+  },
+  "caveats": [
+    {
+      "ro": "Exemplu provizoriu scris de mână pentru o fermă demonstrativă lângă Aiud (două câmpuri, circa 37 ha și 8 ha); nu este un răspuns al API-ului.",
+      "en": "Provisional example written by hand for a demo farm near Aiud (two fields, about 37 ha and 8 ha); it is not an answer from the API."
+    },
+    {
+      "ro": "Scorurile provin dintr-un model de lume simulat (mock-0), nu dintr-un model antrenat: doar cifre demonstrative.",
+      "en": "Scores come from a mock world model (mock-0), not a trained model: demo numbers only."
+    },
+    {
+      "ro": "Vremea provine dintr-o grilă grosieră (NASA POWER, 0,5° x 0,625°, circa 50 km), deci câmpurile din aceeași celulă au aceeași vreme.",
+      "en": "Weather comes from a coarse grid (NASA POWER, 0.5° x 0.625°, about 50 km), so fields in the same cell share the same weather."
+    },
+    {
+      "ro": "Umiditatea din zona rădăcinilor este o valoare de model MERRA-2 pentru o celulă de circa 50 km, nu o măsurătoare în câmp.",
+      "en": "Root-zone wetness is a MERRA-2 model value for a cell of about 50 km, not a field measurement."
+    },
+    {
+      "ro": "Ferestrele meteo sunt un test de stres pe baza istoricului, nu o prognoză. Cel mai rău caz este cea mai slabă fereastră înregistrată, nu o limită inferioară.",
+      "en": "The weather windows are a historical stress test, not a forecast. The worst case is the worst window on record, not a floor."
+    },
+    {
+      "ro": "Verificările regulilor sunt provizorii, simplificate și neverificate.",
+      "en": "The rule checks are provisional, simplified and unverified."
+    },
+    {
+      "ro": "Citirea GAEC 7 este provizorie: regula la nivel de parcelă nu este modelată.",
+      "en": "The GAEC 7 reading is provisional: the parcel-level rule is not modelled."
+    },
+    {
+      "ro": "Acoperirea solului, eligibilitatea și excepțiile nu sunt verificate (neverificat).",
+      "en": "Soil cover, eligibility and exemptions are not checked (unverified)."
+    },
+    {
+      "ro": "Nu a fost impusă nicio regulă din eco-schema PD-04.",
+      "en": "No eco-scheme (PD-04) rule was enforced."
+    },
+    {
+      "ro": "Locul 1 este cea mai bună soluție găsită; este optimă pentru model doar când solverul o demonstrează.",
+      "en": "Rank 1 is the best solution found; it is optimal for the model only when the solver proves it."
+    },
+    {
+      "ro": "Istoricul culturilor a fost presupus din rotația actuală, citită de la coadă la cap.",
+      "en": "Crop history was assumed from the current rotation, read backwards."
+    },
+    {
+      "ro": "Rezultatul este o împărțire a suprafeței, nu o hartă de semănat.",
+      "en": "The result is an area split, not a planting map."
+    },
+    {
+      "ro": "Locurile 2 și 3 sunt alternative care diferă prin cel puțin două alegeri de rotație, nu următoarele cele mai bune soluții.",
+      "en": "Ranks 2 and 3 are alternatives that differ in at least two rotation choices, not the next-best solutions."
+    },
+    {
+      "ro": "Scorurile sunt indicatori agronomici și de mediu, nu profit.",
+      "en": "Scores are agronomic and environmental proxies, not profit."
+    }
+  ],
+  "sources": [
+    {
+      "dataset": "NASA POWER",
+      "product": "Daily regional grid: temperature, precipitation, root-zone wetness (AG community)",
+      "resolution": "0.5° x 0.625°",
+      "period": "1981-2025",
+      "is_nasa": true,
+      "url": "https://power.larc.nasa.gov/"
+    },
+    {
+      "dataset": "Field Signal crop table",
+      "product": "data/crops.toml (draft, not reviewed by an agronomist)",
+      "resolution": "per crop",
+      "period": "static",
+      "is_nasa": false,
+      "url": null
+    }
+  ]
+}

@@ -1,9 +1,11 @@
 import type {
+  FarmPlanRequest,
+  FarmPlanResponse,
   FieldAnalysis,
   FieldRequest,
   SourcingRegion,
 } from "@/lib/contracts";
-import { mockFieldAnalysis, mockSourcingRegion } from "@/lib/mocks";
+import { mockFarmPlan, mockFieldAnalysis, mockSourcingRegion } from "@/lib/mocks";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const TIMEOUT_MS = 5000;
@@ -26,11 +28,11 @@ class ApiRequestError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+async function request<T>(path: string, init?: RequestInit, timeoutMs = TIMEOUT_MS): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
     headers: { "Content-Type": "application/json", ...init?.headers },
-    signal: AbortSignal.timeout(TIMEOUT_MS),
+    signal: AbortSignal.timeout(timeoutMs),
   });
   if (!response.ok) {
     throw new ApiRequestError(path, response.status);
@@ -67,5 +69,18 @@ export function getSourcingRegion(season = 2025): Promise<Loaded<SourcingRegion>
   return withFallback(
     () => request<SourcingRegion>(`/v1/sourcing/region?season=${season}`),
     mockSourcingRegion,
+  );
+}
+
+/** One farm plan for all fields together; the solver may take a while, hence 30 s. */
+export function planFarm(body: FarmPlanRequest): Promise<Loaded<FarmPlanResponse>> {
+  return withFallback(
+    () =>
+      request<FarmPlanResponse>(
+        "/v1/farm/plan",
+        { method: "POST", body: JSON.stringify(body) },
+        30_000,
+      ),
+    mockFarmPlan,
   );
 }
