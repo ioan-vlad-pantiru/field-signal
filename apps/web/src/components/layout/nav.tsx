@@ -1,10 +1,18 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useId, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
-import { BarnIcon, BookIcon, FieldIcon, UserIcon } from "@/components/ui/icons";
+import {
+  BarnIcon,
+  BookIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  FieldIcon,
+  GlobeIcon,
+  UserIcon,
+} from "@/components/ui/icons";
 
 const ITEMS = [
   { href: "/field", key: "field", Icon: FieldIcon },
@@ -82,31 +90,111 @@ export function TopNav() {
 }
 
 /** Keeps the query (e.g. a pinned commune from the feed screen) when the language changes. */
+/** Each language in its own name, so it reads right whatever the page language is. */
+const LANGUAGES = [
+  { locale: "ro", code: "RO", name: "Română" },
+  { locale: "en", code: "EN", name: "English" },
+] as const;
+
+/**
+ * Shows the language the site is in; opens a short list to pick another. Keeps the current page
+ * and its query string.
+ */
 export function LocaleToggle() {
   return (
-    <Suspense fallback={<LocaleLink query={null} />}>
-      <LocaleLinkWithQuery />
+    <Suspense fallback={<LocalePicker query={null} />}>
+      <LocalePickerWithQuery />
     </Suspense>
   );
 }
 
-function LocaleLinkWithQuery() {
+function LocalePickerWithQuery() {
   const params = useSearchParams();
-  return <LocaleLink query={Object.fromEntries(params.entries())} />;
+  return <LocalePicker query={Object.fromEntries(params.entries())} />;
 }
 
-function LocaleLink({ query }: { query: Record<string, string> | null }) {
+function LocalePicker({ query }: { query: Record<string, string> | null }) {
   const t = useTranslations("Nav");
   const pathname = usePathname();
-  const other = useLocale() === "ro" ? "en" : "ro";
+  const locale = useLocale();
+  const current = LANGUAGES.find((l) => l.locale === locale) ?? LANGUAGES[0];
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  const button = useRef<HTMLButtonElement>(null);
+  const listId = useId();
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointer = (e: PointerEvent) => {
+      if (!root.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpen(false);
+        button.current?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const href = query && Object.keys(query).length > 0 ? { pathname, query } : pathname;
+
   return (
-    <Link
-      href={query && Object.keys(query).length > 0 ? { pathname, query } : pathname}
-      locale={other}
-      className="press inline-flex min-h-11 items-center rounded-full border border-line px-3 text-sm font-semibold hover:border-field"
-      aria-label={t("switchLocaleLabel")}
-    >
-      {t("switchLocale")}
-    </Link>
+    <div ref={root} className="relative">
+      <button
+        ref={button}
+        type="button"
+        aria-expanded={open}
+        aria-controls={listId}
+        aria-label={t("languageLabel", { current: current.name })}
+        onClick={() => setOpen((v) => !v)}
+        className="press inline-flex min-h-11 items-center gap-1.5 rounded-full border border-line px-3 text-sm font-semibold hover:border-field aria-expanded:border-field"
+      >
+        <GlobeIcon size={16} className="text-ink-muted" />
+        <span>{current.name}</span>
+        <ChevronDownIcon
+          size={14}
+          className={`text-ink-muted transition-transform duration-[var(--duration-fast)] ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      <div
+        id={listId}
+        hidden={!open}
+        className="absolute right-0 top-full z-30 mt-2 w-48 rounded-xl border border-line bg-surface p-1.5 shadow-[var(--shadow-2)]"
+      >
+        <p className="px-2.5 pb-1 pt-1.5 text-xs text-ink-muted">{t("language")}</p>
+        <ul>
+          {LANGUAGES.map((l) => {
+            const active = l.locale === current.locale;
+            return (
+              <li key={l.locale}>
+                <Link
+                  href={href}
+                  locale={l.locale}
+                  lang={l.locale}
+                  hrefLang={l.locale}
+                  aria-current={active ? "true" : undefined}
+                  onClick={() => setOpen(false)}
+                  className={`flex min-h-11 items-center justify-between gap-3 rounded-lg px-2.5 text-sm hover:bg-surface-sunken ${
+                    active ? "font-semibold text-field" : ""
+                  }`}
+                >
+                  <span className="flex items-baseline gap-2">
+                    {l.name}
+                    <span className="text-xs font-normal text-ink-muted">{l.code}</span>
+                  </span>
+                  {active && <CheckIcon size={16} />}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </div>
   );
 }

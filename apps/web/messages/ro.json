@@ -8,8 +8,8 @@
     "field": "Câmpul meu",
     "feed": "Furaje",
     "about": "Despre",
-    "switchLocale": "EN",
-    "switchLocaleLabel": "Switch to English",
+    "language": "Limba",
+    "languageLabel": "Limba: {current}. Alegeți altă limbă",
     "account": "Cont"
   },
   "Footer": {

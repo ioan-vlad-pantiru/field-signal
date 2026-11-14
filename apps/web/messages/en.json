@@ -8,8 +8,8 @@
     "field": "My field",
     "feed": "Feed buyer",
     "about": "About",
-    "switchLocale": "RO",
-    "switchLocaleLabel": "Treceți la română",
+    "language": "Language",
+    "languageLabel": "Language: {current}. Choose another language",
     "account": "Account"
   },
   "Footer": {
