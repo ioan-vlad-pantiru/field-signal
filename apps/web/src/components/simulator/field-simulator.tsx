@@ -3,7 +3,10 @@
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { CropDot } from "@/components/ui/crop-chip";
+import { NoticeBar } from "@/components/ui/notice-bar";
+import { Segmented } from "@/components/ui/segmented";
 import type { LatLon, Strategy } from "@/lib/contracts";
 import { CROP_COLORS } from "@/lib/crops";
 import { formatNumber } from "@/lib/format";
@@ -187,12 +190,10 @@ export function FieldSimulator({ strategy, outline, outlineMetres }: FieldSimula
 
   return (
     <div className="flex flex-col gap-4">
-      <p role="note" className="rounded-2xl border border-wheat bg-wheat-tint px-4 py-2.5 text-sm font-medium text-ink">
-        {t("banner")}
-      </p>
+      <NoticeBar tone="info">{t("banner")}</NoticeBar>
       {webgl === false || contextLost ? <p className="text-sm text-ink-muted">{t("noWebgl")}</p> : null}
 
-      <div className="relative overflow-hidden rounded-[20px] border border-line bg-surface-sunken shadow-1">
+      <div className="relative overflow-hidden rounded-2xl border border-line bg-surface-sunken">
         <div className="aspect-[4/5] w-full sm:aspect-[16/9]">
           {webgl === null ? (
             <SceneLoading />
@@ -217,7 +218,7 @@ export function FieldSimulator({ strategy, outline, outlineMetres }: FieldSimula
         </div>
 
         {/* Season overlay: the same facts as the scene, as real text. */}
-        <div className="pointer-events-none absolute left-2.5 top-2.5 max-w-[75%] rounded-2xl bg-surface/90 px-3 py-1.5 shadow-1 backdrop-blur" aria-live="polite">
+        <div className="pointer-events-none absolute left-2.5 top-2.5 max-w-[75%] rounded-xl bg-surface/90 px-3 py-1.5 shadow-2 backdrop-blur" aria-live="polite">
           <p className="text-xs font-medium text-ink-muted">
             {t("year", { n: Math.max(1, cal.year) })} · {monthName(cal.month)}
           </p>
@@ -230,19 +231,13 @@ export function FieldSimulator({ strategy, outline, outlineMetres }: FieldSimula
       </div>
 
       {use3d ? (
-        <div className="-mt-2 flex gap-1 rounded-2xl border border-line bg-surface p-1 shadow-1" role="group" aria-label={t("controls.camera")}>
-          {CAMERAS.map((c) => (
-            <button
-              key={c}
-              type="button"
-              aria-pressed={camera === c}
-              onClick={() => setCamera(c)}
-              className={`min-h-10 flex-1 rounded-xl px-2 text-sm font-medium ${camera === c ? "bg-field text-on-field" : "text-ink"}`}
-            >
-              {t(`camera.${c}`)}
-            </button>
-          ))}
-        </div>
+        <Segmented
+          label={t("controls.camera")}
+          options={CAMERAS.map((c) => ({ value: c, label: t(`camera.${c}`) }))}
+          value={camera}
+          onChange={setCamera}
+          className="-mt-1 w-full"
+        />
       ) : null}
 
       <Legend />
@@ -315,41 +310,31 @@ function Controls({
   onRestart: () => void;
 }) {
   const t = useTranslations("Simulator");
-  const base = "min-h-11 rounded-xl border px-3 font-medium shadow-1 active:translate-y-px";
-  const btn = `${base} border-line bg-surface`;
   return (
-    <div className="flex flex-col gap-3 rounded-[20px] border border-line bg-surface p-4 shadow-1">
+    <div className="flex flex-col gap-3 border-y border-line py-4">
       <div className="flex flex-wrap items-center gap-2">
         {reducedMotion ? null : (
-          <button type="button" className={`${base} min-w-24 border-field bg-field text-on-field`} onClick={onTogglePlay}>
+          <Button className="min-w-24" onClick={onTogglePlay}>
             {clock.playing ? t("controls.pause") : t("controls.play")}
-          </button>
+          </Button>
         )}
-        <button type="button" className={btn} onClick={() => onStep(-1)} aria-label={t("controls.prev")}>
-          ←<span className="sr-only sm:not-sr-only sm:ml-1">{t("controls.prevShort")}</span>
-        </button>
-        <button type="button" className={btn} onClick={() => onStep(1)} aria-label={t("controls.next")}>
-          <span className="sr-only sm:not-sr-only sm:mr-1">{t("controls.nextShort")}</span>→
-        </button>
-        <button type="button" className={btn} onClick={onRestart}>
+        <Button variant="secondary" onClick={() => onStep(-1)} aria-label={t("controls.prev")}>
+          ←<span className="sr-only sm:not-sr-only">{t("controls.prevShort")}</span>
+        </Button>
+        <Button variant="secondary" onClick={() => onStep(1)} aria-label={t("controls.next")}>
+          <span className="sr-only sm:not-sr-only">{t("controls.nextShort")}</span>→
+        </Button>
+        <Button variant="secondary" onClick={onRestart}>
           {t("controls.restart")}
-        </button>
+        </Button>
         {reducedMotion ? null : (
-          <div className="ml-auto flex items-center gap-1" role="group" aria-label={t("controls.speed")}>
-            {SPEEDS.map((s) => (
-              <button
-                key={s}
-                type="button"
-                aria-pressed={clock.speed === s}
-                onClick={() => clock.setSpeed(s)}
-                className={`min-h-11 min-w-11 rounded-xl px-2 font-mono text-sm font-semibold ${
-                  clock.speed === s ? "bg-ink text-surface" : "border border-line bg-surface"
-                }`}
-              >
-                {s}×
-              </button>
-            ))}
-          </div>
+          <Segmented
+            label={t("controls.speed")}
+            options={SPEEDS.map((sp) => ({ value: String(sp), label: <span className="tabular-nums">{sp}×</span> }))}
+            value={String(clock.speed)}
+            onChange={(sp) => clock.setSpeed(Number(sp))}
+            className="ml-auto"
+          />
         )}
       </div>
 
@@ -463,16 +448,16 @@ function Stats({ plan, timeline, monthName }: { plan: ReturnType<typeof planFiel
   ];
 
   return (
-    <section className="rounded-[20px] border border-line bg-surface p-4 shadow-1" aria-labelledby="sim-stats">
-      <h2 id="sim-stats" className="text-lg font-semibold">
+    <section className="pt-2" aria-labelledby="sim-stats">
+      <h2 id="sim-stats" className="text-2xl font-semibold tracking-tight">
         {t("title")}
       </h2>
       <p className="text-sm text-ink-muted">{t("illustrative")}</p>
       <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-5">
         {rows.map((r) => (
-          <div key={r.label} className="rounded-2xl bg-surface-sunken p-3">
+          <div key={r.label} className="rounded-xl bg-surface-sunken p-3">
             <dt className="text-sm text-ink-muted">{r.label}</dt>
-            <dd className="font-mono text-xl font-semibold tabular-nums">{r.value}</dd>
+            <dd className="text-xl font-semibold tabular-nums">{r.value}</dd>
             {r.hint ? <dd className="text-xs text-ink-muted">{r.hint}</dd> : null}
           </div>
         ))}
@@ -497,9 +482,7 @@ function Stats({ plan, timeline, monthName }: { plan: ReturnType<typeof planFiel
                 </span>
               ) : null}
               {gap && gap.months > 0 ? (
-                <span className="rounded-full bg-wheat-tint px-2 py-0.5 text-xs font-medium text-wheat-ink">
-                  {ts("timeline.bareGap", { months: gap.months })}
-                </span>
+                <span className="text-ink-muted">· {ts("timeline.bareGap", { months: gap.months })}</span>
               ) : null}
             </li>
           );

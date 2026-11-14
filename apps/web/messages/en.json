@@ -487,6 +487,7 @@
   },
   "Simulator": {
     "eyebrow": "Field simulator",
+    "backToField": "Back to my field",
     "title": "See your rotation on a field",
     "intro": "A small tractor sows each crop of the rotation, the field grows and is harvested, then the next crop follows. Brown means bare soil; green means the field is covered.",
     "banner": "Illustration — not a machine work plan.",
@@ -539,7 +540,7 @@
     "timeline": {
       "bare": "Bare soil",
       "covered": "Crop on the field",
-      "bareGap": "{months} months bare before",
+      "bareGap": "{months, plural, one {1 month} other {# months}} bare before",
       "months": "{months} mo",
       "scale": "Drawn to scale in months"
     },

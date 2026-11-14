@@ -3,7 +3,10 @@
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
-import { useRouter, usePathname } from "@/i18n/navigation";
+import { Link, useRouter, usePathname } from "@/i18n/navigation";
+import { buttonClass } from "@/components/ui/button";
+import { ArrowLeftIcon, CheckIcon } from "@/components/ui/icons";
+import { Segmented } from "@/components/ui/segmented";
 import { CropSequence } from "@/components/ui/crop-chip";
 import type { Crop, Strategy } from "@/lib/contracts";
 import { ROTATION_CROPS } from "@/lib/crops";
@@ -64,13 +67,18 @@ export function SimulatorView() {
   };
 
   const chip = (active: boolean) =>
-    `min-h-11 rounded-2xl border px-3 py-2 text-left ${active ? "border-2 border-field bg-field-tint" : "border-line bg-surface"}`;
+    `press min-h-11 rounded-xl border px-3 py-2 text-left ${active ? "border-field ring-1 ring-field" : "border-line hover:border-ink"}`;
 
   return (
     <div className="flex flex-col gap-5">
+      {seqRaw ? (
+        // Opened from a rotation's explanation on the results page.
+        <Link href="/field" className={buttonClass("quiet", "md", "-ml-2 self-start")}>
+          <ArrowLeftIcon /> {t("backToField")}
+        </Link>
+      ) : null}
       <header>
-        <p className="text-sm font-medium text-field">{t("eyebrow")}</p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight">{t("title")}</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1>
         <p className="mt-2 max-w-2xl text-ink-muted">{t("intro")}</p>
       </header>
 
@@ -85,23 +93,26 @@ export function SimulatorView() {
               onClick={() => go({ strategy: s.id })}
               className={`${chip(s.id === strategy.id)} flex shrink-0 flex-col gap-1.5`}
             >
-              <span className="font-semibold">{l(s.name)}</span>
+              <span className="flex items-center gap-1.5 font-semibold">
+                {s.id === strategy.id ? <CheckIcon size={16} className="text-field" /> : null}
+                {l(s.name)}
+              </span>
               <CropSequence sequence={s.sequence} />
             </button>
           ))}
         </div>
       </fieldset>
 
-      <fieldset className="min-w-0">
-        <legend className="mb-2 font-medium">{t("shapeLabel")}</legend>
-        <div className="flex gap-2">
-          {(["rect", "irregular"] as const).map((f) => (
-            <button key={f} type="button" aria-pressed={f === shape} onClick={() => go({ field: f })} className={chip(f === shape)}>
-              {t(`shape.${f}`)}
-            </button>
-          ))}
-        </div>
-      </fieldset>
+      <div className="flex flex-col gap-2">
+        <p className="font-medium">{t("shapeLabel")}</p>
+        <Segmented
+          label={t("shapeLabel")}
+          options={(["rect", "irregular"] as const).map((f) => ({ value: f, label: t(`shape.${f}`) }))}
+          value={shape}
+          onChange={(f) => go({ field: f })}
+          className="self-start"
+        />
+      </div>
 
       <FieldSimulator
         key={`${strategy.id}-${shape}`}
