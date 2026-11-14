@@ -1117,5 +1117,31 @@
     "limitsTitle": "What it cannot see",
     "sourcesTitle": "Data",
     "loading": "Loading the origins…"
+  },
+  "FeedSimple": {
+    "intro": "Which communes around Alba will have maize, wheat and barley this year, and which lots to test.",
+    "why": "Why we say this",
+    "cropLabel": "Which crop are you buying?",
+    "cropTitle": "{crop}: where to buy",
+    "buyFirst": "Buy first from",
+    "testFor": "Test lots for",
+    "noTests": "No quality warning this season.",
+    "communes": "All communes, safest first",
+    "row": "{ha} ha of {crop}",
+    "state": {
+      "low": "Enough",
+      "medium": "Less than usual",
+      "high": "Likely short"
+    },
+    "showAll": "Show all {count} communes",
+    "showFewer": "Show fewer",
+    "tapHint": "Tap a commune for details.",
+    "proofTitle": "Would it have warned us?",
+    "proofText": "We checked the same method against Alba's official harvests since 2001: it was right {hits} times out of {total}.",
+    "proofDetails": "See every season",
+    "aboutTitle": "How it works and what it cannot see",
+    "assumptions": "Assumptions",
+    "caveats": "Keep in mind",
+    "sources": "Data"
   }
 }

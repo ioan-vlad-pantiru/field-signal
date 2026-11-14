@@ -1117,5 +1117,31 @@
     "limitsTitle": "Ce nu poate vedea",
     "sourcesTitle": "Date",
     "loading": "Se încarcă originile…"
+  },
+  "FeedSimple": {
+    "intro": "Ce comune din jurul Albei vor avea porumb, grâu și orz anul acesta și ce loturi să testați.",
+    "why": "De ce spunem asta",
+    "cropLabel": "Ce cultură cumpărați?",
+    "cropTitle": "{crop}: de unde să cumpărați",
+    "buyFirst": "Cumpărați întâi din",
+    "testFor": "Testați loturile pentru",
+    "noTests": "Niciun semnal de calitate în acest sezon.",
+    "communes": "Toate comunele, cele mai sigure întâi",
+    "row": "{ha} ha de {crop}",
+    "state": {
+      "low": "Suficient",
+      "medium": "Mai puțin ca de obicei",
+      "high": "Probabil lipsă"
+    },
+    "showAll": "Arătați toate cele {count} comune",
+    "showFewer": "Arătați mai puține",
+    "tapHint": "Atingeți o comună pentru detalii.",
+    "proofTitle": "Ne-ar fi avertizat?",
+    "proofText": "Am verificat aceeași metodă cu recoltele oficiale din Alba din 2001: a avut dreptate de {hits} ori din {total}.",
+    "proofDetails": "Vedeți fiecare sezon",
+    "aboutTitle": "Cum funcționează și ce nu poate vedea",
+    "assumptions": "Ipoteze",
+    "caveats": "De reținut",
+    "sources": "Date"
   }
 }

@@ -15,7 +15,14 @@ function byCrop(years: ValidationYear[]): [Crop, ValidationYear[]][] {
 }
 
 /** How the risk we would have given did against official yields; misses are shown on purpose. */
-export function ValidationCard({ validation }: { validation: Validation | null | undefined }) {
+export function ValidationCard({
+  validation,
+  embedded = false,
+}: {
+  validation: Validation | null | undefined;
+  /** Inside another block (a disclosure): no card frame and no title of its own. */
+  embedded?: boolean;
+}) {
   const t = useTranslations("FeedExtra.validation");
   const tr = useTranslations("Risk");
   const tc = useTranslations("Crops");
@@ -35,9 +42,9 @@ export function ValidationCard({ validation }: { validation: Validation | null |
   const groups = byCrop(validation.years);
 
   return (
-    <section className="rounded-2xl border border-line bg-surface p-5 sm:p-6">
-      <h2 className="text-xl font-semibold tracking-tight">{t("title")}</h2>
-      <p className="mt-1 max-w-[65ch] text-ink-muted">{l(validation.method)}</p>
+    <section className={embedded ? "pb-4" : "rounded-2xl border border-line bg-surface p-5 sm:p-6"}>
+      {embedded ? null : <h2 className="text-xl font-semibold tracking-tight">{t("title")}</h2>}
+      <p className={`max-w-[65ch] text-ink-muted ${embedded ? "" : "mt-1"}`}>{l(validation.method)}</p>
 
       <p className="mt-4 text-lg">
         <span className="text-2xl font-semibold tabular-nums">{validation.hits}</span>{" "}
