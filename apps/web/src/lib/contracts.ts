@@ -243,6 +243,7 @@ export interface SourcingRegion {
   scenario: AdoptionScenario;
   caveats: Localized[];
   sources: DataSource[];
+  validation?: Validation | null;
 }
 
 export interface Zone {
@@ -331,6 +332,30 @@ export interface AdoptionScenario {
   added_production_t: Range;
   added_protein_t: Range;
   assumptions: Localized[];
+}
+
+export interface Validation {
+  method: Localized;
+  hits: number;
+  misses: number;
+  years: ValidationYear[];
+}
+/**
+ * One past season: the risk we would have given vs what the official yields showed.
+ */
+
+export interface ValidationYear {
+  season: number;
+  crop: Crop;
+  risk_level: RiskLevel;
+  /**
+   * INS county yield vs its linear trend
+   */
+  yield_anomaly_pct: number;
+  /**
+   * high risk with a poor yield, or low risk with a normal one
+   */
+  hit: boolean;
 }
 
 export interface ModelPrediction {

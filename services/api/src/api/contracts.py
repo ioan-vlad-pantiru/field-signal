@@ -307,6 +307,26 @@ class AdoptionScenario(Contract):
     assumptions: list[Localized]
 
 
+class ValidationYear(Contract):
+    """One past season: the risk we would have given vs what the official yields showed."""
+
+    season: int
+    crop: Crop
+    risk_level: RiskLevel
+    yield_anomaly_pct: float = Field(description="INS county yield vs its linear trend")
+    hit: bool = Field(description="high risk with a poor yield, or low risk with a normal one")
+
+
+class Validation(Contract):
+    """How the supply-risk rule did against official county yields (INS AGR110A), year by year.
+    Hits and misses are both published."""
+
+    method: Localized
+    hits: int = Field(ge=0)
+    misses: int = Field(ge=0)
+    years: list[ValidationYear]
+
+
 class SourcingRegion(Contract):
     schema_version: str = SCHEMA_VERSION
     mock: bool = False
@@ -318,6 +338,7 @@ class SourcingRegion(Contract):
     scenario: AdoptionScenario
     caveats: list[Localized]
     sources: list[DataSource]
+    validation: Validation | None = None
 
 
 # --------------------------------------------------------------------------- ml -> api
