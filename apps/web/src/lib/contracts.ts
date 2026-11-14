@@ -516,3 +516,64 @@ export interface AssistantReply {
    */
   demo_data: boolean;
 }
+
+export interface ParcelCollection {
+  parcels: Parcel[];
+  /**
+   * more parcels lie in the area than were returned
+   */
+  truncated: boolean;
+  /**
+   * dataset credit to show with the outlines
+   */
+  source: string;
+}
+/**
+ * A parcel declared to APIA (open LPIS data, CC BY 4.0), offered so a farmer can tap it.
+ */
+
+export interface Parcel {
+  id: number;
+  /**
+   * @minItems 3
+   * @maxItems 500
+   */
+  boundary: [LatLon, LatLon, LatLon, ...LatLon[]];
+  /**
+   * area declared to APIA
+   */
+  area_ha: number;
+  /**
+   * APIA land-use code, e.g. TA (arable)
+   */
+  land_use?: string | null;
+}
+
+/**
+ * Parcels a farmer tapped, to be joined into one field.
+ */
+
+export interface ParcelMergeRequest {
+  /**
+   * @minItems 1
+   * @maxItems 40
+   */
+  ids: [number, ...number[]];
+}
+
+/**
+ * The joined outline of parcels that touch each other.
+ */
+
+export interface MergedParcels {
+  /**
+   * @minItems 3
+   * @maxItems 500
+   */
+  boundary: [LatLon, LatLon, LatLon, ...LatLon[]];
+  /**
+   * sum of the areas declared to APIA
+   */
+  area_ha: number;
+  parcel_ids: number[];
+}

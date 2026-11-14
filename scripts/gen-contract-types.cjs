@@ -20,6 +20,9 @@ const NAMES = [
   "saved_field",
   "assistant_request",
   "assistant_reply",
+  "parcel_collection",
+  "parcel_merge_request",
+  "merged_parcels",
 ];
 const OUT = "apps/web/src/lib/contracts.ts";
 

@@ -465,6 +465,38 @@ class AssistantReply(Contract):
     demo_data: bool = Field(description="the answer used demonstration (mock) data")
 
 
+# --------------------------------------------------------------------------- APIA parcels
+
+
+class Parcel(Contract):
+    """A parcel declared to APIA (open LPIS data, CC BY 4.0), offered so a farmer can tap it."""
+
+    id: int
+    boundary: list[LatLon] = Field(min_length=3, max_length=500)
+    area_ha: float = Field(ge=0, description="area declared to APIA")
+    land_use: str | None = Field(default=None, description="APIA land-use code, e.g. TA (arable)")
+
+
+class ParcelMergeRequest(Contract):
+    """Parcels a farmer tapped, to be joined into one field."""
+
+    ids: list[int] = Field(min_length=1, max_length=40)
+
+
+class MergedParcels(Contract):
+    """The joined outline of parcels that touch each other."""
+
+    boundary: list[LatLon] = Field(min_length=3, max_length=500)
+    area_ha: float = Field(ge=0, description="sum of the areas declared to APIA")
+    parcel_ids: list[int]
+
+
+class ParcelCollection(Contract):
+    parcels: list[Parcel]
+    truncated: bool = Field(description="more parcels lie in the area than were returned")
+    source: str = Field(description="dataset credit to show with the outlines")
+
+
 EXPORTED: dict[str, type[Contract]] = {
     "field_request": FieldRequest,
     "field_analysis": FieldAnalysis,
@@ -481,4 +513,7 @@ EXPORTED: dict[str, type[Contract]] = {
     "saved_field": SavedField,
     "assistant_request": AssistantRequest,
     "assistant_reply": AssistantReply,
+    "parcel_collection": ParcelCollection,
+    "parcel_merge_request": ParcelMergeRequest,
+    "merged_parcels": MergedParcels,
 }

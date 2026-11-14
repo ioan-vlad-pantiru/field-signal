@@ -187,7 +187,22 @@
       "nameNeeded": "Give the field a name first.",
       "failed": "Could not save. Try again."
     },
-    "assistantField": "My field"
+    "assistantField": "My field",
+    "parcel": {
+      "hint": "Tap your parcels to select them, or switch on “Drag to select” to select many at once. Then press “Use as my field”. These are the parcels declared to APIA; if yours is not there, tap the corners of your field instead.",
+      "mapHint": "Tap your parcels",
+      "selected": "{count, plural, one {# parcel} other {# parcels}} selected · {ha} ha",
+      "use": "Use as my field",
+      "joining": "Joining parcels…",
+      "clear": "Clear selection",
+      "tooSmall": "Together that is {ha} ha. A field needs at least {min} ha: also tap the parcels next to it, or tap the corners to draw your field.",
+      "tooBig": "That is {ha} ha, over {max} ha. Select fewer parcels.",
+      "notTouching": "These parcels do not touch. Choose parcels that sit next to each other, or add each field separately.",
+      "failed": "Could not join the parcels. Try again, or tap the corners to draw your field.",
+      "brush": "Drag to select",
+      "brushHint": "Drag over your parcels",
+      "brushHelp": "Drag over your parcels to select them. Start a drag on a green parcel to unselect. Use two fingers to move the map, or switch off “Drag to select”."
+    }
   },
   "Results": {
     "back": "Change field or rotation",

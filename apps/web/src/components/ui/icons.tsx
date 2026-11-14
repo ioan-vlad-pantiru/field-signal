@@ -171,6 +171,14 @@ export const GridIcon = (p: IconProps) => (
   </Svg>
 );
 
+/** A dashed selection with a pointer: drag to select. */
+export const SelectDragIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 9V5a1 1 0 011-1h4M15 4h4a1 1 0 011 1v4M4 15v4a1 1 0 001 1h4" strokeDasharray="2 2.5" />
+    <path d="M13 13l7 2.5-3 1.5-1.5 3z" />
+  </Svg>
+);
+
 /** Same artwork as public/icons/icon.svg: a sprout under two signal arcs. */
 export const LogoMark = ({ size = 28, ...props }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 512 512" aria-hidden="true" focusable="false" {...props}>

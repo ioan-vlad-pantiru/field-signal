@@ -1,0 +1,21 @@
+{
+  "additionalProperties": false,
+  "description": "Parcels a farmer tapped, to be joined into one field.",
+  "properties": {
+    "ids": {
+      "items": {
+        "type": "integer"
+      },
+      "maxItems": 40,
+      "minItems": 1,
+      "title": "Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "ids"
+  ],
+  "title": "ParcelMergeRequest",
+  "type": "object",
+  "$id": "https://field-signal/contracts/parcel_merge_request/0.1.0"
+}

@@ -2,13 +2,14 @@
 
 import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import type { Crop, FieldRequest, LatLon } from "@/lib/contracts";
+import type { Crop, FieldRequest, LatLon, Parcel } from "@/lib/contracts";
 import { formatNumber } from "@/lib/format";
+import { mergeParcels } from "@/lib/api";
 import { polygonAreaHa, polygonCentroid } from "@/lib/geo";
 import { useAppLocale } from "@/lib/localized";
 import { SATELLITE_ATTRIBUTION, type Basemap } from "@/components/map/use-map";
 import { Button } from "@/components/ui/button";
-import { ArrowLeftIcon, PlusIcon } from "@/components/ui/icons";
+import { ArrowLeftIcon, PlusIcon, SelectDragIcon } from "@/components/ui/icons";
 import { Segmented } from "@/components/ui/segmented";
 import { Stepper } from "@/components/ui/stepper";
 import { MAX_FIELDS, type DraftField, type SubmittedField } from "./draft-field";
@@ -78,8 +79,17 @@ export function FieldForm({
   const [focus, setFocus] = useState<MapFocus | null>(null);
   const [mapFailed, setMapFailed] = useState(false);
   const [place, setPlace] = useState<string | null>(last ? last.place : initialPlace);
+  const [parcelsShown, setParcelsShown] = useState(false);
+  /** APIA parcels the farmer tapped, to become one field. */
+  const [selected, setSelected] = useState<Parcel[]>([]);
+  const [joining, setJoining] = useState(false);
+  /** Drag-to-select is on: dragging over the map selects parcels instead of moving it. */
+  const [brush, setBrush] = useState(false);
+  /** Why the selected parcels could not be used, if they could not. */
+  const [pickNote, setPickNote] = useState<string | null>(null);
 
   const areaHa = polygonAreaHa(corners);
+  const selectedHa = selected.reduce((sum, p) => sum + p.area_ha, 0);
   const boundary = mode === "locked" && corners.length >= 3 ? corners : null;
   const drawing = step === 0 && mode === "draw";
   const others = useMemo(() => added.map((f) => f.boundary), [added]);
@@ -94,6 +104,8 @@ export function FieldForm({
 
   /** Load a field into the editor (empty for a new one). */
   function load(field: DraftField | null) {
+    setSelected([]);
+    setPickNote(null);
     setCorners(field?.boundary ?? []);
     setMode(field ? "locked" : "draw");
     if (field) setPoint(field.point);
@@ -127,6 +139,59 @@ export function FieldForm({
   function finishDrawing() {
     if (corners.length < 3 || areaHa < MIN_FIELD_HA || areaHa > MAX_FIELD_HA) return;
     const c = polygonCentroid(corners);
+    setPoint({ lat: Number(c.lat.toFixed(4)), lon: Number(c.lon.toFixed(4)) });
+    setMode("locked");
+  }
+
+  function tapParcel(parcel: Parcel) {
+    setPickNote(null);
+    setSelected((prev) =>
+      prev.some((p) => p.id === parcel.id) ? prev.filter((p) => p.id !== parcel.id) : [...prev, parcel].slice(-40),
+    );
+  }
+
+  function brushParcels(parcels: Parcel[], action: "add" | "remove") {
+    setPickNote(null);
+    setSelected((prev) => {
+      if (action === "remove") {
+        const drop = new Set(parcels.map((p) => p.id));
+        return prev.filter((p) => !drop.has(p.id));
+      }
+      const have = new Set(prev.map((p) => p.id));
+      return [...prev, ...parcels.filter((p) => !have.has(p.id))].slice(-40);
+    });
+  }
+
+  /** The selected parcels become the field, as if their outline had been drawn and Done pressed. */
+  async function applySelected() {
+    if (selected.length === 0 || joining) return;
+    let outline: LatLon[];
+    if (selected.length === 1) {
+      outline = selected[0].boundary.map((c) => ({ lat: c.lat, lon: c.lon }));
+    } else {
+      setJoining(true);
+      const result = await mergeParcels(selected.map((p) => p.id));
+      setJoining(false);
+      if (!result.ok) {
+        setPickNote(t(result.reason === "not_touching" ? "parcel.notTouching" : "parcel.failed"));
+        return;
+      }
+      outline = result.data.boundary.map((c) => ({ lat: c.lat, lon: c.lon }));
+    }
+    const ha = polygonAreaHa(outline);
+    if (ha < MIN_FIELD_HA || ha > MAX_FIELD_HA) {
+      const size = formatNumber(ha, locale, 1);
+      setPickNote(
+        ha < MIN_FIELD_HA
+          ? t("parcel.tooSmall", { ha: size, min: MIN_FIELD_HA })
+          : t("parcel.tooBig", { ha: size, max: formatNumber(MAX_FIELD_HA, locale, 0) }),
+      );
+      return;
+    }
+    setPickNote(null);
+    setSelected([]);
+    setCorners(outline);
+    const c = polygonCentroid(outline);
     setPoint({ lat: Number(c.lat.toFixed(4)), lon: Number(c.lon.toFixed(4)) });
     setMode("locked");
   }
@@ -181,7 +246,16 @@ export function FieldForm({
           corners={corners}
           closed={mode === "locked"}
           others={others}
-          onAddCorner={(c) => setCorners((prev) => [...prev, c])}
+          onAddCorner={(c) => {
+            setPickNote(null);
+            setSelected([]);
+            setCorners((prev) => [...prev, c]);
+          }}
+          onTapParcel={tapParcel}
+          selected={selected}
+          brush={brush}
+          onBrushParcels={brushParcels}
+          onParcelsShown={setParcelsShown}
           label={t("mapLabel")}
           basemap={basemap}
           focus={focus}
@@ -202,14 +276,29 @@ export function FieldForm({
           />
         </div>
         )}
+        {drawing && !mapFailed && parcelsShown && corners.length === 0 ? (
+          <button
+            type="button"
+            aria-pressed={brush}
+            onClick={() => setBrush((on) => !on)}
+            className={`press absolute bottom-9 left-2 z-[1] inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-semibold shadow-2 ${
+              brush ? "bg-field-strong text-on-field" : "bg-surface/95 text-ink"
+            }`}
+          >
+            <SelectDragIcon size={18} />
+            {t("parcel.brush")}
+          </button>
+        ) : null}
         {drawing && !mapFailed ? (
           // Phone: the panel starts below the map, so the map itself says what to do and how big the field is.
           <p
             aria-hidden="true"
             className="absolute left-2 top-16 z-[1] max-w-[calc(100%-4rem)] rounded-lg bg-surface/90 px-2.5 py-1 text-sm tabular-nums text-ink shadow-2 lg:hidden"
           >
-            {corners.length === 0
-              ? t("draw.mapHint")
+            {selected.length > 0
+              ? t("parcel.selected", { count: selected.length, ha: formatNumber(selectedHa, locale, 1) })
+              : corners.length === 0
+              ? t(parcelsShown ? (brush ? "parcel.brushHint" : "parcel.mapHint") : "draw.mapHint")
               : `${t("draw.cornerCount", { corners: corners.length })} · ${t("draw.area", { ha: formatNumber(areaHa, locale, 1) })}`}
           </p>
         ) : null}
@@ -251,6 +340,17 @@ export function FieldForm({
             mode={mode}
             corners={corners}
             areaHa={areaHa}
+            parcelsShown={parcelsShown}
+            brush={brush}
+            pickNote={pickNote}
+            selectedCount={selected.length}
+            selectedHa={selectedHa}
+            joining={joining}
+            onUseSelected={applySelected}
+            onClearSelected={() => {
+              setSelected([]);
+              setPickNote(null);
+            }}
             onUndo={() => setCorners((prev) => prev.slice(0, -1))}
             onClear={() => setCorners([])}
             onDone={finishDrawing}

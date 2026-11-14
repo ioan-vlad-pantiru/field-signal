@@ -1,6 +1,8 @@
 import type {
   FieldAnalysis,
   FieldRequest,
+  MergedParcels,
+  ParcelCollection,
   SourcingRegion,
 } from "@/lib/contracts";
 import { mockFieldAnalysis, mockSourcingRegion } from "@/lib/mocks";
@@ -68,4 +70,44 @@ export function getSourcingRegion(season = 2025): Promise<Loaded<SourcingRegion>
     () => request<SourcingRegion>(`/v1/sourcing/region?season=${season}`),
     mockSourcingRegion,
   );
+}
+
+/** A map box in degrees. */
+export interface Bounds {
+  west: number;
+  south: number;
+  east: number;
+  north: number;
+}
+
+/**
+ * APIA parcels in a box, or null when there are none to offer: the API has no parcel file, the box
+ * is too big, or the request failed. Parcel picking is a help, never a blocker, so it never throws
+ * except when the caller aborts.
+ */
+export async function getParcels(box: Bounds, signal?: AbortSignal): Promise<ParcelCollection | null> {
+  const query = new URLSearchParams(
+    Object.entries(box).map(([k, v]) => [k, (v as number).toFixed(5)]),
+  );
+  try {
+    const response = await fetch(`${API_URL}/v1/parcels?${query}`, {
+      signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(8000)]) : AbortSignal.timeout(8000),
+    });
+    return response.ok ? ((await response.json()) as ParcelCollection) : null;
+  } catch (error) {
+    if (signal?.aborted) throw error;
+    return null;
+  }
+}
+
+/** Join tapped parcels into one field outline. `not_touching`: they are not next to each other. */
+export async function mergeParcels(
+  ids: number[],
+): Promise<{ ok: true; data: MergedParcels } | { ok: false; reason: "not_touching" | "failed" }> {
+  try {
+    const data = await request<MergedParcels>("/v1/parcels/merge", { method: "POST", body: JSON.stringify({ ids }) });
+    return { ok: true, data };
+  } catch (error) {
+    return { ok: false, reason: error instanceof ApiRequestError && error.status === 422 ? "not_touching" : "failed" };
+  }
 }

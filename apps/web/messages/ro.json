@@ -187,7 +187,22 @@
       "nameNeeded": "Dați întâi un nume câmpului.",
       "failed": "Nu s-a putut salva. Încercați din nou."
     },
-    "assistantField": "Câmpul meu"
+    "assistantField": "Câmpul meu",
+    "parcel": {
+      "hint": "Atingeți parcelele dumneavoastră ca să le selectați sau porniți „Selectați trăgând” ca să alegeți mai multe deodată. Apoi apăsați „Folosiți ca un câmp”. Sunt parcelele declarate la APIA; dacă nu o găsiți pe a dumneavoastră, atingeți colțurile câmpului.",
+      "mapHint": "Atingeți parcelele dumneavoastră",
+      "selected": "{count, plural, one {# parcelă selectată} few {# parcele selectate} other {# de parcele selectate}} · {ha} ha",
+      "use": "Folosiți ca un câmp",
+      "joining": "Unim parcelele…",
+      "clear": "Anulați selecția",
+      "tooSmall": "Împreună au {ha} ha. Un câmp trebuie să aibă cel puțin {min} ha: atingeți și parcelele vecine sau atingeți colțurile ca să desenați câmpul.",
+      "tooBig": "Au {ha} ha, peste {max} ha. Selectați mai puține parcele.",
+      "notTouching": "Parcelele nu se ating. Alegeți parcele vecine sau adăugați fiecare câmp separat.",
+      "failed": "Nu am putut uni parcelele. Încercați din nou sau atingeți colțurile ca să desenați câmpul.",
+      "brush": "Selectați trăgând",
+      "brushHint": "Trageți peste parcelele dumneavoastră",
+      "brushHelp": "Trageți peste parcelele dumneavoastră ca să le selectați. Începeți pe o parcelă verde ca să o deselectați. Mutați harta cu două degete sau opriți „Selectați trăgând”."
+    }
   },
   "Results": {
     "back": "Schimbați câmpul sau rotația",
