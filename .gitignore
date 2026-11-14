@@ -42,3 +42,16 @@ data/cache/*
 *.parquet
 *.nc
 *.h5
+*.tif
+*.tiff
+*.gpkg
+*.shp
+*.shx
+*.dbf
+*.zip
+
+# Credentials (keep in $HOME, never in the repo)
+.netrc
+_netrc
+.cdsapirc
+.hdarc
