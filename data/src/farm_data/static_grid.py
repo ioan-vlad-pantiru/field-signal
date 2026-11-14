@@ -50,6 +50,7 @@ DEM_URL = (
 WEATHER = DATA_DIR.parent / "services/api/src/api/planner/data/weather_monthly.csv.gz"
 OUT = CACHE / "static_grid.npz"
 POWER_OUT = CACHE / "power_cell_elevation.csv"
+SERVED = CACHE / "static_grid.npy"  # [channel, row, col] int16, served by api.planner.world_model
 SOIL = {"clay": "clay", "sand": "sand", "soc": "soc", "ph": "phh2o"}  # channel -> SoilGrids name
 SCALE = {"clay": 10, "sand": 10, "soc": 10, "ph": 100, "elevation": 1, "slope": 100}
 NODATA = -32768
@@ -89,7 +90,11 @@ def _dem_tile(la: int, lo: int) -> None:
 
 def download_dem() -> None:
     DEM_DIR.mkdir(parents=True, exist_ok=True)
-    tiles = [(la, lo) for la in range(int(SOUTH), int(NORTH) + 1) for lo in range(int(WEST), int(EAST) + 1)]
+    tiles = [
+        (la, lo)
+        for la in range(int(SOUTH), int(NORTH) + 1)
+        for lo in range(int(WEST), int(EAST) + 1)
+    ]
     with ThreadPoolExecutor(4) as pool:
         list(pool.map(lambda t: _dem_tile(*t), tiles))
 
@@ -112,7 +117,10 @@ def soil_grid() -> dict[str, np.ndarray]:
                 r0, c0 = _grid_window(src.transform)
                 v = src.read(1).astype(np.float32)
             full = np.full((ROWS, COLS), np.nan, np.float32)
-            rr, cc = slice(max(r0, 0), min(r0 + v.shape[0], ROWS)), slice(max(c0, 0), min(c0 + v.shape[1], COLS))
+            rr, cc = (
+                slice(max(r0, 0), min(r0 + v.shape[0], ROWS)),
+                slice(max(c0, 0), min(c0 + v.shape[1], COLS)),
+            )
             full[rr, cc] = v[rr.start - r0 : rr.stop - r0, cc.start - c0 : cc.stop - c0]
             acc += np.where(full > 0, full, np.nan) * w
         out[ch] = acc / sum(DEPTHS.values()) / 10
@@ -180,11 +188,14 @@ def _report(chans: dict[str, np.ndarray]) -> None:
              "elevation": (175, 163), "slope": (2.34, 2.06)}  # fmt: skip
     valid = np.logical_and.reduce([np.isfinite(v) for v in chans.values()])
     print(f"cells with data: {valid.mean():.1%} of {valid.size}")
-    print(f"{'channel':10} {'min':>8} {'median':>8} {'max':>8} {'mean':>8} {'std':>8}  train mean/std")
+    print(
+        f"{'channel':10} {'min':>8} {'median':>8} {'max':>8} {'mean':>8} {'std':>8}  train mean/std"
+    )
     for k, v in chans.items():
         x = v[valid]
         m, s = train[k]
-        print(f"{k:10} {x.min():8.2f} {np.median(x):8.2f} {x.max():8.2f} {x.mean():8.2f} {x.std():8.2f}  {m}/{s}")
+        row = (x.min(), np.median(x), x.max(), x.mean(), x.std())
+        print(f"{k:10} " + " ".join(f"{v:8.2f}" for v in row) + f"  {m}/{s}")
 
 
 if __name__ == "__main__":
@@ -197,6 +208,9 @@ if __name__ == "__main__":
     CACHE.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(OUT, **q, scale=np.array(json.dumps({**SCALE, "nodata": NODATA})))
     print(f"{OUT.name}: {OUT.stat().st_size / 2**20:.1f} MB")
+    # The API memory-maps this one (channels in the world model's order), so it costs no RAM.
+    np.save(SERVED, np.stack([q[c] for c in ("clay", "sand", "soc", "ph", "elevation", "slope")]))
+    print(f"{SERVED.name}: {SERVED.stat().st_size / 2**20:.1f} MB")
     elev = np.where(q["elevation"] != NODATA, q["elevation"], np.nan).astype(np.float32)
     pc = power_cells(elev)
     pc.to_csv(POWER_OUT, index=False)

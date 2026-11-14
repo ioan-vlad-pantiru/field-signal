@@ -74,14 +74,15 @@ export function getSourcingRegion(season = 2025): Promise<Loaded<SourcingRegion>
   );
 }
 
-/** One farm plan for all fields together; the solver may take a while, hence 30 s. */
+/** One farm plan for all fields together: the trained world model runs per piece and the solver
+ * then searches, about 25 s for a 45 ha farm on the API's 1 vCPU the first time, hence 90 s. */
 export function optimizeFarm(body: OptimizerRequest): Promise<Loaded<OptimizerResponse>> {
   return withFallback(
     () =>
       request<OptimizerResponse>(
         "/v1/farm/optimize",
         { method: "POST", body: JSON.stringify(body) },
-        30_000,
+        90_000,
       ),
     mockOptimizer,
   );

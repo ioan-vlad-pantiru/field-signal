@@ -46,7 +46,8 @@ KEYS = ["cell_id", "year", "month"]
 def download(last_year: int, params: Iterable[str] = (*NAMES, *MODEL_NAMES)) -> None:
     w, s, e, n = BBOX
     for p in params:
-        for y in range(FIRST_YEAR, last_year + 1):
+        first = 1984 if p == "ALLSKY_SFC_SW_DWN" else FIRST_YEAR  # POWER solar starts in 1984
+        for y in range(first, last_year + 1):
             f = SRC / p / f"{p}_{y}.nc"
             if f.exists():
                 continue

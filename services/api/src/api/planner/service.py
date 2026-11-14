@@ -5,7 +5,8 @@ Mode (plan §10, decided by `optimizer.splits`): a farm under 75 ha may divide a
 more between up to 3 rotations; at 75 ha or more a drawn field is a parcel with exactly one
 rotation. The service only words the caveats for the mode; farm rules span the fields.
 Scoring calls the world model itself (`models.active()`: the trained LSTM or the mock, cached per
-grid point, crop and last two crops), so outcomes and scores are timed as one stage. Every stage time is logged at INFO.
+grid point, crop and last two crops), so outcomes and scores are timed as one stage. Every stage
+time is logged at INFO.
 
     plan_farm(request, max_time_s=3.0) -> OptimizerResponse   # raises PlanRejected (-> 422)
 """
@@ -36,8 +37,7 @@ from api.contracts import (
     YearAreas,
 )
 from api.planner import candidates as cand
-from api.planner import grid, optimizer, scoring, weather
-from api.planner import models
+from api.planner import grid, models, optimizer, scoring, weather
 from api.planner.crops import CROPS, LEGUMES, RULE_LEGUMES
 
 log = logging.getLogger(__name__)

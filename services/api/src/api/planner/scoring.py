@@ -59,9 +59,8 @@ import numpy as np
 from numpy.typing import NDArray
 
 from api.contracts import Priority, RotationOutcome, ScoreBreakdown
-from api.planner import models
+from api.planner import models, weather
 from api.planner import water_balance as wb
-from api.planner import weather
 from api.planner.crops import CROPS, LEGUMES, crop_months
 from api.planner.grid import Piece
 
@@ -105,7 +104,8 @@ class _NoReference(Exception):
 
 @lru_cache(maxsize=4096)
 def _cached_reference_kc(point: str, crop: str) -> Array:
-    rows = [models.active().outcomes(point, ("", ""), (crop,), s)[0].ndvi_monthly for s in models.active().scenarios(1)]
+    wm = models.active()
+    rows = [wm.outcomes(point, ("", ""), (crop,), s)[0].ndvi_monthly for s in wm.scenarios(1)]
     ndvi = np.array([r for r in rows if r is not None], dtype=float).reshape(-1, 12)
     ndvi = ndvi[np.isfinite(ndvi).all(-1)]
     if not len(ndvi):
@@ -187,7 +187,8 @@ def score(
 @lru_cache(maxsize=4096)
 def _parts(point: str, crop: str, prev2: str, prev1: str) -> Array | None:
     """Year parts for every season: [season, part], built from the world model's rows."""
-    out = _year_parts([models.active().outcomes(point, (prev2, prev1), (crop,), s)[0] for s in models.active().scenarios(1)])
+    wm = models.active()
+    out = _year_parts([wm.outcomes(point, (prev2, prev1), (crop,), s)[0] for s in wm.scenarios(1)])
     if out is not None:
         out.setflags(write=False)
     return out

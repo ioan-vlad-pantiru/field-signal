@@ -69,8 +69,9 @@ def sourcing_region(season: int | None = None) -> SourcingRegion:
 
 @app.post("/v1/farm/optimize", tags=["farmer"])
 def optimize_farm(request: OptimizerRequest) -> OptimizerResponse:
-    """Farm rotation optimizer: an area split per field. Scores come from the MOCK world model
-    (mock=true); 422 when a field cannot be planned."""
+    """Farm rotation optimizer: an area split per field. Scores come from the trained world model
+    (an LSTM, mock=false) when its inputs are deployed, else the mock (mock=true); 422 when a field
+    cannot be planned."""
     try:
         return plan_farm(request)
     except PlanRejected as e:

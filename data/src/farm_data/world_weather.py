@@ -14,6 +14,8 @@ POWER solar radiation) to the last complete year, with the ten channels of `mode
   formula as build.py `_fao56_et0`, with the cell centre latitude and the cell's mean DEM
   elevation (`data/cache/power_cell_elevation.csv`; build.py used the mean SRTM elevation of its
   sample points in the cell), negative daily values clamped to 0;
+- solar comes on POWER's 1° grid: each cell takes the 1° cell nearest its centre (as the point API
+  that fed build.py does); five missing days in 1987-1993 are filled linearly in time;
 - hot_days: Tmax > 32 °C; frost_days: Tmin < 0 °C; dry_run_max: longest run of days with
   precipitation < 1 mm inside the month.
 
@@ -43,6 +45,7 @@ PARAMS = {
 }
 CHANNELS = ["t2m_max", "t2m_min", "rh2m", "ws2m", "solar", "precip", "et0",
             "hot_days", "frost_days", "dry_run_max"]  # fmt: skip
+SOLAR = "ALLSKY_SFC_SW_DWN"
 HOT_C, FROST_C, DRY_MM = 32.0, 0.0, 1.0
 
 
@@ -60,8 +63,11 @@ def fao56_et0(tmax, tmin, rh, rs, u2, doy, lat_deg, z):  # type: ignore[no-untyp
     dr = 1 + 0.033 * np.cos(2 * np.pi * doy / 365.0)
     dec = 0.409 * np.sin(2 * np.pi * doy / 365.0 - 1.39)
     ws = np.arccos(np.clip(-np.tan(phi) * np.tan(dec), -1.0, 1.0))
-    ra = (24 * 60 / np.pi) * 0.0820 * dr * (
-        ws * np.sin(phi) * np.sin(dec) + np.cos(phi) * np.cos(dec) * np.sin(ws)
+    ra = (
+        (24 * 60 / np.pi)
+        * 0.0820
+        * dr
+        * (ws * np.sin(phi) * np.sin(dec) + np.cos(phi) * np.cos(dec) * np.sin(ws))
     )
     rso = np.maximum((0.75 + 2e-5 * z) * ra, 1e-6)
     rnl = (
@@ -77,12 +83,26 @@ def fao56_et0(tmax, tmin, rh, rs, u2, doy, lat_deg, z):  # type: ignore[no-untyp
 
 
 def daily(last_year: int, cells: set[str]) -> pd.DataFrame:
-    cols = {}
-    for p, name in PARAMS.items():
+    def load(p: str) -> xr.DataArray:
         files = [SRC / p / f"{p}_{y}.nc" for y in range(FIRST_YEAR, last_year + 1)]
         da = xr.concat([xr.open_dataset(f)[p] for f in files], "time")
-        cols[name] = da.where(da > -998).to_series()
+        return da.where(da > -998)
+
+    cols = {name: load(p).to_series() for p, name in PARAMS.items() if p != SOLAR}
     d = pd.DataFrame(cols).reset_index()
+    # Solar comes on POWER's 1° grid: each weather cell takes the 1° cell nearest its centre,
+    # as the point API (which build.py's inputs came from) does.
+    # A few 1° cells miss a single February day (1987, 1990, 1993): filled linearly in time.
+    solar = load(SOLAR).interpolate_na("time")
+    centres = d[["lat", "lon"]].drop_duplicates()
+    picked = solar.sel(
+        lat=xr.DataArray(centres.lat.to_numpy(), dims="c"),
+        lon=xr.DataArray(centres.lon.to_numpy(), dims="c"),
+        method="nearest",
+    )
+    s = picked.assign_coords(lat=("c", centres.lat.to_numpy()), lon=("c", centres.lon.to_numpy()))
+    s = s.to_dataframe(name="solar").reset_index()[["time", "lat", "lon", "solar"]]
+    d = d.merge(s, on=["time", "lat", "lon"], how="left")
     d["cell_id"] = d.lat.map("{:.3f}".format) + "_" + d.lon.map("{:.3f}".format)
     d = d[d.cell_id.isin(cells)]
     assert set(d.cell_id) == cells, f"cells missing: {sorted(cells - set(d.cell_id))[:5]}"
@@ -96,7 +116,7 @@ def monthly(d: pd.DataFrame, elevation: pd.Series) -> pd.DataFrame:
     assert z.notna().all(), "a POWER cell has no elevation"
     et0 = fao56_et0(
         d.tmax.to_numpy(), d.tmin.to_numpy(), d.rh.to_numpy(), d.solar.to_numpy(),
-        d.ws.to_numpy(), d.time.dt.dayofyear.to_numpy(), d.lat.to_numpy(), z.to_numpy(),
+        d.ws.to_numpy(), d.time.dt.day_of_year.to_numpy(), d.lat.to_numpy(), z.to_numpy(),
     )  # fmt: skip
     assert np.isfinite(et0).all(), "ET0 is not finite"
     d = d.assign(

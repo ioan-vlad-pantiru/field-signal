@@ -16,13 +16,16 @@ How a season is simulated (one batch per grid point, crop and last two crops, ev
 - October-December after harvest belong to the next crop year, whose crop the per-year cache does
   not know: it is the model's `missing` class.
 
-Ensemble: every exported run in `data/world_model/` is one member. With a single run, the members
-are Monte Carlo dropout passes (p = the training dropout), a cheaper stand-in for the seed
-ensemble; `MEMBERS` of them, seeded from the point and crops so results are repeatable.
+Ensemble: every exported run in `data/world_model/` is one member (Răzvan's five training seeds,
+`monthly_delta` and `_s1`-`_s4`). With a single run, the members are Monte Carlo dropout passes
+(p = the training dropout), a cheaper stand-in for the seed ensemble; `MEMBERS` of them, seeded
+from the point and crops so results are repeatable.
 
 From monthly states to the planner's `RotationOutcome` (the summaries the planner reads):
 - `yield_rel` is an NDVI proxy, not a yield: (peak NDVI in season - the crop's lowest training
-  mean NDVI) / (the crop's training peak - that lowest), so 1 = the crop's average training year;
+  mean NDVI) / (the model's mean peak for that crop at that cell and soil over all seasons with
+  a generic arable history - that lowest), so 1 = the crop's normal year there and only weather and
+  the crop history move it (crops are not ranked against each other by greenness);
 - `ndvi_offseason` = mean NDVI of the months outside the crop's season (cover, volunteers);
 - `rootzone_sm_critical` = mean predicted root-zone soil moisture (m3/m3) over flowering;
 - `et_season_mm` = sum over the season of Kc(NDVI) x FAO-56 ET0 of the model's weather.
@@ -48,6 +51,7 @@ import os
 from collections.abc import Sequence
 from functools import cache, lru_cache
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 from numpy.typing import NDArray
@@ -63,7 +67,8 @@ DATA = Path(__file__).with_name("data")
 MODEL_DIR = DATA / "world_model"
 WEATHER = DATA / "world_weather_monthly.csv.gz"
 # The soil and terrain grid is large: CI downloads it from a release next to the API image.
-STATIC = Path(os.environ.get("PLANNER_STATIC_GRID", DATA / "static_grid.npz"))
+# [channel, row, col] int16 on the planner grid (`farm_data.static_grid`), memory-mapped.
+STATIC = Path(os.environ.get("PLANNER_STATIC_GRID", DATA / "static_grid.npy"))
 
 CLASSES = ("wheat", "barley", "maize", "sunflower", "soybeans", "dry_pulses", "rapeseed",
            "other", "non_crop", "missing")  # fmt: skip
@@ -71,20 +76,27 @@ MISSING = CLASSES.index("missing")
 # Planner and history crop names -> the model's classes (HRL crop types).
 CLASS_OF = {
     "wheat": 0, "barley": 1, "maize": 2, "sunflower": 3, "soybean": 4, "pea": 5,
-    "cover_mustard": 7, "cover_phacelia": 7, "cover_vetch": 7,
+    "cover_mustard": 7, "cover_phacelia": 7, "cover_vetch": 7, "_other": 7,
 }  # fmt: skip
+GENERIC = "_other"  # a generic arable crop, the model's `other` class
 WEATHER_CHANNELS = ("t2m_max", "t2m_min", "rh2m", "ws2m", "solar", "precip", "et0",
                     "hot_days", "frost_days", "dry_run_max")  # fmt: skip
 STATIC_CHANNELS = ("clay", "sand", "soc", "ph", "elevation", "slope")
 STATIC_SCALE = {"clay": 10, "sand": 10, "soc": 10, "ph": 100, "elevation": 1, "slope": 100}
-MEMBERS = 5  # Monte Carlo dropout passes when only one run is exported
+# ponytail: a farm's grid points differ mostly in soil; points within this many training standard
+# deviations on every static channel (and in the same POWER cell) share one simulation, which cuts
+# the model calls of a farm several times. 0 = one simulation per point.
+STATIC_STEP = 0.5
+MEMBERS = 4  # Monte Carlo dropout passes when only one run is exported
 WARMUP, SPAN = 12, 27  # months of warm-up, months simulated (Oct two years back .. Dec)
 JAN = 15  # index of January of the harvest year in the simulated span
 
 
 def _version() -> str:
     runs = sorted(p.stem for p in MODEL_DIR.glob("*.npz"))
-    return "lstm-" + "+".join(runs) if runs else "lstm-none"
+    if not runs:
+        return "lstm-none"
+    return f"lstm-{runs[0]}" + (f"-x{len(runs)}" if len(runs) > 1 else "")
 
 
 MODEL_VERSION = _version()
@@ -144,9 +156,7 @@ def _weather() -> tuple[dict[str, Array], int]:
     with gzip.open(WEATHER, "rt", newline="") as f:
         for r in csv.DictReader(f):
             k = int(r["year"]) * 12 + int(r["month"]) - 1
-            rows.setdefault(r["cell_id"], []).append(
-                (k, [float(r[c]) for c in WEATHER_CHANNELS])
-            )
+            rows.setdefault(r["cell_id"], []).append((k, [float(r[c]) for c in WEATHER_CHANNELS]))
     first = min(k for v in rows.values() for k, _ in v)
     out = {}
     for cell, v in rows.items():
@@ -173,13 +183,16 @@ def scenarios(plan_years: int) -> list[int]:
 
 @cache
 def _static_grid() -> dict[str, NDArray[np.int16]]:
-    z = np.load(STATIC)
-    return {c: z[c] for c in STATIC_CHANNELS}
+    z = np.load(STATIC, mmap_mode="r")
+    assert z.shape == (len(STATIC_CHANNELS), grid.ROWS, grid.COLS), z.shape
+    return {c: z[i] for i, c in enumerate(STATIC_CHANNELS)}
 
 
-def _static(point: str) -> Array:
-    """Standardised static features of a grid point; a channel without data is the training
-    mean (0 after standardising)."""
+@lru_cache(maxsize=65536)
+def _static(point: str) -> tuple[float, ...]:
+    """Standardised static features of a grid point, rounded to STATIC_STEP standard deviations
+    so neighbouring points with the same soil and terrain share one simulation; a channel without
+    data is the training mean (0 after standardising)."""
     lat, lon = map(float, point.split("_"))
     row, col = grid._cell(lat, lon)
     n = _norm()
@@ -189,9 +202,12 @@ def _static(point: str) -> Array:
         v = int(g[c][row, col])
         if v != -32768:
             out[i] = (v / STATIC_SCALE[c] - n["s_mean"][i]) / n["s_std"][i]
-    return out
+    if STATIC_STEP:
+        out = (np.round(out / STATIC_STEP) * STATIC_STEP).astype(np.float32)
+    return tuple(out.tolist())
 
 
+@cache
 def _power_cell(point: str) -> str:
     from api.planner import weather  # the planner's POWER cell rule
 
@@ -217,8 +233,19 @@ def _cls(crop: str) -> int:
 # ------------------------------------------------------------------ the LSTM
 
 
-def _sigmoid(x: Array) -> Array:
-    return 0.5 * (1.0 + np.tanh(0.5 * x))
+def _stack(nets: Sequence[dict[str, Array]]) -> dict[str, Array]:
+    """Parameters of several runs stacked on a leading axis, to run them as one batch."""
+    out = {k: np.stack([n[k] for n in nets]) for k in nets[0] if k != "dropout"}
+    hid = out["w_hh"].shape[1]
+    # sigmoid(x) = 0.5 + 0.5 tanh(x / 2): one tanh over all four gates (i, f, g, o) per step
+    out["gate_scale"] = np.repeat(np.array([0.5, 0.5, 1.0, 0.5], np.float32), hid)
+    out["dropout"] = np.asarray(nets[0]["dropout"], np.float32)
+    return out
+
+
+@cache
+def _stacked() -> dict[str, Array]:
+    return _stack(_nets())
 
 
 def _rollout(
@@ -228,55 +255,52 @@ def _rollout(
     static: Array,
     rng: np.random.Generator | None,
 ) -> Array:
-    """Standardised states [B, SPAN - WARMUP, 2] for months WARMUP..SPAN-1.
+    """Standardised states [run, B, SPAN - WARMUP, 2] for months WARMUP..SPAN-1, every run of
+    the stacked `net` (`_stack`) on the same inputs.
 
     w [B, SPAN, 10] standardised weather by calendar month of the span; crops [3 crop years, 3]
     (crop, previous, two back) class ids; static [6]. Step t's input carries the weather, time
     and crops of month t + 1 (`infer._embed`); no state is observed, so state and flag are 0
-    through the warm-up and the rollout starts from state 0 (`infer._rollout_delta`)."""
-    b = w.shape[0]
-    hid = net["w_hh"].shape[0]
+    through the warm-up and the rollout starts from state 0 (`infer._rollout_delta`). With `rng`,
+    each step drops hidden units before the head (Monte Carlo dropout)."""
+    k, b = net["w_hh"].shape[0], w.shape[0]
+    hid = net["w_hh"].shape[1]
     months = np.arange(1, SPAN + 1)
     cal = (months % 12 + 9) % 12 + 1  # index 0 is October
     phase = 2 * np.pi * (cal - 1) / 12.0
     ts = np.stack([np.sin(phase), np.cos(phase)], 1).astype(np.float32)
     year = np.minimum(months // 12, len(crops) - 1)
-    emb = net["emb"][crops[year]].reshape(len(months), -1)  # [SPAN, 24]
-    wi = net["w_ih"]
+    wi = net["w_ih"]  # [run, 46, 4H]
     # input projection of everything but the state and flag (rows 0-3 of w_ih)
     w_next = np.concatenate([w[:, 1:], w[:, -1:]], 1)  # step t reads month t + 1
-    rest = np.concatenate(
-        [
-            w_next,
-            np.broadcast_to(ts, (b, SPAN, 2)),
-            np.broadcast_to(emb, (b, SPAN, emb.shape[1])),
-            np.broadcast_to(static, (b, SPAN, len(static))),
-        ],
-        -1,
-    )
-    pre = rest @ wi[4:] + net["b"]  # [B, SPAN, 4H]
-    h = np.zeros((b, hid), np.float32)
-    c = np.zeros((b, hid), np.float32)
+    wt = np.concatenate([w_next, np.broadcast_to(ts, (b, SPAN, 2))], -1)  # [B, SPAN, 12]
+    shared = np.einsum("bsi,kio->kbso", wt, wi[:, 4:16], optimize=True)  # [run, B, SPAN, 4H]
+    emb = net["emb"][:, crops[year]].reshape(k, SPAN, -1)  # [run, SPAN, 24]
+    fixed = np.concatenate([emb, np.broadcast_to(static, (k, SPAN, len(static)))], -1)
+    pre = shared + (fixed @ wi[:, 16:])[:, None] + net["b"][:, None, None]
+    sc = net["gate_scale"]
+    h: NDArray[Any] = np.zeros((k, b, hid), np.float32)
+    c: NDArray[Any] = np.zeros((k, b, hid), np.float32)
 
     def step(x: Array) -> None:
         nonlocal h, c
-        g = x + h @ net["w_hh"]
-        i, f, gg, o = np.split(g, 4, axis=1)  # torch gate order
-        c = _sigmoid(f) * c + _sigmoid(i) * np.tanh(gg)
-        h = _sigmoid(o) * np.tanh(c)
+        t = np.tanh((x + h @ net["w_hh"]) * sc)
+        i, f, g, o = np.split(t, 4, axis=-1)  # torch gate order
+        c = (0.5 + 0.5 * f) * c + (0.5 + 0.5 * i) * g
+        h = (0.5 + 0.5 * o) * np.tanh(c)
 
     for t in range(WARMUP):  # state 0, flag 0
-        step(pre[:, t])
-    state = np.zeros((b, 2), np.float32)
-    flag = wi[2] + wi[3]  # observed flag = 1 for fed-back predictions
+        step(pre[:, :, t])
+    state: NDArray[Any] = np.zeros((k, b, 2), np.float32)
+    flag = (wi[:, 2] + wi[:, 3])[:, None]  # observed flag = 1 for fed-back predictions
     out = []
-    keep = 1.0 - net["dropout"]
+    keep = 1.0 - float(net["dropout"])
     for m in range(WARMUP, SPAN):
-        step(pre[:, m - 1] + state @ wi[:2] + flag)
+        step(pre[:, :, m - 1] + state @ wi[:, :2] + flag)
         hd = h if rng is None else h * (rng.random(h.shape) < keep) / keep
-        state = state + hd @ net["head_w"] + net["head_b"]
+        state = state + hd @ net["head_w"] + net["head_b"][:, None]
         out.append(state)
-    return np.stack(out, 1)
+    return np.stack(out, 2).astype(np.float32, copy=False)
 
 
 def _destandardise(z: Array, crops: NDArray[np.int64]) -> Array:
@@ -294,8 +318,9 @@ def _seed(*parts: str) -> int:
     return int.from_bytes(hashlib.blake2b("|".join(parts).encode(), digest_size=8).digest())
 
 
-def simulate(point: str, crop: str, prev2: str, prev1: str) -> Array:
-    """[season, member, month Jan-Dec, (ndvi, sm_rootzone)] of the harvest years."""
+def simulate(cell: str, static: tuple[float, ...], crop: str, prev2: str, prev1: str) -> Array:
+    """[season, member, month Jan-Dec, (ndvi, sm_rootzone)] of the harvest years for a POWER
+    cell and standardised static features."""
     crops = np.array(
         [
             [_cls(prev1), _cls(prev2), MISSING],
@@ -303,16 +328,16 @@ def simulate(point: str, crop: str, prev2: str, prev1: str) -> Array:
             [MISSING, _cls(crop), _cls(prev1)],
         ]
     )
-    w, _ = _season_weather(_power_cell(point))
-    static = _static(point)
+    w, _ = _season_weather(cell)
+    st = np.asarray(static, np.float32)
     nets = _nets()
     n_s = w.shape[0]
-    if len(nets) > 1:
-        z = np.stack([_rollout(net, w, crops, static, None) for net in nets], 1)
-    else:
-        rng = np.random.default_rng(_seed(point, prev2, prev1, crop))
+    if len(nets) > 1:  # one member per run
+        z = _rollout(_stacked(), w, crops, st, None).transpose(1, 0, 2, 3)
+    else:  # Monte Carlo dropout members
+        rng = np.random.default_rng(_seed(cell, repr(static), prev2, prev1, crop))
         wm = np.repeat(w, MEMBERS, axis=0)
-        z = _rollout(nets[0], wm, crops, static, rng).reshape(n_s, MEMBERS, SPAN - WARMUP, 2)
+        z = _rollout(_stacked(), wm, crops, st, rng)[0].reshape(n_s, MEMBERS, SPAN - WARMUP, 2)
     phys = _destandardise(z.reshape(-1, SPAN - WARMUP, 2), crops).reshape(z.shape)
     return phys[:, :, JAN - WARMUP :]
 
@@ -320,27 +345,40 @@ def simulate(point: str, crop: str, prev2: str, prev1: str) -> Array:
 # ------------------------------------------------------------------ planner rows
 
 
-@cache
-def _yield_ref(crop: str) -> tuple[float, float]:
-    """(lowest, peak) training mean NDVI of the crop's class, peak over its season months."""
-    curve = _norm()["nd_mean"][_cls(crop)]
+@lru_cache(maxsize=2048)
+def _yield_ref(cell: str, static: tuple[float, ...], crop: str) -> tuple[float, float]:
+    """(base, reference peak): base = the crop's lowest training mean NDVI over the year (bare
+    soil for that crop); reference peak = the model's mean in-season NDVI peak at this cell and
+    soil over every season and member after two years of a generic arable crop (the model's
+    `other` class), i.e. the crop's normal year there. Measured at Aiud, it is within 0.01-0.03
+    NDVI of the mean over all 25 histories of planner crops; an unknown history (`missing`)
+    reads 0.05-0.2 lower and would inflate every ratio."""
+    base = float(_norm()["nd_mean"][_cls(crop)].min())
     mask = crop_months(crop)[0]
-    return float(curve.min()), float(curve[mask].max())
+    peak = simulate(cell, static, crop, GENERIC, GENERIC)[..., 0][..., mask].max(-1).mean()
+    return base, float(peak)
 
 
-@lru_cache(maxsize=4096)
 def _season_summaries(point: str, crop: str, prev2: str, prev1: str) -> tuple[Array, Array] | None:
-    """([season, summary, (P10, P50, P90)], [season, 12] NDVI P50), summaries in RotationOutcome
-    order; None for a crop the planner does not score."""
     if crop not in CROPS:
         return None
-    s = simulate(point, crop, prev2, prev1)
-    _, et0 = _season_weather(_power_cell(point))
+    return _summaries(_power_cell(point), _static(point), crop, prev2, prev1)
+
+
+# ponytail: bounded LRU, about 2.5 KB per entry.
+@lru_cache(maxsize=8192)
+def _summaries(
+    cell: str, static: tuple[float, ...], crop: str, prev2: str, prev1: str
+) -> tuple[Array, Array]:
+    """([season, summary, (P10, P50, P90)], [season, 12] NDVI P50), summaries in RotationOutcome
+    order."""
+    s = simulate(cell, static, crop, prev2, prev1)
+    _, et0 = _season_weather(cell)
     mask, _, f = crop_months(crop)
     ndvi, sm = s[..., 0], s[..., 1]
-    lo, peak_ref = _yield_ref(crop)
+    lo, peak_ref = _yield_ref(cell, static, crop)
     peak = ndvi[..., mask].max(-1)
-    et = (wb.crop_coefficient(ndvi) * et0[:, None, :])[..., mask].sum(-1)
+    et = (wb.crop_coefficient(ndvi.astype(np.float64)) * et0[:, None, :])[..., mask].sum(-1)
     x = np.stack(
         [
             (peak - lo) / (peak_ref - lo),

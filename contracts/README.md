@@ -115,7 +115,10 @@ the rows carry no scores.
   `et_season_mm`: they may be null.
 - `ndvi_monthly`: 12 NDVI values, January to December of the harvest year, the P50 over ensemble
   members; null drops the rotation. The planner computes soil water from it and the weather.
-- `model_version`: `"mock-0"` while the declared mock world model stands in for the real one.
+- `model_version`: `"lstm-<run>"` for the trained world model (`model/`, served by
+  `api.planner.world_model`; e.g. `"lstm-monthly_delta"`), `"mock-0"` when the API falls back to
+  the declared mock (its inputs are not deployed, or `PLANNER_WORLD_MODEL=mock`). On the LSTM,
+  `yield_rel` is an NDVI proxy (season peak NDVI against the crop's training curve), not a yield.
 
 ## (3a) Field cells: per-hexagon farmland mask (proposal, #22)
 
@@ -164,5 +167,6 @@ parts as `ScoreBreakdown`), `score_range` (the spread across weather windows: wo
 enforced in this request), `passed` and `verified` (the limit was read in the official document).
 Rule rows are provisional checks, not a statement of GAEC 7 or PD-04 compliance. `confidence` is how
 far the model behind the numbers has been validated: `low` for every plan built on the mock world
-model; the rule for the real model is still open. `mock` is true and `model_version` is `"mock-0"`
-until the real world model is wired.
+model, and still `low` on the trained LSTM until its scores are checked against harvests. `mock`
+is false and `model_version` is `"lstm-<run>"` on the trained model; true and `"mock-0"` on the
+mock fallback.

@@ -57,6 +57,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: gh release download apia-parcels-2025 -p apia_parcels_alba.sqlite -D services/api/parcels --clobber
 
+      # Soil and terrain grid of the trained world model (data/src/farm_data/static_grid.py);
+      # without it the farm planner falls back to the mock world model.
+      - name: Fetch world model soil grid
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download world-model-static -p static_grid.npy -D services/api/src/api/planner/data --clobber
+
       - name: Build and push API
         uses: docker/build-push-action@v6
         with:

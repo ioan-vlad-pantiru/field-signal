@@ -27,7 +27,9 @@ def main(argv=None):
     for run in map(Path, args.runs):
         ck = torch.load(run / "best.pt", map_location="cpu", weights_only=False)
         assert ck["config"].get("delta"), f"{run}: only the delta head is served"
-        stats = json.loads((run / "norm_stats.json").read_text())
+        # seed runs share the tensors (and so the stats) of the first run; some carry no copy
+        own = run / "norm_stats.json"
+        stats = json.loads(own.read_text()) if own.exists() else norm
         if norm is None:
             norm = stats
         assert all(stats[k] == norm[k] for k in ("ndvi", "sm", "weather", "static")), \
