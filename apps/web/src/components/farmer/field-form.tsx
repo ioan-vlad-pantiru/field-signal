@@ -58,6 +58,7 @@ export function FieldForm({
   const [mode, setMode] = useState<MapMode>(initialBoundary ? "locked" : "draw");
   const [basemap, setBasemap] = useState<Basemap>("satellite");
   const [focus, setFocus] = useState<MapFocus | null>(null);
+  const [mapFailed, setMapFailed] = useState(false);
 
   const areaHa = polygonAreaHa(corners);
   const boundary = mode === "locked" && corners.length >= 3 ? corners : null;
@@ -115,8 +116,10 @@ export function FieldForm({
           label={t("mapLabel")}
           basemap={basemap}
           focus={focus}
+          onUnavailable={() => setMapFailed(true)}
           className="h-full"
         />
+        {mapFailed ? null : (
         <div className="absolute left-2 top-2 z-[1]">
           <Segmented
             label={t("basemap.label")}
@@ -129,7 +132,8 @@ export function FieldForm({
             className="shadow-2"
           />
         </div>
-        {drawing ? (
+        )}
+        {drawing && !mapFailed ? (
           // Phone: the panel starts below the map, so the map itself says what to do and how big the field is.
           <p
             aria-hidden="true"
@@ -140,7 +144,7 @@ export function FieldForm({
               : `${t("draw.cornerCount", { corners: corners.length })} · ${t("draw.area", { ha: formatNumber(areaHa, locale, 1) })}`}
           </p>
         ) : null}
-        {basemap === "satellite" ? (
+        {basemap === "satellite" && !mapFailed ? (
           <p className="absolute inset-x-2 bottom-2 z-[1] w-fit max-w-[calc(100%-1rem)] rounded-md bg-surface/90 px-2 py-0.5 text-xs leading-snug text-ink">
             <a href={SATELLITE_ATTRIBUTION.href} target="_blank" rel="noopener" className="underline-offset-2 hover:underline">
               {SATELLITE_ATTRIBUTION.text}
@@ -175,8 +179,8 @@ export function FieldForm({
           <PrioritiesStep levels={levels} onLevels={setLevels} irrigated={irrigated} onIrrigated={setIrrigated} />
         ) : null}
 
-        {/* Phone: sticky above the bottom navigation (hidden from 640 px). */}
-        <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 -mx-4 border-t border-line bg-surface px-4 py-3 shadow-3 sm:bottom-0 lg:static lg:mx-0 lg:border-t-0 lg:px-0 lg:pt-0 lg:shadow-none">
+        {/* Always in view: above the phone bottom navigation, at the viewport bottom from 640 px. */}
+        <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 -mx-4 border-t border-line bg-surface px-4 py-3 shadow-3 sm:bottom-0 lg:mx-0 lg:px-0 lg:shadow-none">
           {!boundary ? (
             <p className="mb-2 text-center text-sm font-medium text-ink-muted" aria-live="polite">
               {mode === "draw" && corners.length >= 3 ? t("needDone") : t("needField")}

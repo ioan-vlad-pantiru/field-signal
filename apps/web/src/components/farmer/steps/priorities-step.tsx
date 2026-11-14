@@ -45,7 +45,7 @@ export function PrioritiesStep({
   const options = LEVELS.map((value) => ({ value, label: t(`level.${value}`) }));
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       <header>
         <h1 className="text-3xl font-semibold tracking-tight">{t("prioritiesTitle")}</h1>
         <p className="mt-1 text-ink-muted">{t("prioritiesHint")}</p>
@@ -53,11 +53,11 @@ export function PrioritiesStep({
 
       <ul className="flex flex-col divide-y divide-line border-y border-line">
         {PRIORITIES.map((p) => (
-          <li key={p} className="flex flex-col gap-2 py-4">
-            <div>
-              <p className="text-lg font-medium">{t(`priority.${p}.label`)}</p>
-              <p className="text-sm text-ink-muted">{t(`priority.${p}.hint`)}</p>
-            </div>
+          <li key={p} className="flex flex-col gap-1.5 py-3">
+            <p>
+              <span className="font-medium">{t(`priority.${p}.label`)}</span>
+              <span className="text-ink-muted"> · {t(`priority.${p}.hint`)}</span>
+            </p>
             <Segmented
               label={t(`priority.${p}.label`)}
               options={options}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { LngLatBounds, Marker, type GeoJSONSource, type Map as MapLibreMap } from "maplibre-gl";
 import type { LatLon } from "@/lib/contracts";
 import { setBasemap, useMap, type Basemap } from "@/components/map/use-map";
@@ -67,6 +68,7 @@ export function FieldMap({
   label,
   basemap,
   focus,
+  onUnavailable,
   className = "",
 }: {
   value: LatLon;
@@ -77,10 +79,13 @@ export function FieldMap({
   label: string;
   basemap: Basemap;
   focus: MapFocus | null;
+  /** Called once if the browser cannot draw the map (no WebGL). */
+  onUnavailable?: () => void;
   className?: string;
 }) {
   // Fields are tens of hectares: open at field scale so a few taps trace one parcel.
-  const { container, map } = useMap([value.lon, value.lat], DRAW_ZOOM, { satellite: basemap === "satellite" });
+  const t = useTranslations("Field");
+  const { container, map, failed } = useMap([value.lon, value.lat], DRAW_ZOOM, { satellite: basemap === "satellite" });
   const marker = useRef<Marker | null>(null);
   const handlers = useRef({ onAddCorner, mode });
 
@@ -197,6 +202,23 @@ export function FieldMap({
       }
     });
   }, [map, corners, closed]);
+
+  useEffect(() => {
+    if (failed) onUnavailable?.();
+    // Only when the map fails; the callback identity does not matter.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [failed]);
+
+  if (failed) {
+    return (
+      <div
+        role="status"
+        className={`flex w-full items-center justify-center rounded-2xl border border-line bg-surface-sunken p-6 text-center text-ink-muted ${className}`}
+      >
+        {t("mapUnavailable")}
+      </div>
+    );
+  }
 
   return (
     <div
