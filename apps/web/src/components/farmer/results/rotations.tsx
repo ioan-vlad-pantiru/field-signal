@@ -9,11 +9,13 @@ import { poorSeasons } from "@/lib/results";
 import { useUnitLabel } from "@/lib/use-unit-label";
 import { StatusBadge } from "@/components/ui/badges";
 import { Button } from "@/components/ui/button";
-import { CropChip, CropSequence } from "@/components/ui/crop-chip";
+import { CropChip } from "@/components/ui/crop-chip";
 import { CrossIcon } from "@/components/ui/icons";
 import { SeasonAxis, SeasonLegend, SeasonStrip } from "@/components/ui/season-strip";
 import { Sheet } from "@/components/ui/sheet";
+import { CropSequence } from "./crop-sequence";
 import { Explanation } from "./explanation";
+import { useRotationName } from "./rotation-name";
 
 const STATUS_MARK: Record<Status, { swatch: string; mark: string }> = {
   good: { swatch: "bg-surface-sunken", mark: "" },
@@ -131,12 +133,12 @@ function RotationRow({
   const ts = useTranslations("Status");
   const tc = useTranslations("Crops");
   const locale = useAppLocale();
-  const l = useLocalized();
-  const name = l(strategy.name);
+  const name = useRotationName()(strategy);
   const poor = poorSeasons(strategy);
   const panelId = `rotation-${strategy.id}`;
   const stripLabel = t("stripLabel", { name, poor: t("poor", { count: poor, start }) });
-  const tags = [isBest ? t("best") : null, strategy.is_current ? t("current") : null].filter(Boolean);
+  // The current rotation is already named "Your rotation now", so it needs no tag of its own.
+  const tags = [isBest ? t("best") : null].filter(Boolean);
 
   return (
     <li
@@ -233,7 +235,7 @@ function RotationRow({
 /** Laptop: the three outcomes of one season, side by side, with their reasons. */
 function YearPanel({ year, ranked, onClose }: { year: number; ranked: Strategy[]; onClose: () => void }) {
   const t = useTranslations("Results.rotations");
-  const l = useLocalized();
+  const nameOf = useRotationName();
   const ref = useRef<HTMLElement>(null);
   // Bring the outcomes into view without moving focus away from the strip.
   useEffect(() => {
@@ -254,7 +256,7 @@ function YearPanel({ year, ranked, onClose }: { year: number; ranked: Strategy[]
           const outcome = strategy.replay.find((o) => o.year === year);
           return (
             <li key={strategy.id} className="flex flex-col gap-3">
-              <p className="font-semibold">{l(strategy.name)}</p>
+              <p className="font-semibold">{nameOf(strategy)}</p>
               {outcome ? <OutcomeDetails outcome={outcome} /> : <StatusBadge status="no_data" />}
             </li>
           );
@@ -302,6 +304,7 @@ function YearsList({ ranked, years, highlightId }: { ranked: Strategy[]; years: 
   const ts = useTranslations("Status");
   const tc = useTranslations("CropsShort");
   const l = useLocalized();
+  const nameOf = useRotationName();
   const byYear = ranked.map((s) => new Map(s.replay.map((o) => [o.year, o])));
 
   return (
@@ -322,7 +325,7 @@ function YearsList({ ranked, years, highlightId }: { ranked: Strategy[]; years: 
                 s.id === highlightId ? "text-ink" : "text-ink-muted"
               }`}
             >
-              {l(s.name)}
+              {nameOf(s)}
             </th>
           ))}
         </tr>

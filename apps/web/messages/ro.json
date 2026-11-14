@@ -183,14 +183,14 @@
       "evidence": "Dovezi"
     },
     "verdict": {
-      "fewer": "Cu rotația {name} ați fi avut <b>{best, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} în loc de {current}</b> din {start} încoace.",
-      "same": "Rotația {name} se potrivește cel mai bine priorităților dumneavoastră. Din {start} ar fi avut tot atâtea sezoane slabe cât rotația de acum: <b>{count}</b>.",
-      "more": "Rotația {name} se potrivește cel mai bine priorităților dumneavoastră, deși din {start} ar fi avut <b>{best, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} față de {current}</b> cu rotația de acum.",
+      "fewer": "Cu rotația „{name}” ați fi avut <b>{best, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} în loc de {current}</b> din {start} încoace.",
+      "same": "Rotația „{name}” se potrivește cel mai bine priorităților dumneavoastră. Din {start} ar fi avut tot atâtea sezoane slabe cât rotația de acum: <b>{count}</b>.",
+      "more": "Rotația „{name}” se potrivește cel mai bine priorităților dumneavoastră, deși din {start} ar fi avut <b>{best, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} față de {current}</b> cu rotația de acum.",
       "keep": "Rotația dumneavoastră de acum se potrivește deja cel mai bine priorităților. Din {start} a avut <b>{count, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}</b>.",
       "fit": "Se potrivește priorităților dumneavoastră: {best} din 100; rotația de acum: {current}",
       "fitKeep": "Se potrivește priorităților dumneavoastră: {score} din 100",
       "seeRotations": "Comparați rotațiile",
-      "fewerNone": "Cu rotația {name} nu ați fi avut <b>niciun sezon slab</b> din {start} încoace, față de <b>{current}</b> cu rotația de acum.",
+      "fewerNone": "Cu rotația „{name}” nu ați fi avut <b>niciun sezon slab</b> din {start} încoace, față de <b>{current}</b> cu rotația de acum.",
       "keepNone": "Rotația dumneavoastră de acum se potrivește deja cel mai bine priorităților. Din {start} nu a avut <b>niciun sezon slab</b>."
     },
     "shift": {
