@@ -27,7 +27,7 @@ class BotSettings(BaseSettings):
     whatsapp_phone_number_id: str = ""  # sender number's ID, not the phone number itself
     whatsapp_app_secret: str = ""  # App settings → Basic; signs every webhook call
     whatsapp_verify_token: str = ""  # any string; must match the webhook config in Meta
-    whatsapp_graph_version: str = "v23.0"
+    whatsapp_graph_version: str = "v25.0"
     validate_signature: bool = Field(True, validation_alias="WHATSAPP_VALIDATE_SIGNATURE")
 
     # Web app, for the "Full results" link.

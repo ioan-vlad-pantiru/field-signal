@@ -34,7 +34,7 @@ Every reply is sent through the Cloud API from a background task, so the webhook
 | `WHATSAPP_PHONE_NUMBER_ID` | API Setup → "Phone number ID" (not the phone number) |
 | `WHATSAPP_APP_SECRET` | App settings → Basic → App secret; checks `X-Hub-Signature-256` on every call |
 | `WHATSAPP_VERIFY_TOKEN` | any string you pick; type the same one in the webhook config |
-| `WHATSAPP_GRAPH_VERSION` | Graph API version, default `v23.0` |
+| `WHATSAPP_GRAPH_VERSION` | Graph API version, default `v25.0` |
 | `LLM_API_KEY` | key for the chat model; without it the bot only sends the fixed templates |
 | `LLM_BASE_URL` | OpenAI-compatible endpoint, default `https://local-inference-api.ccrolabs.com/v1` (Qwen) |
 | `LLM_MODEL` | model id, default `qwen` |
