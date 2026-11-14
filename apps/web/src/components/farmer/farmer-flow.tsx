@@ -7,10 +7,14 @@ import { analyzeField, type Loaded } from "@/lib/api";
 import type { FieldAnalysis, FieldRequest, LatLon } from "@/lib/contracts";
 import { formatNumber } from "@/lib/format";
 import { useAppLocale } from "@/lib/localized";
-import { PinIcon } from "@/components/ui/icons";
+import { polygonAreaHa } from "@/lib/geo";
+import { Button } from "@/components/ui/button";
+import { NoticeBar } from "@/components/ui/notice-bar";
 import { ErrorState } from "@/components/ui/states";
-import { FieldForm } from "./field-form";
+import { FieldForm, type FormStep } from "./field-form";
 import { ResultsSkeleton, ResultsView } from "./results-view";
+import { nearestCommune, useCommunes } from "./steps/communes";
+import { forgetField, saveField, useSavedField, type SavedField } from "./steps/saved-field";
 
 type State =
   | { step: "form" }
@@ -41,7 +45,7 @@ function UrlPinnedFlow() {
 }
 
 /**
- * Step 1 (field, rotation, priorities) → step 2 (results), on one route.
+ * Three input steps (field, rotation, what matters) → results, on one route.
  * Reading the URL needs a Suspense boundary under cacheComponents; the prerendered fallback is the
  * same flow with the default pin, so the static shell still shows the full form.
  */
@@ -53,18 +57,61 @@ export function FarmerFlow() {
   );
 }
 
+/** What the analysis reads, in plain words. No progress bar: we do not know how far it is. */
+function Loading() {
+  const t = useTranslations("Field.loading");
+  return (
+    <div className="flex flex-col gap-6">
+      <div>
+        <h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1>
+        <ul className="mt-3 flex flex-col gap-1 text-ink-muted">
+          <li>{t("heat")}</li>
+          <li>{t("vegetation")}</li>
+          <li>{t("soil")}</li>
+        </ul>
+      </div>
+      <ResultsSkeleton />
+    </div>
+  );
+}
+
+/** "Continue with your field near Aiud, 42 ha", for a farmer who has been here before. */
+function SavedFieldBar({ saved, onResume }: { saved: SavedField; onResume: () => void }) {
+  const t = useTranslations("Field.saved");
+  const locale = useAppLocale();
+  const ha = formatNumber(polygonAreaHa(saved.boundary), locale, 0);
+  return (
+    <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
+      <p className="text-lg">{saved.near ? t("near", { place: saved.near, ha }) : t("noPlace", { ha })}</p>
+      <div className="flex gap-2">
+        <Button onClick={onResume}>{t("resume")}</Button>
+        <Button variant="quiet" onClick={forgetField}>
+          {t("forget")}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function Flow({ pin }: { pin: UrlPin | null }) {
   const t = useTranslations("Field");
   const locale = useAppLocale();
+  const communes = useCommunes();
+  const saved = useSavedField();
   const [state, setState] = useState<State>({ step: "form" });
   const [lastRequest, setLastRequest] = useState<FieldRequest | null>(null);
   const [boundary, setBoundary] = useState<LatLon[] | null>(null);
+  /** Remounts the form with the saved field, opened on its last step. */
+  const [resumed, setResumed] = useState<FormStep | null>(null);
 
   async function run(request: FieldRequest, drawn: LatLon[] | null) {
     setLastRequest(request);
     setBoundary(drawn);
     setState({ step: "loading" });
     window.scrollTo({ top: 0 });
+    if (drawn) {
+      saveField({ request, boundary: drawn, near: nearestCommune(communes, request.location)?.name ?? null });
+    }
     try {
       setState({ step: "results", result: await analyzeField(request) });
     } catch {
@@ -73,13 +120,20 @@ function Flow({ pin }: { pin: UrlPin | null }) {
   }
 
   function back() {
+    setResumed(2);
     setState({ step: "form" });
     window.scrollTo({ top: 0 });
   }
 
+  function resume(field: SavedField) {
+    setLastRequest(field.request);
+    setBoundary(field.boundary);
+    setResumed(2);
+  }
+
   switch (state.step) {
     case "loading":
-      return <ResultsSkeleton />;
+      return <Loading />;
     case "error":
       return <ErrorState onRetry={() => (lastRequest ? run(lastRequest, boundary) : back())} />;
     case "results":
@@ -91,36 +145,37 @@ function Flow({ pin }: { pin: UrlPin | null }) {
           onBack={back}
         />
       );
-    case "form":
+    case "form": {
+      // A pin from the feed screen is a new place: it wins over the saved field.
+      const offerSaved = saved && !pin && resumed === null && !lastRequest ? saved : null;
       return (
-        <div className="flex flex-col gap-4">
-          <header>
-            <p className="font-medium text-field">{t("step")}</p>
-            <h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1>
-            <p className="mt-1 text-lg text-ink-muted">{t("intro")}</p>
-          </header>
-          {pin ? (
-            <p className="rise flex items-center gap-2 rounded-xl bg-field-tint px-3 py-2" role="status">
-              <PinIcon size={18} className="shrink-0 text-field" />
-              <span>
-                {t("pinnedFromFeed", {
-                  place:
-                    pin.place ??
-                    t("coordinates", {
-                      lat: formatNumber(pin.point.lat, locale, 3),
-                      lon: formatNumber(pin.point.lon, locale, 3),
-                    }),
-                })}
-              </span>
-            </p>
-          ) : null}
+        <div>
+          {offerSaved ? <SavedFieldBar saved={offerSaved} onResume={() => resume(offerSaved)} /> : null}
           <FieldForm
+            key={resumed === null ? "new" : `resumed-${lastRequest?.location.lat},${lastRequest?.location.lon}`}
             initial={lastRequest}
             initialBoundary={boundary}
+            initialStep={resumed ?? 0}
             startPoint={pin?.point}
+            communes={communes}
+            notice={
+              pin ? (
+                <NoticeBar tone="info">
+                  {t("pinnedFromFeed", {
+                    place:
+                      pin.place ??
+                      t("coordinates", {
+                        lat: formatNumber(pin.point.lat, locale, 3),
+                        lon: formatNumber(pin.point.lon, locale, 3),
+                      }),
+                  })}
+                </NoticeBar>
+              ) : null
+            }
             onSubmit={run}
           />
         </div>
       );
+    }
   }
 }

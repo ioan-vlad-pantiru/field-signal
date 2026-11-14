@@ -3,10 +3,18 @@
 import { useEffect, useRef } from "react";
 import { LngLatBounds, Marker, type GeoJSONSource, type Map as MapLibreMap } from "maplibre-gl";
 import type { LatLon } from "@/lib/contracts";
-import { useMap } from "@/components/map/use-map";
+import { setBasemap, useMap, type Basemap } from "@/components/map/use-map";
 
 /** draw: tap adds a field corner · locked: a drawn field is set. */
 export type MapMode = "draw" | "locked";
+
+/** A place to move the camera to, e.g. a commune from the search or the farmer's location. */
+export interface MapFocus {
+  point: LatLon;
+  zoom: number;
+  /** Changes on every request, so asking for the same place twice still moves the map. */
+  seq: number;
+}
 
 const DRAW = "fs-draw";
 const DRAW_ZOOM = 14;
@@ -57,6 +65,9 @@ export function FieldMap({
   closed,
   onAddCorner,
   label,
+  basemap,
+  focus,
+  className = "",
 }: {
   value: LatLon;
   mode: MapMode;
@@ -64,9 +75,12 @@ export function FieldMap({
   closed: boolean;
   onAddCorner: (point: LatLon) => void;
   label: string;
+  basemap: Basemap;
+  focus: MapFocus | null;
+  className?: string;
 }) {
   // Fields are tens of hectares: open at field scale so a few taps trace one parcel.
-  const { container, map } = useMap([value.lon, value.lat], DRAW_ZOOM);
+  const { container, map } = useMap([value.lon, value.lat], DRAW_ZOOM, { satellite: basemap === "satellite" });
   const marker = useRef<Marker | null>(null);
   const handlers = useRef({ onAddCorner, mode });
 
@@ -95,7 +109,15 @@ export function FieldMap({
         type: "fill",
         source: DRAW,
         filter: ["==", ["get", "kind"], "area"],
-        paint: { "fill-color": field, "fill-opacity": 0.22 },
+        paint: { "fill-color": field, "fill-opacity": 0.28 },
+      });
+      // A white casing keeps the green outline visible on dark satellite imagery.
+      map.addLayer({
+        id: "fs-draw-casing",
+        type: "line",
+        source: DRAW,
+        filter: ["==", ["get", "kind"], "edge"],
+        paint: { "line-color": "#ffffff", "line-width": 6 },
       });
       map.addLayer({
         id: "fs-draw-edge",
@@ -155,6 +177,16 @@ export function FieldMap({
   }, [map, mode]);
 
   useEffect(() => {
+    if (map) setBasemap(map, basemap);
+  }, [map, basemap]);
+
+  useEffect(() => {
+    if (!map || !focus) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    map.easeTo({ center: [focus.point.lon, focus.point.lat], zoom: focus.zoom, duration: reduced ? 0 : 900 });
+  }, [map, focus]);
+
+  useEffect(() => {
     if (!map) return;
     whenStyleReady(map, () => {
       map.getSource<GeoJSONSource>(DRAW)?.setData(drawData(corners, closed));
@@ -171,7 +203,7 @@ export function FieldMap({
       ref={container}
       role="region"
       aria-label={label}
-      className="h-72 w-full overflow-hidden rounded-2xl border border-line bg-surface-sunken sm:h-96"
+      className={`w-full overflow-hidden rounded-2xl border border-line bg-surface-sunken ${className}`}
     />
   );
 }

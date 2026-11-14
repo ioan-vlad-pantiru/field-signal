@@ -1,285 +1,199 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import type { Crop, FieldRequest, LatLon } from "@/lib/contracts";
-import {
-  DEFAULT_ROTATION,
-  MAX_ROTATION,
-  MIN_ROTATION,
-  ROTATION_CROPS,
-} from "@/lib/crops";
-import { useAppLocale } from "@/lib/localized";
 import { formatNumber } from "@/lib/format";
 import { polygonAreaHa, polygonCentroid } from "@/lib/geo";
-import { Card } from "@/components/ui/card";
-import { CropDot } from "@/components/ui/crop-chip";
-import { CrossIcon, PinIcon, PlusIcon } from "@/components/ui/icons";
-import { Slider } from "@/components/ui/slider";
-import { FieldMap, type MapMode } from "./field-map";
+import { useAppLocale } from "@/lib/localized";
+import { SATELLITE_ATTRIBUTION, type Basemap } from "@/components/map/use-map";
+import { Button } from "@/components/ui/button";
+import { ArrowLeftIcon } from "@/components/ui/icons";
+import { Segmented } from "@/components/ui/segmented";
+import { Stepper } from "@/components/ui/stepper";
+import { FieldMap, type MapFocus, type MapMode } from "./field-map";
+import type { Commune } from "./steps/communes";
+import { FieldStep, MAX_FIELD_HA, MIN_FIELD_HA } from "./steps/field-step";
+import { PrioritiesStep, levelsFrom, weightsFrom, type PriorityLevels } from "./steps/priorities-step";
+import { RotationStep, START_ROTATION } from "./steps/rotation-step";
 
 const DEFAULT_POINT: LatLon = { lat: 46.3, lon: 23.75 };
-/** Below 1 ha the 1 ha hexagons cannot cover the field; above this it is a farm, not a field. */
-const MIN_FIELD_HA = 1;
-const MAX_FIELD_HA = 1200;
+const STEPS = ["field", "rotation", "priorities"] as const;
+export type FormStep = 0 | 1 | 2;
 
-const PRIORITIES = ["yield", "water", "soil", "risk"] as const;
-type Priority = (typeof PRIORITIES)[number];
-const DEFAULT_PRIORITIES: Record<Priority, number> = { yield: 60, water: 50, soil: 50, risk: 50 };
-
+/**
+ * The farmer's three steps (field, rotation, what matters) beside one map. Laptop: map on the
+ * left, sticky; phone: map on top and a sticky action bar under the panel.
+ */
 export function FieldForm({
   initial,
   initialBoundary,
+  initialStep = 0,
   startPoint,
+  communes,
+  notice,
   onSubmit,
 }: {
   initial: FieldRequest | null;
   /** The field the farmer drew last time, if any. */
   initialBoundary: LatLon[] | null;
+  initialStep?: FormStep;
   /** Where the map opens when there is no earlier request (e.g. a point passed from the feed screen). */
   startPoint?: LatLon | null;
+  communes: Commune[];
+  /** Shown above the step, such as the place pinned from the feed screen. */
+  notice?: ReactNode;
   /** `boundary` is the drawn field; the API still receives a point, its centroid. */
   onSubmit: (request: FieldRequest, boundary: LatLon[]) => void;
 }) {
   const t = useTranslations("Field");
-  const tc = useTranslations("Crops");
   const locale = useAppLocale();
 
+  const [step, setStep] = useState<FormStep>(initialBoundary ? initialStep : 0);
   const [point, setPoint] = useState<LatLon>(initial?.location ?? startPoint ?? DEFAULT_POINT);
-  const [rotation, setRotation] = useState<Crop[]>(
-    initial ? [...initial.current_rotation] : DEFAULT_ROTATION,
-  );
-  const [priorities, setPriorities] = useState<Record<Priority, number>>(() =>
-    initial
-      ? (Object.fromEntries(
-          PRIORITIES.map((p) => [p, Math.round((initial.priorities[p] ?? 0.5) * 100)]),
-        ) as Record<Priority, number>)
-      : DEFAULT_PRIORITIES,
-  );
+  const [rotation, setRotation] = useState<Crop[]>(initial ? [...initial.current_rotation] : START_ROTATION);
+  const [levels, setLevels] = useState<PriorityLevels>(() => levelsFrom(initial?.priorities));
   const [irrigated, setIrrigated] = useState(initial?.irrigated ?? false);
   const [corners, setCorners] = useState<LatLon[]>(initialBoundary ?? []);
   const [mode, setMode] = useState<MapMode>(initialBoundary ? "locked" : "draw");
-  const areaHa = polygonAreaHa(corners);
-  const tooSmall = corners.length >= 3 && areaHa < MIN_FIELD_HA;
-  const tooBig = areaHa > MAX_FIELD_HA;
-  const canFinish = corners.length >= 3 && !tooSmall && !tooBig;
-  const boundary = mode === "locked" && corners.length >= 3 ? corners : null;
+  const [basemap, setBasemap] = useState<Basemap>("satellite");
+  const [focus, setFocus] = useState<MapFocus | null>(null);
 
-  function startDrawing() {
-    setCorners([]);
-    setMode("draw");
-  }
+  const areaHa = polygonAreaHa(corners);
+  const boundary = mode === "locked" && corners.length >= 3 ? corners : null;
+  const drawing = step === 0 && mode === "draw";
+
   function finishDrawing() {
+    if (corners.length < 3 || areaHa < MIN_FIELD_HA || areaHa > MAX_FIELD_HA) return;
     const c = polygonCentroid(corners);
     setPoint({ lat: Number(c.lat.toFixed(4)), lon: Number(c.lon.toFixed(4)) });
     setMode("locked");
   }
 
-  const canAdd = rotation.length < MAX_ROTATION;
-  const canRemove = rotation.length > MIN_ROTATION;
+  function go(next: FormStep) {
+    setStep(next);
+    // On a phone the panel sits under the map: bring the new step's title into view.
+    document.getElementById("field-step-panel")?.scrollIntoView({ block: "start", behavior: "auto" });
+  }
 
   function submit(event: FormEvent) {
     event.preventDefault();
     if (!boundary) return;
+    if (step < 2) {
+      go((step + 1) as FormStep);
+      return;
+    }
     onSubmit(
       {
         location: point,
         current_rotation: rotation as FieldRequest["current_rotation"],
-        priorities: Object.fromEntries(PRIORITIES.map((p) => [p, priorities[p] / 100])),
+        priorities: weightsFrom(levels),
         irrigated,
       },
       boundary,
     );
   }
 
-  return (
-    <form onSubmit={submit} className="flex flex-col gap-4">
-      <Card>
-        <h2 className="flex items-center gap-2 text-lg font-semibold">
-          <PinIcon className="text-field" /> {t("whereTitle")}
-        </h2>
-        <p className="mb-3 text-ink-muted">{t("whereHint")}</p>
+  const stepLabels = STEPS.map((s) => t(`steps.${s}`));
 
+  return (
+    <form
+      onSubmit={submit}
+      className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start lg:gap-10"
+    >
+      <div
+        className={`relative lg:sticky lg:top-[5.25rem] lg:h-[calc(100svh-7.5rem)] lg:min-h-[480px] ${
+          step === 0 ? "h-[max(55svh,320px)]" : "h-[max(28svh,200px)]"
+        }`}
+      >
         <FieldMap
           value={point}
-          mode={mode}
+          mode={drawing ? "draw" : "locked"}
           corners={corners}
           closed={mode === "locked"}
           onAddCorner={(c) => setCorners((prev) => [...prev, c])}
           label={t("mapLabel")}
+          basemap={basemap}
+          focus={focus}
+          className="h-full"
         />
-
-        {mode === "draw" ? (
-          <div className="rise mt-3 flex flex-col gap-3 rounded-2xl bg-field-tint p-3">
-            <p>{t("draw.hint")}</p>
-            <p className="font-mono font-semibold tabular-nums" aria-live="polite">
-              {t("draw.progress", {
-                corners: corners.length,
-                ha: formatNumber(areaHa, locale, 1),
-              })}
-            </p>
-            {tooSmall ? <p className="text-sm font-medium text-status-bad">{t("draw.tooSmall", { min: MIN_FIELD_HA })}</p> : null}
-            {tooBig ? <p className="text-sm font-medium text-status-bad">{t("draw.tooBig", { max: formatNumber(MAX_FIELD_HA, locale, 0) })}</p> : null}
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                disabled={corners.length === 0}
-                onClick={() => setCorners((prev) => prev.slice(0, -1))}
-                className="press min-h-11 rounded-full border border-line bg-surface px-4 font-medium hover:border-field disabled:opacity-40"
-              >
-                {t("draw.undo")}
-              </button>
-              <button
-                type="button"
-                disabled={corners.length === 0}
-                onClick={() => setCorners([])}
-                className="press min-h-11 rounded-full border border-line bg-surface px-4 font-medium hover:border-field disabled:opacity-40"
-              >
-                {t("draw.clear")}
-              </button>
-              <button
-                type="button"
-                disabled={!canFinish}
-                onClick={finishDrawing}
-                className="press min-h-11 rounded-full bg-field px-5 font-semibold text-on-field hover:bg-field-strong disabled:opacity-40"
-              >
-                {t("draw.done")}
-              </button>
-            </div>
-          </div>
-        ) : null}
-
-        {mode === "locked" ? (
-          <div className="rise mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-field-tint p-3">
-            <p>
-              <span className="block text-sm text-ink-muted">{t("draw.yourField")}</span>
-              <span className="font-mono text-2xl font-semibold tabular-nums">
-                {t("draw.area", { ha: formatNumber(areaHa, locale, 1) })}
-              </span>
-              <span className="block text-sm text-ink-muted">{t("draw.corners", { corners: corners.length })}</span>
-            </p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setMode("draw")}
-                className="press min-h-11 rounded-full border border-line bg-surface px-4 font-medium hover:border-field"
-              >
-                {t("draw.edit")}
-              </button>
-              <button
-                type="button"
-                onClick={startDrawing}
-                className="press min-h-11 rounded-full border border-line bg-surface px-4 font-medium hover:border-field"
-              >
-                {t("draw.restart")}
-              </button>
-            </div>
-          </div>
-        ) : null}
-        {boundary ? (
-          <p className="mt-2 text-sm tabular-nums text-ink-muted">
-            {t("coordinates", {
-              lat: formatNumber(point.lat, locale, 3),
-              lon: formatNumber(point.lon, locale, 3),
-            })}
-          </p>
-        ) : null}
-      </Card>
-
-      <Card>
-        <h2 className="text-lg font-semibold">{t("rotationTitle")}</h2>
-        <p className="mb-3 text-ink-muted">{t("rotationHint")}</p>
-        <ol className="flex flex-wrap gap-2" aria-label={t("rotationTitle")}>
-          {rotation.map((crop, index) => (
-            <li key={index}>
-              <span className="press inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-field bg-field-tint pl-3 pr-1">
-                <span className="text-sm text-ink-muted">{t("year", { n: index + 1 })}</span>
-                <CropDot crop={crop} />
-                <span className="font-medium">{tc(crop)}</span>
-                <button
-                  type="button"
-                  disabled={!canRemove}
-                  onClick={() => setRotation((r) => r.filter((_, i) => i !== index))}
-                  aria-label={t("removeCrop", { crop: tc(crop), n: index + 1 })}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-surface disabled:opacity-30"
-                >
-                  <CrossIcon size={16} />
-                </button>
-              </span>
-            </li>
-          ))}
-        </ol>
-        <p className="mb-2 mt-4 text-sm font-medium">
-          {canAdd ? t("addCrop") : t("rotationFull", { max: MAX_ROTATION })}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {ROTATION_CROPS.map((crop) => (
-            <button
-              key={crop}
-              type="button"
-              disabled={!canAdd}
-              onClick={() => setRotation((r) => [...r, crop])}
-              className="press inline-flex min-h-11 items-center gap-1.5 rounded-full border border-line bg-surface px-3 hover:border-field disabled:opacity-40"
-            >
-              <PlusIcon size={16} className="text-ink-muted" />
-              <CropDot crop={crop} />
-              {tc(crop)}
-            </button>
-          ))}
-        </div>
-      </Card>
-
-      <Card>
-        <h2 className="text-lg font-semibold">{t("prioritiesTitle")}</h2>
-        <p className="mb-3 text-ink-muted">{t("prioritiesHint")}</p>
-        <div className="flex flex-col gap-3">
-          {PRIORITIES.map((p) => (
-            <Slider
-              key={p}
-              label={t(`priority.${p}.label`)}
-              hint={t(`priority.${p}.hint`)}
-              value={priorities[p]}
-              step={10}
-              onChange={(value) => setPriorities((prev) => ({ ...prev, [p]: value }))}
-              valueText={t("importance", { value: priorities[p] })}
-            />
-          ))}
-        </div>
-      </Card>
-
-      <Card>
-        <label className="press flex min-h-11 cursor-pointer items-center justify-between gap-4">
-          <span>
-            <span className="block text-lg font-semibold">{t("irrigatedTitle")}</span>
-            <span className="text-ink-muted">{t("irrigatedHint")}</span>
-          </span>
-          <input
-            type="checkbox"
-            role="switch"
-            checked={irrigated}
-            onChange={(event) => setIrrigated(event.target.checked)}
-            className="peer sr-only"
+        <div className="absolute left-2 top-2 z-[1]">
+          <Segmented
+            label={t("basemap.label")}
+            options={[
+              { value: "satellite", label: t("basemap.satellite") },
+              { value: "map", label: t("basemap.map") },
+            ]}
+            value={basemap}
+            onChange={setBasemap}
+            className="shadow-2"
           />
-          <span
+        </div>
+        {drawing ? (
+          // Phone: the panel starts below the map, so the map itself says what to do and how big the field is.
+          <p
             aria-hidden="true"
-            className="relative h-8 w-14 shrink-0 rounded-full bg-line transition-colors peer-checked:bg-field peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--focus)] after:absolute after:left-1 after:top-1 after:h-6 after:w-6 after:rounded-full after:bg-surface after:shadow after:transition-transform peer-checked:after:translate-x-6"
-          />
-        </label>
-      </Card>
-
-      <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 sm:bottom-4">
-        {!boundary ? (
-          <p className="mb-2 rounded-xl bg-surface px-3 py-2 text-center text-sm font-medium text-ink-muted shadow-1" aria-live="polite">
-            {t("needField")}
+            className="absolute left-2 top-16 z-[1] max-w-[calc(100%-4rem)] rounded-lg bg-surface/90 px-2.5 py-1 text-sm tabular-nums text-ink shadow-2 lg:hidden"
+          >
+            {corners.length === 0
+              ? t("draw.mapHint")
+              : `${t("draw.cornerCount", { corners: corners.length })} · ${t("draw.area", { ha: formatNumber(areaHa, locale, 1) })}`}
           </p>
         ) : null}
-        <button
-          type="submit"
-          disabled={!boundary}
-          className="press min-h-14 w-full rounded-2xl bg-field px-6 text-lg font-semibold text-on-field shadow-lg hover:bg-field-strong disabled:opacity-40"
-        >
-          {t("analyze")}
-        </button>
+        {basemap === "satellite" ? (
+          <p className="absolute inset-x-2 bottom-2 z-[1] w-fit max-w-[calc(100%-1rem)] rounded-md bg-surface/90 px-2 py-0.5 text-xs leading-snug text-ink">
+            <a href={SATELLITE_ATTRIBUTION.href} target="_blank" rel="noopener" className="underline-offset-2 hover:underline">
+              {SATELLITE_ATTRIBUTION.text}
+            </a>
+          </p>
+        ) : null}
+      </div>
+
+      <div id="field-step-panel" className="flex min-w-0 flex-col gap-6">
+        <Stepper label={t("steps.label")} steps={stepLabels} current={step} onSelect={(i) => go(i as FormStep)} />
+        {notice}
+
+        {step === 0 ? (
+          <FieldStep
+            communes={communes}
+            onFocus={(p, zoom) => setFocus((prev) => ({ point: p, zoom, seq: (prev?.seq ?? 0) + 1 }))}
+            mode={mode}
+            corners={corners}
+            areaHa={areaHa}
+            onUndo={() => setCorners((prev) => prev.slice(0, -1))}
+            onClear={() => setCorners([])}
+            onDone={finishDrawing}
+            onEdit={() => setMode("draw")}
+            onRestart={() => {
+              setCorners([]);
+              setMode("draw");
+            }}
+          />
+        ) : null}
+        {step === 1 ? <RotationStep rotation={rotation} onChange={setRotation} /> : null}
+        {step === 2 ? (
+          <PrioritiesStep levels={levels} onLevels={setLevels} irrigated={irrigated} onIrrigated={setIrrigated} />
+        ) : null}
+
+        {/* Phone: sticky above the bottom navigation (hidden from 640 px). */}
+        <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 -mx-4 border-t border-line bg-surface px-4 py-3 shadow-3 sm:bottom-0 lg:static lg:mx-0 lg:border-t-0 lg:px-0 lg:pt-0 lg:shadow-none">
+          {!boundary ? (
+            <p className="mb-2 text-center text-sm font-medium text-ink-muted" aria-live="polite">
+              {mode === "draw" && corners.length >= 3 ? t("needDone") : t("needField")}
+            </p>
+          ) : null}
+          <div className="flex gap-2">
+            {step > 0 ? (
+              <Button variant="secondary" size="lg" onClick={() => go((step - 1) as FormStep)}>
+                <ArrowLeftIcon />
+                <span className="max-sm:sr-only">{t("back")}</span>
+              </Button>
+            ) : null}
+            <Button type="submit" size="lg" disabled={!boundary} className="flex-1">
+              {step === 2 ? t("analyze") : t("continue")}
+            </Button>
+          </div>
+        </div>
       </div>
     </form>
   );
