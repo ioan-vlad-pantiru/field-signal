@@ -1,0 +1,241 @@
+{
+  "crop": "maize",
+  "features": [
+    "ndvi_peak",
+    "ndvi_sum"
+  ],
+  "target": "yield_t_ha",
+  "min_region_years": 3,
+  "prediction": "region mean yield + model.predict(features - region means)",
+  "fallback": {
+    "yield_t_ha": 6.237020708840739,
+    "ndvi_peak": 0.7889628664055437,
+    "ndvi_sum": 2.898602979028682
+  },
+  "regions": {
+    "AT11": {
+      "yield_t_ha": 8.270052659479683,
+      "ndvi_peak": 0.7998705012674703,
+      "ndvi_sum": 3.0707127493143016,
+      "n_years": 8,
+      "fallback": false
+    },
+    "AT12": {
+      "yield_t_ha": 9.31683411790414,
+      "ndvi_peak": 0.8247485206006125,
+      "ndvi_sum": 3.1346171407673955,
+      "n_years": 8,
+      "fallback": false
+    },
+    "BG31": {
+      "yield_t_ha": 5.67967954293395,
+      "ndvi_peak": 0.7797883668774714,
+      "ndvi_sum": 2.709819313151952,
+      "n_years": 8,
+      "fallback": false
+    },
+    "BG32": {
+      "yield_t_ha": 5.924007229167938,
+      "ndvi_peak": 0.7909871928993696,
+      "ndvi_sum": 2.7033746784382053,
+      "n_years": 8,
+      "fallback": false
+    },
+    "BG33": {
+      "yield_t_ha": 5.715520224511229,
+      "ndvi_peak": 0.79253121355239,
+      "ndvi_sum": 2.7044186447949436,
+      "n_years": 8,
+      "fallback": false
+    },
+    "BG34": {
+      "yield_t_ha": 4.530235226438636,
+      "ndvi_peak": 0.7737129262105181,
+      "ndvi_sum": 2.640813780416459,
+      "n_years": 8,
+      "fallback": false
+    },
+    "BG41": {
+      "yield_t_ha": 4.474646875174541,
+      "ndvi_peak": 0.7563602162170708,
+      "ndvi_sum": 2.8406950429095423,
+      "n_years": 8,
+      "fallback": false
+    },
+    "BG42": {
+      "yield_t_ha": 5.592146277906154,
+      "ndvi_peak": 0.7613730750007974,
+      "ndvi_sum": 2.6305435337342242,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HR02": {
+      "yield_t_ha": 7.705321194227938,
+      "ndvi_peak": 0.8142905801570655,
+      "ndvi_sum": 3.21675614364496,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HR03": {
+      "yield_t_ha": 5.497862109923761,
+      "ndvi_peak": 0.8065385004044098,
+      "ndvi_sum": 3.163910594228828,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HR05": {
+      "yield_t_ha": 6.344218333799164,
+      "ndvi_peak": 0.7784828522303119,
+      "ndvi_sum": 3.0958493425828535,
+      "n_years": 7,
+      "fallback": false
+    },
+    "HR06": {
+      "yield_t_ha": 7.815089729505563,
+      "ndvi_peak": 0.8080280245406454,
+      "ndvi_sum": 3.181466310863766,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HU12": {
+      "yield_t_ha": 6.28721494399507,
+      "ndvi_peak": 0.7761773746721091,
+      "ndvi_sum": 2.841022709850949,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HU21": {
+      "yield_t_ha": 6.808361774574324,
+      "ndvi_peak": 0.7940783672671407,
+      "ndvi_sum": 2.920301684339538,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HU22": {
+      "yield_t_ha": 7.5043809217705055,
+      "ndvi_peak": 0.7999554438192004,
+      "ndvi_sum": 2.9778973348005793,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HU23": {
+      "yield_t_ha": 7.780905405872377,
+      "ndvi_peak": 0.7848544525236715,
+      "ndvi_sum": 2.8118173202392813,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HU31": {
+      "yield_t_ha": 6.964964490134751,
+      "ndvi_peak": 0.8046657540035731,
+      "ndvi_sum": 3.027849156426896,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HU32": {
+      "yield_t_ha": 6.791059525884567,
+      "ndvi_peak": 0.8093160671511104,
+      "ndvi_sum": 2.975897583929663,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HU33": {
+      "yield_t_ha": 6.138351968744553,
+      "ndvi_peak": 0.7869204750580944,
+      "ndvi_sum": 2.8580601116901425,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO11": {
+      "yield_t_ha": 5.500051509425108,
+      "ndvi_peak": 0.7754712235288266,
+      "ndvi_sum": 2.9606402615584044,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO12": {
+      "yield_t_ha": 5.879296903318591,
+      "ndvi_peak": 0.8096045065666039,
+      "ndvi_sum": 3.1550906239731304,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO21": {
+      "yield_t_ha": 4.611182924414955,
+      "ndvi_peak": 0.7929128107526888,
+      "ndvi_sum": 2.963861449298466,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO22": {
+      "yield_t_ha": 4.528644125567406,
+      "ndvi_peak": 0.7630117236283944,
+      "ndvi_sum": 2.705004885780232,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO31": {
+      "yield_t_ha": 4.98421446018306,
+      "ndvi_peak": 0.7858628824692777,
+      "ndvi_sum": 2.7507863228164506,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO32": {
+      "yield_t_ha": 4.5709761659470045,
+      "ndvi_peak": 0.7656073618057129,
+      "ndvi_sum": 2.722971833990788,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO41": {
+      "yield_t_ha": 4.759473358335454,
+      "ndvi_peak": 0.7686519235978118,
+      "ndvi_sum": 2.7970634238547243,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO42": {
+      "yield_t_ha": 5.623462435909553,
+      "ndvi_peak": 0.7949080136371964,
+      "ndvi_sum": 2.949200017547897,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RS12": {
+      "yield_t_ha": 6.943065579169693,
+      "ndvi_peak": 0.7961116414380975,
+      "ndvi_sum": 2.9339952468272683,
+      "n_years": 8,
+      "fallback": false
+    },
+    "SK01": {
+      "yield_t_ha": 5.925248554187281,
+      "ndvi_peak": 0.7719785769784621,
+      "ndvi_sum": 2.8080536759934316,
+      "n_years": 8,
+      "fallback": false
+    },
+    "SK02": {
+      "yield_t_ha": 7.244972178008316,
+      "ndvi_peak": 0.7921627977335218,
+      "ndvi_sum": 2.9615643521692108,
+      "n_years": 8,
+      "fallback": false
+    },
+    "SK03": {
+      "yield_t_ha": 6.406293012077642,
+      "ndvi_peak": 0.769469715282433,
+      "ndvi_sum": 2.634957091262211,
+      "n_years": 8,
+      "fallback": false
+    },
+    "SK04": {
+      "yield_t_ha": 7.466928924410822,
+      "ndvi_peak": 0.818378643105338,
+      "ndvi_sum": 2.9062829677211366,
+      "n_years": 8,
+      "fallback": false
+    }
+  }
+}

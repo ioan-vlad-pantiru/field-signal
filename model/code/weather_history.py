@@ -52,11 +52,13 @@ def _end_day(month_key):
     return f"{month_key}-{calendar.monthrange(y, m)[1]:02d}"
 
 
-def monthly_grid(cell_ids, start, end, dtemp=None):
+def monthly_grid(cell_ids, start, end, dtemp=None, fill_solar=False):
     """[n_cells, n_months, 10] physical monthly weather from POWER daily data.
 
     start/end are month keys ("1984-10" .. "2025-09"), inclusive. dtemp adds that many
     degrees to T2M_MAX and T2M_MIN on every day of May-August before aggregation.
+    fill_solar fills the few missing ALLSKY_SFC_SW_DWN cell-days with that cell-month's
+    mean before ET0; used for 1985-2025, where 1987-02, 1990-02 and 1993-02 have gaps.
     """
     wide = (pl.scan_parquet(sorted((RAW / "power").glob("*.parquet")))
             .filter(pl.col("cell_id").is_in(list(cell_ids)))
@@ -66,12 +68,14 @@ def monthly_grid(cell_ids, start, end, dtemp=None):
             .pivot(on="variable", index=["cell_id", "date_or_year"], values="value",
                    aggregate_function="first"))
     assert wide.height, "no POWER rows in the requested window"
+    wide = wide.with_columns(pl.col("date_or_year").str.slice(0, 7).alias("m"))
+    if fill_solar:
+        wide = wide.with_columns(pl.col("ALLSKY_SFC_SW_DWN").fill_null(
+            pl.col("ALLSKY_SFC_SW_DWN").mean().over(["cell_id", "m"])))
     nulls = wide.select([pl.col(c).null_count() for c in
                          ["T2M_MAX", "T2M_MIN", "RH2M", "WS2M", "ALLSKY_SFC_SW_DWN",
                           "PRECTOTCORR"]]).row(0)
     assert max(nulls) == 0, f"POWER nulls in {start}..{end} (per channel: {nulls})"
-
-    wide = wide.with_columns(pl.col("date_or_year").str.slice(0, 7).alias("m"))
     if dtemp:
         warm = wide["date_or_year"].str.to_date().dt.month().is_in([5, 6, 7, 8])
         wide = wide.with_columns([

@@ -1,0 +1,234 @@
+{
+  "crop": "rapeseed",
+  "features": [
+    "ndvi_peak",
+    "ndvi_sum"
+  ],
+  "target": "yield_t_ha",
+  "min_region_years": 3,
+  "prediction": "region mean yield + model.predict(features - region means)",
+  "fallback": {
+    "yield_t_ha": 2.7391663446281553,
+    "ndvi_peak": 0.8216663526891949,
+    "ndvi_sum": 2.7891404865371863
+  },
+  "regions": {
+    "AT11": {
+      "yield_t_ha": 2.7662614213552383,
+      "ndvi_peak": 0.8001890032609391,
+      "ndvi_sum": 2.764584071067394,
+      "n_years": 8,
+      "fallback": false
+    },
+    "AT12": {
+      "yield_t_ha": 2.8693073976872117,
+      "ndvi_peak": 0.7984816878474178,
+      "ndvi_sum": 2.743404139168876,
+      "n_years": 8,
+      "fallback": false
+    },
+    "BG31": {
+      "yield_t_ha": 2.6898054971778063,
+      "ndvi_peak": 0.8479747400646511,
+      "ndvi_sum": 2.904374324787412,
+      "n_years": 8,
+      "fallback": false
+    },
+    "BG32": {
+      "yield_t_ha": 3.0072348574514054,
+      "ndvi_peak": 0.840817167278188,
+      "ndvi_sum": 2.8843363985806265,
+      "n_years": 8,
+      "fallback": false
+    },
+    "BG33": {
+      "yield_t_ha": 2.892022746711104,
+      "ndvi_peak": 0.8412017495176916,
+      "ndvi_sum": 2.9116097453975947,
+      "n_years": 8,
+      "fallback": false
+    },
+    "BG34": {
+      "yield_t_ha": 2.3495474495604856,
+      "ndvi_peak": 0.8320359238847521,
+      "ndvi_sum": 2.838662740042026,
+      "n_years": 8,
+      "fallback": false
+    },
+    "BG41": {
+      "yield_t_ha": 2.1376553379619945,
+      "ndvi_peak": 0.8020630189306049,
+      "ndvi_sum": 2.6714290747743323,
+      "n_years": 8,
+      "fallback": false
+    },
+    "BG42": {
+      "yield_t_ha": 2.5032106028947876,
+      "ndvi_peak": 0.823941221275536,
+      "ndvi_sum": 2.7524398782307413,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HR02": {
+      "yield_t_ha": 2.7203287368096554,
+      "ndvi_peak": 0.8096782234863545,
+      "ndvi_sum": 2.833940387856416,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HR05": {
+      "yield_t_ha": 2.7391663446281553,
+      "ndvi_peak": 0.8216663526891949,
+      "ndvi_sum": 2.7891404865371863,
+      "n_years": 2,
+      "fallback": true
+    },
+    "HR06": {
+      "yield_t_ha": 2.7039557223644324,
+      "ndvi_peak": 0.7960494704751142,
+      "ndvi_sum": 2.760701427580183,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HU12": {
+      "yield_t_ha": 2.7487209686710297,
+      "ndvi_peak": 0.8285697166137899,
+      "ndvi_sum": 2.821007866802535,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HU21": {
+      "yield_t_ha": 2.852334458549904,
+      "ndvi_peak": 0.8300375401201607,
+      "ndvi_sum": 2.890295827200564,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HU22": {
+      "yield_t_ha": 2.967951389292537,
+      "ndvi_peak": 0.824785417532565,
+      "ndvi_sum": 2.856584115096556,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HU23": {
+      "yield_t_ha": 3.083999870361127,
+      "ndvi_peak": 0.8215112429731053,
+      "ndvi_sum": 2.866319358215501,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HU31": {
+      "yield_t_ha": 2.9188273743276323,
+      "ndvi_peak": 0.8304550543824247,
+      "ndvi_sum": 2.8490691434415036,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HU32": {
+      "yield_t_ha": 2.7619879742574485,
+      "ndvi_peak": 0.820388510610712,
+      "ndvi_sum": 2.822179103950869,
+      "n_years": 8,
+      "fallback": false
+    },
+    "HU33": {
+      "yield_t_ha": 2.7878483368937284,
+      "ndvi_peak": 0.8185610559171483,
+      "ndvi_sum": 2.8239632681372693,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO11": {
+      "yield_t_ha": 2.708322444128385,
+      "ndvi_peak": 0.8092803519933868,
+      "ndvi_sum": 2.7713545258896644,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO12": {
+      "yield_t_ha": 2.8745437297825926,
+      "ndvi_peak": 0.8283695751585534,
+      "ndvi_sum": 2.76485899668712,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO21": {
+      "yield_t_ha": 2.1194272612153484,
+      "ndvi_peak": 0.7990615484851724,
+      "ndvi_sum": 2.6476137565858173,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO22": {
+      "yield_t_ha": 2.1065072384432715,
+      "ndvi_peak": 0.8057117805862769,
+      "ndvi_sum": 2.698250428642749,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO31": {
+      "yield_t_ha": 2.7339883631606337,
+      "ndvi_peak": 0.8447337201718537,
+      "ndvi_sum": 2.8963003129373774,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO32": {
+      "yield_t_ha": 2.4397664313225165,
+      "ndvi_peak": 0.8292012549043831,
+      "ndvi_sum": 2.791008310416208,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO41": {
+      "yield_t_ha": 2.5153723253749996,
+      "ndvi_peak": 0.8448208408426527,
+      "ndvi_sum": 2.9141518557171926,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RO42": {
+      "yield_t_ha": 2.958268031542256,
+      "ndvi_peak": 0.8345984045073979,
+      "ndvi_sum": 2.9011448419201673,
+      "n_years": 8,
+      "fallback": false
+    },
+    "RS12": {
+      "yield_t_ha": 3.041565445454933,
+      "ndvi_peak": 0.8163932910663081,
+      "ndvi_sum": 2.7910318815566844,
+      "n_years": 8,
+      "fallback": false
+    },
+    "SK01": {
+      "yield_t_ha": 2.8894416356319375,
+      "ndvi_peak": 0.8162425088724028,
+      "ndvi_sum": 2.7778730308800634,
+      "n_years": 8,
+      "fallback": false
+    },
+    "SK02": {
+      "yield_t_ha": 3.2400503576844955,
+      "ndvi_peak": 0.8353964752575994,
+      "ndvi_sum": 2.898763991009719,
+      "n_years": 8,
+      "fallback": false
+    },
+    "SK03": {
+      "yield_t_ha": 2.7911761699102353,
+      "ndvi_peak": 0.8005451370764762,
+      "ndvi_sum": 2.3677928104923973,
+      "n_years": 8,
+      "fallback": false
+    },
+    "SK04": {
+      "yield_t_ha": 2.9039578767244434,
+      "ndvi_peak": 0.8051312568202135,
+      "ndvi_sum": 2.4166679090231415,
+      "n_years": 8,
+      "fallback": false
+    }
+  }
+}
