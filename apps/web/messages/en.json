@@ -150,12 +150,6 @@
     "irrigatedTitle": "The field is irrigated",
     "irrigatedHint": "Turn on if you can water the crops in summer.",
     "analyze": "Show my 25 seasons",
-    "loading": {
-      "title": "Reading 25 seasons at your field",
-      "heat": "Heat and rain, day by day since 2001",
-      "vegetation": "How green the crops were, seen from satellite",
-      "soil": "Water in the soil"
-    },
     "saved": {
       "near": "Continue with your field near {place}, {ha} ha",
       "noPlace": "Continue with your field of {ha} ha",

@@ -150,12 +150,6 @@
     "irrigatedTitle": "Câmpul este irigat",
     "irrigatedHint": "Activați dacă puteți uda culturile vara.",
     "analyze": "Arătați-mi cele 25 de sezoane",
-    "loading": {
-      "title": "Citim 25 de sezoane la câmpul dumneavoastră",
-      "heat": "Căldura și ploaia, zi de zi din 2001",
-      "vegetation": "Cât de verzi au fost culturile, văzute din satelit",
-      "soil": "Apa din sol"
-    },
     "saved": {
       "near": "Continuați cu câmpul de lângă {place}, {ha} ha",
       "noPlace": "Continuați cu câmpul de {ha} ha",

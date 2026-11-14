@@ -57,24 +57,6 @@ export function FarmerFlow() {
   );
 }
 
-/** What the analysis reads, in plain words. No progress bar: we do not know how far it is. */
-function Loading() {
-  const t = useTranslations("Field.loading");
-  return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1>
-        <ul className="mt-3 flex flex-col gap-1 text-ink-muted">
-          <li>{t("heat")}</li>
-          <li>{t("vegetation")}</li>
-          <li>{t("soil")}</li>
-        </ul>
-      </div>
-      <ResultsSkeleton />
-    </div>
-  );
-}
-
 /** "Continue with your field near Aiud, 42 ha", for a farmer who has been here before. */
 function SavedFieldBar({ saved, onResume }: { saved: SavedField; onResume: () => void }) {
   const t = useTranslations("Field.saved");
@@ -133,7 +115,7 @@ function Flow({ pin }: { pin: UrlPin | null }) {
 
   switch (state.step) {
     case "loading":
-      return <Loading />;
+      return <ResultsSkeleton />;
     case "error":
       return <ErrorState onRetry={() => (lastRequest ? run(lastRequest, boundary) : back())} />;
     case "results":
