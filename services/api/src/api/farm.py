@@ -113,24 +113,28 @@ def _read_upload(
             raise HTTPException(422, "unsupported_file")
         try:
             info = pyogrio.read_info(source)
-            df = pyogrio.read_dataframe(source)
+            # The raw reader needs no geopandas (not installed with the API): WKB geometry and
+            # one numpy array per attribute column.
+            meta, _, wkb, columns = pyogrio.raw.read(source)
         except Exception as error:
             raise HTTPException(422, "unreadable_file") from error
-    if len(df) > MAX_OUTLINES:
+    if len(wkb) > MAX_OUTLINES:
         raise HTTPException(422, "too_many_outlines")
     crs = _source_crs(info, default)
     to_wgs84 = Transformer.from_crs(crs, "EPSG:4326", always_xy=True)
-    crop_column = next(
+    names = [str(n).lower() for n in meta["fields"]]
+    crop_index = next(
         (
-            c
-            for c in df.columns
-            if c.lower() in {"cultura", "crop", "cultura_2025", "denumire_cultura"}
+            i
+            for i, n in enumerate(names)
+            if n in {"cultura", "crop", "cultura_2025", "denumire_cultura"}
         ),
         None,
     )
+    geoms = shapely.from_wkb(wkb)
     rings: list[list[tuple[float, float]]] = []
     crops: list[str | None] = []
-    for i, geom in enumerate(df.geometry):
+    for i, geom in enumerate(geoms):
         if geom is None or geom.is_empty:
             continue
         parts = list(geom.geoms) if geom.geom_type == "MultiPolygon" else [geom]
@@ -140,7 +144,7 @@ def _read_upload(
             xs, ys = zip(*part.exterior.coords, strict=True)
             lons, lats = to_wgs84.transform(xs, ys)
             rings.append(list(zip(lons, lats, strict=True)))
-            value = df[crop_column].iloc[i] if crop_column else None
+            value = columns[crop_index][i] if crop_index is not None else None
             crops.append(str(value).strip() if value not in (None, "") else None)
     if not rings:
         raise HTTPException(422, "no_outlines")
