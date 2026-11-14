@@ -22,7 +22,12 @@ API_URL=${PUBLIC_API_URL:-https://api.fieldsignal.land}
 
 for target in $TARGETS; do
   case $target in
-    api) app=$API_APP; dockerfile=services/api/Dockerfile; args=() ;;
+    api)
+      app=$API_APP; dockerfile=services/api/Dockerfile; args=()
+      # Parcel outlines for "tap your parcel" live in a release, not in git.
+      [ -f services/api/parcels/apia_parcels_alba.sqlite ] ||
+        gh release download apia-parcels-2025 -p apia_parcels_alba.sqlite -D services/api/parcels
+      ;;
     web) app=$WEB_APP; dockerfile=apps/web/Dockerfile; args=(--build-arg "NEXT_PUBLIC_API_URL=$API_URL") ;;
     *) echo "unknown target: $target" >&2; exit 1 ;;
   esac

@@ -55,3 +55,7 @@ data/cache/*
 _netrc
 .cdsapirc
 .hdarc
+
+# APIA parcel outlines: built by data/scripts/build_apia_parcels.py, published as a release asset
+services/api/parcels/*
+!services/api/parcels/.gitkeep

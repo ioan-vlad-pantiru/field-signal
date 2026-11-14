@@ -118,3 +118,32 @@ def test_fields_crud_and_isolation(client: TestClient) -> None:
     client.post("/v1/auth/login", json={"email": "ana@example.ro", "password": "grau-2026!"})
     assert client.delete(f"/v1/me/fields/{second['id']}").status_code == 204
     assert len(client.get("/v1/me/fields").json()) == 1
+
+
+def test_profile_password_and_deletion(client: TestClient) -> None:
+    sign_up(client)
+    assert client.patch("/v1/auth/me", json={"name": "  Ana Pop "}).json()["name"] == "Ana Pop"
+    assert client.get("/v1/auth/me").json()["name"] == "Ana Pop"
+    assert client.patch("/v1/auth/me", json={"name": ""}).json()["name"] is None
+
+    wrong = client.post(
+        "/v1/auth/password", json={"current_password": "nope", "new_password": "secara-2027!"}
+    )
+    assert wrong.status_code == 403
+    assert wrong.json()["detail"] == "wrong_password"
+    ok = client.post(
+        "/v1/auth/password", json={"current_password": "grau-2026!", "new_password": "secara-2027!"}
+    )
+    assert ok.status_code == 204
+    assert client.get("/v1/auth/me").status_code == 200  # this device stays signed in
+
+    client.post("/v1/me/fields", json=FIELD)
+    stale = client.request("DELETE", "/v1/auth/me", json={"password": "grau-2026!"})
+    assert stale.status_code == 403
+    gone = client.request("DELETE", "/v1/auth/me", json={"password": "secara-2027!"})
+    assert gone.status_code == 204
+    assert client.get("/v1/auth/me").status_code == 401
+    login = client.post(
+        "/v1/auth/login", json={"email": "ana@example.ro", "password": "secara-2027!"}
+    )
+    assert login.status_code == 401

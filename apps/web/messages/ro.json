@@ -172,6 +172,36 @@
       "continueWith": "Continuați cu {count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}}",
       "analyze": "Arătați-mi cele 25 de sezoane pentru {count, plural, few {# câmpuri} other {# de câmpuri}}",
       "editing": "Acum modificați: {field}"
+    },
+    "save": {
+      "title": "Salvați acest câmp",
+      "nameLabel": "Numele câmpului",
+      "namePlaceholder": "de ex. În spatele grajdului",
+      "save": "Salvați în câmpurile mele",
+      "update": "Salvați modificările",
+      "saving": "Se salvează…",
+      "savedAs": "Salvat în Câmpurile mele ca „{name}”",
+      "inMyFields": "În Câmpurile mele · modificări nesalvate",
+      "signIn": "Conectați-vă",
+      "signInHint": "ca să salvați acest câmp în cont.",
+      "nameNeeded": "Dați întâi un nume câmpului.",
+      "failed": "Nu s-a putut salva. Încercați din nou."
+    },
+    "assistantField": "Câmpul meu",
+    "parcel": {
+      "hint": "Atingeți parcelele dumneavoastră ca să le selectați sau porniți „Selectați trăgând” ca să alegeți mai multe deodată. Apoi apăsați „Folosiți ca un câmp”. Sunt parcelele declarate la APIA; dacă nu o găsiți pe a dumneavoastră, atingeți colțurile câmpului.",
+      "mapHint": "Atingeți parcelele dumneavoastră",
+      "selected": "{count, plural, one {# parcelă selectată} few {# parcele selectate} other {# de parcele selectate}} · {ha} ha",
+      "use": "Folosiți ca un câmp",
+      "joining": "Unim parcelele…",
+      "clear": "Anulați selecția",
+      "tooSmall": "Împreună au {ha} ha. Un câmp trebuie să aibă cel puțin {min} ha: atingeți și parcelele vecine sau atingeți colțurile ca să desenați câmpul.",
+      "tooBig": "Au {ha} ha, peste {max} ha. Selectați mai puține parcele.",
+      "notTouching": "Parcelele nu se ating. Alegeți parcele vecine sau adăugați fiecare câmp separat.",
+      "failed": "Nu am putut uni parcelele. Încercați din nou sau atingeți colțurile ca să desenați câmpul.",
+      "brush": "Selectați trăgând",
+      "brushHint": "Trageți peste parcelele dumneavoastră",
+      "brushHelp": "Trageți peste parcelele dumneavoastră ca să le selectați. Începeți pe o parcelă verde ca să o deselectați. Mutați harta cu două degete sau opriți „Selectați trăgând”."
     }
   },
   "Results": {
@@ -336,7 +366,22 @@
       "title": "{count, plural, few {# câmpuri} other {# de câmpuri}} · {ha} ha în total",
       "area": "{ha} ha",
       "keep": "Rotația dvs. e cea mai bună",
-      "best": "Cea mai bună: „{name}”"
+      "best": "Cea mai bună: „{name}”",
+      "all": "Toate câmpurile",
+      "allHint": "Hartă și rezumat"
+    },
+    "overview": {
+      "title": "{count} câmpuri",
+      "summary": "Pe {count} din {total} câmpuri o altă rotație ar fi avut mai puține sezoane slabe ({ha} ha).",
+      "summaryNone": "Rotațiile dumneavoastră merg deja la fel de bine ca oricare comparată, pe toate cele {ha} ha.",
+      "mapLabel": "Harta celor {count} câmpuri analizate, colorate după rezultat",
+      "legendFewer": "O altă rotație a avut mai puține sezoane slabe",
+      "legendOther": "O altă rotație se potrivește mai bine priorităților",
+      "legendKeep": "Rotația dumneavoastră este cea mai bună",
+      "area": "{ha} ha",
+      "rowBest": "Cea mai bună: „{name}” · {best, plural, =0 {niciun sezon slab} one {# sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} în loc de {current}",
+      "rowKeep": "Rotația dumneavoastră este cea mai bună · {poor, plural, =0 {niciun sezon slab} one {# sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}",
+      "open": "Vedeți câmpul"
     }
   },
   "FarmPlan": {
@@ -383,7 +428,7 @@
   },
   "Feed": {
     "title": "De unde cumpărați furaje anul acesta",
-    "intro": "Pentru fiecare comună: dacă va fi destulă recoltă, ce riscuri de calitate există și cât de prietenos cu mediul se cultivă.",
+    "intro": "Vedeți ce comune vor avea probabil destul porumb, grâu sau soia anul acesta și unde calitatea ar putea fi o problemă.",
     "loading": "Încărcăm zonele…",
     "regionLine": "{region} · sezonul {season} · {count} comune",
     "cropToggle": "Alegeți cultura",
@@ -415,7 +460,7 @@
       "compareHere": "Comparați rotațiile aici"
     },
     "compareTitle": "Comparați două comune",
-    "compareHint": "Bifați două comune în tabel și vedeți care este mai sigură pentru cultura aleasă: cantitate, calitate și apă.",
+    "compareHint": "Care dintre cele două comune bifate e mai sigură pentru cumpărare.",
     "compare": {
       "summary": "La {crop}, {a} e mai bună la {winsA} din {total} indicatori, {b} la {winsB}.",
       "caption": "{a} comparată cu {b}, pentru {crop}",
@@ -482,7 +527,17 @@
     },
     "detailEmpty": "Selectați o comună din tabel sau de pe hartă pentru a vedea recolta, calitatea și apa.",
     "closeDetail": "Închideți detaliile",
-    "sourcesTitle": "Surse"
+    "sourcesTitle": "Surse",
+    "adviceLabel": "Recomandarea noastră",
+    "cropQuestion": "Ce cultură cumpărați?",
+    "summary": {
+      "good": "{count, plural, one {comună ar trebui să aibă} few {comune ar trebui să aibă} other {de comune ar trebui să aibă}} destul {crop}",
+      "watch": "{count, plural, one {comună ar putea avea} few {comune ar putea avea} other {de comune ar putea avea}} mai puțin {crop} decât de obicei",
+      "bad": "{count, plural, one {comună e probabil să nu aibă} few {comune e probabil să nu aibă} other {de comune e probabil să nu aibă}} destul {crop}"
+    },
+    "listTitle": "Toate comunele, cele mai sigure primele",
+    "listHint": "Atingeți o comună ca să vedeți de ce. Bifați două ca să le comparați.",
+    "scenarioHint": "Câte furaje în plus ar putea da zona dacă mai mulți fermieri și-ar schimba rotația."
   },
   "About": {
     "title": "Despre Field Signal",
@@ -627,20 +682,22 @@
     "openLink": "Vedeți pe un câmp"
   },
   "Home": {
-    "title": "Câmpul dumneavoastră are 25 de ani de istorie, văzută din spațiu.",
-    "lead": "Vedeți cum ar fi mers rotația dumneavoastră în fiecare sezon din 2001 încoace și ce ar fi mers mai bine.",
+    "title": "Ce culturi merg cel mai bine pe câmpul dumneavoastră?",
+    "lead": "Refacem ultimele 25 de sezoane pe pământul dumneavoastră, ca să puteți planifica următorul.",
     "start": "Desenați câmpul",
-    "buyer": "Cumpăr furaje",
+    "buyer": {
+      "title": "Cumpărători de furaje",
+      "text": "Vedeți, comună cu comună, unde vor fi probabil porumb, grâu și soia anul acesta și cu ce risc de calitate.",
+      "cta": "Deschideți pagina pentru cumpărători"
+    },
     "imageAlt": "Transilvania văzută din satelit, vara: terenuri agricole în centru, înconjurate de Carpații împăduriți.",
     "imageCredit": "Transilvania, 2 iulie 2025. Imagine: NASA Worldview, MODIS pe satelitul Terra.",
     "sceneNote": "Ilustrație: o vale de exemplu, nu un câmp real.",
-    "proofTitle": "Un câmp de lângă {place}, 25 de sezoane",
+    "proofTitle": "Exemplu: un câmp de lângă {place}",
     "proofSentence": "{current, plural, =0 {Niciun sezon slab} one {Un sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} cu {currentCrops}. {best, plural, =0 {Niciunul} one {Unul} other {#}} cu {bestCrops}.",
-    "proofHint": "Fiecare pătrat este un sezon, din {start} până în {end}. Sezoanele bune rămân gri; sunt marcate doar cele slabe.",
-    "proofDemo": "Exemplu cu date demonstrative, nu un rezultat real.",
+    "proofHint": "Un pătrat pentru fiecare an. × înseamnă an slab, ! an de urmărit.",
     "stripLabel": "{name}: {bad, plural, =0 {niciun sezon slab} one {un sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} și {watch, plural, =0 {niciun sezon de urmărit} one {un sezon de urmărit} few {# sezoane de urmărit} other {# de sezoane de urmărit}} din {total}",
     "current": "Rotația de acum",
-    "stepsTitle": "Cum funcționează",
     "steps": {
       "field": {
         "title": "Desenați câmpul",
@@ -648,19 +705,69 @@
       },
       "rotation": {
         "title": "Spuneți ce cultivați",
-        "text": "Rotația dumneavoastră și ce contează cel mai mult: recolta, apa, solul sau riscul."
+        "text": "Culturile și ce contează cel mai mult: recolta, apa, solul sau riscul."
       },
       "result": {
-        "title": "Vedeți 25 de sezoane și un plan",
-        "text": "Rotația dumneavoastră lângă alte două, an cu an, și ce să cultivați unde."
+        "title": "Vedeți ce merge mai bine",
+        "text": "25 de sezoane pentru rotația dumneavoastră și alte două."
       }
     },
-    "buyerTitle": "Cumpărați furaje?",
-    "buyerText": "Vedeți, comună cu comună, unde vor fi probabil disponibile porumb, grâu și soia anul acesta și cu ce risc de calitate.",
-    "buyerLink": "Deschideți pagina pentru cumpărători",
+    "stats": {
+      "seasons": "sezoane verificate, din 2001 până în 2025",
+      "sources": "surse de date publice, inclusiv NASA",
+      "rotations": "rotații puse alături"
+    },
+    "whatTitle": "Ce este Field Signal?",
+    "whatText": "Un instrument pentru fermierii din România. Desenați câmpul și ne spuneți ce cultivați. Refacem fiecare sezon din 2001 încoace pe el, cu secetele, primăverile ploioase și caniculele, și vă arătăm ce rotație ar fi rezistat cel mai bine.",
+    "whatJudgment": "Construit pe date publice de la sateliții NASA și din înregistrările meteo, verificat cu producțiile oficiale pe județ.",
+    "lookTitle": "Ce urmărim pe câmpul dumneavoastră",
+    "look": {
+      "weather": {
+        "title": "Vremea, zi de zi",
+        "text": "Căldură, ploaie și îngheț din 2001."
+      },
+      "plants": {
+        "title": "Sănătatea plantelor, din spațiu",
+        "text": "Cât de verzi au fost culturile, sezon de sezon."
+      },
+      "water": {
+        "title": "Apa din sol",
+        "text": "Câtă umiditate au avut rădăcinile."
+      },
+      "soil": {
+        "title": "Solul dumneavoastră",
+        "text": "Textură, pH și materie organică."
+      }
+    },
+    "getTitle": "Ce primiți",
+    "get": {
+      "compare": {
+        "title": "Rotația dumneavoastră, an cu an",
+        "text": "Fiecare sezon bun sau slab, marcat pe o singură bandă."
+      },
+      "alternatives": {
+        "title": "Două rotații care au mers mai bine",
+        "text": "Cel puțin una cu soia sau mazăre."
+      },
+      "plan": {
+        "title": "Un plan pentru parcele",
+        "text": "Ce cultură merge unde, sezon de sezon."
+      },
+      "ask": {
+        "title": "Răspunsuri la întrebări",
+        "text": "Întrebați simplu, în română sau engleză."
+      }
+    },
+    "stepsTitle": "Cum funcționează",
+    "audienceTitle": "Pentru cine este",
+    "farmer": {
+      "title": "Fermieri",
+      "text": "Planificați sezonul următor cu 25 de ani de sezoane în spate.",
+      "cta": "Desenați câmpul"
+    },
     "limitsTitle": "Ce nu poate vedea",
-    "limitsLead": "Arată ce s-ar fi întâmplat în anii trecuți. Decizia pentru câmpul dumneavoastră vă aparține.",
-    "weakEvidence": "Dovezi mai slabe (înainte de 2015)"
+    "ctaTitle": "Vreți să vedeți câmpul dumneavoastră?",
+    "ctaText": "Desenați-l pe hartă. Nu aveți nevoie de cont."
   },
   "Account": {
     "title": "Contul meu",
@@ -690,14 +797,13 @@
       "offline": "Nu putem ajunge la server. Verificați conexiunea și încercați din nou.",
       "server": "Ceva nu a mers la noi. Încercați din nou.",
       "too_many_fields": "Ați ajuns la 200 de câmpuri. Ștergeți unul ca să adăugați altul.",
-      "field_not_found": "Acest câmp nu mai este în contul dvs."
+      "field_not_found": "Acest câmp nu mai este în contul dvs.",
+      "wrong_password": "Parola nu este corectă."
     },
     "fields": {
       "title": "Câmpurile mele",
-      "count": "{count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}} · {ha} ha în total",
-      "empty": "Niciun câmp încă. Desenați primul câmp și salvați-l din rezultate.",
+      "empty": "Desenați un câmp pe hartă, vedeți cele 25 de sezoane, apoi salvați-l aici. Puteți păstra câte câmpuri lucrați.",
       "add": "Adăugați un câmp",
-      "open": "Deschideți",
       "rename": "Redenumiți",
       "renameLabel": "Numele câmpului",
       "save": "Salvați",
@@ -711,7 +817,28 @@
       "importTitle": "Un câmp pe acest dispozitiv",
       "importText": "Ați desenat un câmp lângă {place} ({ha} ha) înainte să intrați în cont.",
       "importTextNoPlace": "Ați desenat un câmp de {ha} ha înainte să intrați în cont.",
-      "import": "Adăugați-l la câmpurile mele"
+      "import": "Adăugați-l la câmpurile mele",
+      "summary": "{count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}} · {ha} ha · {places, plural, =0 {} one {# comună} few {# comune} other {# de comune}}",
+      "emptyTitle": "Niciun câmp încă",
+      "drawFirst": "Desenați primul câmp",
+      "mapLabel": "Harta {count, plural, one {câmpului} other {celor # câmpuri}}",
+      "search": "Căutați un câmp",
+      "searchPlaceholder": "Nume sau comună",
+      "sort": "Ordonați după",
+      "sortRecent": "Recente",
+      "sortName": "Nume",
+      "sortArea": "Suprafață",
+      "selectAll": "Selectați tot",
+      "selectHint": "Selectați câmpuri ca să le analizați împreună, cel mult {max} odată.",
+      "selectField": "Selectați {name}",
+      "noMatch": "Niciun câmp nu se potrivește cu „{query}”.",
+      "selectionLabel": "Câmpuri selectate",
+      "selected": "{count, plural, one {# câmp selectat} few {# câmpuri selectate} other {# de câmpuri selectate}} · {ha} ha",
+      "clear": "Anulați",
+      "analyse": "Analizați",
+      "analyseMany": "Analizați {count} câmpuri împreună",
+      "edit": "Modificați",
+      "irrigated": "irigat"
     },
     "save": {
       "save": "Salvați câmpul",
@@ -731,6 +858,63 @@
       "pickHint": "Bifați unul sau mai multe ca să le analizați împreună.",
       "openOne": "Deschideți câmpul",
       "openMany": "Analizați {count, plural, few {# câmpuri} other {# de câmpuri}}"
+    },
+    "profile": {
+      "title": "Profil și securitate",
+      "email": "Email",
+      "since": "Cont creat în",
+      "name": "Nume",
+      "saveName": "Salvați",
+      "nameSaved": "Numele a fost salvat.",
+      "passwordTitle": "Schimbați parola",
+      "currentPassword": "Parola actuală",
+      "newPassword": "Parola nouă",
+      "changePassword": "Schimbați parola",
+      "passwordChanged": "Parola a fost schimbată. Celelalte dispozitive au fost deconectate.",
+      "deleteTitle": "Ștergeți contul",
+      "deleteText": "Se șterg contul și {count, plural, =0 {} one {câmpul salvat} few {cele # câmpuri salvate} other {cele # de câmpuri salvate}}. Nu se poate anula.",
+      "deleteStart": "Ștergeți contul…",
+      "deletePassword": "Introduceți parola pentru confirmare",
+      "deleteConfirm": "Ștergeți contul definitiv"
     }
+  },
+  "Assistant": {
+    "launcher": "Întrebați",
+    "title": "Asistentul Field Signal",
+    "model": "Răspunde din câmpurile dumneavoastră și datele NASA · Qwen",
+    "intro": "Întrebați orice despre Field Signal, rotația culturilor sau datele din spate. Ușor sau greu.",
+    "introFields": "Văd {count, plural, one {câmpul dumneavoastră} few {cele # câmpuri} other {cele # de câmpuri}} și pot căuta cele 25 de sezoane. Întrebați orice, ușor sau greu.",
+    "placeholder": "Scrieți o întrebare…",
+    "send": "Trimiteți",
+    "think": "Gândește temeinic",
+    "thinkHint": "mai încet, pentru întrebări grele",
+    "newChat": "Conversație nouă",
+    "close": "Închideți asistentul",
+    "thinking": "Se gândește…",
+    "working": "Caută…",
+    "you": "Dumneavoastră",
+    "looked": "A consultat: {what}",
+    "demo": "Folosește date demonstrative",
+    "tools": {
+      "list_fields": "câmpurile dumneavoastră",
+      "analyze_field": "cele 25 de sezoane ale unui câmp",
+      "compare_fields": "toate câmpurile comparate",
+      "regional_supply": "oferta regională de furaje"
+    },
+    "suggest": {
+      "risk": "Care câmp al meu e cel mai expus și de ce?",
+      "why": "De ce merge mai bine cea mai bună rotație?",
+      "first": "Dacă pot schimba un singur câmp anul acesta, pe care?",
+      "ndvi": "Ce înseamnă NDVI?",
+      "how": "Cum funcționează Field Signal?",
+      "data": "De unde vin datele?",
+      "feed": "Unde se găsește probabil porumb anul acesta?"
+    },
+    "errors": {
+      "off": "Asistentul este oprit pe acest server.",
+      "failed": "Asistentul nu a putut răspunde acum. Încercați din nou.",
+      "offline": "Nu putem ajunge la server. Verificați conexiunea și încercați din nou."
+    },
+    "lookingAt": "Consultă {what}…"
   }
 }

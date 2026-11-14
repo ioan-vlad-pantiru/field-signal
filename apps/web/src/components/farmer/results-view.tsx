@@ -5,8 +5,6 @@ import { useTranslations } from "next-intl";
 import type { FieldAnalysis, LatLon } from "@/lib/contracts";
 import type { DataOrigin } from "@/lib/api";
 import { placeShifts, rankStrategies, replayYears, verdict as buildVerdict } from "@/lib/results";
-import { Disclosure } from "@/components/ui/disclosure";
-import { Section } from "@/components/ui/section";
 import { Segmented } from "@/components/ui/segmented";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SourceChip } from "@/components/ui/source-chip";
@@ -15,7 +13,6 @@ import { FieldPlan } from "./field-plan";
 import { Evidence } from "./results/evidence";
 import { ResultsHeader } from "./results/results-header";
 import { Rotations } from "./results/rotations";
-import { SectionNav, type SectionId } from "./results/section-nav";
 import { ShiftList } from "./results/shift";
 import { LAPTOP, useMediaQuery } from "./results/use-media-query";
 import { useRotationName } from "./results/rotation-name";
@@ -31,12 +28,12 @@ const PRINT_CSS = `@media print {
   @page { margin: 14mm; }
 }`;
 
-/** Sections sit under the sticky site header and, on a laptop, the in-page nav. */
-const SECTION = "lg:scroll-mt-32";
+type DetailTab = "rotations" | "shift" | "evidence";
 
 /**
- * Results, answer first: verdict, what changed at this place, the rotations compared, the plan and
- * the evidence. One selected rotation drives the comparison, its explanation and the plan.
+ * One field's results, map first: the selected rotation on the field, then the verdict, then one
+ * detail at a time (rotations compared, what changed at this place, evidence). One selected
+ * rotation drives the map and the comparison.
  */
 export function ResultsView({
   analysis,
@@ -67,7 +64,8 @@ export function ResultsView({
   const [selectedId, setSelectedId] = useState(ranked[0].id);
   const selected = ranked.find((s) => s.id === selectedId) ?? ranked[0];
 
-  const sections: SectionId[] = [...(shifts.length > 0 ? (["shift"] as const) : []), "rotations", "plan", "evidence"];
+  const tabs: DetailTab[] = ["rotations", ...(shifts.length > 0 ? (["shift"] as const) : []), "evidence"];
+  const [tab, setTab] = useState<DetailTab>("rotations");
   const start = years[0] ?? analysis.period_start;
   const end = years.at(-1) ?? analysis.period_end;
 
@@ -80,85 +78,96 @@ export function ResultsView({
         <ResultsHeader analysis={analysis} boundary={boundary} placeName={placeName} onBack={onBack} save={save} />
       </div>
 
-      <div className="mt-8 md:mt-10 print:mt-4">
+      {/* The map first: the selected rotation laid out on the field, season by season. */}
+      <section aria-label={t("planTitle")} className="mt-6 flex flex-col gap-4 print:mt-4">
+        <div className="no-print flex flex-wrap items-end justify-between gap-3">
+          {/* Names are too long for a segmented control on a phone; a native select fits them. */}
+          <div className="hidden sm:block">
+            <Segmented
+              label={t("planRotation")}
+              value={selected.id}
+              onChange={setSelectedId}
+              options={ranked.map((s) => ({ value: s.id, label: nameOf(s) }))}
+            />
+          </div>
+          <label className="flex w-full flex-col gap-1 sm:hidden">
+            <span className="text-sm text-ink-muted">{t("planRotation")}</span>
+            <select
+              value={selected.id}
+              onChange={(event) => setSelectedId(event.target.value)}
+              className="min-h-11 rounded-xl border border-line bg-surface px-3 font-medium text-ink"
+            >
+              {ranked.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {nameOf(s)}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <p className="hidden font-semibold print:block">{nameOf(selected)}</p>
+        <FieldPlan center={analysis.location.point} boundary={boundary} strategy={selected} />
+        <ul className="hidden flex-wrap gap-2 print:flex">
+          {analysis.sources.map((s) => (
+            <li key={s.dataset}>
+              <SourceChip source={s} />
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <div className="mt-10 border-t border-line pt-8 print:mt-4">
         <Verdict verdict={verdict} start={analysis.period_start} />
       </div>
 
-      <div className="mt-10 print:mt-0">
-        <SectionNav sections={sections} />
-        <div className="mt-10 lg:mt-12 print:mt-0">
-        {shifts.length > 0 ? (
-          <Section id="shift" title={t("shift.title")} hint={t("shift.hint")} className={`${SECTION} print:hidden`}>
-            <ShiftList shifts={shifts} />
-          </Section>
-        ) : null}
-
-        <Section
-          id="rotations"
-          title={t("rotations.title")}
-          hint={t(laptop ? "rotations.hint" : "rotations.hintPhone", { start, end })}
-          className={`${SECTION} print:hidden`}
-        >
-          <Rotations
-            ranked={ranked}
-            years={years}
-            start={analysis.period_start}
-            selectedId={selected.id}
-            onSelect={setSelectedId}
-            laptop={laptop}
-          />
-        </Section>
-
-        <Section id="plan" title={t("planTitle")} hint={t("planHint")} className={`${SECTION} print:mt-6 print:border-t-0 print:pt-0 print:[&>p]:hidden`}>
-          <div className="flex flex-col gap-6 print:gap-2">
-            <div className="no-print">
-              {/* Names are too long for a segmented control on a phone; a native select fits them. */}
-              <div className="hidden sm:block">
-                <Segmented
-                  label={t("planRotation")}
-                  value={selected.id}
-                  onChange={setSelectedId}
-                  options={ranked.map((s) => ({ value: s.id, label: nameOf(s) }))}
-                />
-              </div>
-              <label className="flex flex-col gap-1 sm:hidden">
-                <span className="text-sm text-ink-muted">{t("planRotation")}</span>
-                <select
-                  value={selected.id}
-                  onChange={(event) => setSelectedId(event.target.value)}
-                  className="min-h-11 rounded-xl border border-line bg-surface px-3 font-medium text-ink"
-                >
-                  {ranked.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {nameOf(s)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-            <p className="hidden font-semibold print:block">{nameOf(selected)}</p>
-            <FieldPlan center={analysis.location.point} boundary={boundary} strategy={selected} />
-            <ul className="hidden flex-wrap gap-2 print:flex">
-              {analysis.sources.map((s) => (
-                <li key={s.dataset}>
-                  <SourceChip source={s} />
-                </li>
-              ))}
-            </ul>
-          </div>
-        </Section>
-
-        <Section id="evidence" title={t("evidence.title")} hint={t("evidence.hint")} className={`${SECTION} print:hidden`}>
-          {laptop ? (
-            <Evidence analysis={analysis} />
-          ) : (
-            <Disclosure summary={t("evidence.show")}>
-              <div className="pt-2">
-                <Evidence analysis={analysis} />
-              </div>
-            </Disclosure>
-          )}
-        </Section>
+      {/* Details one at a time, so the page stays short. */}
+      <div className="no-print mt-10">
+        <div role="tablist" aria-label={t("nav.label")} className="flex gap-1 overflow-x-auto border-b border-line">
+          {tabs.map((id) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              id={`tab-${id}`}
+              aria-selected={tab === id}
+              aria-controls={`panel-${id}`}
+              onClick={() => setTab(id)}
+              className={`press -mb-px min-h-12 shrink-0 border-b-2 px-3 font-medium ${
+                tab === id ? "border-field text-ink" : "border-transparent text-ink-muted hover:text-ink"
+              }`}
+            >
+              {t(`nav.${id}`)}
+            </button>
+          ))}
+        </div>
+        <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className="pt-6">
+          {tab === "rotations" ? (
+            <>
+              <p className="mb-6 max-w-[65ch] text-ink-muted">
+                {t(laptop ? "rotations.hint" : "rotations.hintPhone", { start, end })}
+              </p>
+              <Rotations
+                ranked={ranked}
+                years={years}
+                start={analysis.period_start}
+                selectedId={selected.id}
+                onSelect={setSelectedId}
+                laptop={laptop}
+              />
+            </>
+          ) : null}
+          {tab === "shift" ? (
+            <>
+              <p className="mb-6 max-w-[65ch] text-ink-muted">{t("shift.hint")}</p>
+              <ShiftList shifts={shifts} />
+            </>
+          ) : null}
+          {tab === "evidence" ? (
+            <>
+              <p className="mb-6 max-w-[65ch] text-ink-muted">{t("evidence.hint")}</p>
+              <Evidence analysis={analysis} />
+            </>
+          ) : null}
         </div>
       </div>
     </div>

@@ -11,6 +11,7 @@ import { polygonAreaHa } from "@/lib/geo";
 import { useAppLocale } from "@/lib/localized";
 import { Button } from "@/components/ui/button";
 import { CropDot } from "@/components/ui/crop-chip";
+import { Disclosure } from "@/components/ui/disclosure";
 import { FieldPlanMap, type PlotView } from "./field-plan-map";
 
 const STEP_MS = 1800;
@@ -138,6 +139,8 @@ export function FieldPlan({
         </li>
       </ul>
 
+      <Disclosure summary={t("tableCaption")} className="print:border-t-0">
+        <div className="flex flex-col gap-4">
       {/* Phone: one block per plot, its crop in each season, so nothing scrolls sideways. */}
       <ul aria-label={t("tableCaption")} className="flex flex-col divide-y divide-line border-y border-line sm:hidden">
         {layout.plots.map((plot, p) => (
@@ -225,6 +228,9 @@ export function FieldPlan({
           </tbody>
         </table>
       </div>
+
+        </div>
+      </Disclosure>
 
       <p className="text-sm text-ink-muted">
         {boundary

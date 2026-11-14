@@ -1,0 +1,61 @@
+{
+  "$defs": {
+    "LatLon": {
+      "additionalProperties": false,
+      "properties": {
+        "lat": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Lat",
+          "type": "number"
+        },
+        "lon": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Lon",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lat",
+        "lon"
+      ],
+      "title": "LatLon",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "The joined outline of parcels that touch each other.",
+  "properties": {
+    "boundary": {
+      "items": {
+        "$ref": "#/$defs/LatLon"
+      },
+      "maxItems": 500,
+      "minItems": 3,
+      "title": "Boundary",
+      "type": "array"
+    },
+    "area_ha": {
+      "description": "sum of the areas declared to APIA",
+      "minimum": 0,
+      "title": "Area Ha",
+      "type": "number"
+    },
+    "parcel_ids": {
+      "items": {
+        "type": "integer"
+      },
+      "title": "Parcel Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "boundary",
+    "area_ha",
+    "parcel_ids"
+  ],
+  "title": "MergedParcels",
+  "type": "object",
+  "$id": "https://field-signal/contracts/merged_parcels/0.2.0"
+}

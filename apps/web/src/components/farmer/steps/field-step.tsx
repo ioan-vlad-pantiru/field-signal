@@ -150,6 +150,14 @@ export function FieldStep({
   mode,
   corners,
   areaHa,
+  parcelsShown = false,
+  brush = false,
+  pickNote = null,
+  selectedCount = 0,
+  selectedHa = 0,
+  joining = false,
+  onUseSelected,
+  onClearSelected,
   onUndo,
   onClear,
   onDone,
@@ -162,6 +170,18 @@ export function FieldStep({
   mode: MapMode;
   corners: LatLon[];
   areaHa: number;
+  /** APIA parcel outlines are on the map and can be tapped. */
+  parcelsShown?: boolean;
+  /** Drag-to-select is on. */
+  brush?: boolean;
+  /** Why the last tapped parcel could not be used. */
+  pickNote?: string | null;
+  selectedCount?: number;
+  /** Area declared to APIA for the selected parcels. */
+  selectedHa?: number;
+  joining?: boolean;
+  onUseSelected?: () => void;
+  onClearSelected?: () => void;
   onUndo: () => void;
   onClear: () => void;
   onDone: () => void;
@@ -204,8 +224,29 @@ export function FieldStep({
 
       <div className="flex flex-col gap-2 border-t border-line pt-4">
         <p className="text-sm text-ink-muted">
-          {mode === "draw" ? t("draw.hint") : t("draw.yourField")}
+          {mode !== "draw" ? t("draw.yourField") : parcelsShown && corners.length === 0 ? t(brush ? "parcel.brushHelp" : "parcel.hint") : t("draw.hint")}
         </p>
+        {selectedCount > 0 && mode === "draw" && corners.length === 0 ? (
+          <div className="flex flex-col gap-3 rounded-2xl bg-field-tint p-4">
+            <p className="font-semibold text-field-strong" aria-live="polite">
+              {t("parcel.selected", { count: selectedCount, ha: formatNumber(selectedHa, locale, 1) })}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button onClick={onUseSelected} disabled={joining}>
+                {joining ? t("parcel.joining") : t("parcel.use")}
+              </Button>
+              <Button variant="secondary" onClick={onClearSelected} disabled={joining}>
+                {t("parcel.clear")}
+              </Button>
+            </div>
+          </div>
+        ) : null}
+        {pickNote && mode === "draw" && corners.length === 0 ? (
+          <p className="flex items-start gap-2 font-medium text-status-watch" aria-live="polite">
+            <AlertIcon size={18} className="mt-0.5 shrink-0" />
+            {pickNote}
+          </p>
+        ) : null}
         <p aria-live="polite">
           <span className="block font-display text-4xl font-semibold tabular-nums tracking-tight">
             {t("draw.area", { ha: formatNumber(areaHa, locale, 1) })}

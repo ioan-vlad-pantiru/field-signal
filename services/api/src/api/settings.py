@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     database_path: Path = REPO_ROOT / "data" / "cache" / "field-signal.db"
     # Postgres connection string (production). When set, it is used instead of the SQLite file.
     database_url: SecretStr | None = None
+    # APIA parcel outlines (data/scripts/build_apia_parcels.py). Missing file: no parcel picking.
+    parcels_path: Path = REPO_ROOT / "services" / "api" / "parcels" / "apia_parcels_alba.sqlite"
 
     earthdata_username: str | None = None
     earthdata_password: SecretStr | None = None

@@ -10,6 +10,8 @@ COPY ml/pyproject.toml ml/pyproject.toml
 COPY services/api/pyproject.toml services/api/pyproject.toml
 RUN uv sync --frozen --no-dev --package api --no-install-workspace
 COPY services/api/src services/api/src
+# APIA parcel outlines: CI downloads the file from a release first; without it parcel picking is off.
+COPY services/api/parcels services/api/parcels
 RUN useradd --uid 10001 app
 USER app
 EXPOSE 8000

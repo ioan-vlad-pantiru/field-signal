@@ -12,6 +12,8 @@ import type { SubmittedField } from "../draft-field";
 import { useFieldLabel } from "../steps/field-list";
 import { useRotationName } from "./rotation-name";
 
+export const ALL_FIELDS = -1;
+
 /**
  * Several fields analysed together: one tab per field with its area and best rotation. The page
  * below shows the selected field's full results.
@@ -24,6 +26,7 @@ export function FieldSwitcher({
 }: {
   fields: SubmittedField[];
   results: Loaded<FieldAnalysis>[];
+  /** The field shown, or `ALL_FIELDS` for the overview of every field. */
   selected: number;
   onSelect: (index: number) => void;
 }) {
@@ -38,8 +41,10 @@ export function FieldSwitcher({
     const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
     if (step === 0) return;
     event.preventDefault();
-    const next = (selected + step + fields.length) % fields.length;
-    onSelect(next);
+    // Tab positions: 0 is "All fields", then one per field.
+    const count = fields.length + 1;
+    const next = (selected + 1 + step + count) % count;
+    onSelect(next - 1);
     list.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next]?.focus();
   }
 
@@ -55,6 +60,19 @@ export function FieldSwitcher({
         onKeyDown={onKeyDown}
         className="-mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:thin]"
       >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={selected === ALL_FIELDS}
+          tabIndex={selected === ALL_FIELDS ? 0 : -1}
+          onClick={() => onSelect(ALL_FIELDS)}
+          className={`press flex min-h-11 shrink-0 flex-col items-start justify-center rounded-xl border px-4 py-2 text-left ${
+            selected === ALL_FIELDS ? "border-field bg-field-tint" : "border-line bg-surface hover:border-ink"
+          }`}
+        >
+          <span className="font-semibold">{t("all")}</span>
+          <span className="text-sm text-ink-muted">{t("allHint")}</span>
+        </button>
         {fields.map((field, i) => {
           const v = verdict(results[i].data.strategies);
           const active = i === selected;

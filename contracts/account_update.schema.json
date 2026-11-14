@@ -1,0 +1,22 @@
+{
+  "additionalProperties": false,
+  "description": "Profile changes; only the display name for now.",
+  "properties": {
+    "name": {
+      "anyOf": [
+        {
+          "maxLength": 80,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Name"
+    }
+  },
+  "title": "AccountUpdate",
+  "type": "object",
+  "$id": "https://field-signal/contracts/account_update/0.2.0"
+}

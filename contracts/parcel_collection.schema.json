@@ -1,0 +1,100 @@
+{
+  "$defs": {
+    "LatLon": {
+      "additionalProperties": false,
+      "properties": {
+        "lat": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Lat",
+          "type": "number"
+        },
+        "lon": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Lon",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lat",
+        "lon"
+      ],
+      "title": "LatLon",
+      "type": "object"
+    },
+    "Parcel": {
+      "additionalProperties": false,
+      "description": "A parcel declared to APIA (open LPIS data, CC BY 4.0), offered so a farmer can tap it.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "integer"
+        },
+        "boundary": {
+          "items": {
+            "$ref": "#/$defs/LatLon"
+          },
+          "maxItems": 500,
+          "minItems": 3,
+          "title": "Boundary",
+          "type": "array"
+        },
+        "area_ha": {
+          "description": "area declared to APIA",
+          "minimum": 0,
+          "title": "Area Ha",
+          "type": "number"
+        },
+        "land_use": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "APIA land-use code, e.g. TA (arable)",
+          "title": "Land Use"
+        }
+      },
+      "required": [
+        "id",
+        "boundary",
+        "area_ha"
+      ],
+      "title": "Parcel",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "parcels": {
+      "items": {
+        "$ref": "#/$defs/Parcel"
+      },
+      "title": "Parcels",
+      "type": "array"
+    },
+    "truncated": {
+      "description": "more parcels lie in the area than were returned",
+      "title": "Truncated",
+      "type": "boolean"
+    },
+    "source": {
+      "description": "dataset credit to show with the outlines",
+      "title": "Source",
+      "type": "string"
+    }
+  },
+  "required": [
+    "parcels",
+    "truncated",
+    "source"
+  ],
+  "title": "ParcelCollection",
+  "type": "object",
+  "$id": "https://field-signal/contracts/parcel_collection/0.2.0"
+}

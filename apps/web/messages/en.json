@@ -172,6 +172,36 @@
       "continueWith": "Continue with {count, plural, one {# field} other {# fields}}",
       "analyze": "Show 25 seasons for {count} fields",
       "editing": "Now editing: {field}"
+    },
+    "save": {
+      "title": "Save this field",
+      "nameLabel": "Field name",
+      "namePlaceholder": "e.g. Behind the barn",
+      "save": "Save to my fields",
+      "update": "Save changes",
+      "saving": "Saving…",
+      "savedAs": "Saved in My fields as “{name}”",
+      "inMyFields": "In My fields · unsaved changes",
+      "signIn": "Sign in",
+      "signInHint": "to save this field to your account.",
+      "nameNeeded": "Give the field a name first.",
+      "failed": "Could not save. Try again."
+    },
+    "assistantField": "My field",
+    "parcel": {
+      "hint": "Tap your parcels to select them, or switch on “Drag to select” to select many at once. Then press “Use as my field”. These are the parcels declared to APIA; if yours is not there, tap the corners of your field instead.",
+      "mapHint": "Tap your parcels",
+      "selected": "{count, plural, one {# parcel} other {# parcels}} selected · {ha} ha",
+      "use": "Use as my field",
+      "joining": "Joining parcels…",
+      "clear": "Clear selection",
+      "tooSmall": "Together that is {ha} ha. A field needs at least {min} ha: also tap the parcels next to it, or tap the corners to draw your field.",
+      "tooBig": "That is {ha} ha, over {max} ha. Select fewer parcels.",
+      "notTouching": "These parcels do not touch. Choose parcels that sit next to each other, or add each field separately.",
+      "failed": "Could not join the parcels. Try again, or tap the corners to draw your field.",
+      "brush": "Drag to select",
+      "brushHint": "Drag over your parcels",
+      "brushHelp": "Drag over your parcels to select them. Start a drag on a green parcel to unselect. Use two fingers to move the map, or switch off “Drag to select”."
     }
   },
   "Results": {
@@ -336,7 +366,22 @@
       "title": "{count} fields · {ha} ha in total",
       "area": "{ha} ha",
       "keep": "Your rotation is the best",
-      "best": "Best: “{name}”"
+      "best": "Best: “{name}”",
+      "all": "All fields",
+      "allHint": "Map and summary"
+    },
+    "overview": {
+      "title": "{count} fields",
+      "summary": "On {count} of {total} fields another rotation would have had fewer poor seasons ({ha} ha).",
+      "summaryNone": "Your rotations already do as well as any we compared, on all {ha} ha.",
+      "mapLabel": "Map of the {count} analysed fields, coloured by result",
+      "legendFewer": "Another rotation had fewer poor seasons",
+      "legendOther": "Another rotation fits your priorities better",
+      "legendKeep": "Your rotation is the best",
+      "area": "{ha} ha",
+      "rowBest": "Best: “{name}” · {best, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}} instead of {current}",
+      "rowKeep": "Your rotation is the best · {poor, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}}",
+      "open": "See this field"
     }
   },
   "FarmPlan": {
@@ -383,7 +428,7 @@
   },
   "Feed": {
     "title": "Where to buy feed this year",
-    "intro": "For each commune: whether there will be enough harvest, what quality risks there are, and how kind to the environment the farming is.",
+    "intro": "See which communes are likely to have enough maize, wheat or soybean this year, and where quality could be a problem.",
     "loading": "Loading zones…",
     "regionLine": "{region} · season {season} · {count} communes",
     "cropToggle": "Choose the crop",
@@ -415,7 +460,7 @@
       "compareHere": "Compare rotations here"
     },
     "compareTitle": "Compare two communes",
-    "compareHint": "Tick two communes in the table to see which is safer for the chosen crop: quantity, quality and water.",
+    "compareHint": "Which of the two ticked communes is the safer place to buy.",
     "compare": {
       "summary": "For {crop}, {a} is better on {winsA} of {total} measures, {b} on {winsB}.",
       "caption": "{a} compared with {b}, for {crop}",
@@ -482,7 +527,17 @@
     },
     "detailEmpty": "Select a commune in the table or on the map to see its harvest, quality and water outlook.",
     "closeDetail": "Close details",
-    "sourcesTitle": "Sources"
+    "sourcesTitle": "Sources",
+    "adviceLabel": "Our advice",
+    "cropQuestion": "Which crop are you buying?",
+    "summary": {
+      "good": "{count, plural, one {commune} other {communes}} should have enough {crop}",
+      "watch": "{count, plural, one {commune} other {communes}} may have less {crop} than usual",
+      "bad": "{count, plural, one {commune} other {communes}} will likely be short of {crop}"
+    },
+    "listTitle": "All communes, safest first",
+    "listHint": "Tap a commune to see why. Tick two to compare them.",
+    "scenarioHint": "How much extra feed the area could supply if more farmers changed their rotation."
   },
   "About": {
     "title": "About Field Signal",
@@ -627,20 +682,22 @@
     "openLink": "See it on a field"
   },
   "Home": {
-    "title": "Your field has 25 years of history, seen from space.",
-    "lead": "See how your rotation would have done in every season since 2001, and what would have done better.",
+    "title": "Which crops will do best on your field?",
+    "lead": "We replay the last 25 seasons on your own land, so you can plan the next one.",
     "start": "Draw your field",
-    "buyer": "I buy feed",
+    "buyer": {
+      "title": "Feed buyers",
+      "text": "See, commune by commune, where maize, wheat and soybean are likely this year, and at what quality risk.",
+      "cta": "Open the buyer view"
+    },
     "imageAlt": "Satellite view of Transylvania in summer: farmland in the centre, ringed by the forested Carpathians.",
     "imageCredit": "Transylvania, 2 July 2025. Image: NASA Worldview, MODIS on Terra.",
     "sceneNote": "Illustration: an example valley, not a real field.",
-    "proofTitle": "One field near {place}, 25 seasons",
+    "proofTitle": "Example: a field near {place}",
     "proofSentence": "{current, plural, =0 {No poor seasons} one {1 poor season} other {# poor seasons}} with {currentCrops}. {best, plural, =0 {None} one {1} other {#}} with {bestCrops}.",
-    "proofHint": "Each square is one season, {start} to {end}. Good seasons stay grey; only weak ones are marked.",
-    "proofDemo": "Example with demo data, not a real result.",
+    "proofHint": "One square per year. × is a bad year, ! a year to watch.",
     "stripLabel": "{name}: {bad, plural, =0 {no poor seasons} one {1 poor season} other {# poor seasons}} and {watch, plural, =0 {no seasons to watch} one {1 season to watch} other {# seasons to watch}} out of {total}",
     "current": "Your rotation now",
-    "stepsTitle": "How it works",
     "steps": {
       "field": {
         "title": "Draw your field",
@@ -648,19 +705,69 @@
       },
       "rotation": {
         "title": "Say what you grow",
-        "text": "Your rotation, and what matters most to you: harvest, water, soil or risk."
+        "text": "Your crops, and what matters most: harvest, water, soil or risk."
       },
       "result": {
-        "title": "See 25 seasons and a plan",
-        "text": "Your rotation next to two others, year by year, and what to grow where."
+        "title": "See what works best",
+        "text": "25 seasons for your rotation and two others."
       }
     },
-    "buyerTitle": "Buying feed?",
-    "buyerText": "See, commune by commune, where maize, wheat and soybean are likely to be available this year, and at what quality risk.",
-    "buyerLink": "Open the feed buyer view",
+    "stats": {
+      "seasons": "seasons checked, 2001 to 2025",
+      "sources": "public data sources, NASA included",
+      "rotations": "rotations side by side"
+    },
+    "whatTitle": "What is Field Signal?",
+    "whatText": "A tool for farmers in Romania. You draw your field and tell us what you grow. We replay every season since 2001 on it, with the droughts, wet springs and heat waves, and show which rotation would have held up best.",
+    "whatJudgment": "Built on public data from NASA satellites and weather records, checked against official county yields.",
+    "lookTitle": "What we look at on your field",
+    "look": {
+      "weather": {
+        "title": "Weather, day by day",
+        "text": "Heat, rain and frost since 2001."
+      },
+      "plants": {
+        "title": "Plant health from space",
+        "text": "How green the crops were, season after season."
+      },
+      "water": {
+        "title": "Water in the soil",
+        "text": "How much moisture the roots had."
+      },
+      "soil": {
+        "title": "Your soil",
+        "text": "Texture, pH and organic matter."
+      }
+    },
+    "getTitle": "What you get",
+    "get": {
+      "compare": {
+        "title": "Your rotation, year by year",
+        "text": "Every good and poor season, marked on one strip."
+      },
+      "alternatives": {
+        "title": "Two rotations that did better",
+        "text": "At least one with soybean or peas."
+      },
+      "plan": {
+        "title": "A plan for your plots",
+        "text": "Which crop goes where, season by season."
+      },
+      "ask": {
+        "title": "Answers to your questions",
+        "text": "Ask in plain words, in Romanian or English."
+      }
+    },
+    "stepsTitle": "How it works",
+    "audienceTitle": "Who it is for",
+    "farmer": {
+      "title": "Farmers",
+      "text": "Plan next season with 25 years of seasons behind you.",
+      "cta": "Draw your field"
+    },
     "limitsTitle": "What it cannot see",
-    "limitsLead": "It shows what would have happened in past years. The decision for your field stays yours.",
-    "weakEvidence": "Weaker evidence (before 2015)"
+    "ctaTitle": "Ready to see your field?",
+    "ctaText": "Draw it on the map. No account needed."
   },
   "Account": {
     "title": "My account",
@@ -690,14 +797,13 @@
       "offline": "We can't reach the server. Check your connection and try again.",
       "server": "Something went wrong on our side. Try again.",
       "too_many_fields": "You have reached 200 fields. Delete one to add another.",
-      "field_not_found": "This field is no longer in your account."
+      "field_not_found": "This field is no longer in your account.",
+      "wrong_password": "That password is wrong."
     },
     "fields": {
       "title": "My fields",
-      "count": "{count, plural, one {# field} other {# fields}} · {ha} ha in total",
-      "empty": "No fields yet. Draw your first field and save it from the results.",
+      "empty": "Draw a field on the map, see its 25 seasons, then save it here. You can keep as many as you farm.",
       "add": "Add a field",
-      "open": "Open",
       "rename": "Rename",
       "renameLabel": "Field name",
       "save": "Save",
@@ -711,7 +817,28 @@
       "importTitle": "A field on this device",
       "importText": "You drew a field near {place} ({ha} ha) before signing in.",
       "importTextNoPlace": "You drew a field of {ha} ha before signing in.",
-      "import": "Add it to my fields"
+      "import": "Add it to my fields",
+      "summary": "{count, plural, one {# field} other {# fields}} · {ha} ha · {places, plural, =0 {} one {# commune} other {# communes}}",
+      "emptyTitle": "No fields yet",
+      "drawFirst": "Draw your first field",
+      "mapLabel": "Map of your {count, plural, one {field} other {# fields}}",
+      "search": "Find a field",
+      "searchPlaceholder": "Name or commune",
+      "sort": "Sort by",
+      "sortRecent": "Recent",
+      "sortName": "Name",
+      "sortArea": "Size",
+      "selectAll": "Select all",
+      "selectHint": "Select fields to analyse them together, up to {max} at a time.",
+      "selectField": "Select {name}",
+      "noMatch": "No field matches “{query}”.",
+      "selectionLabel": "Selected fields",
+      "selected": "{count, plural, one {# field} other {# fields}} selected · {ha} ha",
+      "clear": "Clear",
+      "analyse": "Analyse",
+      "analyseMany": "Analyse {count} fields together",
+      "edit": "Edit",
+      "irrigated": "irrigated"
     },
     "save": {
       "save": "Save field",
@@ -731,6 +858,63 @@
       "pickHint": "Tick one or several to analyse them together.",
       "openOne": "Open field",
       "openMany": "Analyse {count} fields"
+    },
+    "profile": {
+      "title": "Profile and security",
+      "email": "Email",
+      "since": "Member since",
+      "name": "Name",
+      "saveName": "Save",
+      "nameSaved": "Name saved.",
+      "passwordTitle": "Change password",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "changePassword": "Change password",
+      "passwordChanged": "Password changed. Other devices were signed out.",
+      "deleteTitle": "Delete account",
+      "deleteText": "Deletes your account and {count, plural, =0 {} one {your saved field} other {all # saved fields}}. This cannot be undone.",
+      "deleteStart": "Delete my account…",
+      "deletePassword": "Enter your password to confirm",
+      "deleteConfirm": "Delete account for good"
     }
+  },
+  "Assistant": {
+    "launcher": "Ask",
+    "title": "Field Signal assistant",
+    "model": "Answers from your fields and NASA data · Qwen",
+    "intro": "Ask anything about Field Signal, crop rotations or the data behind it. Easy or hard.",
+    "introFields": "I can see your {count, plural, one {field} other {# fields}} and look up their 25 seasons. Ask anything, easy or hard.",
+    "placeholder": "Ask a question…",
+    "send": "Send",
+    "think": "Think it through",
+    "thinkHint": "slower, for harder questions",
+    "newChat": "New chat",
+    "close": "Close the assistant",
+    "thinking": "Thinking it through…",
+    "working": "Looking it up…",
+    "you": "You",
+    "looked": "Looked at: {what}",
+    "demo": "Uses demo data",
+    "tools": {
+      "list_fields": "your fields",
+      "analyze_field": "a field's 25 seasons",
+      "compare_fields": "all fields compared",
+      "regional_supply": "regional feed supply"
+    },
+    "suggest": {
+      "risk": "Which of my fields is most at risk, and why?",
+      "why": "Why does the best rotation do better?",
+      "first": "If I can change only one field this year, which one?",
+      "ndvi": "What does NDVI mean?",
+      "how": "How does Field Signal work?",
+      "data": "Where does the data come from?",
+      "feed": "Where is maize likely to be available this year?"
+    },
+    "errors": {
+      "off": "The assistant is switched off on this server.",
+      "failed": "The assistant could not answer just now. Try again.",
+      "offline": "We can't reach the server. Check your connection and try again."
+    },
+    "lookingAt": "Looking at {what}…"
   }
 }

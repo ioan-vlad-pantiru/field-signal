@@ -1,0 +1,29 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "reply": {
+      "title": "Reply",
+      "type": "string"
+    },
+    "tools_used": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Tools Used",
+      "type": "array"
+    },
+    "demo_data": {
+      "description": "the answer used demonstration (mock) data",
+      "title": "Demo Data",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "reply",
+    "tools_used",
+    "demo_data"
+  ],
+  "title": "AssistantReply",
+  "type": "object",
+  "$id": "https://field-signal/contracts/assistant_reply/0.2.0"
+}
