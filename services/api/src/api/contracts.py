@@ -463,8 +463,8 @@ class FarmPlanRequest(Contract):
 
 
 class Allocation(Contract):
-    """Hectares of one rotation on one field: an area split, not a planting map (which part of
-    the field gets the rotation is not decided)."""
+    """The one rotation of one field: a drawn field is a parcel, one crop per year on its whole
+    area; `area_ha` is the field's area."""
 
     field_id: str
     area_ha: float = Field(ge=0)
@@ -511,10 +511,12 @@ class FarmPlan(Contract):
     rank: int = Field(
         ge=0,
         description="1 = best solution found (optimal for the model only when proven_optimal); "
-        "2-3 = alternatives that differ in at least two rotation choices, not the next-best "
+        "2-3 = alternatives that change the rotation of at least two fields, not the next-best "
         "solutions; 0 = the farmer's current rotation",
     )
-    allocations: list[Allocation] = Field(description="area split per field, not a planting map")
+    allocations: list[Allocation] = Field(
+        description="exactly one entry per field, with the field's area"
+    )
     score: ScoreBreakdown = Field(
         description="mean over weather windows, area-weighted; 0-100, not a probability"
     )

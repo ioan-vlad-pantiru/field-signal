@@ -2,7 +2,7 @@
   "$defs": {
     "Allocation": {
       "additionalProperties": false,
-      "description": "Hectares of one rotation on one field: an area split, not a planting map (which part of\nthe field gets the rotation is not decided).",
+      "description": "The one rotation of one field: a drawn field is a parcel, one crop per year on its whole\narea; `area_ha` is the field's area.",
       "properties": {
         "field_id": {
           "title": "Field Id",
@@ -139,13 +139,13 @@
       "description": "One farm plan. Scores are 0-100 decision metrics (higher is better), not probabilities.\n`score_range` is the spread across weather windows, not a confidence interval.",
       "properties": {
         "rank": {
-          "description": "1 = best solution found (optimal for the model only when proven_optimal); 2-3 = alternatives that differ in at least two rotation choices, not the next-best solutions; 0 = the farmer's current rotation",
+          "description": "1 = best solution found (optimal for the model only when proven_optimal); 2-3 = alternatives that change the rotation of at least two fields, not the next-best solutions; 0 = the farmer's current rotation",
           "minimum": 0,
           "title": "Rank",
           "type": "integer"
         },
         "allocations": {
-          "description": "area split per field, not a planting map",
+          "description": "exactly one entry per field, with the field's area",
           "items": {
             "$ref": "#/$defs/Allocation"
           },
