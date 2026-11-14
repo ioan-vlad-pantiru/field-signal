@@ -237,17 +237,13 @@
     }
   },
   "Feed": {
-    "eyebrow": "Field Signal · Feed",
-    "title": "Where to buy feed this year?",
+    "title": "Where to buy feed this year",
     "intro": "For each commune: whether there will be enough harvest, what quality risks there are, and how kind to the environment the farming is.",
     "loading": "Loading zones…",
     "regionLine": "{region} · season {season} · {count} communes",
     "cropToggle": "Choose the crop",
     "mapLabel": "Map of supply risk for {crop}",
-    "mapHint": "Colour and symbol show the risk of not finding enough harvest. Tap a commune for details.",
     "markerLabel": "{zone}: {risk}",
-    "zoneList": "Communes",
-    "riskShort": "Supply",
     "noCropData": "No data for this crop",
     "noZones": "We have no zones for this region yet.",
     "sheetTitle": "{zone} · {crop}",
@@ -272,14 +268,10 @@
       "lowerRiskOther": "Not growing the same crop two years in a row usually lowers this risk over 3 years. Compare rotations for a field in this commune.",
       "compareHere": "Compare rotations here"
     },
-    "compareTitle": "Compare two zones",
-    "compareHint": "Pick two communes and see which is safer for the chosen crop: quantity, quality and water.",
+    "compareTitle": "Compare two communes",
+    "compareHint": "Tick two communes in the table to see which is safer for the chosen crop: quantity, quality and water.",
     "compare": {
-      "zoneA": "First zone",
-      "zoneB": "Second zone",
-      "swap": "Swap the zones",
       "summary": "For {crop}, {a} is better on {winsA} of {total} measures, {b} on {winsB}.",
-      "sameZone": "Pick two different zones.",
       "caption": "{a} compared with {b}, for {crop}",
       "supplyRisk": "Supply risk",
       "riskScore": "Risk score (lower is better)",
@@ -288,14 +280,16 @@
       "flagDays": "{observed} risky days, versus {normal} usually",
       "confidence": "Confidence",
       "better": "better",
-      "note": "\"Better\" only compares these two zones, measure by measure. All numbers are estimates with a range; check each zone's confidence."
+      "note": "\"Better\" only compares these two zones, measure by measure. All numbers are estimates with a range; check each zone's confidence.",
+      "pickTwo": "Tick two communes in the table to compare them.",
+      "pickOne": "Tick one more commune to compare it with {zone}.",
+      "measure": "Measure"
     },
     "recommendationTitle": "Recommendation",
     "assumptions": "Assumptions",
     "scenarioTitle": "If more farmers grew soybean",
     "adoption": {
-      "estimate": "Estimate",
-      "title": "How much more {crop} the area could supply",
+      "title": "How much more {crop} the area could supply, estimated",
       "hint": "Move the slider: the share of suppliers who add the crop to their rotation.",
       "sliderLabel": "Suppliers adding {crop}",
       "area": "Extra area",
@@ -318,7 +312,31 @@
       "bothSum": "Both: the same extra area, half soybean and half feed pea. Harvest and protein are the sum of the two halves.",
       "soyScenario": "Soybean values come from the scenario computed by the model."
     },
-    "caveatsTitle": "Keep in mind"
+    "caveatsTitle": "Keep in mind",
+    "metaTitle": "Feed buyer",
+    "actionsTitle": "What to do",
+    "view": {
+      "label": "Show communes as",
+      "list": "List",
+      "map": "Map"
+    },
+    "table": {
+      "caption": "Communes for {crop}. Lowest supply risk first unless you sort by another column.",
+      "name": "Commune",
+      "area": "Area",
+      "risk": "Supply risk",
+      "quality": "Quality warnings",
+      "confidence": "Confidence",
+      "compare": "Compare",
+      "tick": "Compare {zone}",
+      "areaValue": "{ha} ha",
+      "noWarnings": "None",
+      "warnings": "{count, plural, one {# warning} other {# warnings}}",
+      "open": "Details for {zone}"
+    },
+    "detailEmpty": "Select a commune in the table or on the map to see its harvest, quality and water outlook.",
+    "closeDetail": "Close details",
+    "sourcesTitle": "Sources"
   },
   "About": {
     "title": "About Field Signal",

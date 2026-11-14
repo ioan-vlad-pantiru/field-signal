@@ -6,10 +6,10 @@ import type { AdoptionScenario, Crop, Range } from "@/lib/contracts";
 import { formatNumber, scaleRange } from "@/lib/format";
 import { useAppLocale, useLocalized } from "@/lib/localized";
 import { PEA, combine, peaEstimate, soyEstimate, type CropEstimate } from "@/lib/protein";
-import { useCountUp } from "@/lib/use-count-up";
-import { Card } from "@/components/ui/card";
 import { RangeBar } from "@/components/ui/charts";
 import { CropDot } from "@/components/ui/crop-chip";
+import { Disclosure } from "@/components/ui/disclosure";
+import { Segmented } from "@/components/ui/segmented";
 import { Slider } from "@/components/ui/slider";
 
 const MAX_ADOPTION = 50;
@@ -57,33 +57,28 @@ export function AdoptionSlider({ scenario }: { scenario: AdoptionScenario }) {
   const showPea = choice !== "soy";
 
   return (
-    <Card className="flex flex-col gap-4">
+    <div className="flex max-w-[720px] flex-col gap-5">
       <div>
-        <span className="inline-block rounded-full bg-wheat-tint px-2.5 py-0.5 text-sm font-semibold">
-          {t("estimate")}
-        </span>
-        <h2 className="mt-2 text-xl font-semibold">{t("title", { crop: cropName })}</h2>
+        <p className="font-medium">{t("title", { crop: cropName })}</p>
         <p className="text-ink-muted">{t("hint")}</p>
       </div>
 
-      <div role="radiogroup" aria-label={t("cropLabel")} className="grid grid-cols-3 gap-1 rounded-full bg-surface-sunken p-1">
-        {CHOICES.map((c) => (
-          <button
-            key={c}
-            type="button"
-            role="radio"
-            aria-checked={choice === c}
-            onClick={() => setChoice(c)}
-            className={`press inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full px-2 text-sm font-semibold ${
-              choice === c ? "bg-surface text-ink shadow-1" : "text-ink-muted hover:text-ink"
-            }`}
-          >
-            {c !== "pea" ? <CropDot crop={soyCrop} /> : null}
-            {c !== "soy" ? <CropDot crop={peaCrop} /> : null}
-            {t(`choice.${c}`)}
-          </button>
-        ))}
-      </div>
+      <Segmented
+        label={t("cropLabel")}
+        value={choice}
+        onChange={setChoice}
+        className="w-full sm:w-auto"
+        options={CHOICES.map((c) => ({
+          value: c,
+          label: (
+            <>
+              {c !== "pea" ? <CropDot crop={soyCrop} /> : null}
+              {c !== "soy" ? <CropDot crop={peaCrop} /> : null}
+              {t(`choice.${c}`)}
+            </>
+          ),
+        }))}
+      />
 
       <Slider
         label={t("sliderLabel", { crop: cropName })}
@@ -103,8 +98,7 @@ export function AdoptionSlider({ scenario }: { scenario: AdoptionScenario }) {
           />
         ))}
       </ul>
-      <div>
-        <h3 className="mb-1 text-sm font-semibold">{t("assumptions")}</h3>
+      <Disclosure summary={t("assumptions")}>
         <ul className="list-disc space-y-1 pl-5 text-sm text-ink-muted">
           <li>{t("linear", { base: n0(base) })}</li>
           {showPea ? (
@@ -126,8 +120,8 @@ export function AdoptionSlider({ scenario }: { scenario: AdoptionScenario }) {
             <li key={i}>{l(a)}</li>
           ))}
         </ul>
-      </div>
-    </Card>
+      </Disclosure>
+    </div>
   );
 }
 
@@ -145,14 +139,13 @@ function AdoptionOutput({
 }) {
   const t = useTranslations("Feed.adoption");
   const locale = useAppLocale();
-  const shownMid = useCountUp(range.mid);
   const n = (v: number) => formatNumber(v, locale, 0);
   return (
     <li>
       <div className="flex flex-wrap items-baseline justify-between gap-x-3">
         <span className="font-medium">{label}</span>
         <span>
-          <span className="font-mono text-2xl font-semibold tracking-tight tabular-nums">+{n(shownMid)}</span>{" "}
+          <span className="text-2xl font-semibold tracking-tight tabular-nums">+{n(range.mid)}</span>{" "}
           <span className="text-ink-muted">{unit}</span>
         </span>
       </div>
@@ -161,7 +154,7 @@ function AdoptionOutput({
         domain={[0, axisMax]}
         label={t("rangeLabel", { low: n(range.low), mid: n(range.mid), high: n(range.high), unit })}
       />
-      <p className="mt-1 font-mono text-sm text-ink-muted tabular-nums">
+      <p className="mt-1 text-sm text-ink-muted tabular-nums">
         {t("range", { low: n(range.low), high: n(range.high), unit })}
       </p>
     </li>
