@@ -319,7 +319,8 @@
           "enum": [
             "aflatoxin_window",
             "fusarium_window",
-            "harvest_rain"
+            "harvest_rain",
+            "soy_seed_fill_rain"
           ],
           "title": "Code",
           "type": "string"

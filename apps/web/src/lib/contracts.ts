@@ -286,7 +286,7 @@ export interface QualityRisk {
 }
 
 export interface QualityFlag {
-  code: "aflatoxin_window" | "fusarium_window" | "harvest_rain";
+  code: "aflatoxin_window" | "fusarium_window" | "harvest_rain" | "soy_seed_fill_rain";
   label: Localized;
   level: RiskLevel;
   days_observed: number;
