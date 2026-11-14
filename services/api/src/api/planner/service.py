@@ -233,7 +233,7 @@ def plan_farm(request: OptimizerRequest, max_time_s: float = 3.0) -> OptimizerRe
             scen,
             assumed,
             current is None,
-            optimizer.splits(farm_ha),
+            optimizer.splits(farm_ha, practice),
             farm_ha,
             plans,
         ),
@@ -333,19 +333,18 @@ def _caveats(
             "case is the worst window on record, not a floor.",
         ),
         _l(
-            "Verificările regulilor sunt provizorii, simplificate și neverificate: limitele vin "
-            "din surse secundare, necitite încă în documentele oficiale 2026, iar pragurile de "
-            "10 ha / 30 ha se aplică suprafeței totale desenate. Numerele regulilor sunt "
-            "neverificate.",
-            "Rule checks are provisional, simplified and unverified: the limits come from "
-            "secondary sources not yet read in the official 2026 documents, and the 10 ha / 30 ha "
-            "thresholds are applied to the total drawn area. The rule numbers are unverified.",
+            "Regulile vin din ghidurile APIA 2026 (condiționalitate, GAEC 7; eco-scheme, PD-04): "
+            "fără diversificare până la 10 ha, cel puțin 2 culturi între 10 și 30 ha și 3 peste "
+            "30 ha. Pragurile se aplică suprafeței totale desenate, nu doar terenului arabil.",
+            "Rules come from the APIA 2026 guides (conditionality, GAEC 7; eco-schemes, PD-04): "
+            "no diversification up to 10 ha, at least 2 crops between 10 and 30 ha and 3 above "
+            "30 ha. The thresholds are applied to the total drawn area, not only arable land.",
         ),
         _l(
-            "Citirea GAEC 7 este provizorie: regula la nivel de parcelă (ce este o parcelă, "
-            "culturi secundare, perioada de referință, excepții) nu este modelată.",
-            "The GAEC 7 reading is provisional: the parcel-level rule (what counts as a parcel, "
-            "secondary crops, the reference period, exemptions) is not modelled.",
+            "GAEC 7 cere rotație (cultura se schimbă în fiecare an pe fiecare parcelă) sau "
+            "diversificare; culturile secundare și excepțiile nu sunt modelate.",
+            "GAEC 7 asks for rotation (the crop changes every year on each parcel) or "
+            "diversification; secondary crops and exemptions are not modelled.",
         ),
         _l(
             "Acoperirea solului (GAEC 6 și PD-04, 15 iunie-15 octombrie) nu este verificată "
@@ -400,18 +399,6 @@ def _caveats(
                 "wheat, barley, sunflower, pea).",
             )
         )
-    gaec7_fails = any(
-        r.source.startswith("GAEC 7") and not r.passed for p in plans for r in p.rules
-    )
-    if not split and (solve.eco_dropped or gaec7_fails):
-        out.append(
-            _l(
-                "La 75 ha sau mai mult, pentru a cultiva mai multe culturi în fiecare an, desenați "
-                "un câmp mare ca mai multe parcele.",
-                "At 75 ha or more, draw a large field as several parcels to grow more crops each "
-                "year.",
-            )
-        )
     if solve.floor:
         out.append(
             _l(
@@ -439,7 +426,6 @@ def _caveats(
 
 
 def _mode_caveats(split: bool, area_ha: float) -> list[Localized]:
-    limit = f"{optimizer.SPLIT_BELOW_HA:g}"
     ha = f"{area_ha:.2f}"
     rules = _l(
         "Ponderile din reguli se calculează doar pe câmpurile selectate, nu pe întreaga "
@@ -449,26 +435,27 @@ def _mode_caveats(split: bool, area_ha: float) -> list[Localized]:
     if not split:
         return [
             _l(
-                f"Câmpurile selectate însumează {ha} ha, adică {limit} ha sau mai mult (prag ales "
-                "de produs, fără sursă în reglementări): fiecare câmp are o singură rotație, o "
-                f"cultură pe an pe toată suprafața sa; la {limit} ha sau mai mult câmpurile nu se "
-                "împart.",
-                f"The selected fields total {ha} ha, which is {limit} ha or more (a product "
-                "threshold, not a regulatory one): each field carries one rotation, one crop per "
-                f"year on its whole area; fields are not split at {limit} ha or more.",
+                "Fiecare câmp are o singură rotație, o cultură pe an pe toată suprafața sa. "
+                "Cultura se schimbă în fiecare an pe fiecare câmp, cum cere regula UE de rotație "
+                "a culturilor (BCAM/GAEC 7), deci câmpurile nu se împart.",
+                "Each field carries one rotation, one crop a year on its whole area. The crop "
+                "changes every year on every field, as the EU crop rotation rule (GAEC 7) asks, "
+                "so no field is divided.",
             ),
             rules,
         ]
+    three = area_ha > optimizer.THREE_CROPS_ABOVE_HA
+    n = optimizer.MAX_ROTATIONS if three else 2
     return [
         _l(
-            f"Câmpurile selectate însumează {ha} ha, sub {limit} ha (prag ales de produs, fără "
-            "sursă în reglementări): un câmp de 10 ha sau mai mult poate fi împărțit între cel "
-            "mult 3 rotații de cel puțin 5 ha fiecare, iar un câmp sub 10 ha rămâne întreg. "
-            "Împărțirea este permisă, nu impusă. Alocările sunt rotunjite la 0,1 ha.",
-            f"The selected fields total {ha} ha, under {limit} ha (a product threshold, not a "
-            "regulatory one): a field of 10 ha or more may be divided between up to 3 rotations "
-            "of at least 5 ha each, and a field under 10 ha stays whole. Splitting is allowed, "
-            "never required. Allocations are rounded to 0.1 ha.",
+            f"Pentru diversificarea eco-schemei PD-04 pe {ha} ha (cel puțin {n} culturi pe an"
+            f"{', peste 30 ha' if three else ', între 10 și 30 ha'}), un câmp de 10 ha sau mai "
+            f"mult poate fi împărțit între cel mult {n} rotații de cel puțin 5 ha fiecare; un "
+            "câmp sub 10 ha rămâne întreg. Împărțirea este permisă, nu impusă.",
+            f"For the PD-04 eco-scheme's diversification on {ha} ha (at least {n} crops a year"
+            f"{', above 30 ha' if three else ', between 10 and 30 ha'}), a field of 10 ha or more "
+            f"may be divided between up to {n} rotations of at least 5 ha each; a field under "
+            "10 ha stays whole. Splitting is allowed, never required.",
         ),
         _l(
             "Suprafețele sunt hectare, nu limite desenate: unde se află fiecare bloc în câmp "
@@ -501,15 +488,16 @@ def _eco_caveat(request: OptimizerRequest, solve: optimizer.FarmSolve, split: bo
         )
         n = CROPS["pea"].min_return_years
         one, two = (r for r in optimizer.RULES_2026 if r.practice == "diversification")
-        limit = f"{optimizer.SPLIT_BELOW_HA:g}"
         if split:
             ro += (
-                " Un câmp sub 10 ha rămâne întreg, iar unul mai mare are cel mult 3 rotații de cel "
+                " Un câmp sub 10 ha rămâne întreg, iar unul mai mare are cel mult 2 rotații "
+                "(3 peste 30 ha) de cel "
                 "puțin 5 ha fiecare; aceste blocuri pot fi prea puține sau prea inegale pentru "
                 "această practică."
             )
             en += (
-                " A field under 10 ha stays whole and a larger one carries at most 3 rotations of "
+                " A field under 10 ha stays whole and a larger one carries at most 2 rotations "
+                "(3 above 30 ha) of "
                 "at least 5 ha each; these blocks can be too few or too uneven for this practice."
             )
             if request.eco_practice == "legume_share":
@@ -518,31 +506,29 @@ def _eco_caveat(request: OptimizerRequest, solve: optimizer.FarmSolve, split: bo
             return _l(ro, en)
         if request.eco_practice == "legume_share":
             ro += (
-                f" La {limit} ha sau mai mult fiecare câmp are o singură rotație, o cultură pe an, "
+                " Cu fiecare câmp întreg (o singură rotație, o cultură pe an), "
                 f"iar mazărea revine pe același câmp abia după {n} ani, deci ferma are nevoie de "
                 f"cel puțin {n} câmpuri ca să cultive mazăre în fiecare an."
             )
             en += (
-                f" At {limit} ha or more each field carries one rotation, one crop a year, and pea "
+                " With every field whole (one rotation, one crop a year), pea "
                 f"returns to a field only after {n} years, so the farm needs at least {n} fields "
                 "to grow pea every year."
             )
         else:
             ro += (
-                f" La {limit} ha sau mai mult fiecare câmp are o singură rotație, o cultură pe an, "
+                " Cu fiecare câmp întreg (o singură rotație, o cultură pe an), "
                 "deci cea mai mare cultură a anului ocupă cel puțin cel mai mare câmp: niciun "
                 f"câmp nu poate depăși {one.limit_pct} % din fermă, iar peste {two.above // 10} ha "
                 f"cele mai mari două culturi trebuie să rămână sub {two.limit_pct} %, ceea ce cere "
                 "cel puțin trei câmpuri."
             )
             en += (
-                f" At {limit} ha or more each field carries one rotation, one crop a year, so the "
+                " With every field whole (one rotation, one crop a year), the "
                 "largest crop of a year covers at least the largest field: no field may exceed "
                 f"{one.limit_pct} % of the farm, and above {two.above // 10} ha the two largest "
                 f"crops must stay under {two.limit_pct} %, which needs at least three fields."
             )
-        ro += f" Împărțirea unui câmp nu este disponibilă la {limit} ha sau mai mult."
-        en += f" Splitting a field is not available at {limit} ha or more."
         return _l(ro, en)
     return _l(
         f"A fost impusă o singură practică PD-04: {name.ro}; cealaltă este doar raportată.",

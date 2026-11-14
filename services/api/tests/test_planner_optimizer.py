@@ -225,13 +225,13 @@ def test_allocations_keep_the_mode_limits(fields: dict[str, list[int]]) -> None:
         assert [round(x * total) for x in mean] == plan.scenario_totals
 
 
-@pytest.mark.parametrize(("farm_ha", "split"), [(74.99, True), (75.0, False), (75.01, False)])
-def test_mode_follows_the_unrounded_farm_area(farm_ha: float, split: bool) -> None:
-    """§10.6: identical pieces (one field, 75.0 ha in 0.1 ha); only `farm_ha` differs. Under
-    75 ha the field splits to meet diversification; at 75 ha or more it keeps one rotation and
-    the practice is dropped."""
+@pytest.mark.parametrize(("farm_ha", "split"), [(10.0, False), (10.01, True), (75.0, True)])
+def test_split_only_for_diversification_above_10_ha(farm_ha: float, split: bool) -> None:
+    """GAEC 7 is met by rotation, so a field is never split without the PD-04 diversification;
+    with it, only above 10 ha (the rule's threshold). One 75 ha field: 3 rotations (above 30 ha)."""
     pieces, scores = farm(one_field(750), 3, 2)
-    assert splits(farm_ha) is split
+    assert not splits(farm_ha) and not splits(farm_ha, "legume_share")
+    assert splits(farm_ha, "diversification") is split
     result = solve_farm(pieces, scores, LEGUMES, "diversification", farm_ha=farm_ha)
     assert result.plans and result.eco_dropped is not split
     if split:
@@ -241,13 +241,14 @@ def test_mode_follows_the_unrounded_farm_area(farm_ha: float, split: bool) -> No
         check_parcels(result, pieces)
 
 
-@pytest.mark.parametrize(("tenths", "split"), [(400, True), (749, True), (750, False)])
-def test_without_farm_ha_the_pieces_sum_decides(tenths: int, split: bool) -> None:
-    """farm_ha=None: one field of 40.0 or 74.9 ha splits to meet diversification; 75.0 does not."""
+@pytest.mark.parametrize(("tenths", "rotations"), [(100, 1), (200, 2), (400, 3)])
+def test_crops_per_field_follow_the_rule_bands(tenths: int, rotations: int) -> None:
+    """One field under PD-04 diversification: up to 10 ha exempt (one rotation), above 10 ha up
+    to 30 ha 2 crops a year (2 rotations), above 30 ha 3 crops (3 rotations)."""
     pieces, scores = farm(one_field(tenths), 3, 2)
-    result = solve_farm(pieces, scores, LEGUMES, "diversification")
-    assert result.plans and result.eco_dropped is not split
-    (check_blocks if split else check_parcels)(result, pieces)
+    result = solve_farm(pieces, scores, LEGUMES, "diversification", top=1, max_time_s=SLOW)
+    assert result.plans and not result.eco_dropped
+    assert all(len(choices(plan, pieces)) == rotations for plan in result.plans)
 
 
 @pytest.mark.parametrize("split_finds", ["nothing", "less"])
@@ -256,8 +257,9 @@ def test_split_mode_falls_back_to_the_floor(
 ) -> None:
     """§10.11: the split solve (stubbed) finds no plan in time, or scores below the floor; parcel
     mode's plans come back, flagged and not proven optimal."""
-    pieces, scores = farm(DEMO, 3, 5)
-    parcel = solve_farm(pieces, scores, LEGUMES, top=1, max_time_s=SLOW, farm_ha=75)
+    pieces, scores = farm(FOUR_FIELDS, 3, 2, MAIZE_FIRST, weather=0)
+    div = "diversification"
+    parcel = solve_farm(pieces, scores, LEGUMES, div, top=1, max_time_s=SLOW, farm_ha=10)
     real = optimizer._rank
 
     def stub(*args: Any) -> tuple[list[Plan], str, list[float]]:
@@ -269,7 +271,7 @@ def test_split_mode_falls_back_to_the_floor(
         return [replace(p, objective=parcel.plans[0].objective - 1) for p in plans], status, t
 
     monkeypatch.setattr(optimizer, "_rank", stub)
-    result = solve_farm(pieces, scores, LEGUMES, top=1, max_time_s=SLOW)
+    result = solve_farm(pieces, scores, LEGUMES, div, top=1, max_time_s=SLOW)
     assert result.floor and result.status == "OPTIMAL" and not result.eco_dropped
     assert [p.objective for p in result.plans] == [p.objective for p in parcel.plans]
     assert parcel.plans[0].proven_optimal and not result.plans[0].proven_optimal
@@ -301,7 +303,7 @@ def test_diversification_caps_shares_and_forces_no_legume() -> None:
     pieces, scores = farm(FOUR_FIELDS, 3, 2, MAIZE_FIRST, weather=0)
     result = solve_farm(pieces, scores, LEGUMES, "diversification")
     assert result.eco_practice == "diversification" and not result.eco_dropped
-    check_parcels(result, pieces)
+    check_blocks(result, pieces)
     for plan in result.plans:
         for year in shares(plan):
             top = sorted(year.values())
@@ -363,12 +365,21 @@ def test_infeasible_farm_returns_no_plan() -> None:
         assert result.plans == [] and result.status == "INFEASIBLE"
 
 
-def test_rule_rows_are_unverified_and_gaec7_never_applies() -> None:
+def test_rule_rows_are_read_in_the_official_guides_and_gaec7_never_applies() -> None:
     for rule in RULES_2026:
-        assert rule.verified == bool(rule.url and rule.page)
-        assert not rule.verified  # nothing was read in the official PDFs yet
+        assert rule.verified and rule.url.startswith("https://apia.org.ro/") and rule.page
         if rule.source.startswith("GAEC 7"):
             assert rule.practice is None
+    assert RULES_2026[0].id == "crop_change"
+
+
+def test_every_candidate_meets_gaec7_by_rotation() -> None:
+    """The crop changes every year on every field: no area grows last year's crop."""
+    pieces, scores = farm(FOUR_FIELDS, 3, 2, MAIZE_FIRST, weather=0)
+    result = solve_farm(pieces, scores, LEGUMES)
+    for plan in result.plans:
+        row = next(r for r in rule_checks(plan.allocation, LEGUMES, None) if r.id == "crop_change")
+        assert row.value_pct == 0 and row.passed
 
 
 def test_proven_optimal_only_for_unpruned_optimal_first_solve() -> None:
@@ -393,23 +404,26 @@ def test_pruned_only_when_a_pair_is_removed() -> None:
     assert not result.pruned and result.plans[0].proven_optimal
 
 
-def test_one_field_farm_of_80_ha_drops_either_practice(monkeypatch: pytest.MonkeyPatch) -> None:
-    """§10.8: one 80 ha parcel in 16 pieces, scores drawn per piece and rotation, pruned: 100 %
-    one crop each year, so neither practice can hold; the rule rows show it. The field keeps one
-    rotation whether the solve with the practice ends INFEASIBLE or (stubbed) UNKNOWN."""
+def test_one_field_farm_of_80_ha(monkeypatch: pytest.MonkeyPatch) -> None:
+    """One 80 ha parcel in 16 pieces, pruned. Legumes every year cannot hold with one rotation
+    (pea returns after 4 years): dropped, the field kept whole, whether the solve with the practice
+    ends INFEASIBLE or (stubbed) UNKNOWN. Diversification splits it into 3 rotations (above
+    30 ha the rule asks for 3 crops)."""
     rng = random.Random(1)
     pieces: Pieces = [(f"F{i}", "F", 50) for i in range(16)]
     rids = candidates(CROPS, 5, MIN_RETURN)
     scores: Scores = {(p, r): [rng.randint(300, 700)] * 3 for p, _, _ in pieces for r in rids}
+    div = solve_farm(pieces, scores, LEGUMES, "diversification", top=1, max_time_s=SLOW)
+    assert div.plans and not div.eco_dropped
+    assert all(len(choices(p, pieces)) == 3 for p in div.plans)
     for stub in (False, True):
         if stub:
             stub_out_of_time(monkeypatch)
-        for practice in ("diversification", "legume_share"):
-            result = solve_farm(pieces, scores, LEGUMES, practice, top=1)
-            assert result.pruned and result.eco_dropped and result.eco_practice is None
-            check_parcels(result, pieces)
-            rows = rule_checks(result.plans[0].allocation, LEGUMES, None)
-            assert [r.value_pct for r in rows if r.id == "max_crop_share"] == [100.0, 100.0]
+        result = solve_farm(pieces, scores, LEGUMES, "legume_share", top=1)
+        assert result.pruned and result.eco_dropped and result.eco_practice is None
+        check_parcels(result, pieces)
+        rows = rule_checks(result.plans[0].allocation, LEGUMES, None)
+        assert [r.value_pct for r in rows if r.id == "max_crop_share"] == [100.0, 100.0]
 
 
 def test_ranks_best_first_and_differ_in_two_choices() -> None:
@@ -437,9 +451,9 @@ def test_split_mode_plans_on_the_services_scores(
     its unrounded area is passed as the service does."""
     pieces, scores = service_farm(fields, years)
     ha = farm_ha or sum(a for *_, a in pieces) / 10
-    result = solve_farm(pieces, scores, CROP_LEGUMES, farm_ha=ha)
+    result = solve_farm(pieces, scores, CROP_LEGUMES, "diversification", farm_ha=ha)
     print(f"\n{ha:.2f} ha, {years} years: {result.times_s} {[p.status for p in result.plans]}")
-    assert splits(ha) and len(result.plans) == 3
+    assert splits(ha, "diversification") and len(result.plans) == 3
     check_blocks(result, pieces)
 
 
@@ -449,9 +463,8 @@ def test_one_log_line_per_solve(caplog: pytest.LogCaptureFixture) -> None:
         result = solve_farm(pieces, scores, LEGUMES, top=2, max_time_s=SLOW)
     lines = [r.getMessage() for r in caplog.records if r.getMessage().startswith("farm solve")]
     print("\n" + "\n".join(lines))
-    assert len(lines) == len(result.times_s) == 4  # the floor's two parcel solves, then split
-    assert ["mode=parcel" in line for line in lines] == [True, True, False, False]
-    assert all("mode=split" in line for line in lines[2:])
+    assert len(lines) == len(result.times_s) == 2  # no practice: parcel mode only
+    assert all("mode=parcel" in line for line in lines)
     for keys in ("status=OPTIMAL", "gap=0.0000%", "candidates=", "pieces=7"):
         assert all(keys in line for line in lines)
 

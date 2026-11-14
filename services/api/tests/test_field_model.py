@@ -9,7 +9,7 @@ from api.planner import world_model as wm
 
 REQUEST = {
     "location": {"lat": 46.30, "lon": 23.75},
-    "current_rotation": ["maize", "soybean", "wheat"],
+    "current_rotation": ["maize", "pea", "wheat"],
     "priorities": {"water": 0.8, "soil": 0.6, "yield": 0.5, "risk": 0.4},
 }
 
@@ -34,7 +34,7 @@ def test_analysis_comes_from_the_trained_model(monkeypatch: pytest.MonkeyPatch) 
     assert current.is_current and [str(c) for c in current.sequence] == REQUEST["current_rotation"]
     assert [s.year for s in current.replay] == field_model.YEARS
     assert {i.id for i in a.indicators} >= {"model_ndvi_peak", "jul_hot_days"}
-    assert a.soil.clay_pct is not None and "soybean" in " ".join(c.en for c in a.caveats)
+    assert a.soil.clay_pct is not None
     best = max(s.score.total for s in a.strategies[1:])
     assert best >= current.score.total  # alternatives are the model's best rotations
 
@@ -42,3 +42,11 @@ def test_analysis_comes_from_the_trained_model(monkeypatch: pytest.MonkeyPatch) 
 def test_mock_when_the_model_is_off(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("PLANNER_WORLD_MODEL", "mock")
     assert field_model.run(FieldRequest.model_validate(REQUEST)).mock is True
+
+
+@pytest.mark.skipif(not wm.available(), reason="world model inputs not built")
+def test_a_crop_the_model_does_not_score_is_refused(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("PLANNER_WORLD_MODEL", "lstm")
+    req = FieldRequest.model_validate({**REQUEST, "current_rotation": ["maize", "soybean"]})
+    with pytest.raises(field_model.UnsupportedCrop):
+        field_model.run(req)

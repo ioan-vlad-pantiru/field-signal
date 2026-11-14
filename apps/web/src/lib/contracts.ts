@@ -1109,12 +1109,12 @@ export interface OptimizerCropArea {
 }
 /**
  * A provisional farm-level crop rule check (payment conditions, simplified): not a statement
- * of GAEC 7 or PD-04 compliance. `max_*` rules are upper limits; `legume_share` is a lower
- * limit.
+ * of GAEC 7 or PD-04 compliance. `max_*` and `crop_change` (share of the farm growing the same
+ * crop as the year before) are upper limits; `legume_share` is a lower limit.
  */
 
 export interface RuleCheck {
-  id: "max_crop_share" | "max_two_crops_share" | "legume_share";
+  id: "crop_change" | "max_crop_share" | "max_two_crops_share" | "legume_share";
   /**
    * rule profile and year, e.g. 'GAEC 7 2026', 'PD-04 2026'
    */

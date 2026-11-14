@@ -14,8 +14,8 @@ the trained LSTM (`api.planner.world_model`, Răzvan's model) through the planne
 
 Falls back to the mock (`mock=true`) only when the model's inputs are not deployed (development)
 or `PLANNER_WORLD_MODEL=mock`; a point outside the planner grid raises `weather.OutsideCoverage`.
-Crops the planner does not simulate (soybean, cover crops) in a current rotation are scored as
-their nearest planner crop, said in the caveats.
+A current rotation may hold only the crops the model scores (maize, wheat, barley, sunflower,
+pea); any other raises `UnsupportedCrop`. Never one crop in place of another.
 """
 
 from __future__ import annotations
@@ -59,13 +59,6 @@ YEARS = list(range(2001, 2026))
 PLAN_YEARS = 3
 ALTERNATIVES = 3
 MIN_RETURN = {c: v.min_return_years for c, v in CROPS.items()}
-# Crops the model does not simulate, scored as the nearest planner crop.
-SCORED_AS = {
-    "soybean": "pea",
-    "cover_vetch": "pea",
-    "cover_mustard": "barley",
-    "cover_phacelia": "barley",
-}
 # Season grades from the model's yield index (1 = the crop's normal year at this field).
 WATCH_BELOW, BAD_BELOW = 0.95, 0.85
 HOT_DAYS_WATCH = 5  # days with Tmax >= 30 °C over the flowering months
@@ -124,12 +117,22 @@ def run(request: FieldRequest) -> FieldAnalysis:
     # Outside the model's grid: weather.OutsideCoverage propagates (the endpoint answers 422).
     point = grid.grid_point(lat, lon)
     weather.cell_id(lat, lon)
+    _scored([str(c) for c in request.current_rotation])  # unsupported crops: UnsupportedCrop
     weights = tuple(sorted((str(p), float(w)) for p, w in request.priorities.items()))
     return _analyze(point, lat, lon, tuple(str(c) for c in request.current_rotation), weights)
 
 
+class UnsupportedCrop(ValueError):
+    """The current rotation holds a crop the model does not score (the endpoint answers 422)."""
+
+
 def _scored(seq: Sequence[str]) -> list[str]:
-    return [SCORED_AS.get(c, c) for c in seq]
+    unknown = sorted({c for c in seq if c not in CROPS})
+    if unknown:
+        raise UnsupportedCrop(
+            f"The crop model scores {', '.join(CROPS)}; not {', '.join(unknown)}."
+        )
+    return list(seq)
 
 
 def _name(seq: Sequence[str]) -> Localized:
@@ -176,43 +179,42 @@ def _analyze(
                 "current", current_name, True, list(current), scored_current, base_scores, point
             )
         )
+    versus = None
+    if strategies:  # alternatives are explained against the farmer's own rotation
+        rows = _year_rows(point, scored_current)
+        versus = (
+            sum(s.status == Status.BAD for s in strategies[0].replay),
+            float(np.mean([r.yield_rel.mid for _, _, r in rows if r.yield_rel])),
+        )
     for i, r in enumerate(ranked[: ALTERNATIVES + (0 if strategies else 1)]):
         seq = r.split(">")
         strategies.append(
-            _strategy(f"model-{i + 1}", _name(seq), False, seq, seq, table[r], point)  # type: ignore[arg-type]
+            _strategy(f"model-{i + 1}", _name(seq), False, seq, seq, table[r], point, versus)  # type: ignore[arg-type]
         )
 
     cell = weather.cell_id(lat, lon)
     caveats = [
         L(
-            ro="Scorurile și reluarea sezoanelor vin din modelul antrenat (o rețea LSTM antrenată "
-            "pe NDVI din satelit și umiditatea solului 2016-2024): indicele de recoltă este un "
-            "indicator din NDVI (1 = un an obișnuit pentru cultură aici), nu tone la hectar.",
-            en="Scores and the season replay come from the trained model (an LSTM trained on "
-            "2016-2024 satellite NDVI and soil moisture): the yield index is an NDVI proxy (1 = "
-            "a normal year for the crop here), not tonnes per hectare.",
+            ro="Rezultatele vin din modelul de culturi Field Signal, antrenat pe imagini din "
+            "satelit ale câmpurilor din România și Bulgaria (2016-2024). „% dintr-o recoltă "
+            "obișnuită” compară cât de verde și viguroasă ar fi cultura cu un an obișnuit pentru "
+            "ea, aici; nu sunt tone la hectar.",
+            en="Results come from the Field Signal crop model, trained on satellite images of "
+            'fields in Romania and Bulgaria (2016-2024). "% of a normal harvest" compares how '
+            "green and vigorous the crop would be with a normal year for it, here; it is not "
+            "tonnes per hectare.",
         ),
         L(
-            ro="Vremea descrie zona (celula NASA POWER, circa 50 km), nu exact parcela; solul este "
-            "cel din SoilGrids la 250 m.",
-            en="Weather describes the area (NASA POWER cell, about 50 km), not this exact field; "
-            "soil is SoilGrids at 250 m.",
+            ro="Vremea este cea a zonei (NASA, circa 50 km), nu exact a parcelei; solul este cel "
+            "din hărțile SoilGrids (250 m).",
+            en="Weather is the area's (NASA, about 50 km), not this exact field's; soil comes from "
+            "the SoilGrids maps (250 m).",
         ),
         L(
             ro="Instrumentul sprijină decizia fermierului, nu o înlocuiește.",
-            en="This tool supports the farmer's judgment; it does not replace it.",
+            en="This tool supports your judgment; it does not replace it.",
         ),
     ]
-    if scored_current != list(current):
-        caveats.insert(
-            1,
-            L(
-                ro="Modelul nu simulează soia și culturile de acoperire: în rotația actuală sunt "
-                "evaluate ca mazăre (leguminoase) sau orz.",
-                en="The model does not simulate soybean or cover crops: in the current rotation "
-                "they are scored as pea (legumes) or barley.",
-            ),
-        )
     return FieldAnalysis(
         mock=False,
         location=Location(point=LatLon(lat=lat, lon=lon), label=f"{lat:.4f}, {lon:.4f}"),
@@ -257,9 +259,9 @@ def _season(cell: str, year: int, crop: str, row: RotationOutcome, shown: str) -
         reasons.append(
             Reason(
                 code="model_yield_index",
-                label=L(ro="Indice de recoltă prezis (model)", en="Predicted yield index (model)"),
-                value=round(index, 2),
-                unit="x normal",
+                label=L(ro="Recolta prezisă", en="Expected harvest"),
+                value=float(_pct(index)),
+                unit="% of normal",
             )
         )
     hot, dry = _flowering_weather(cell, year, crop)
@@ -299,6 +301,7 @@ def _strategy(
     seq: list[str],
     scores: np.ndarray,
     point: str,
+    versus: tuple[int, float] | None = None,
 ) -> Strategy:
     cell = weather.cell_id(*map(float, point.split("_")))
     rows = _year_rows(point, seq)
@@ -319,8 +322,12 @@ def _strategy(
         score_range=Range(low=lo, mid=mid, high=hi),
         confidence=Confidence.LOW,
         replay=replay,
-        explanation=_explanation(shown, seq, rows, replay),
+        explanation=_explanation(shown, seq, rows, replay, versus),
     )
+
+
+def _pct(x: float) -> int:
+    return round(100 * x)
 
 
 def _explanation(
@@ -328,58 +335,98 @@ def _explanation(
     seq: Sequence[str],
     rows: list[tuple[int, str, RotationOutcome]],
     replay: list[SeasonOutcome],
+    versus: tuple[int, float] | None,
 ) -> Explanation:
+    """Every line from this field's replay. `versus`: the current rotation's (poor seasons, mean
+    harvest index), to compare an alternative against; None for the current rotation itself."""
     index = [r.yield_rel.mid for _, _, r in rows if r.yield_rel]
+    mean = float(np.mean(index))
     bad = [s.year for s in replay if s.status == Status.BAD]
     worst_year, worst = min(
         ((y, r.yield_rel.mid) for y, _, r in rows if r.yield_rel), key=lambda t: t[1]
     )
-    legume = any(c in LEGUMES for c in seq)
+    worst_reasons = next(s.reasons for s in replay if s.year == worst_year)
+    drivers = [r.label for r in worst_reasons if r.code != "model_yield_index"]
     n = len(replay)
+    poor_ro = "an slab" if len(bad) == 1 else "ani slabi"
+    poor_en = "poor year" if len(bad) == 1 else "poor years"
+
+    benefits: list[Localized] = []
+    if versus is not None:
+        fewer = versus[0] - len(bad)
+        gain = _pct(mean) - _pct(versus[1])
+        if fewer > 0:
+            benefits.append(
+                L(
+                    ro=f"Cu {fewer} {'an slab' if fewer == 1 else 'ani slabi'} mai puțin decât "
+                    "rotația actuală.",
+                    en=f"{fewer} {'poor year' if fewer == 1 else 'poor years'} fewer than your "
+                    "rotation now.",
+                )
+            )
+        if gain >= 2:
+            benefits.append(
+                L(
+                    ro=f"Recolte cu circa {gain}% mai bune în medie decât rotația actuală.",
+                    en=f"Harvests about {gain}% better on average than your rotation now.",
+                )
+            )
+    if any(c in LEGUMES for c in seq):
+        benefits.append(
+            L(
+                ro="Mazărea lasă azot în sol pentru cultura următoare.",
+                en="Pea leaves nitrogen in the soil for the next crop.",
+            )
+        )
+
+    hardest_ro = f"Cel mai greu an: {worst_year}, {_pct(worst)}% dintr-o recoltă obișnuită"
+    hardest_en = f"Hardest year: {worst_year}, {_pct(worst)}% of a normal harvest"
+    if drivers:
+        hardest_ro += f" ({', '.join(d.ro.lower() for d in drivers)})"
+        hardest_en += f" ({', '.join(d.en.lower() for d in drivers)})"
+    poor_count_ro = f"{len(bad)} {poor_ro}" if bad else "niciun an slab"
+    poor_count_en = f"{len(bad)} {poor_en}" if bad else "no poor years"
     return Explanation(
         why=L(
-            ro=f"Modelul a rejucat {_name(shown).ro} pe vremea reală din {YEARS[0]}-{YEARS[-1]}: "
-            f"{len(bad)} {'sezon slab' if len(bad) == 1 else 'sezoane slabe'} din {n}, "
-            f"indice mediu de recoltă {np.mean(index):.2f}.",
-            en=f"The model replayed {_name(shown).en} on the real {YEARS[0]}-{YEARS[-1]} weather: "
-            f"{len(bad)} poor {'season' if len(bad) == 1 else 'seasons'} out of {n}, "
-            f"average yield index {np.mean(index):.2f}.",
+            ro=f"Pe vremea reală din {YEARS[0]}-{YEARS[-1]}, rotația ar fi avut {poor_count_ro} "
+            f"din {n}. Un an mediu ar fi dat {_pct(mean)}% dintr-o recoltă obișnuită pentru "
+            "culturile ei, aici.",
+            en=f"On the real weather of {YEARS[0]}-{YEARS[-1]}, this rotation would have had "
+            f"{poor_count_en} out of {n}. An average year would have given {_pct(mean)}% of a "
+            "normal harvest for its crops, here.",
         ),
         evidence=[
             Evidence(
-                text=L(ro="Sezoane slabe în reluare", en="Poor seasons in the replay"),
+                text=L(ro="Ani slabi din 25", en="Poor years out of 25"),
                 value=float(len(bad)),
-                unit="seasons",
+                unit="",
                 source=MODEL.dataset,
             ),
             Evidence(
-                text=L(ro=f"Cel mai slab an ({worst_year})", en=f"Weakest year ({worst_year})"),
-                value=round(float(worst), 2),
-                unit="x normal",
+                text=L(ro="Recolta într-un an mediu", en="Harvest in an average year"),
+                value=float(_pct(mean)),
+                unit="% of normal",
+                source=MODEL.dataset,
+            ),
+            Evidence(
+                text=L(
+                    ro=f"Recolta în {worst_year}, cel mai greu an",
+                    en=f"Harvest in {worst_year}, the hardest year",
+                ),
+                value=float(_pct(worst)),
+                unit="% of normal",
                 source=MODEL.dataset,
             ),
         ],
-        benefits=[
-            L(
-                ro="Leguminoasa fixează azot pentru cultura următoare",
-                en="The legume fixes nitrogen for the next crop",
-            )
-        ]
-        if legume
-        else [L(ro="Rotație cunoscută, fără investiții noi", en="Familiar, no new investment")],
+        benefits=benefits,
         gaps=[
             L(
-                ro="Vremea descrie zona (~50 km), nu exact parcela.",
-                en="Weather describes the area (~50 km), not this exact field.",
+                ro="Vremea este cea a zonei (circa 50 km), nu exact a parcelei.",
+                en="The weather is the area's (about 50 km), not this exact field's.",
             )
         ],
         risks=[
-            LocalRisk(
-                text=L(
-                    ro="Verificați cu un agronom soiurile și pragurile pentru parcela dvs.",
-                    en="Check varieties and thresholds for your field with an agronomist.",
-                )
-            )
+            LocalRisk(text=L(ro=hardest_ro + ".", en=hardest_en + "."), needs_local_review=False)
         ],
         generated_by="template",
     )
@@ -395,7 +442,7 @@ def _indicators(point: str, cell: str, current: Sequence[str]) -> list[Indicator
         rain[y] = round(sum(m.rain_mm for m in months[5:8]), 1)
     ndvi = {y: (round(r.ndvi_peak.mid, 3) if r.ndvi_peak else None) for y, _, r in rows}
     sm = {
-        y: (round(r.rootzone_sm_critical.mid, 3) if r.rootzone_sm_critical else None)
+        y: (round(100 * r.rootzone_sm_critical.mid, 1) if r.rootzone_sm_critical else None)
         for y, _, r in rows
     }
 
@@ -435,10 +482,12 @@ def _indicators(point: str, cell: str, current: Sequence[str]) -> list[Indicator
         ),
         Indicator(
             id="model_ndvi_peak",
-            label=L(ro="Vigoarea prezisă (NDVI maxim)", en="Predicted peak greenness (NDVI)"),
+            label=L(ro="Cât de verde ar fi cultura", en="How green the crop would be"),
             description=L(
-                ro="NDVI maxim prezis de model pentru cultura din rotația actuală a fiecărui an.",
-                en="Peak NDVI the model predicts for each year's crop of the current rotation.",
+                ro="Verdele maxim din satelit (NDVI, 0-1) prezis pentru cultura din rotația "
+                "dumneavoastră în fiecare an; mai mult înseamnă o cultură mai viguroasă.",
+                en="Peak satellite greenness (NDVI, 0-1) predicted for your rotation's crop each "
+                "year; higher means a more vigorous crop.",
             ),
             unit="NDVI",
             higher_is_worse=False,
@@ -448,12 +497,14 @@ def _indicators(point: str, cell: str, current: Sequence[str]) -> list[Indicator
         ),
         Indicator(
             id="model_rootzone_flowering",
-            label=L(ro="Apa din sol la înflorire (model)", en="Soil water at flowering (model)"),
+            label=L(ro="Apă în sol la înflorire", en="Water in the soil at flowering"),
             description=L(
-                ro="Umiditatea solului în zona rădăcinilor prezisă de model la înflorire.",
-                en="Root-zone soil moisture the model predicts at flowering.",
+                ro="Apa din primul metru de sol când înflorește cultura, prezisă de model "
+                "(% din volumul solului).",
+                en="Water in the top metre of soil when the crop flowers, predicted by the model "
+                "(% of the soil's volume).",
             ),
-            unit="m³/m³",
+            unit="%",
             higher_is_worse=False,
             source=MODEL,
             series=series(sm),

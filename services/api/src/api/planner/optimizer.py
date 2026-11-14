@@ -2,13 +2,23 @@
 
 Plain data in and out; imports no FastAPI, contracts, weather or mock (plan §5a). Areas are
 integers in 0.1 ha, scores integers 0-1000 (the 0-100 total x 10), one value per weather scenario
-in one fixed order. A drawn field is a parcel. `splits(farm_ha)` picks the mode, once, on the
-farm's unrounded area (the caller's `farm_ha`; by default the pieces' sum):
-- parcel mode (farm of SPLIT_BELOW_HA or more): every field carries exactly one rotation on its
-  whole area, one crop per year; no exception and no fallback to splitting;
-- split mode (smaller farm): a field of 10 ha or more may be divided between up to 3 rotations,
-  each on at least 5 ha; a smaller field carries one. Splitting is permitted, never forced, and
-  the result is an area split, not a planting map: where each block lies is not modelled.
+in one fixed order. A drawn field is a parcel. `splits(farm_ha, eco_practice)` picks the mode,
+once, on the farm's unrounded area (the caller's `farm_ha`; by default the pieces' sum):
+- parcel mode (the default): every field carries exactly one rotation on its whole area, one crop
+  per year. Every candidate rotation changes the crop each year, which is how a farm meets the EU
+  crop rotation standard (GAEC 7, rotation route), so no field ever needs dividing for it;
+- split mode, only when the farmer enforces the PD-04 eco-scheme's crop diversification on a farm
+  above 10 ha (the rule's threshold): a field of 10 ha or more may be divided between up to 2
+  rotations, or up to 3 on a farm above 30 ha (the rule asks for 3 crops only there), each on at
+  least 5 ha. Splitting is permitted, never forced, and the result is an area split, not a
+  planting map: where each block lies is not modelled.
+
+Rules (RULES_2026), read in the official APIA guides for 2026: GAEC 7 is met by rotation OR by
+diversification (farm's choice). Diversification: arable land up to 10 ha exempt; above 10 ha up
+to 30 ha at least 2 crops, main crop at most 75 %; above 30 ha at least 3 crops, main crop at most
+75 %, two main crops at most 95 %. PD-04 option A: same bands with 70 % and 90 %; option C:
+legumes at least 2 % of the arable land. A crop is a botanical genus (wheat, barley, maize,
+sunflower and pea are five crops). The thresholds are applied to the total drawn area.
 
 Signatures (T5 builds on these):
 
@@ -22,7 +32,7 @@ Signatures (T5 builds on these):
         prune_above: int = PRUNE_ABOVE, split_prune_above: int = SPLIT_PRUNE_ABOVE,
         farm_ha: float | None = None,     # unrounded farm area; None: the pieces' sum
     ) -> FarmSolve
-    splits(farm_ha: float) -> bool                  # split mode: farm_ha < SPLIT_BELOW_HA
+    splits(farm_ha: float, eco_practice: str | None = None) -> bool  # split mode, see above
     yearly_areas(allocation: Mapping[tuple[str, str], int]) -> list[dict[str, int]]
     rule_checks(allocation: Mapping[tuple[str, str], int], legumes: Collection[str],
                 eco_practice: str | None) -> list[RuleResult]
@@ -65,10 +75,12 @@ from api.planner.candidates import crops_of
 Key = tuple[str, str]  # (piece_id or field_id, rotation_id)
 log = logging.getLogger(__name__)  # one INFO line per solve; an invalid model is logged, raised
 
-# Product choice (owner, 14 Nov 2026), no regulatory source: below it a farm may split fields.
-SPLIT_BELOW_HA: float = 75
+# Diversification thresholds (APIA, Ghidul fermierului privind condiționalitatea 2026, GAEC 7,
+# p. 61-62; eco-scheme guide 2026, PD-04, p. 14): above 10 ha at least 2 crops, above 30 ha 3.
+DIVERSIFY_ABOVE_HA: float = 10
+THREE_CROPS_ABOVE_HA: float = 30
 MIN_BLOCK = 50  # 0.1 ha: in split mode a rotation takes 0 or at least 5 ha of a field
-MAX_ROTATIONS = 3  # rotations per field in split mode
+MAX_ROTATIONS = 3  # rotations per field in split mode, on a farm above THREE_CROPS_ABOVE_HA
 WHOLE_FIELD_BELOW = 100  # 0.1 ha: in split mode a field under 10 ha carries one rotation
 # Split-mode solver settings, measured 14 Nov 2026 on the service's mock-world-model scores
 # (15-core Mac, 3 s per solve). On defaults the unpruned split model (45 ha demo or one 74.99 ha
@@ -116,14 +128,22 @@ class Rule:
     page: str = ""
 
 
-# Figures from secondary sources. The official 2026 documents (the MADR eco-scheme guide and the
-# conditionality guide for farmers) were not read: every row is unverified, with no URL or page.
+# Read in the official 2026 documents (APIA). `above` is in 0.1 ha: the rule binds above it.
+_GAEC = "https://apia.org.ro/wp-content/uploads/2026/03/Ghid-conditionalitate-ed-IV-2026fixed.pdf"
+_PD04 = (
+    "https://apia.org.ro/wp-content/uploads/2026/03/"
+    "Ghid-informativ-privind-aplicarea-eco-schemelor-din-sectorul-vegetal-Campania-2026.pdf"
+)
 RULES_2026 = (
-    Rule("max_crop_share", "GAEC 7 2026", None, 75, 100),
-    Rule("max_two_crops_share", "GAEC 7 2026", None, 95, 300),
-    Rule("max_crop_share", "PD-04 2026", "diversification", 70, 100),
-    Rule("max_two_crops_share", "PD-04 2026", "diversification", 90, 300),
-    Rule("legume_share", "PD-04 2026", "legume_share", 2, 0),
+    # GAEC 7, rotation route: the crop changes at least once a year on each parcel.
+    Rule("crop_change", "GAEC 7 2026", None, 0, 100, True, _GAEC, "p. 61"),
+    # GAEC 7, diversification route (the alternative): reported, never enforced.
+    Rule("max_crop_share", "GAEC 7 2026", None, 75, 100, True, _GAEC, "p. 62"),
+    Rule("max_two_crops_share", "GAEC 7 2026", None, 95, 300, True, _GAEC, "p. 62"),
+    # PD-04 (voluntary eco-scheme, arable land from 10.01 ha): option A, or option C.
+    Rule("max_crop_share", "PD-04 2026", "diversification", 70, 100, True, _PD04, "p. 14"),
+    Rule("max_two_crops_share", "PD-04 2026", "diversification", 90, 300, True, _PD04, "p. 14"),
+    Rule("legume_share", "PD-04 2026", "legume_share", 2, 100, True, _PD04, "p. 15"),
 )
 ECO_PRACTICES = ("diversification", "legume_share")
 
@@ -169,10 +189,11 @@ def is_proven_optimal(status: cp_model.CpSolverStatus, pruned: bool, first_solve
     return status == cp_model.OPTIMAL and not pruned and first_solve
 
 
-def splits(farm_ha: float) -> bool:
-    """Split mode: the farm's unrounded area is strictly below SPLIT_BELOW_HA. The only mode
+def splits(farm_ha: float, eco_practice: str | None = None) -> bool:
+    """Split mode: only to meet the PD-04 crop diversification the farmer enforces, on a farm whose
+    unrounded area is above DIVERSIFY_ABOVE_HA (smaller farms are exempt). The only mode
     comparison; `solve_farm` decides with it."""
-    return farm_ha < SPLIT_BELOW_HA
+    return eco_practice == "diversification" and farm_ha > DIVERSIFY_ABOVE_HA
 
 
 def solve_farm(
@@ -197,7 +218,7 @@ def solve_farm(
     whole = _prune(by_field) if len(by_field) > prune_above else by_field  # parcel mode's model
     whole_pruned = len(whole) < len(by_field)
     kept, pruned = whole, whole_pruned
-    split = splits(sum(a for _, _, a in pieces) / 10 if farm_ha is None else farm_ha)
+    split = splits(sum(a for _, _, a in pieces) / 10 if farm_ha is None else farm_ha, eco_practice)
     if split:  # per piece, on its field's rotations; pruned on its own size, in piece pairs
         field_of = {p: f for p, f, _ in pieces}
         kept = {k: list(s) for k, s in scores.items() if (field_of.get(k[0]), k[1]) in by_field}
@@ -282,7 +303,9 @@ def _rank(
             m.add(block >= min(MIN_BLOCK, field_area[f]) * u)
             m.add(block <= field_area[f] * u)
         for f, us in per_field.items():
-            cap = 1 if field_area[f] < WHOLE_FIELD_BELOW else MAX_ROTATIONS
+            # As many rotations as the farm needs crops: 2, or 3 above THREE_CROPS_ABOVE_HA.
+            need = MAX_ROTATIONS if total > 10 * THREE_CROPS_ABOVE_HA else 2
+            cap = 1 if field_area[f] < WHOLE_FIELD_BELOW else need
             m.add(cp_model.LinearExpr.sum(us) <= cap)
         if hint:  # the floor's best plan; at 0.5 CPU it led to more OPTIMAL split solves
             on_hint = {(field_of[p], r) for p, r in hint}
@@ -438,7 +461,15 @@ def rule_checks(
     years = yearly_areas(allocation)
     out = []
     for rule in RULES_2026:
-        if rule.id == "max_crop_share":
+        if rule.id == "crop_change":  # area with the same crop as the year before, worst year
+            worst = max(
+                (
+                    sum(a for (_, r), a in allocation.items() if _repeats(r, t))
+                    for t in range(1, len(years))
+                ),
+                default=0,
+            )
+        elif rule.id == "max_crop_share":
             worst = max(max(y.values()) for y in years)
         elif rule.id == "max_two_crops_share":
             worst = max(sum(sorted(y.values())[-2:]) for y in years)
@@ -462,6 +493,11 @@ def rule_checks(
             )
         )
     return out
+
+
+def _repeats(rotation: str, year: int) -> bool:
+    crops = crops_of(rotation)
+    return crops[year] == crops[year - 1]
 
 
 def area_mean(allocation: Mapping[Key, int], values: Mapping[Key, Sequence[float]]) -> list[float]:

@@ -523,10 +523,10 @@ class YearAreas(Contract):
 
 class RuleCheck(Contract):
     """A provisional farm-level crop rule check (payment conditions, simplified): not a statement
-    of GAEC 7 or PD-04 compliance. `max_*` rules are upper limits; `legume_share` is a lower
-    limit."""
+    of GAEC 7 or PD-04 compliance. `max_*` and `crop_change` (share of the farm growing the same
+    crop as the year before) are upper limits; `legume_share` is a lower limit."""
 
-    id: Literal["max_crop_share", "max_two_crops_share", "legume_share"]
+    id: Literal["crop_change", "max_crop_share", "max_two_crops_share", "legume_share"]
     source: str = Field(description="rule profile and year, e.g. 'GAEC 7 2026', 'PD-04 2026'")
     limit_pct: float = Field(ge=0, le=100)
     value_pct: float = Field(ge=0, le=100, description="worst plan year")

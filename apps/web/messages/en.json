@@ -397,16 +397,16 @@
     "window": "seasons {start}–{end}",
     "median": "median",
     "perField": "Rotations by field",
-    "perFieldHint": "Each row is one rotation on the hectares shown: one crop per year, in this order from year 1. A farm of 75 ha or more keeps one rotation on each field. Below 75 ha, a field of 10 ha or more may be split between up to 3 rotations of at least 5 ha each; where each part lies in the field is your choice.",
+    "perFieldHint": "Each row is one rotation: one crop per year, in this order from year 1. Every field keeps one rotation and changes crop every year, as the EU crop rotation rule (GAEC 7) asks.",
     "ha": "{ha} ha",
-    "details": "Score parts, crop shares and provisional rule check",
+    "details": "Score parts, crop shares and rule check",
     "shares": "Crop shares of the farm, per plan year",
     "year": "Year {n}",
     "pct": "{value}%",
     "caveats": "What this plan does not tell you",
     "rules": {
-      "title": "Provisional rule check",
-      "hint": "Simplified checks of the farm's crop shares in its worst plan year. They do not tell you whether the farm qualifies for payments.",
+      "title": "Rule check",
+      "hint": "Checks of the farm's crops in its worst plan year, against the 2026 APIA guides. They do not tell you whether the farm qualifies for payments.",
       "max_crop_share": "Main crop at most {limit}% of the farm",
       "max_two_crops_share": "Two main crops at most {limit}% together",
       "legume_share": "Legumes at least {limit}% of the farm",
@@ -416,7 +416,10 @@
       "belowThreshold": "Farm below the rule's size threshold",
       "applied": "Enforced in this plan",
       "notApplied": "Not enforced",
-      "unverified": "Unverified"
+      "unverified": "Unverified",
+      "crop_change": "The crop changes every year on every field",
+      "metByRotation": "Not needed when the crop changes every year (GAEC 7 rotation)",
+      "onlyWithEcoScheme": "Only if you join the PD-04 eco-scheme"
     },
     "retry": "Try again",
     "modelName": "Field Signal crop model{runs, plural, one {} other {, # runs}}"

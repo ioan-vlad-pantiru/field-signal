@@ -26,6 +26,7 @@ import { CheckIcon } from "@/components/ui/icons";
 import { nearestCommune, useCommunes } from "./steps/communes";
 import { forgetField, saveField, useSavedField, type SavedField } from "./steps/saved-field";
 import { Skeleton } from "@/components/ui/skeleton";
+import { supportedRotation } from "@/lib/crops";
 
 type State =
   | { step: "form" }
@@ -34,11 +35,11 @@ type State =
   | { step: "error" };
 
 function fromAccount(field: AccountField): SubmittedField {
-  return { request: field.request, boundary: field.boundary, parts: field.parts ?? [], place: field.near ?? null, accountId: field.id, name: field.name };
+  return { request: supportedRotation(field.request), boundary: field.boundary, parts: field.parts ?? [], place: field.near ?? null, accountId: field.id, name: field.name };
 }
 
 function fromLocal(field: SavedField): SubmittedField {
-  return { request: field.request, boundary: field.boundary, parts: field.parts ?? [], place: field.near, accountId: null, name: null };
+  return { request: supportedRotation(field.request), boundary: field.boundary, parts: field.parts ?? [], place: field.near, accountId: null, name: null };
 }
 
 /** A pin passed in the URL (`?lat=…&lon=…&place=…`), e.g. from the feed screen's zone sheet. */

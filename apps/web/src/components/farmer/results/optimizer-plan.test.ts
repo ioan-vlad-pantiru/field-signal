@@ -40,14 +40,15 @@ describe("Farm plan strings", () => {
     });
   }
 
-  // Splitting only strictly below 75 ha (optimizer plan §10.6): only perFieldHint may mention it, and only
-  // beside the threshold, so a large farm is never promised a split.
+  // Fields are kept whole: the crop changes every year on each field, which meets GAEC 7 by
+  // rotation. No farm-plan text may promise or mention splitting a field, nor the old 75 ha rule.
   for (const locale of ["en", "ro"]) {
-    it(`${locale}: splitting is mentioned only with the 75 ha threshold`, () => {
+    it(`${locale}: no text promises a split field`, () => {
       for (const [key, text] of farmPlan(locale)) {
-        if (key === "perFieldHint") assert.match(text, /75 ha/, key);
-        else assert.doesNotMatch(text, /split|împăr/i, key);
+        assert.doesNotMatch(text, /split|împăr|75 ha/i, key);
       }
+      const hint = farmPlan(locale).find(([key]) => key === "perFieldHint")?.[1] ?? "";
+      assert.match(hint, /GAEC 7/, "perFieldHint names the rule it meets");
     });
   }
 

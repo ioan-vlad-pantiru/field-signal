@@ -17,6 +17,7 @@ from api.contracts import (
     OptimizerResponse,
     SourcingRegion,
 )
+from api.field_model import UnsupportedCrop
 from api.planner import jobs
 from api.planner.service import PlanRejected, plan_farm
 from api.planner.weather import OutsideCoverage
@@ -64,7 +65,7 @@ def analyze_field(request: FieldRequest) -> FieldAnalysis:
     field is outside the area the model covers."""
     try:
         return run_field_analysis(request)
-    except OutsideCoverage as e:
+    except (OutsideCoverage, UnsupportedCrop) as e:
         raise HTTPException(status_code=422, detail=str(e)) from e
 
 

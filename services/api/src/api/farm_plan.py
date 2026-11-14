@@ -41,6 +41,7 @@ from api.contracts import (
     PlanField,
     Strategy,
 )
+from api.field_model import UnsupportedCrop
 from api.planner.weather import OutsideCoverage
 
 router = APIRouter(prefix="/v1/farm")
@@ -337,5 +338,5 @@ def farm_plan(request: FarmPlanRequest) -> FarmPlan:
     analysis; 422 when a field is outside the area the model covers."""
     try:
         return plan_farm(request)
-    except OutsideCoverage as e:
+    except (OutsideCoverage, UnsupportedCrop) as e:
         raise HTTPException(status_code=422, detail=str(e)) from e
