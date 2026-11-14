@@ -7,14 +7,23 @@ same token names and values: change both together.
 
 ## In short
 
-- **Colour roles:** `field` green is for actions and the brand. `signal` blue marks satellite and
-  data sources. `wheat` is a highlight fill only. Status colours always come with an icon and a word.
-- **Type:** Bricolage Grotesque for headings, Geist for text, and Geist Mono for numbers and source
-  chips.
-- **Motion:** 120, 220, 420 and 900 ms, with a "settle" ease-out. Each screen gets one orchestrated
-  moment, such as the replay-grid cascade. Everything is instant under `prefers-reduced-motion`.
-- **Maps:** OpenFreeMap vector tiles with terrain from AWS Terrain Tiles and hillshade. 3D
-  buildings appear from zoom 14, and the camera tilts as you zoom in.
+Minimal: white, one green, no decoration. The redesign plan is in [redesign-plan.md](redesign-plan.md).
+
+- **Colour roles:** `field` green is the single accent: primary action, best rotation, links.
+  `signal` blue marks data sources only. `wheat` is a crop colour only. Status colours always come
+  with a mark and a word.
+- **Good news is quiet:** good seasons are pale grey; only weak seasons carry colour. Seasons with
+  weaker evidence (before 2015) are fainter.
+- **Layout:** sections are separated by white space and one hairline, not by cards. The only rich
+  element on a screen is the land itself: the map or a satellite image.
+- **Type:** Bricolage Grotesque for headings, Geist for text, tabular numerals for numbers.
+- **Motion:** 120, 220, 420 and 900 ms, with a "settle" ease-out. One moment per screen: the season
+  strips fill in from 2001 to the latest year. Everything is instant under `prefers-reduced-motion`.
+- **Shared components** (`apps/web/src/components/ui/`): `Button`, `Segmented`, `Stepper`,
+  `SeasonStrip` (with `SeasonAxis` and `SeasonLegend`), `Disclosure`, `NoticeBar`, `Section`.
+- **Maps:** OpenFreeMap vector tiles with terrain from AWS Terrain Tiles and hillshade.
+- **Start page image:** Transylvania on 2 July 2025, MODIS on Terra, from NASA Worldview Snapshots
+  (`apps/web/public/hero-transylvania.webp`).
 
 ## Improvement plan
 
