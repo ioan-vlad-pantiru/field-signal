@@ -14,7 +14,11 @@ const STATIC_FILES = [
   "/icons/apple-touch-icon.png",
   "/vendor/maplibre-gl-worker.mjs",
 ];
-const TILE_HOSTS = new Set(["tiles.openfreemap.org", "elevation-tiles-prod.s3.amazonaws.com"]);
+const TILE_HOSTS = new Set([
+  "tiles.openfreemap.org",
+  "elevation-tiles-prod.s3.amazonaws.com",
+  "tiles.maps.eox.at",
+]);
 
 /** Fetches a page and also caches every /_next/static asset it references. */
 async function precachePage(cache, path) {

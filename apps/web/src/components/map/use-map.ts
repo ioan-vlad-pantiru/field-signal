@@ -19,6 +19,23 @@ const WORKER_URL = "/vendor/maplibre-gl-worker.mjs";
 // Mapzen/AWS Terrain Tiles (Terrarium encoding): open elevation data, no key.
 const TERRAIN_TILES = "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/{z}/{x}/{y}.png";
 
+/**
+ * Satellite basemap: EOxCloudless 2025, a cloud-free Sentinel-2 mosaic (10 m) by EOX IT Services.
+ * Licence CC BY-NC-SA 4.0 for non-commercial use, open WMTS without a key; the attribution must
+ * be clearly visible on the map. Native tiles stop at zoom 15 and are overzoomed beyond.
+ * To change the source, change these three constants (and TILE_HOSTS in public/sw.js).
+ */
+const SATELLITE_TILES =
+  "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2025_3857/default/GoogleMapsCompatible/{z}/{y}/{x}.jpg";
+const SATELLITE_MAX_ZOOM = 15;
+export const SATELLITE_ATTRIBUTION = {
+  text: "EOxCloudless by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2025)",
+  href: "https://cloudless.eox.at",
+} as const;
+const SATELLITE = "fs-satellite";
+
+export type Basemap = "map" | "satellite";
+
 const TERRAIN_EXAGGERATION = 1.5;
 const BUILDINGS_MIN_ZOOM = 14;
 
@@ -89,14 +106,49 @@ function addThreeD(map: MapLibreMap, dark: boolean) {
   }
 }
 
+/** Satellite imagery under the labels, so place and road names stay readable on top of it. */
+function addSatellite(map: MapLibreMap, visible: boolean) {
+  const firstLabel = map.getStyle().layers.find((layer) => layer.type === "symbol")?.id;
+  map.addSource(SATELLITE, {
+    type: "raster",
+    tiles: [SATELLITE_TILES],
+    tileSize: 256,
+    maxzoom: SATELLITE_MAX_ZOOM,
+    attribution: `<a href="${SATELLITE_ATTRIBUTION.href}" target="_blank" rel="noopener">${SATELLITE_ATTRIBUTION.text}</a>`,
+  });
+  map.addLayer({ id: SATELLITE, type: "raster", source: SATELLITE, paint: { "raster-fade-duration": 0 } }, firstLabel);
+  applyBasemap(map, visible ? "satellite" : "map");
+}
+
+function applyBasemap(map: MapLibreMap, basemap: Basemap) {
+  if (!map.getLayer(SATELLITE)) return;
+  const satellite = basemap === "satellite";
+  map.setLayoutProperty(SATELLITE, "visibility", satellite ? "visible" : "none");
+  // Extruded buildings would stand on top of the photo; the photo already shows them.
+  for (const layer of map.getStyle().layers) {
+    if (layer.type === "fill-extrusion") map.setLayoutProperty(layer.id, "visibility", satellite ? "none" : "visible");
+  }
+}
+
+/** Switches a map made with `useMap(…, { satellite })` between the street map and satellite imagery. */
+export function setBasemap(map: MapLibreMap, basemap: Basemap) {
+  if (map.getLayer(SATELLITE)) applyBasemap(map, basemap);
+  else map.once("load", () => applyBasemap(map, basemap));
+}
+
 /**
  * Creates a 3D MapLibre map in the referenced container and tears it down on unmount.
  * The camera tilts as the user zooms in until they tilt or rotate it themselves.
  */
-export function useMap(center: LngLatLike, zoom: number) {
+export function useMap(
+  center: LngLatLike,
+  zoom: number,
+  /** `satellite`: add the satellite layer, shown at start; switch it with `setBasemap`. Off by default. */
+  options: { satellite?: boolean } = {},
+) {
   const container = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<MapLibreMap | null>(null);
-  const initial = useRef({ center, zoom });
+  const initial = useRef({ center, zoom, satellite: options.satellite ?? false });
 
   useEffect(() => {
     if (!container.current) return;
@@ -139,6 +191,7 @@ export function useMap(center: LngLatLike, zoom: number) {
         .querySelector(".maplibregl-compact-show")
         ?.classList.remove("maplibregl-compact-show");
       addThreeD(instance, dark);
+      if (initial.current.satellite) addSatellite(instance, true);
       // Arrival: settle from a wider, flat view into the working view, slightly tilted.
       instance.flyTo({
         center: initial.current.center,

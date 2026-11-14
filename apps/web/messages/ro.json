@@ -62,37 +62,73 @@
     "seasons": "sezoane"
   },
   "Field": {
-    "step": "Pasul 1 din 2",
-    "title": "Despre câmpul dumneavoastră",
-    "intro": "Spuneți-ne unde este câmpul și ce cultivați. Vă arătăm cum ar fi mers trei rotații în ultimii 25 de ani.",
-    "whereTitle": "Unde este câmpul?",
-    "whereHint": "Desenați pe hartă conturul câmpului dumneavoastră.",
+    "steps": {
+      "label": "Pași",
+      "field": "Câmp",
+      "rotation": "Rotație",
+      "priorities": "Priorități"
+    },
+    "field": {
+      "title": "Desenați câmpul",
+      "hint": "Găsiți localitatea, apoi atingeți pe hartă fiecare colț al câmpului."
+    },
+    "search": {
+      "label": "Căutați comuna",
+      "placeholder": "De exemplu Aiud",
+      "none": "Nu există o comună cu acest nume în zona acoperită.",
+      "results": "{count, plural, one {1 comună găsită} few {# comune găsite} other {# de comune găsite}}"
+    },
+    "locate": {
+      "button": "Folosiți locația mea",
+      "busy": "Vă căutăm locația…",
+      "failed": "Locația dumneavoastră nu este disponibilă. Căutați comuna în schimb."
+    },
+    "basemap": {
+      "label": "Vedere hartă",
+      "satellite": "Satelit",
+      "map": "Hartă"
+    },
     "draw": {
       "hint": "Atingeți harta în fiecare colț al câmpului, pe rând. Sunt necesare cel puțin 3 colțuri.",
-      "progress": "{corners, plural, =0 {Niciun colț încă} one {1 colț} few {# colțuri} other {# de colțuri}} · {ha} ha",
-      "tooSmall": "Câmpul are sub {min} ha. Desenați-l mai mare: fiecare hexagon are 1 ha.",
-      "tooBig": "Câmpul are peste {max} ha. Desenați o singură parcelă.",
-      "undo": "Anulează ultimul colț",
-      "clear": "Șterge tot",
+      "mapHint": "Atingeți fiecare colț al câmpului",
+      "cornerCount": "{corners, plural, =0 {Niciun colț încă} one {1 colț} few {# colțuri} other {# de colțuri}}",
+      "tooSmall": "Prea mic: câmpul are sub {min} ha. Desenați-l mai mare: fiecare hexagon are 1 ha.",
+      "tooBig": "Prea mare: câmpul are peste {max} ha. Desenați o singură parcelă.",
+      "undo": "Anulați ultimul colț",
+      "clear": "Ștergeți tot",
       "done": "Gata",
       "yourField": "Câmpul dumneavoastră",
       "area": "{ha} ha",
-      "corners": "{corners} colțuri, desenat de dumneavoastră",
-      "edit": "Modifică",
-      "restart": "Reiau desenul"
+      "edit": "Modificați",
+      "restart": "Desenați din nou"
     },
-    "mapLabel": "Hartă pentru alegerea câmpului",
+    "mapLabel": "Hartă pentru desenarea câmpului",
     "coordinates": "{lat}° N · {lon}° E",
     "needField": "Desenați câmpul pe hartă pentru a continua.",
-    "pinnedFromFeed": "Acul a fost pus din ecranul Furaje: {place}",
-    "rotationTitle": "Rotația de acum",
-    "rotationHint": "Ce cultivați an de an pe acest câmp. Între 2 și 4 culturi.",
+    "needDone": "Apăsați Gata când toate colțurile sunt la locul lor.",
+    "pinnedFromFeed": "Locul vine din ecranul Furaje: {place}",
+    "continue": "Continuați",
+    "back": "Înapoi",
+    "rotation": {
+      "title": "Ce cultivați aici?",
+      "hint": "Rotația de pe acest câmp, an după an.",
+      "presets": "Rotații obișnuite",
+      "change": "Anul {n}: {crop}. Schimbați cultura",
+      "changeShort": "Schimbați",
+      "addYear": "Adăugați un an",
+      "pickerLabel": "Cultura pentru anul {n}",
+      "limits": "Între {min} și {max} ani."
+    },
     "year": "Anul {n}",
-    "removeCrop": "Scoate {crop} din anul {n}",
-    "addCrop": "Adăugați anul următor:",
-    "rotationFull": "Rotația are deja {max} ani. Scoateți o cultură ca să adăugați alta.",
+    "removeCrop": "Scoateți {crop} din anul {n}",
+    "rotationFull": "Rotația are {max} ani, cel mai mult pe care îl comparăm. Scoateți un an ca să adăugați altul.",
     "prioritiesTitle": "Ce contează pentru dumneavoastră?",
-    "prioritiesHint": "Mutați glisoarele. Cu cât mai la dreapta, cu atât contează mai mult.",
+    "prioritiesHint": "Spuneți cât contează fiecare. După asta ordonăm rotațiile.",
+    "level": {
+      "less": "Mai puțin",
+      "matters": "Contează",
+      "most": "Cel mai mult"
+    },
     "priority": {
       "yield": {
         "label": "Recoltă sigură",
@@ -111,10 +147,21 @@
         "hint": "Cât mai puțini ani slabi"
       }
     },
-    "importance": "{value} din 100",
     "irrigatedTitle": "Câmpul este irigat",
-    "irrigatedHint": "Bifați dacă puteți uda culturile vara.",
-    "analyze": "Analizează"
+    "irrigatedHint": "Activați dacă puteți uda culturile vara.",
+    "analyze": "Arătați-mi cele 25 de sezoane",
+    "loading": {
+      "title": "Citim 25 de sezoane la câmpul dumneavoastră",
+      "heat": "Căldura și ploaia, zi de zi din 2001",
+      "vegetation": "Cât de verzi au fost culturile, văzute din satelit",
+      "soil": "Apa din sol"
+    },
+    "saved": {
+      "near": "Continuați cu câmpul de lângă {place}, {ha} ha",
+      "noPlace": "Continuați cu câmpul de {ha} ha",
+      "resume": "Continuați",
+      "forget": "Câmp nou"
+    }
   },
   "Results": {
     "back": "Schimbă câmpul sau rotația",

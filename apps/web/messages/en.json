@@ -62,37 +62,73 @@
     "seasons": "seasons"
   },
   "Field": {
-    "step": "Step 1 of 2",
-    "title": "About your field",
-    "intro": "Tell us where your field is and what you grow. We show how three rotations would have done over the last 25 years.",
-    "whereTitle": "Where is the field?",
-    "whereHint": "Draw the outline of your field on the map.",
+    "steps": {
+      "label": "Steps",
+      "field": "Field",
+      "rotation": "Rotation",
+      "priorities": "Priorities"
+    },
+    "field": {
+      "title": "Draw your field",
+      "hint": "Find your place, then tap each corner of your field on the map."
+    },
+    "search": {
+      "label": "Find your commune",
+      "placeholder": "For example Aiud",
+      "none": "No commune with that name in the area we cover.",
+      "results": "{count, plural, one {1 commune found} other {# communes found}}"
+    },
+    "locate": {
+      "button": "Use my location",
+      "busy": "Finding you…",
+      "failed": "Your location is not available. Search for your commune instead."
+    },
+    "basemap": {
+      "label": "Map view",
+      "satellite": "Satellite",
+      "map": "Map"
+    },
     "draw": {
       "hint": "Tap the map at each corner of your field, one after another. You need at least 3 corners.",
-      "progress": "{corners, plural, =0 {No corners yet} one {1 corner} other {# corners}} · {ha} ha",
-      "tooSmall": "The field is under {min} ha. Draw it larger: each hexagon is 1 ha.",
-      "tooBig": "The field is over {max} ha. Draw a single field.",
+      "mapHint": "Tap each corner of your field",
+      "cornerCount": "{corners, plural, =0 {No corners yet} one {1 corner} other {# corners}}",
+      "tooSmall": "Too small: the field is under {min} ha. Draw it larger: each hexagon is 1 ha.",
+      "tooBig": "Too large: the field is over {max} ha. Draw a single field.",
       "undo": "Undo last corner",
       "clear": "Clear all",
       "done": "Done",
       "yourField": "Your field",
       "area": "{ha} ha",
-      "corners": "{corners} corners, drawn by you",
       "edit": "Edit",
       "restart": "Start over"
     },
-    "mapLabel": "Map for choosing the field",
+    "mapLabel": "Map for drawing your field",
     "coordinates": "{lat}° N · {lon}° E",
     "needField": "Draw your field on the map to continue.",
+    "needDone": "Press Done when all corners are in place.",
     "pinnedFromFeed": "Pinned from the feed screen: {place}",
-    "rotationTitle": "Your current rotation",
-    "rotationHint": "What you grow on this field, year after year. Between 2 and 4 crops.",
+    "continue": "Continue",
+    "back": "Back",
+    "rotation": {
+      "title": "What do you grow here?",
+      "hint": "Your rotation on this field, year after year.",
+      "presets": "Common rotations",
+      "change": "Year {n}: {crop}. Change the crop",
+      "changeShort": "Change",
+      "addYear": "Add a year",
+      "pickerLabel": "Crop for year {n}",
+      "limits": "Between {min} and {max} years."
+    },
     "year": "Year {n}",
     "removeCrop": "Remove {crop} from year {n}",
-    "addCrop": "Add the next year:",
-    "rotationFull": "The rotation already has {max} years. Remove a crop to add another.",
+    "rotationFull": "The rotation has {max} years, the most we compare. Remove a year to add another.",
     "prioritiesTitle": "What matters to you?",
-    "prioritiesHint": "Move the sliders. The further right, the more it matters.",
+    "prioritiesHint": "Say how much each one counts. We rank the rotations by it.",
+    "level": {
+      "less": "Less",
+      "matters": "Matters",
+      "most": "Matters most"
+    },
     "priority": {
       "yield": {
         "label": "Reliable harvest",
@@ -111,10 +147,21 @@
         "hint": "As few poor years as possible"
       }
     },
-    "importance": "{value} of 100",
     "irrigatedTitle": "The field is irrigated",
     "irrigatedHint": "Turn on if you can water the crops in summer.",
-    "analyze": "Analyse"
+    "analyze": "Show my 25 seasons",
+    "loading": {
+      "title": "Reading 25 seasons at your field",
+      "heat": "Heat and rain, day by day since 2001",
+      "vegetation": "How green the crops were, seen from satellite",
+      "soil": "Water in the soil"
+    },
+    "saved": {
+      "near": "Continue with your field near {place}, {ha} ha",
+      "noPlace": "Continue with your field of {ha} ha",
+      "resume": "Continue",
+      "forget": "Start a new field"
+    }
   },
   "Results": {
     "back": "Change field or rotation",
