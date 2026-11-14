@@ -1,0 +1,190 @@
+{
+  "$defs": {
+    "Crop": {
+      "enum": [
+        "maize",
+        "wheat",
+        "barley",
+        "soybean",
+        "sunflower",
+        "pea",
+        "cover_mustard",
+        "cover_phacelia",
+        "cover_vetch",
+        "fallow"
+      ],
+      "title": "Crop",
+      "type": "string"
+    },
+    "CropArea": {
+      "additionalProperties": false,
+      "properties": {
+        "year": {
+          "title": "Year",
+          "type": "integer"
+        },
+        "crop": {
+          "$ref": "#/$defs/Crop"
+        },
+        "area_ha": {
+          "minimum": 0,
+          "title": "Area Ha",
+          "type": "number"
+        }
+      },
+      "required": [
+        "year",
+        "crop",
+        "area_ha"
+      ],
+      "title": "CropArea",
+      "type": "object"
+    },
+    "FieldPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "field_id": {
+          "title": "Field Id",
+          "type": "string"
+        },
+        "strategy_name": {
+          "$ref": "#/$defs/Localized"
+        },
+        "sequence": {
+          "description": "the rotation chosen",
+          "items": {
+            "$ref": "#/$defs/Crop"
+          },
+          "maxItems": 4,
+          "minItems": 2,
+          "title": "Sequence",
+          "type": "array"
+        },
+        "crops": {
+          "description": "crop per planned year, aligned with FarmPlan.years",
+          "items": {
+            "$ref": "#/$defs/Crop"
+          },
+          "title": "Crops",
+          "type": "array"
+        },
+        "score": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Score",
+          "type": "number"
+        }
+      },
+      "required": [
+        "field_id",
+        "strategy_name",
+        "sequence",
+        "crops",
+        "score"
+      ],
+      "title": "FieldPlan",
+      "type": "object"
+    },
+    "Localized": {
+      "additionalProperties": false,
+      "properties": {
+        "ro": {
+          "title": "Ro",
+          "type": "string"
+        },
+        "en": {
+          "title": "En",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ro",
+        "en"
+      ],
+      "title": "Localized",
+      "type": "object"
+    },
+    "PlanCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "ok": {
+          "title": "Ok",
+          "type": "boolean"
+        },
+        "title": {
+          "$ref": "#/$defs/Localized"
+        },
+        "detail": {
+          "$ref": "#/$defs/Localized"
+        }
+      },
+      "required": [
+        "id",
+        "ok",
+        "title",
+        "detail"
+      ],
+      "title": "PlanCheck",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "mock": {
+      "description": "built on demonstration (mock) field analyses",
+      "title": "Mock",
+      "type": "boolean"
+    },
+    "years": {
+      "items": {
+        "type": "integer"
+      },
+      "title": "Years",
+      "type": "array"
+    },
+    "fields": {
+      "items": {
+        "$ref": "#/$defs/FieldPlan"
+      },
+      "title": "Fields",
+      "type": "array"
+    },
+    "totals": {
+      "description": "area per crop per year across the farm",
+      "items": {
+        "$ref": "#/$defs/CropArea"
+      },
+      "title": "Totals",
+      "type": "array"
+    },
+    "checks": {
+      "items": {
+        "$ref": "#/$defs/PlanCheck"
+      },
+      "title": "Checks",
+      "type": "array"
+    },
+    "caveats": {
+      "items": {
+        "$ref": "#/$defs/Localized"
+      },
+      "title": "Caveats",
+      "type": "array"
+    }
+  },
+  "required": [
+    "mock",
+    "years",
+    "fields",
+    "totals",
+    "checks",
+    "caveats"
+  ],
+  "title": "FarmPlan",
+  "type": "object",
+  "$id": "https://field-signal/contracts/farm_plan/0.1.0"
+}

@@ -1,0 +1,162 @@
+{
+  "$defs": {
+    "Crop": {
+      "enum": [
+        "maize",
+        "wheat",
+        "barley",
+        "soybean",
+        "sunflower",
+        "pea",
+        "cover_mustard",
+        "cover_phacelia",
+        "cover_vetch",
+        "fallow"
+      ],
+      "title": "Crop",
+      "type": "string"
+    },
+    "LatLon": {
+      "additionalProperties": false,
+      "properties": {
+        "lat": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Lat",
+          "type": "number"
+        },
+        "lon": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Lon",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lat",
+        "lon"
+      ],
+      "title": "LatLon",
+      "type": "object"
+    },
+    "PlanField": {
+      "additionalProperties": false,
+      "description": "One field going into the farm plan.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "area_ha": {
+          "exclusiveMinimum": 0,
+          "title": "Area Ha",
+          "type": "number"
+        },
+        "location": {
+          "$ref": "#/$defs/LatLon",
+          "description": "centroid of the field's parcels"
+        },
+        "current_rotation": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Crop"
+              },
+              "maxItems": 4,
+              "minItems": 2,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Current Rotation"
+        },
+        "last_crop": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Crop"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "most recent crop known (mapped or declared)"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "area_ha",
+        "location"
+      ],
+      "title": "PlanField",
+      "type": "object"
+    },
+    "Priority": {
+      "enum": [
+        "yield",
+        "water",
+        "soil",
+        "risk"
+      ],
+      "title": "Priority",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "fields": {
+      "items": {
+        "$ref": "#/$defs/PlanField"
+      },
+      "maxItems": 200,
+      "minItems": 1,
+      "title": "Fields",
+      "type": "array"
+    },
+    "priorities": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "propertyNames": {
+        "$ref": "#/$defs/Priority"
+      },
+      "title": "Priorities",
+      "type": "object"
+    },
+    "irrigated": {
+      "default": false,
+      "title": "Irrigated",
+      "type": "boolean"
+    },
+    "start_year": {
+      "description": "first season planned",
+      "maximum": 2100,
+      "minimum": 2020,
+      "title": "Start Year",
+      "type": "integer"
+    },
+    "years": {
+      "default": 4,
+      "maximum": 8,
+      "minimum": 2,
+      "title": "Years",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "fields",
+    "priorities",
+    "start_year"
+  ],
+  "title": "FarmPlanRequest",
+  "type": "object",
+  "$id": "https://field-signal/contracts/farm_plan_request/0.1.0"
+}

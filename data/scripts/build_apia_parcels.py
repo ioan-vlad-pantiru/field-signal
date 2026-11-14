@@ -78,6 +78,7 @@ def rows(source: str, county: str) -> Iterator[ParcelRow]:
                 (round(lon, DECIMALS), round(lat, DECIMALS))
                 for lon, lat in zip(lons, lats, strict=True)
             ],
+            None,
         )
 
 

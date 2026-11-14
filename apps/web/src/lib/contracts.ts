@@ -547,6 +547,33 @@ export interface Parcel {
    * APIA land-use code, e.g. TA (arable)
    */
   land_use?: string | null;
+  /**
+   * mapped crop per year, oldest first; empty = not computed
+   */
+  crop_history?: ParcelCrop[];
+  soil?: ParcelSoil | null;
+}
+
+export interface ParcelCrop {
+  year: number;
+  /**
+   * EUCROPMAP class name (e.g. maize, common_wheat, grassland); null = not mapped
+   */
+  crop: string | null;
+  /**
+   * share of the parcel's pixels in that class
+   */
+  share: number;
+}
+/**
+ * SoilGrids 2.0 topsoil 0-30 cm averaged over the parcel (250 m model, not a measurement).
+ */
+
+export interface ParcelSoil {
+  soc_g_per_kg?: number | null;
+  ph_h2o?: number | null;
+  clay_pct?: number | null;
+  sand_pct?: number | null;
 }
 
 /**
@@ -576,4 +603,175 @@ export interface MergedParcels {
    */
   area_ha: number;
   parcel_ids: number[];
+}
+
+export interface Farm {
+  name: string;
+  /**
+   * @minItems 1
+   * @maxItems 1000
+   */
+  parcels: [Parcel, ...Parcel[]];
+  /**
+   * @maxItems 200
+   */
+  fields?: FarmField[];
+}
+/**
+ * A parcel declared to APIA (open LPIS data, CC BY 4.0), offered so a farmer can tap it.
+ */
+
+export interface FarmField {
+  id: string;
+  name: string;
+  /**
+   * @minItems 1
+   * @maxItems 400
+   */
+  parcel_ids: [number, ...number[]];
+  /**
+   * what the farmer grows now, if known
+   */
+  current_rotation?: [Crop, Crop] | [Crop, Crop, Crop] | [Crop, Crop, Crop, Crop] | null;
+}
+
+/**
+ * An uploaded parcel file (e.g. an AGI Online export) matched to the APIA layer.
+ */
+
+export interface FarmImport {
+  /**
+   * APIA parcels the file's outlines overlap
+   */
+  parcels: Parcel[];
+  /**
+   * outlines in the file with no APIA parcel under them
+   */
+  unmatched: number;
+  /**
+   * coordinate system read from the file, e.g. EPSG:3844
+   */
+  source_crs: string;
+  /**
+   * crop declared in the file per matched APIA parcel id, when the file has one
+   */
+  file_crops?: {
+    [k: string]: string;
+  };
+}
+/**
+ * A parcel declared to APIA (open LPIS data, CC BY 4.0), offered so a farmer can tap it.
+ */
+
+export interface FarmSuggestRequest {
+  /**
+   * @minItems 1
+   * @maxItems 1000
+   */
+  parcels: [Parcel, ...Parcel[]];
+}
+/**
+ * A parcel declared to APIA (open LPIS data, CC BY 4.0), offered so a farmer can tap it.
+ */
+
+export interface FarmSuggestion {
+  fields: SuggestedField[];
+}
+
+export interface SuggestedField {
+  id: string;
+  name: string;
+  /**
+   * @minItems 1
+   * @maxItems 400
+   */
+  parcel_ids: [number, ...number[]];
+  /**
+   * what the farmer grows now, if known
+   */
+  current_rotation?: [Crop, Crop] | [Crop, Crop, Crop] | [Crop, Crop, Crop, Crop] | null;
+  reason: Localized;
+}
+/**
+ * why these parcels were grouped
+ */
+
+export interface FarmPlanRequest {
+  /**
+   * @minItems 1
+   * @maxItems 200
+   */
+  fields: [PlanField, ...PlanField[]];
+  priorities: {
+    [k: string]: number;
+  };
+  irrigated?: boolean;
+  /**
+   * first season planned
+   */
+  start_year: number;
+  years?: number;
+}
+/**
+ * One field going into the farm plan.
+ */
+
+export interface PlanField {
+  id: string;
+  name: string;
+  area_ha: number;
+  location: LatLon;
+  current_rotation?: [Crop, Crop] | [Crop, Crop, Crop] | [Crop, Crop, Crop, Crop] | null;
+  /**
+   * most recent crop known (mapped or declared)
+   */
+  last_crop?: Crop | null;
+}
+/**
+ * centroid of the field's parcels
+ */
+
+export interface FarmPlan {
+  /**
+   * built on demonstration (mock) field analyses
+   */
+  mock: boolean;
+  years: number[];
+  fields: FieldPlan[];
+  /**
+   * area per crop per year across the farm
+   */
+  totals: CropArea[];
+  checks: PlanCheck[];
+  caveats: Localized[];
+}
+
+export interface FieldPlan {
+  field_id: string;
+  strategy_name: Localized;
+  /**
+   * the rotation chosen
+   *
+   * @minItems 2
+   * @maxItems 4
+   */
+  sequence: [Crop, Crop] | [Crop, Crop, Crop] | [Crop, Crop, Crop, Crop];
+  /**
+   * crop per planned year, aligned with FarmPlan.years
+   */
+  crops: Crop[];
+  score: number;
+}
+
+export interface CropArea {
+  year: number;
+  crop: Crop;
+  area_ha: number;
+}
+
+export interface PlanCheck {
+  id: string;
+  ok: boolean;
+  title: Localized;
+  detail: Localized;
 }

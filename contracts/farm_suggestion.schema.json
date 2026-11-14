@@ -1,0 +1,111 @@
+{
+  "$defs": {
+    "Crop": {
+      "enum": [
+        "maize",
+        "wheat",
+        "barley",
+        "soybean",
+        "sunflower",
+        "pea",
+        "cover_mustard",
+        "cover_phacelia",
+        "cover_vetch",
+        "fallow"
+      ],
+      "title": "Crop",
+      "type": "string"
+    },
+    "Localized": {
+      "additionalProperties": false,
+      "properties": {
+        "ro": {
+          "title": "Ro",
+          "type": "string"
+        },
+        "en": {
+          "title": "En",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ro",
+        "en"
+      ],
+      "title": "Localized",
+      "type": "object"
+    },
+    "SuggestedField": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "parcel_ids": {
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 400,
+          "minItems": 1,
+          "title": "Parcel Ids",
+          "type": "array"
+        },
+        "current_rotation": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Crop"
+              },
+              "maxItems": 4,
+              "minItems": 2,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "what the farmer grows now, if known",
+          "title": "Current Rotation"
+        },
+        "reason": {
+          "$ref": "#/$defs/Localized",
+          "description": "why these parcels were grouped"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "parcel_ids",
+        "reason"
+      ],
+      "title": "SuggestedField",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "fields": {
+      "items": {
+        "$ref": "#/$defs/SuggestedField"
+      },
+      "title": "Fields",
+      "type": "array"
+    }
+  },
+  "required": [
+    "fields"
+  ],
+  "title": "FarmSuggestion",
+  "type": "object",
+  "$id": "https://field-signal/contracts/farm_suggestion/0.1.0"
+}
