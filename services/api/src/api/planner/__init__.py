@@ -1,0 +1,1 @@
+"""Farm rotation planner."""

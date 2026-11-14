@@ -52,5 +52,13 @@ One-time raw inputs before `build_features.py`:
 Earthdata credentials (AppEEARS): `EARTHDATA_USERNAME` / `EARTHDATA_PASSWORD` in the repo-root
 `.env` or the environment, or a `urs.earthdata.nasa.gov` entry in `~/.netrc`.
 
-Modules (`src/farm_data/`): `zones` (pilot zones + sample points), `power`, `appeears`, `soil`,
+**Planner weather table** (`services/api/src/api/planner/data/weather_monthly.csv.gz`, committed,
+about 0.7 MB): NASA POWER daily regional grid (MERRA-2, 0.5° × 0.625°), monthly per cell for the
+110 cells whose box touches Romania (GISCO NUTS 2024 outline), 1981–2025. Columns: Tmax/Tmin
+means, rain, hot days (Tmax ≥ 30 °C, placeholder), frost days (Tmin < 0 °C), longest dry spell
+inside the month (rain < 1 mm), root-zone wetness `GWETROOT`. Rebuild with
+`uv run --package farm-data python -m farm_data.power_grid`; it downloads missing years into
+`raw/power_grid/` (no account) and needs `raw/boundaries/NUTS_2024.gpkg`.
+
+Modules (`src/farm_data/`): `zones` (pilot zones + sample points), `power`, `power_grid`, `appeears`, `soil`,
 `cropmap`, `ins`, `modis_cube`, `features` (the table in `contracts/README.md` §1), `crops` (`crops.toml`).
