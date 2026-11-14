@@ -92,13 +92,13 @@
       "hint": "Tap the map at each corner of your field, one after another. You need at least 3 corners.",
       "mapHint": "Tap each corner of your field",
       "cornerCount": "{corners, plural, =0 {No corners yet} one {1 corner} other {# corners}}",
-      "tooSmall": "Too small: the field is under {min} ha. Draw it larger: each hexagon is 1 ha.",
-      "tooBig": "Too large: the field is over {max} ha. Draw a single field.",
+      "tooSmall": "Too small: the field is under {min} ha. Draw it larger: each hexagon is 1 ha.",
+      "tooBig": "Too large: the field is over {max} ha. Draw a single field.",
       "undo": "Undo last corner",
       "clear": "Clear all",
       "done": "Done",
       "yourField": "Your field",
-      "area": "{ha} ha",
+      "area": "{ha} ha",
       "edit": "Edit",
       "restart": "Start over"
     },
@@ -152,8 +152,8 @@
     "irrigatedHint": "Turn on if you can water the crops in summer.",
     "analyze": "Show my 25 seasons",
     "saved": {
-      "near": "Continue with your field near {place}, {ha} ha",
-      "noPlace": "Continue with your field of {ha} ha",
+      "near": "Continue with your field near {place}, {ha} ha",
+      "noPlace": "Continue with your field of {ha} ha",
       "resume": "Continue",
       "forget": "Start a new field"
     }

@@ -44,7 +44,7 @@ export function ZoneMap({
 }) {
   const center = centroidOf(zones);
   const t = useTranslations("Feed");
-  const { container, map, failed } = useMap([center.lon, center.lat], REGION_ZOOM);
+  const { container, map, failed } = useMap([center.lon, center.lat], REGION_ZOOM, { cooperativeGestures: true });
   const onSelectRef = useRef(onSelect);
   const elements = useRef(new Map<string, HTMLButtonElement>());
 
