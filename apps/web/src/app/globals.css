@@ -6,12 +6,12 @@
  * Status colours are always paired with an icon and a word in the UI.
  */
 :root {
-  --ground: #f2f4ee;
+  --ground: #ffffff;
   --surface: #ffffff;
-  --surface-sunken: #e8ece3;
-  --line: #cfd8cb;
-  --ink: #14201a;
-  --ink-muted: #4c5a51;
+  --surface-sunken: #f3f5f1;
+  --line: #e2e6e0;
+  --ink: #111512;
+  --ink-muted: #5f675f;
   --field: #1f6b45;
   --field-strong: #165335;
   --field-tint: #dcefe2;
@@ -49,8 +49,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --ground: #0d1310;
-    --surface: #151d18;
+    --ground: #0f1411;
+    --surface: #141a16;
     --surface-sunken: #1c2620;
     --line: #2c3a31;
     --ink: #e9efe7;
@@ -125,7 +125,7 @@ body {
   background: var(--ground);
   color: var(--ink);
   font-family: var(--font-geist), system-ui, sans-serif;
-  font-size: 1rem;
+  font-size: 1.0625rem;
   line-height: 1.5;
 }
 
@@ -404,4 +404,21 @@ input[type="range"].slider::-moz-range-thumb {
   font-weight: 600;
   white-space: nowrap;
   pointer-events: none;
+}
+
+/* Season strips: cells fill in from 2001 to the latest year, the one orchestrated moment per screen. */
+@keyframes season-in {
+  from {
+    opacity: 0;
+  }
+}
+.season-in {
+  animation: season-in var(--duration-base) var(--ease-settle) both;
+  animation-delay: calc(var(--col, 0) * 24ms);
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
 }

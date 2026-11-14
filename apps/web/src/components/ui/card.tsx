@@ -10,7 +10,7 @@ export function Card({
   style?: CSSProperties;
 }) {
   return (
-    <section style={style} className={`rounded-[20px] border border-line bg-surface p-4 shadow-1 ${className}`}>
+    <section style={style} className={`rounded-2xl border border-line bg-surface p-4 ${className}`}>
       {children}
     </section>
   );

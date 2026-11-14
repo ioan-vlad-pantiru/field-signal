@@ -5,7 +5,7 @@
   },
   "Nav": {
     "label": "Main navigation",
-    "field": "Field",
+    "field": "My field",
     "feed": "Feed buyer",
     "about": "About",
     "switchLocale": "RO",
@@ -461,5 +461,8 @@
     "seasonRowCover": "sown in {sow}, worked into the soil in {harvest}",
     "reducedMotion": "Reduced motion is on, so the field does not animate. Use Back and Next to step through each season.",
     "openLink": "See it on a field"
+  },
+  "Home": {
+    "placeholder": "Start page"
   }
 }

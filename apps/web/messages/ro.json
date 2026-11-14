@@ -5,7 +5,7 @@
   },
   "Nav": {
     "label": "Navigare principală",
-    "field": "Câmp",
+    "field": "Câmpul meu",
     "feed": "Furaje",
     "about": "Despre",
     "switchLocale": "EN",
@@ -461,5 +461,8 @@
     "seasonRowCover": "semănat în {sow}, încorporat în sol în {harvest}",
     "reducedMotion": "Ai cerut mai puțină mișcare, deci câmpul nu se animă. Folosește Înapoi și Înainte ca să treci prin fiecare sezon.",
     "openLink": "Vezi pe un câmp"
+  },
+  "Home": {
+    "placeholder": "Pagina de start"
   }
 }

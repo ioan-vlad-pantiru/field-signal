@@ -34,8 +34,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f2f4ee" },
-    { media: "(prefers-color-scheme: dark)", color: "#0d1310" },
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f1411" },
   ],
 };
 
@@ -55,7 +55,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>
           <SiteHeader />
-          <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-8 pt-5">{children}</main>
+          <main className="mx-auto w-full max-w-[1200px] flex-1 px-4 pb-8 pt-5">{children}</main>
           <SiteFooter />
           <BottomNav />
           <ServiceWorkerRegistration />

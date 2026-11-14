@@ -5,14 +5,14 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { BarnIcon, BookIcon, FieldIcon } from "@/components/ui/icons";
 
 const ITEMS = [
-  { href: "/", key: "field", Icon: FieldIcon },
+  { href: "/field", key: "field", Icon: FieldIcon },
   { href: "/feed", key: "feed", Icon: BarnIcon },
   { href: "/about", key: "about", Icon: BookIcon },
 ] as const;
 
 function useIsActive() {
   const pathname = usePathname();
-  return (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+  return (href: string) => pathname.startsWith(href);
 }
 
 /** Fixed bottom tab bar on phones. */

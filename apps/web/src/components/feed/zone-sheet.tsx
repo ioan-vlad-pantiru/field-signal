@@ -70,7 +70,7 @@ function LowerRisk({ crop, centroid, place }: { crop: CropOutlook["crop"]; centr
       {centroid ? (
         <Link
           href={{
-            pathname: "/",
+            pathname: "/field",
             query: {
               lat: centroid.lat.toFixed(4),
               lon: centroid.lon.toFixed(4),

@@ -2,21 +2,15 @@
 
 import { useTranslations } from "next-intl";
 import type { DataOrigin } from "@/lib/api";
-import { AlertIcon } from "./icons";
+import { NoticeBar } from "./notice-bar";
 
 /** Shown whenever the data has `mock: true`, so demo numbers are never mistaken for real ones. */
 export function DemoBanner({ origin }: { origin: DataOrigin }) {
   const t = useTranslations("Banner");
   return (
-    <div role="status" className="flex gap-3 rounded-2xl border-2 border-status-watch bg-status-watch-tint px-4 py-3">
-      <AlertIcon className="mt-0.5 shrink-0 text-status-watch" />
-      <div>
-        <p className="font-semibold">{t("title")}</p>
-        <p className="text-sm">
-          {t("text")} {origin === "fallback" ? t("offline") : null}
-        </p>
-      </div>
-    </div>
+    <NoticeBar>
+      <strong className="font-semibold">{t("title")}.</strong> {t("text")} {origin === "fallback" ? t("offline") : null}
+    </NoticeBar>
   );
 }
 

@@ -1,11 +1,11 @@
 // Field Signal service worker: keeps the app shell (and the mock data bundled in its JS)
 // available offline so the demo runs without a network. Bump VERSION to drop old caches.
-const VERSION = "v2";
+const VERSION = "v3";
 const SHELL_CACHE = `field-signal-shell-${VERSION}`;
 const RUNTIME_CACHE = `field-signal-runtime-${VERSION}`;
 const TILE_CACHE = `field-signal-tiles-${VERSION}`;
 
-const PAGES = ["/ro", "/en", "/ro/feed", "/en/feed", "/ro/about", "/en/about"];
+const PAGES = ["/ro", "/en", "/ro/field", "/en/field", "/ro/feed", "/en/feed", "/ro/about", "/en/about"];
 const STATIC_FILES = [
   "/manifest.webmanifest",
   "/icon.svg",
