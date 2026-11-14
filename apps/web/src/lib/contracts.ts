@@ -361,6 +361,182 @@ export interface ValidationYear {
   hit: boolean;
 }
 
+export type OriginStage = "before_window" | "in_window" | "done";
+
+export interface ImportOrigins {
+  schema_version?: string;
+  mock?: boolean;
+  /**
+   * ISO date of the newest weather day used
+   */
+  as_of: string;
+  crop: Crop;
+  headline: Localized;
+  advice: Localized;
+  actions: Localized[];
+  origins: ImportOrigin[];
+  replay?: OriginReplay | null;
+  method: Localized;
+  limits: Localized[];
+  sources: DataSource[];
+}
+
+export interface ImportOrigin {
+  /**
+   * e.g. 'ar-core'
+   */
+  id: string;
+  /**
+   * ISO 3166-1 alpha-2
+   */
+  country: string;
+  name: Localized;
+  provinces: Localized;
+  crop: Crop;
+  role: Localized1;
+  confidence: Confidence;
+  window: Localized2;
+  harvest: Localized;
+  points: OriginPoint[];
+  stage: OriginStage;
+  current_season: string;
+  /**
+   * this season so far; None before its window opens
+   */
+  current?: OriginReading | null;
+  note: Localized3;
+  track: OriginTrack;
+  seasons: OriginSeason[];
+}
+/**
+ * why this origin matters to a feed buyer
+ */
+
+export interface Localized2 {
+  ro: string;
+  en: string;
+}
+/**
+ * One NASA POWER sample point inside a growing region, weighted by its share of the crop.
+ */
+
+export interface OriginPoint {
+  name: string;
+  lat: number;
+  lon: number;
+  weight: number;
+}
+
+export interface OriginReading {
+  /**
+   * ISO date of the last weather day used
+   */
+  as_of: string;
+  score: number;
+  level: RiskLevel;
+  drivers: Reason[];
+  /**
+   * uses NASA POWER's newest ~2 months (near-real-time); soil wetness left out
+   */
+  provisional?: boolean;
+}
+/**
+ * One machine-readable driver behind a status or score.
+ */
+
+export interface Localized3 {
+  ro: string;
+  en: string;
+}
+/**
+ * How the rule did against official yields, all seasons published.
+ */
+
+export interface OriginTrack {
+  truth: Localized4;
+  seasons: number;
+  bad_seasons: number;
+  caught: number;
+  false_alarms: number;
+  /**
+   * score vs yield anomaly; negative is good
+   */
+  correlation: number;
+  lead: Localized5;
+}
+/**
+ * which official yields we checked against
+ */
+
+export interface Localized4 {
+  ro: string;
+  en: string;
+}
+/**
+ * when the reading becomes useful, vs harvest
+ */
+
+export interface Localized5 {
+  ro: string;
+  en: string;
+}
+
+export interface OriginSeason {
+  /**
+   * e.g. '2022/23' for the southern hemisphere, '2025' otherwise
+   */
+  season: string;
+  harvest_year: number;
+  score: number;
+  level: RiskLevel;
+  /**
+   * official yield vs its 2001-2025 linear trend
+   */
+  yield_anomaly_pct?: number | null;
+  /**
+   * caught: high risk and yield >=10% below trend; missed: a poor yield we did not flag; false_alarm: high risk, normal yield; normal: neither
+   */
+  outcome?: ("caught" | "missed" | "false_alarm" | "normal") | null;
+  checkpoints: OriginCheckpoint[];
+}
+/**
+ * The risk score as it would have read on one date, using only weather up to that date.
+ */
+
+export interface OriginCheckpoint {
+  /**
+   * ISO date
+   */
+  as_of: string;
+  score: number;
+  level: RiskLevel;
+}
+/**
+ * One past season told as it unfolded: our reading vs the official estimates at the time.
+ */
+
+export interface OriginReplay {
+  origin_id: string;
+  season: string;
+  title: Localized;
+  text: Localized;
+  /**
+   * unit of the official estimates, e.g. 'Mt'
+   */
+  unit: string;
+  ours: OriginCheckpoint[];
+  official: OfficialEstimate[];
+}
+
+export interface OfficialEstimate {
+  /**
+   * ISO date of the report; None if final
+   */
+  date?: string | null;
+  value: number;
+  label: Localized;
+}
+
 export interface ModelPrediction {
   zone_id: string;
   zone_type: "field" | "commune" | "county";

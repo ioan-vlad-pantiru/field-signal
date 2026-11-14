@@ -9,6 +9,7 @@ const NAMES = [
   "field_request",
   "field_analysis",
   "sourcing_region",
+  "import_origins",
   "model_prediction",
   "sign_up",
   "sign_in",

@@ -12,9 +12,10 @@ from functools import lru_cache
 from pathlib import Path
 
 from api import mocks
-from api.contracts import SourcingRegion
+from api.contracts import ImportOrigins, SourcingRegion
 
 BUILT = Path(__file__).parent / "data" / "sourcing_alba.json"
+ORIGINS = Path(__file__).parent / "data" / "origins.json"
 
 
 @lru_cache
@@ -30,3 +31,9 @@ def sourcing_region(season: int | None = None) -> SourcingRegion:
     if built is not None and (season is None or season == built.season):
         return built
     return mocks.sourcing_region(season or 2025)
+
+
+@lru_cache
+def import_origins() -> ImportOrigins:
+    """Imported soy: the origins' seasons, built by `data/scripts/build_origins.py`."""
+    return ImportOrigins.model_validate_json(ORIGINS.read_text(encoding="utf-8"))

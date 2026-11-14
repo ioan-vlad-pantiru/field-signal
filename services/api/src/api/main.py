@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 from api import accounts, assistant, farm, farm_plan, parcels, sourcing
 from api.analysis import run_field_analysis
-from api.contracts import FieldAnalysis, FieldRequest, SourcingRegion
+from api.contracts import FieldAnalysis, FieldRequest, ImportOrigins, SourcingRegion
 from api.settings import get_settings
 from api.whatsapp.router import router as whatsapp_router
 
@@ -52,3 +52,9 @@ def analyze_field(request: FieldRequest) -> FieldAnalysis:
 def sourcing_region(season: int | None = None) -> SourcingRegion:
     """Feed-buyer screen: real numbers for Alba's communes when built, else demo (mock=true)."""
     return sourcing.sourcing_region(season)
+
+
+@app.get("/v1/sourcing/origins", tags=["buyer"])
+def import_origins() -> ImportOrigins:
+    """Feed-buyer screen: is a soy origin (Argentina, Brazil, Ukraine) heading for a short crop?"""
+    return sourcing.import_origins()

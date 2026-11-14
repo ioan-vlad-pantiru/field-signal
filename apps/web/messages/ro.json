@@ -1052,5 +1052,56 @@
       "colYield": "Recolta față de tendință",
       "colResult": "Rezultat"
     }
+  },
+  "Origins": {
+    "tabs": {
+      "label": "Ce cumpărați",
+      "local": "Cereale locale (Alba)",
+      "imports": "Soia din import"
+    },
+    "title": "Soia din import: se îndreaptă o origine spre o recoltă slabă?",
+    "intro": "Soia dumneavoastră vine din Argentina, Brazilia și Ucraina. Urmărim săptămânile care decid fiecare recoltă, cu vremea de la NASA, și vă spunem din timp când una merge prost.",
+    "asOf": "Vremea până la {date}",
+    "adviceLabel": "Sfatul nostru",
+    "originsTitle": "Originile",
+    "originsHint": "Un card pentru fiecare zonă de cultură. Fiecare e comparată cu propriile sezoane din 2001.",
+    "notStarted": "Nu a început",
+    "decidedIn": "Se decide {window}",
+    "harvest": "Recoltare: {harvest}",
+    "score": "{score}/100",
+    "readingAsOf": "Citire până la {date}",
+    "provisional": "Provizoriu: folosește cea mai nouă vreme NASA; umiditatea solului e lăsată deoparte până vin datele finale.",
+    "seasonStage": {
+      "before_window": "Sezonul {season}: se seamănă",
+      "in_window": "Sezonul {season}: se decide acum",
+      "done": "Sezonul {season}: încheiat"
+    },
+    "why": "De ce acest scor",
+    "track": "Cum a mers în trecut",
+    "trackLine": "A semnalat {caught} din {bad} sezoane slabe, cu {falseAlarms} alarme false, în {seasons} sezoane.",
+    "trackTruth": "Verificat cu {truth}.",
+    "seasonsLabel": "Sezoanele trecute pentru {origin}",
+    "outcome": {
+      "caught": "recoltă slabă, semnalată",
+      "missed": "recoltă slabă ratată",
+      "false_alarm": "alarmă falsă",
+      "normal": "recoltă normală, nesemnalată",
+      "none": "fără cifră oficială încă"
+    },
+    "seasonPill": "{season}: {risk}, {anomaly} · {outcome}",
+    "noAnomaly": "randamentul nu e publicat încă",
+    "legend": {
+      "flagged": "Semnalat",
+      "missed": "Ratat",
+      "falseAlarm": "Alarmă falsă"
+    },
+    "points": "Puncte meteo ({count})",
+    "replayLabel": "Ar fi funcționat?",
+    "replayOurs": "Scorul nostru, cum s-ar fi citit la fiecare dată",
+    "replayOfficial": "Estimarea USDA a recoltei la momentul respectiv",
+    "methodTitle": "Cum funcționează",
+    "limitsTitle": "Ce nu poate vedea",
+    "sourcesTitle": "Date",
+    "loading": "Se încarcă originile…"
   }
 }

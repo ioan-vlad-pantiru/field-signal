@@ -343,6 +343,125 @@ class SourcingRegion(Contract):
     validation: Validation | None = None
 
 
+# --------------------------------------------------------------------------- import origins
+
+
+class OriginStage(StrEnum):
+    BEFORE = "before_window"
+    IN_WINDOW = "in_window"
+    DONE = "done"
+
+
+class OriginPoint(Contract):
+    """One NASA POWER sample point inside a growing region, weighted by its share of the crop."""
+
+    name: str
+    lat: float = Field(ge=-90, le=90)
+    lon: float = Field(ge=-180, le=180)
+    weight: float = Field(gt=0)
+
+
+class OriginCheckpoint(Contract):
+    """The risk score as it would have read on one date, using only weather up to that date."""
+
+    as_of: str = Field(description="ISO date")
+    score: float = Field(ge=0, le=100)
+    level: RiskLevel
+
+
+class OriginReading(Contract):
+    as_of: str = Field(description="ISO date of the last weather day used")
+    score: float = Field(ge=0, le=100)
+    level: RiskLevel
+    drivers: list[Reason]
+    provisional: bool = Field(
+        default=False,
+        description="uses NASA POWER's newest ~2 months (near-real-time); soil wetness left out",
+    )
+
+
+class OriginSeason(Contract):
+    season: str = Field(description="e.g. '2022/23' for the southern hemisphere, '2025' otherwise")
+    harvest_year: int
+    score: float = Field(ge=0, le=100)
+    level: RiskLevel
+    yield_anomaly_pct: float | None = Field(
+        default=None, description="official yield vs its 2001-2025 linear trend"
+    )
+    outcome: Literal["caught", "missed", "false_alarm", "normal"] | None = Field(
+        default=None,
+        description="caught: high risk and yield >=10% below trend; missed: a poor yield we did "
+        "not flag; false_alarm: high risk, normal yield; normal: neither",
+    )
+    checkpoints: list[OriginCheckpoint]
+
+
+class OriginTrack(Contract):
+    """How the rule did against official yields, all seasons published."""
+
+    truth: Localized = Field(description="which official yields we checked against")
+    seasons: int = Field(ge=0)
+    bad_seasons: int = Field(ge=0)
+    caught: int = Field(ge=0)
+    false_alarms: int = Field(ge=0)
+    correlation: float = Field(ge=-1, le=1, description="score vs yield anomaly; negative is good")
+    lead: Localized = Field(description="when the reading becomes useful, vs harvest")
+
+
+class ImportOrigin(Contract):
+    id: str = Field(description="e.g. 'ar-core'")
+    country: str = Field(description="ISO 3166-1 alpha-2")
+    name: Localized
+    provinces: Localized
+    crop: Crop
+    role: Localized = Field(description="why this origin matters to a feed buyer")
+    confidence: Confidence
+    window: Localized = Field(description="the weeks that decide the crop, e.g. pod fill")
+    harvest: Localized
+    points: list[OriginPoint]
+    stage: OriginStage
+    current_season: str
+    current: OriginReading | None = Field(
+        default=None, description="this season so far; None before its window opens"
+    )
+    note: Localized = Field(description="what is happening now, in one or two sentences")
+    track: OriginTrack
+    seasons: list[OriginSeason]
+
+
+class OfficialEstimate(Contract):
+    date: str | None = Field(default=None, description="ISO date of the report; None if final")
+    value: float
+    label: Localized
+
+
+class OriginReplay(Contract):
+    """One past season told as it unfolded: our reading vs the official estimates at the time."""
+
+    origin_id: str
+    season: str
+    title: Localized
+    text: Localized
+    unit: str = Field(description="unit of the official estimates, e.g. 'Mt'")
+    ours: list[OriginCheckpoint]
+    official: list[OfficialEstimate]
+
+
+class ImportOrigins(Contract):
+    schema_version: str = SCHEMA_VERSION
+    mock: bool = False
+    as_of: str = Field(description="ISO date of the newest weather day used")
+    crop: Crop
+    headline: Localized
+    advice: Localized
+    actions: list[Localized]
+    origins: list[ImportOrigin]
+    replay: OriginReplay | None = None
+    method: Localized
+    limits: list[Localized]
+    sources: list[DataSource]
+
+
 # --------------------------------------------------------------------------- ml -> api
 
 
@@ -669,6 +788,7 @@ EXPORTED: dict[str, type[Contract]] = {
     "field_request": FieldRequest,
     "field_analysis": FieldAnalysis,
     "sourcing_region": SourcingRegion,
+    "import_origins": ImportOrigins,
     "model_prediction": ModelPrediction,
     "feature_row": FeatureRow,
     "sign_up": SignUp,

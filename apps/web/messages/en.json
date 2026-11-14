@@ -1052,5 +1052,56 @@
       "colYield": "Harvest vs trend",
       "colResult": "Result"
     }
+  },
+  "Origins": {
+    "tabs": {
+      "label": "What you buy",
+      "local": "Local grain (Alba)",
+      "imports": "Imported soy"
+    },
+    "title": "Imported soy: is an origin heading for a short crop?",
+    "intro": "Your soy comes from Argentina, Brazil and Ukraine. We watch the weeks that decide each crop, using NASA weather, and say early when one is going wrong.",
+    "asOf": "Weather up to {date}",
+    "adviceLabel": "Our advice",
+    "originsTitle": "The origins",
+    "originsHint": "One card per growing region. Each is compared with its own seasons since 2001.",
+    "notStarted": "Not started",
+    "decidedIn": "Decided {window}",
+    "harvest": "Harvest: {harvest}",
+    "score": "{score}/100",
+    "readingAsOf": "Reading to {date}",
+    "provisional": "Provisional: uses NASA's newest weather, soil wetness left out until the final data arrive.",
+    "seasonStage": {
+      "before_window": "Season {season}: being planted",
+      "in_window": "Season {season}: being decided now",
+      "done": "Season {season}: over"
+    },
+    "why": "Why this score",
+    "track": "Track record",
+    "trackLine": "Flagged {caught} of {bad} poor seasons, with {falseAlarms} false alarms, over {seasons} seasons.",
+    "trackTruth": "Checked against {truth}.",
+    "seasonsLabel": "Past seasons for {origin}",
+    "outcome": {
+      "caught": "poor crop, flagged",
+      "missed": "poor crop we missed",
+      "false_alarm": "false alarm",
+      "normal": "normal crop, not flagged",
+      "none": "no official figure yet"
+    },
+    "seasonPill": "{season}: {risk}, {anomaly} · {outcome}",
+    "noAnomaly": "yield not out yet",
+    "legend": {
+      "flagged": "Flagged",
+      "missed": "Missed",
+      "falseAlarm": "False alarm"
+    },
+    "points": "Weather points ({count})",
+    "replayLabel": "Would it have worked?",
+    "replayOurs": "Our score, as it would have read on each date",
+    "replayOfficial": "USDA's estimate of the crop at the time",
+    "methodTitle": "How it works",
+    "limitsTitle": "What it cannot see",
+    "sourcesTitle": "Data",
+    "loading": "Loading the origins…"
   }
 }

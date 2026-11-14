@@ -1,0 +1,646 @@
+{
+  "$defs": {
+    "Confidence": {
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "title": "Confidence",
+      "type": "string"
+    },
+    "Crop": {
+      "enum": [
+        "maize",
+        "wheat",
+        "barley",
+        "soybean",
+        "sunflower",
+        "pea",
+        "cover_mustard",
+        "cover_phacelia",
+        "cover_vetch",
+        "fallow"
+      ],
+      "title": "Crop",
+      "type": "string"
+    },
+    "DataSource": {
+      "additionalProperties": false,
+      "properties": {
+        "dataset": {
+          "description": "e.g. 'NASA POWER'",
+          "title": "Dataset",
+          "type": "string"
+        },
+        "product": {
+          "description": "e.g. 'T2M_MAX, daily'",
+          "title": "Product",
+          "type": "string"
+        },
+        "resolution": {
+          "description": "e.g. '0.5° x 0.625°' or '250 m'",
+          "title": "Resolution",
+          "type": "string"
+        },
+        "period": {
+          "description": "e.g. '2001-2025'",
+          "title": "Period",
+          "type": "string"
+        },
+        "is_nasa": {
+          "title": "Is Nasa",
+          "type": "boolean"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        }
+      },
+      "required": [
+        "dataset",
+        "product",
+        "resolution",
+        "period",
+        "is_nasa"
+      ],
+      "title": "DataSource",
+      "type": "object"
+    },
+    "ImportOrigin": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "e.g. 'ar-core'",
+          "title": "Id",
+          "type": "string"
+        },
+        "country": {
+          "description": "ISO 3166-1 alpha-2",
+          "title": "Country",
+          "type": "string"
+        },
+        "name": {
+          "$ref": "#/$defs/Localized"
+        },
+        "provinces": {
+          "$ref": "#/$defs/Localized"
+        },
+        "crop": {
+          "$ref": "#/$defs/Crop"
+        },
+        "role": {
+          "$ref": "#/$defs/Localized",
+          "description": "why this origin matters to a feed buyer"
+        },
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        },
+        "window": {
+          "$ref": "#/$defs/Localized",
+          "description": "the weeks that decide the crop, e.g. pod fill"
+        },
+        "harvest": {
+          "$ref": "#/$defs/Localized"
+        },
+        "points": {
+          "items": {
+            "$ref": "#/$defs/OriginPoint"
+          },
+          "title": "Points",
+          "type": "array"
+        },
+        "stage": {
+          "$ref": "#/$defs/OriginStage"
+        },
+        "current_season": {
+          "title": "Current Season",
+          "type": "string"
+        },
+        "current": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OriginReading"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "this season so far; None before its window opens"
+        },
+        "note": {
+          "$ref": "#/$defs/Localized",
+          "description": "what is happening now, in one or two sentences"
+        },
+        "track": {
+          "$ref": "#/$defs/OriginTrack"
+        },
+        "seasons": {
+          "items": {
+            "$ref": "#/$defs/OriginSeason"
+          },
+          "title": "Seasons",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "country",
+        "name",
+        "provinces",
+        "crop",
+        "role",
+        "confidence",
+        "window",
+        "harvest",
+        "points",
+        "stage",
+        "current_season",
+        "note",
+        "track",
+        "seasons"
+      ],
+      "title": "ImportOrigin",
+      "type": "object"
+    },
+    "Localized": {
+      "additionalProperties": false,
+      "properties": {
+        "ro": {
+          "title": "Ro",
+          "type": "string"
+        },
+        "en": {
+          "title": "En",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ro",
+        "en"
+      ],
+      "title": "Localized",
+      "type": "object"
+    },
+    "OfficialEstimate": {
+      "additionalProperties": false,
+      "properties": {
+        "date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ISO date of the report; None if final",
+          "title": "Date"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "label": {
+          "$ref": "#/$defs/Localized"
+        }
+      },
+      "required": [
+        "value",
+        "label"
+      ],
+      "title": "OfficialEstimate",
+      "type": "object"
+    },
+    "OriginCheckpoint": {
+      "additionalProperties": false,
+      "description": "The risk score as it would have read on one date, using only weather up to that date.",
+      "properties": {
+        "as_of": {
+          "description": "ISO date",
+          "title": "As Of",
+          "type": "string"
+        },
+        "score": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Score",
+          "type": "number"
+        },
+        "level": {
+          "$ref": "#/$defs/RiskLevel"
+        }
+      },
+      "required": [
+        "as_of",
+        "score",
+        "level"
+      ],
+      "title": "OriginCheckpoint",
+      "type": "object"
+    },
+    "OriginPoint": {
+      "additionalProperties": false,
+      "description": "One NASA POWER sample point inside a growing region, weighted by its share of the crop.",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "lat": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Lat",
+          "type": "number"
+        },
+        "lon": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Lon",
+          "type": "number"
+        },
+        "weight": {
+          "exclusiveMinimum": 0,
+          "title": "Weight",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "lat",
+        "lon",
+        "weight"
+      ],
+      "title": "OriginPoint",
+      "type": "object"
+    },
+    "OriginReading": {
+      "additionalProperties": false,
+      "properties": {
+        "as_of": {
+          "description": "ISO date of the last weather day used",
+          "title": "As Of",
+          "type": "string"
+        },
+        "score": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Score",
+          "type": "number"
+        },
+        "level": {
+          "$ref": "#/$defs/RiskLevel"
+        },
+        "drivers": {
+          "items": {
+            "$ref": "#/$defs/Reason"
+          },
+          "title": "Drivers",
+          "type": "array"
+        },
+        "provisional": {
+          "default": false,
+          "description": "uses NASA POWER's newest ~2 months (near-real-time); soil wetness left out",
+          "title": "Provisional",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "as_of",
+        "score",
+        "level",
+        "drivers"
+      ],
+      "title": "OriginReading",
+      "type": "object"
+    },
+    "OriginReplay": {
+      "additionalProperties": false,
+      "description": "One past season told as it unfolded: our reading vs the official estimates at the time.",
+      "properties": {
+        "origin_id": {
+          "title": "Origin Id",
+          "type": "string"
+        },
+        "season": {
+          "title": "Season",
+          "type": "string"
+        },
+        "title": {
+          "$ref": "#/$defs/Localized"
+        },
+        "text": {
+          "$ref": "#/$defs/Localized"
+        },
+        "unit": {
+          "description": "unit of the official estimates, e.g. 'Mt'",
+          "title": "Unit",
+          "type": "string"
+        },
+        "ours": {
+          "items": {
+            "$ref": "#/$defs/OriginCheckpoint"
+          },
+          "title": "Ours",
+          "type": "array"
+        },
+        "official": {
+          "items": {
+            "$ref": "#/$defs/OfficialEstimate"
+          },
+          "title": "Official",
+          "type": "array"
+        }
+      },
+      "required": [
+        "origin_id",
+        "season",
+        "title",
+        "text",
+        "unit",
+        "ours",
+        "official"
+      ],
+      "title": "OriginReplay",
+      "type": "object"
+    },
+    "OriginSeason": {
+      "additionalProperties": false,
+      "properties": {
+        "season": {
+          "description": "e.g. '2022/23' for the southern hemisphere, '2025' otherwise",
+          "title": "Season",
+          "type": "string"
+        },
+        "harvest_year": {
+          "title": "Harvest Year",
+          "type": "integer"
+        },
+        "score": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Score",
+          "type": "number"
+        },
+        "level": {
+          "$ref": "#/$defs/RiskLevel"
+        },
+        "yield_anomaly_pct": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "official yield vs its 2001-2025 linear trend",
+          "title": "Yield Anomaly Pct"
+        },
+        "outcome": {
+          "anyOf": [
+            {
+              "enum": [
+                "caught",
+                "missed",
+                "false_alarm",
+                "normal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "caught: high risk and yield >=10% below trend; missed: a poor yield we did not flag; false_alarm: high risk, normal yield; normal: neither",
+          "title": "Outcome"
+        },
+        "checkpoints": {
+          "items": {
+            "$ref": "#/$defs/OriginCheckpoint"
+          },
+          "title": "Checkpoints",
+          "type": "array"
+        }
+      },
+      "required": [
+        "season",
+        "harvest_year",
+        "score",
+        "level",
+        "checkpoints"
+      ],
+      "title": "OriginSeason",
+      "type": "object"
+    },
+    "OriginStage": {
+      "enum": [
+        "before_window",
+        "in_window",
+        "done"
+      ],
+      "title": "OriginStage",
+      "type": "string"
+    },
+    "OriginTrack": {
+      "additionalProperties": false,
+      "description": "How the rule did against official yields, all seasons published.",
+      "properties": {
+        "truth": {
+          "$ref": "#/$defs/Localized",
+          "description": "which official yields we checked against"
+        },
+        "seasons": {
+          "minimum": 0,
+          "title": "Seasons",
+          "type": "integer"
+        },
+        "bad_seasons": {
+          "minimum": 0,
+          "title": "Bad Seasons",
+          "type": "integer"
+        },
+        "caught": {
+          "minimum": 0,
+          "title": "Caught",
+          "type": "integer"
+        },
+        "false_alarms": {
+          "minimum": 0,
+          "title": "False Alarms",
+          "type": "integer"
+        },
+        "correlation": {
+          "description": "score vs yield anomaly; negative is good",
+          "maximum": 1,
+          "minimum": -1,
+          "title": "Correlation",
+          "type": "number"
+        },
+        "lead": {
+          "$ref": "#/$defs/Localized",
+          "description": "when the reading becomes useful, vs harvest"
+        }
+      },
+      "required": [
+        "truth",
+        "seasons",
+        "bad_seasons",
+        "caught",
+        "false_alarms",
+        "correlation",
+        "lead"
+      ],
+      "title": "OriginTrack",
+      "type": "object"
+    },
+    "Reason": {
+      "additionalProperties": false,
+      "description": "One machine-readable driver behind a status or score.",
+      "properties": {
+        "code": {
+          "description": "stable id, e.g. 'heat_at_flowering'",
+          "title": "Code",
+          "type": "string"
+        },
+        "label": {
+          "$ref": "#/$defs/Localized"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit"
+        }
+      },
+      "required": [
+        "code",
+        "label"
+      ],
+      "title": "Reason",
+      "type": "object"
+    },
+    "RiskLevel": {
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "title": "RiskLevel",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "mock": {
+      "default": false,
+      "title": "Mock",
+      "type": "boolean"
+    },
+    "as_of": {
+      "description": "ISO date of the newest weather day used",
+      "title": "As Of",
+      "type": "string"
+    },
+    "crop": {
+      "$ref": "#/$defs/Crop"
+    },
+    "headline": {
+      "$ref": "#/$defs/Localized"
+    },
+    "advice": {
+      "$ref": "#/$defs/Localized"
+    },
+    "actions": {
+      "items": {
+        "$ref": "#/$defs/Localized"
+      },
+      "title": "Actions",
+      "type": "array"
+    },
+    "origins": {
+      "items": {
+        "$ref": "#/$defs/ImportOrigin"
+      },
+      "title": "Origins",
+      "type": "array"
+    },
+    "replay": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OriginReplay"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "method": {
+      "$ref": "#/$defs/Localized"
+    },
+    "limits": {
+      "items": {
+        "$ref": "#/$defs/Localized"
+      },
+      "title": "Limits",
+      "type": "array"
+    },
+    "sources": {
+      "items": {
+        "$ref": "#/$defs/DataSource"
+      },
+      "title": "Sources",
+      "type": "array"
+    }
+  },
+  "required": [
+    "as_of",
+    "crop",
+    "headline",
+    "advice",
+    "actions",
+    "origins",
+    "method",
+    "limits",
+    "sources"
+  ],
+  "title": "ImportOrigins",
+  "type": "object",
+  "$id": "https://field-signal/contracts/import_origins/0.1.0"
+}

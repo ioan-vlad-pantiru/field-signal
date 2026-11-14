@@ -1,11 +1,13 @@
 import type {
   FieldAnalysis,
   FieldRequest,
+  ImportOrigins,
   MergedParcels,
   ParcelCollection,
   SourcingRegion,
 } from "@/lib/contracts";
 import { mockFieldAnalysis, mockSourcingRegion } from "@/lib/mocks";
+import builtOrigins from "@/mocks/import_origins.json";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const TIMEOUT_MS = 5000;
@@ -70,6 +72,14 @@ export function getSourcingRegion(season = 2025): Promise<Loaded<SourcingRegion>
     () => request<SourcingRegion>(`/v1/sourcing/region?season=${season}`),
     mockSourcingRegion,
   );
+}
+
+/**
+ * Imported soy origins. The fallback is the same build bundled with the app (real data, not a
+ * demo), so the page still works when the API cannot be reached.
+ */
+export function getImportOrigins(): Promise<Loaded<ImportOrigins>> {
+  return withFallback(() => request<ImportOrigins>("/v1/sourcing/origins"), builtOrigins as ImportOrigins);
 }
 
 /** A map box in degrees. */

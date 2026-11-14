@@ -16,6 +16,7 @@ import { SourceChip } from "@/components/ui/source-chip";
 import { RISK_TONE, TONE_CLASSES, TONE_ICONS } from "@/components/ui/tone";
 import { DemoBanner, EmptyState, ErrorState } from "@/components/ui/states";
 import { ValidationCard } from "./validation-card";
+import { OriginsView } from "./origins-view";
 import { CommuneTable } from "./commune-table";
 import { useMediaQuery } from "./use-media-query";
 import { ZoneCompare, defaultPair } from "./zone-compare";
@@ -30,7 +31,42 @@ type State =
 /** Tailwind's `lg`: from here the map sits on the left and details open beside it. */
 const LAPTOP = "(min-width: 1024px)";
 
+type Tab = "local" | "imports";
+
+/** The buyer page: local grain from Alba's communes, or the soy imported from abroad. `#imports` opens the second. */
 export function FeedView() {
+  const t = useTranslations("Origins.tabs");
+  const [tab, setTab] = useState<Tab>("local");
+
+  useEffect(() => {
+    // The hash is only known in the browser; read it once after the first render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (window.location.hash === "#imports") setTab("imports");
+  }, []);
+
+  function choose(next: Tab) {
+    setTab(next);
+    window.history.replaceState(null, "", next === "imports" ? "#imports" : window.location.pathname);
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <Segmented
+        label={t("label")}
+        value={tab}
+        onChange={choose}
+        className="w-full sm:w-auto sm:self-start"
+        options={[
+          { value: "local", label: t("local") },
+          { value: "imports", label: t("imports") },
+        ]}
+      />
+      {tab === "local" ? <LocalFeed /> : <OriginsView />}
+    </div>
+  );
+}
+
+function LocalFeed() {
   const t = useTranslations("Feed");
   const [state, setState] = useState<State>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
