@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { analyzeField, type Loaded } from "@/lib/api";
+import { analyzeField, ApiRequestError, optimizeFarm, type Loaded } from "@/lib/api";
 import { fieldInput, updateField, useAccount } from "@/lib/account";
 import { setAssistantFields } from "@/lib/assistant";
 import type { FieldAnalysis, LatLon, SavedField as AccountField } from "@/lib/contracts";
@@ -17,7 +17,8 @@ import { ErrorState } from "@/components/ui/states";
 import { FieldForm, type FormStep } from "./field-form";
 import { ResultsSkeleton, ResultsView } from "./results-view";
 import { SaveField } from "./save-field";
-import { MAX_FIELDS, toDraft, type SubmittedField } from "./draft-field";
+import { farmRequest, MAX_FIELDS, toDraft, type SubmittedField } from "./draft-field";
+import { OptimizerSection, type OptimizerState } from "./results/optimizer-plan";
 import { ALL_FIELDS, FieldSwitcher } from "./results/field-switcher";
 import { ResultsOverview } from "./results/results-overview";
 import { useFieldLabel } from "./steps/field-list";
@@ -222,6 +223,39 @@ function Flow({
   const [savedInForm, setSavedInForm] = useState(false);
   /** My fields entries updated by the last run. */
   const [updated, setUpdated] = useState<ReadonlySet<string>>(new Set());
+  /** The farm plan of the last run; a newer run makes older answers stale. */
+  const [farm, setFarm] = useState<OptimizerState>({ status: "loading" });
+  const farmRun = useRef(0);
+  const farmAbort = useRef<AbortController | null>(null);
+  // Stop polling a farm plan job when the farmer leaves the page.
+  useEffect(() => () => farmAbort.current?.abort(), []);
+
+  /**
+   * Not part of the per-field Promise.all: the farm plan runs as a background job on the API, so a
+   * slow plan or a 422 never holds up the per-field results, and the page stays usable meanwhile.
+   */
+  function startOptimizer(list: SubmittedField[]) {
+    const runId = ++farmRun.current;
+    farmAbort.current?.abort();
+    const abort = new AbortController();
+    farmAbort.current = abort;
+    setFarm({ status: "loading" });
+    optimizeFarm(farmRequest(list, fieldLabel), {
+      signal: abort.signal,
+      onProgress: (elapsedS) => {
+        if (farmRun.current === runId) setFarm({ status: "loading", elapsedS });
+      },
+    }).then(
+      (result) => {
+        if (farmRun.current === runId) setFarm({ status: "done", result });
+      },
+      (error: unknown) => {
+        if (abort.signal.aborted) return;
+        const invalid = error instanceof ApiRequestError && error.status === 422;
+        if (farmRun.current === runId) setFarm({ status: "error", invalid });
+      },
+    );
+  }
 
   async function run(submitted: SubmittedField[]) {
     const list = submitted.map((f) => ({
@@ -247,6 +281,7 @@ function Flow({
     if (!signedIn && lastField) {
       saveField({ request: lastField.request, boundary: lastField.boundary, parts: lastField.parts, near: lastField.place });
     }
+    startOptimizer(list);
     try {
       const results = await Promise.all(list.map((f) => analyzeField(f.request)));
       setState({ step: "results", results });
@@ -276,6 +311,7 @@ function Flow({
   useEffect(() => {
     if (autoStarted.current) return;
     autoStarted.current = true;
+    startOptimizer(fields);
     Promise.all(opened.map((f) => analyzeField(f.request)))
       .then((results) => setState({ step: "results", results }))
       .catch(() => setState({ step: "error" }));
@@ -341,6 +377,7 @@ function Flow({
             }
           />
           )}
+          <OptimizerSection state={farm} names={fields.map(fieldLabel)} onRetry={() => startOptimizer(fields)} />
         </div>
       );
     }

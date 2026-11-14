@@ -312,5 +312,5 @@
   ],
   "title": "FeatureRow",
   "type": "object",
-  "$id": "https://field-signal/contracts/feature_row/0.1.0"
+  "$id": "https://field-signal/contracts/feature_row/0.2.0"
 }

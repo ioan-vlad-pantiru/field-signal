@@ -17,5 +17,5 @@
   ],
   "title": "ParcelMergeRequest",
   "type": "object",
-  "$id": "https://field-signal/contracts/parcel_merge_request/0.1.0"
+  "$id": "https://field-signal/contracts/parcel_merge_request/0.2.0"
 }

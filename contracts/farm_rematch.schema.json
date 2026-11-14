@@ -209,5 +209,5 @@
   ],
   "title": "FarmRematch",
   "type": "object",
-  "$id": "https://field-signal/contracts/farm_rematch/0.1.0"
+  "$id": "https://field-signal/contracts/farm_rematch/0.2.0"
 }

@@ -13,6 +13,7 @@ dependencies = [
   "jupyter>=1.1",
   "rasterio>=1.5.2",
   "geopandas>=1.2.0",
+  "h5netcdf[h5py]>=1.8.3",
 ]
 
 [build-system]

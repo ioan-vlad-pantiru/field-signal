@@ -1,6 +1,7 @@
-import type { FieldAnalysis, SourcingRegion } from "@/lib/contracts";
+import type { FieldAnalysis, OptimizerResponse, SourcingRegion } from "@/lib/contracts";
 import type { StocksScenario } from "@/lib/stocks";
 import fieldAnalysisJson from "@/mocks/field_analysis.mock.json";
+import optimizerJson from "@/mocks/optimizer.mock.json";
 import sourcingRegionJson from "@/mocks/sourcing_region.mock.json";
 import stocksJson from "@/mocks/transavia_stocks.mock.json";
 
@@ -10,3 +11,5 @@ import stocksJson from "@/mocks/transavia_stocks.mock.json";
 export const mockFieldAnalysis = fieldAnalysisJson as unknown as FieldAnalysis;
 export const mockSourcingRegion = sourcingRegionJson as unknown as SourcingRegion;
 export const mockStocks = stocksJson as unknown as StocksScenario;
+// The API's own example for the demo farm near Aiud, copied from contracts/examples/optimizer.mock.json.
+export const mockOptimizer = optimizerJson as unknown as OptimizerResponse;

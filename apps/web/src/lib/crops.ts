@@ -25,7 +25,7 @@ export const MAX_ROTATION = 4;
 export const CROP_COLORS: Record<Crop, string> = {
   maize: "#e3b23c",
   wheat: "#c9a46a",
-  barley: "#a8925f",
+  barley: "#c27c5a",
   soybean: "#6fae4f",
   pea: "#2f9a78",
   sunflower: "#f08a24",

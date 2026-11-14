@@ -27,7 +27,7 @@ export function Verdict({ verdict, start }: { verdict: VerdictData<Strategy>; st
       : kind === "fewer" && bestPoor === 0
         ? t.rich("fewerNone", { name, start, current: n(currentPoor), b: strong })
         : kind === "same"
-        ? t.rich("same", { name, start, count: n(bestPoor), b: strong })
+        ? t.rich("same", { name, start, count: bestPoor, b: strong })
         : t.rich(kind, { name, start, best: bestPoor, current: n(currentPoor), b: strong });
 
   return (

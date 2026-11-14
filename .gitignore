@@ -59,3 +59,6 @@ _netrc
 # APIA parcel outlines: built by data/scripts/build_apia_parcels.py, published as a release asset
 services/api/parcels/*
 !services/api/parcels/.gitkeep
+
+# World model soil/terrain grid (87 MB, farm_data.static_grid): CI downloads it from a release.
+services/api/src/api/planner/data/static_grid.npy

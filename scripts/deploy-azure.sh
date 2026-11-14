@@ -27,6 +27,9 @@ for target in $TARGETS; do
       # Parcel outlines for "tap your parcel" live in a release, not in git.
       [ -f services/api/parcels/apia_parcels_alba.sqlite ] ||
         gh release download apia-parcels-2025 -p apia_parcels_alba.sqlite -D services/api/parcels
+      # The trained world model's soil grid; without it the planner uses the mock.
+      [ -f services/api/src/api/planner/data/static_grid.npy ] ||
+        gh release download world-model-static -p static_grid.npy -D services/api/src/api/planner/data
       ;;
     web) app=$WEB_APP; dockerfile=apps/web/Dockerfile; args=(--build-arg "NEXT_PUBLIC_API_URL=$API_URL") ;;
     *) echo "unknown target: $target" >&2; exit 1 ;;

@@ -186,5 +186,5 @@
   ],
   "title": "FarmPlan",
   "type": "object",
-  "$id": "https://field-signal/contracts/farm_plan/0.1.0"
+  "$id": "https://field-signal/contracts/farm_plan/0.2.0"
 }

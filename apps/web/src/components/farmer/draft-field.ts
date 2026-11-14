@@ -1,4 +1,4 @@
-import type { Crop, FieldRequest, LatLon } from "@/lib/contracts";
+import type { Crop, FieldRequest, LatLon, OptimizerRequest } from "@/lib/contracts";
 
 /** Most fields analysed together, so one run stays quick and gentle on the API. */
 export const MAX_FIELDS = 10;
@@ -38,5 +38,22 @@ export function toDraft(field: SubmittedField): DraftField {
     place: field.place,
     accountId: field.accountId,
     name: field.name,
+  };
+}
+
+/**
+ * Every field in one farm-plan call, ids `f1`, `f2`, … in order. `crop_history` is left out (the API
+ * then reads the rotation backwards and says so) and so is `eco_scheme` (API default: nothing enforced).
+ */
+export function farmRequest(list: SubmittedField[], name: (field: SubmittedField, index: number) => string): OptimizerRequest {
+  return {
+    fields: list.map((f, i) => ({
+      id: `f${i + 1}`,
+      name: Array.from(name(f, i)).slice(0, 80).join(""), // the contract caps names at 80 characters
+      boundary: f.boundary,
+      current_rotation: f.request.current_rotation,
+    })) as OptimizerRequest["fields"],
+    priorities: list[0]?.request.priorities ?? {},
+    risk_aversion: 0.3,
   };
 }

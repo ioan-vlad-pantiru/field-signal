@@ -703,7 +703,7 @@
   "additionalProperties": false,
   "properties": {
     "schema_version": {
-      "default": "0.1.0",
+      "default": "0.2.0",
       "title": "Schema Version",
       "type": "string"
     },
@@ -785,5 +785,5 @@
   ],
   "title": "FieldAnalysis",
   "type": "object",
-  "$id": "https://field-signal/contracts/field_analysis/0.1.0"
+  "$id": "https://field-signal/contracts/field_analysis/0.2.0"
 }

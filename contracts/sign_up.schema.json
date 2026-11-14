@@ -33,5 +33,5 @@
   ],
   "title": "SignUp",
   "type": "object",
-  "$id": "https://field-signal/contracts/sign_up/0.1.0"
+  "$id": "https://field-signal/contracts/sign_up/0.2.0"
 }

@@ -17,11 +17,11 @@ Conventions
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-SCHEMA_VERSION = "0.1.0"
+SCHEMA_VERSION = "0.2.0"
 
 
 class Contract(BaseModel):
@@ -361,6 +361,51 @@ class ModelPrediction(Contract):
     cv_metric_value: float | None = None
 
 
+class RotationOutcome(Contract):
+    """One row of world-model output for the farm planner (handoff 2b): yearly physical summaries
+    for one grid point, rotation, weather window and plan year. Each `Range` is the spread across
+    ensemble members (low/mid/high = P10/P50/P90) for one weather window, not across weather
+    windows. Null = not predicted; the planner drops a rotation whose scores need it. Scores are
+    not part of this row: the planner owns normalisation, weights and rules. `crop` is the main
+    crop of this plan year."""
+
+    grid_point_id: str = Field(
+        description="'{lat:.5f}_{lon:.5f}' of the centre of the 0.0025° (about 250 m) grid cell"
+    )
+    rotation: str = Field(description="crop sequence joined by '>', e.g. 'maize>wheat>pea'")
+    weather_start_season: int = Field(
+        description="scenario id: first harvest season of the weather window, e.g. 1987"
+    )
+    plan_year: int = Field(ge=1, le=5, description="year inside the plan, 1-based")
+    crop: Crop
+    season: int = Field(description="harvest year of the weather used: start + plan_year - 1")
+    yield_rel: Range | None = Field(
+        default=None, description="yield relative to the crop's local normal (1.0 = normal)"
+    )
+    ndvi_peak: Range | None = Field(default=None, description="peak-season NDVI")
+    ndvi_offseason: Range | None = Field(
+        default=None, description="mean NDVI outside the crop's season (soil cover)"
+    )
+    ndvi_monthly: list[float] | None = Field(
+        default=None,
+        min_length=12,
+        max_length=12,
+        description="monthly NDVI, January to December of the harvest year, ensemble P50; the "
+        "planner's soil-water balance reads it",
+    )
+    rootzone_sm_critical: Range | None = Field(
+        default=None,
+        description="root-zone soil moisture in the crop's critical months; the planner does not "
+        "read it (it computes soil water from ndvi_monthly and the weather); may be null",
+    )
+    et_season_mm: Range | None = Field(
+        default=None,
+        description="evapotranspiration over the crop's season; the planner does not read it; "
+        "may be null",
+    )
+    model_version: str = Field(description="'mock-0' for the mock world model")
+
+
 class FeatureRow(Contract):
     """One row of the feature table `data/cache/features/<zone_type>.parquet` (handoff 1),
     built by `data/scripts/build_features.py`. Zone values are means over the zone's cropland
@@ -406,6 +451,174 @@ class FeatureRow(Contract):
         default=None, description="vs linear trend of the county x crop record"
     )
     crops_yaml_version: str
+
+
+# --------------------------------------------------------------------------- farm planner
+
+
+class OptimizerField(Contract):
+    id: str = Field(min_length=1, max_length=40, description="unique within the request")
+    name: str | None = Field(default=None, max_length=80)
+    boundary: list[LatLon] = Field(min_length=3, max_length=500)
+    current_rotation: list[Crop] = Field(
+        min_length=2,
+        max_length=4,
+        description="the farmer's reference cycle, as in FieldRequest; scored as the baseline",
+    )
+    crop_history: list[Crop] | None = Field(
+        default=None,
+        max_length=5,
+        description="observed crops of past seasons, most recent harvest last; null = unknown, "
+        "then the cycle current_rotation is read backwards (an assumption, stated in caveats)",
+    )
+
+
+class OptimizerRequest(Contract):
+    fields: list[OptimizerField] = Field(min_length=1, max_length=10)
+    priorities: dict[Priority, Annotated[float, Field(ge=0)]] = Field(
+        description="non-negative weights per priority; normalised server-side, all zero = equal"
+    )
+    risk_aversion: float = Field(
+        default=0.3, ge=0, le=1, description="0 = best average, 1 = best worst weather window"
+    )
+    plan_years: int = Field(default=4, ge=3, le=5)
+    eco_scheme: bool = Field(
+        default=False,
+        description="enforce one practice of the voluntary PD-04 eco-scheme (eco_practice); "
+        "false = nothing from PD-04 is enforced",
+    )
+    eco_practice: Literal["diversification", "legume_share"] = Field(
+        default="diversification",
+        description="the one PD-04 practice enforced when eco_scheme is true; ignored otherwise. "
+        "The two are alternatives, never enforced together",
+    )
+
+    @model_validator(mode="after")
+    def _unique_field_ids(self) -> Self:
+        if len({f.id for f in self.fields}) != len(self.fields):
+            raise ValueError("field ids must be unique")
+        return self
+
+
+class Allocation(Contract):
+    """Hectares of one rotation on one field. A farm of 75 ha or more: one allocation per field,
+    on the field's whole area. A smaller farm: a field of 10 ha or more may hold up to 3 (at least
+    5 ha each), an area split, not a planting map (where each block lies is not decided)."""
+
+    field_id: str
+    area_ha: float = Field(ge=0)
+    sequence: list[Crop] = Field(min_length=3, max_length=5, description="one crop per plan year")
+
+
+class OptimizerCropArea(Contract):
+    crop: Crop
+    area_ha: float = Field(ge=0)
+    share_pct: float = Field(ge=0, le=100, description="share of the whole farm area")
+
+
+class YearAreas(Contract):
+    plan_year: int = Field(ge=1, le=5)
+    areas: list[OptimizerCropArea]
+
+
+class RuleCheck(Contract):
+    """A provisional farm-level crop rule check (payment conditions, simplified): not a statement
+    of GAEC 7 or PD-04 compliance. `max_*` rules are upper limits; `legume_share` is a lower
+    limit."""
+
+    id: Literal["max_crop_share", "max_two_crops_share", "legume_share"]
+    source: str = Field(description="rule profile and year, e.g. 'GAEC 7 2026', 'PD-04 2026'")
+    limit_pct: float = Field(ge=0, le=100)
+    value_pct: float = Field(ge=0, le=100, description="worst plan year")
+    applies: bool = Field(description="true only for the practice enforced in this request")
+    passed: bool = Field(description="value_pct meets limit_pct; computed even when not applied")
+    verified: bool = Field(
+        description="the limit was read in the official document; false = unverified"
+    )
+
+
+class ScenarioScore(Contract):
+    start_season: int = Field(description="first harvest season of the weather window")
+    end_season: int = Field(description="last harvest season of the weather window")
+    total: float = Field(ge=0, le=100, description="0-100 decision metric, not a probability")
+
+
+class OptimizerPlan(Contract):
+    """One farm plan. Scores are 0-100 decision metrics (higher is better), not probabilities.
+    `score_range` is the spread across weather windows, not a confidence interval."""
+
+    rank: int = Field(
+        ge=0,
+        description="1 = best solution found (optimal for the model only when proven_optimal); "
+        "2-3 = alternatives that drop at least two (field, rotation) choices of every better "
+        "plan (the only one if it has one), not the next-best "
+        "solutions; 0 = the farmer's current rotation",
+    )
+    allocations: list[Allocation] = Field(
+        description="one entry per field on a farm of 75 ha or more; one or more per field "
+        "(up to 3) on a smaller farm"
+    )
+    score: ScoreBreakdown = Field(
+        description="mean over weather windows, area-weighted; 0-100, not a probability"
+    )
+    score_range: Range = Field(
+        description="spread across weather windows: low = worst, mid = median, high = best"
+    )
+    worst: ScenarioScore
+    best: ScenarioScore
+    yearly_areas: list[YearAreas]
+    rules: list[RuleCheck] = Field(
+        description="provisional rule checks, not a statement of GAEC 7 or PD-04 compliance"
+    )
+    confidence: Confidence = Field(
+        description="how far the model behind the numbers has been validated; 'low' on the mock "
+        "world model, the rule for the real model is still open"
+    )
+    proven_optimal: bool = Field(
+        description="true only when the solver proved the plan optimal for the model (no "
+        "candidate pruned); otherwise the plan is the best solution found; false for the baseline"
+    )
+
+
+class OptimizerResponse(Contract):
+    schema_version: str = SCHEMA_VERSION
+    mock: bool = False
+    model_version: str = Field(description="world model behind the scores; 'mock-0' for the mock")
+    plan_years: int = Field(ge=3, le=5)
+    total_area_ha: float = Field(ge=0)
+    scenario_count: int = Field(ge=0, description="number of weather windows scored")
+    scenario_first: int = Field(description="start season of the first weather window")
+    scenario_last: int = Field(description="start season of the last weather window")
+    plans: list[OptimizerPlan] = Field(
+        max_length=3,
+        description="plans[0] is the best solution found (optimal for the model only when "
+        "proven_optimal), the others are alternatives; empty if none is feasible",
+    )
+    current: OptimizerPlan | None = Field(
+        default=None, description="the farmer's current rotation; null when it cannot be scored"
+    )
+    caveats: list[Localized]
+    sources: list[DataSource]
+
+
+class OptimizerJobStatus(StrEnum):
+    QUEUED = "queued"
+    RUNNING = "running"
+    DONE = "done"
+    REJECTED = "rejected"  # the fields cannot be planned (the synchronous endpoint's 422)
+    FAILED = "failed"
+
+
+class OptimizerJob(Contract):
+    """A farm plan computed in the background: `POST /v1/farm/optimize/jobs` returns it queued,
+    `GET /v1/farm/optimize/jobs/{id}` until `status` is done, rejected or failed. Jobs live in the
+    API's memory for 15 minutes; an unknown id is a 404 (expired, or the API restarted)."""
+
+    id: str
+    status: OptimizerJobStatus
+    elapsed_s: float = Field(ge=0, description="seconds since the job was submitted")
+    result: OptimizerResponse | None = Field(default=None, description="set when status is done")
+    detail: str | None = Field(default=None, description="why, when rejected or failed")
 
 
 # --------------------------------------------------------------------------- farmer accounts
@@ -691,4 +904,8 @@ EXPORTED: dict[str, type[Contract]] = {
     "farm_suggestion": FarmSuggestion,
     "farm_plan_request": FarmPlanRequest,
     "farm_plan": FarmPlan,
+    "rotation_outcome": RotationOutcome,
+    "optimizer_request": OptimizerRequest,
+    "optimizer_response": OptimizerResponse,
+    "optimizer_job": OptimizerJob,
 }

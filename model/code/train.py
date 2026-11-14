@@ -88,10 +88,13 @@ def load_data(cfg, device):
     ids = np.load(p / "point_ids.npy").tolist()
     n = len(ids)
 
-    split = pl.read_parquet(p / "splits.parquet")
-    train = pl.Series(ids).is_in(split.filter(pl.col("split") == "train")["point_id"].implode()).to_numpy()
-    val = pl.Series(ids).is_in(split.filter(pl.col("split") == "val")["point_id"].implode()).to_numpy()
-    assert not (train & val).any()
+    if (p / "splits.parquet").exists():  # absent for a hosted tensor set built without split.py
+        split = pl.read_parquet(p / "splits.parquet")
+        train = pl.Series(ids).is_in(split.filter(pl.col("split") == "train")["point_id"].implode()).to_numpy()
+        val = pl.Series(ids).is_in(split.filter(pl.col("split") == "val")["point_id"].implode()).to_numpy()
+        assert not (train & val).any()
+    else:
+        train = val = np.zeros(n, bool)
     for ch in range(2):
         assert (np.isnan(state[:, :, ch]) == (mask[:, :, ch] == 0)).all(), "state NaN != mask 0"
     assert crop.min() >= 0 and crop.max() < N_CLASSES, "crop class outside the embedding table"
@@ -110,12 +113,16 @@ def load_data(cfg, device):
         z[:, :, 1] = (state[:, :, 1] - sm_mean) / sm_std
     del state
 
-    check_standardisation(z, mask, train, cal)
+    if train.any():  # inference-only tensor sets have no train rows to check
+        check_standardisation(z, mask, train, cal)
 
     # HRL confidence per crop year on train points: the weight of that year's labels
-    med = np.array([np.nanmedian(conf[train, y]) if np.isfinite(conf[train, y]).any()
-                    else np.nanmedian(conf[train]) for y in range(8)], np.float32)
-    weight = (np.where(np.isnan(conf), med[None, :], conf) / 100.0).astype(np.float32)
+    if train.any():
+        med = np.array([np.nanmedian(conf[train, y]) if np.isfinite(conf[train, y]).any()
+                        else np.nanmedian(conf[train]) for y in range(8)], np.float32)
+        weight = (np.where(np.isnan(conf), med[None, :], conf) / 100.0).astype(np.float32)
+    else:
+        weight = np.ones_like(conf, np.float32)  # label weight, unused at inference
     del conf
 
     wmean = np.asarray(norm["weather"]["mean"], np.float32)

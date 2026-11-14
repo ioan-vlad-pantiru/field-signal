@@ -1,0 +1,183 @@
+{
+  "$defs": {
+    "Crop": {
+      "enum": [
+        "maize",
+        "wheat",
+        "barley",
+        "soybean",
+        "sunflower",
+        "pea",
+        "cover_mustard",
+        "cover_phacelia",
+        "cover_vetch",
+        "fallow"
+      ],
+      "title": "Crop",
+      "type": "string"
+    },
+    "LatLon": {
+      "additionalProperties": false,
+      "properties": {
+        "lat": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Lat",
+          "type": "number"
+        },
+        "lon": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Lon",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lat",
+        "lon"
+      ],
+      "title": "LatLon",
+      "type": "object"
+    },
+    "OptimizerField": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "unique within the request",
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "boundary": {
+          "items": {
+            "$ref": "#/$defs/LatLon"
+          },
+          "maxItems": 500,
+          "minItems": 3,
+          "title": "Boundary",
+          "type": "array"
+        },
+        "current_rotation": {
+          "description": "the farmer's reference cycle, as in FieldRequest; scored as the baseline",
+          "items": {
+            "$ref": "#/$defs/Crop"
+          },
+          "maxItems": 4,
+          "minItems": 2,
+          "title": "Current Rotation",
+          "type": "array"
+        },
+        "crop_history": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Crop"
+              },
+              "maxItems": 5,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "observed crops of past seasons, most recent harvest last; null = unknown, then the cycle current_rotation is read backwards (an assumption, stated in caveats)",
+          "title": "Crop History"
+        }
+      },
+      "required": [
+        "id",
+        "boundary",
+        "current_rotation"
+      ],
+      "title": "OptimizerField",
+      "type": "object"
+    },
+    "Priority": {
+      "enum": [
+        "yield",
+        "water",
+        "soil",
+        "risk"
+      ],
+      "title": "Priority",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "fields": {
+      "items": {
+        "$ref": "#/$defs/OptimizerField"
+      },
+      "maxItems": 10,
+      "minItems": 1,
+      "title": "Fields",
+      "type": "array"
+    },
+    "priorities": {
+      "additionalProperties": {
+        "minimum": 0,
+        "type": "number"
+      },
+      "description": "non-negative weights per priority; normalised server-side, all zero = equal",
+      "propertyNames": {
+        "$ref": "#/$defs/Priority"
+      },
+      "title": "Priorities",
+      "type": "object"
+    },
+    "risk_aversion": {
+      "default": 0.3,
+      "description": "0 = best average, 1 = best worst weather window",
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Risk Aversion",
+      "type": "number"
+    },
+    "plan_years": {
+      "default": 4,
+      "maximum": 5,
+      "minimum": 3,
+      "title": "Plan Years",
+      "type": "integer"
+    },
+    "eco_scheme": {
+      "default": false,
+      "description": "enforce one practice of the voluntary PD-04 eco-scheme (eco_practice); false = nothing from PD-04 is enforced",
+      "title": "Eco Scheme",
+      "type": "boolean"
+    },
+    "eco_practice": {
+      "default": "diversification",
+      "description": "the one PD-04 practice enforced when eco_scheme is true; ignored otherwise. The two are alternatives, never enforced together",
+      "enum": [
+        "diversification",
+        "legume_share"
+      ],
+      "title": "Eco Practice",
+      "type": "string"
+    }
+  },
+  "required": [
+    "fields",
+    "priorities"
+  ],
+  "title": "OptimizerRequest",
+  "type": "object",
+  "$id": "https://field-signal/contracts/optimizer_request/0.2.0"
+}
