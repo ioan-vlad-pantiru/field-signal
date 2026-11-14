@@ -67,7 +67,8 @@ export function AdoptionSlider({ scenario }: { scenario: AdoptionScenario }) {
         label={t("cropLabel")}
         value={choice}
         onChange={setChoice}
-        className="w-full sm:w-auto"
+        // Three options with long Romanian names don't fit side by side on a phone: stack them below sm.
+        className="w-full flex-col sm:w-auto sm:flex-row"
         options={CHOICES.map((c) => ({
           value: c,
           label: (
