@@ -33,6 +33,7 @@ venv/bin/python code/run.py step3 --region full   # Earth Engine extraction
 venv/bin/python code/run.py step4 --region full   # NASA POWER weather
 venv/bin/python code/run.py manifest --region full
 venv/bin/python code/verify.py                    # post-run invariants
+venv/bin/python code/eda.py                      # docs/eda_report.md (+ data/interim/hls_presence.parquet)
 ```
 
 Steps 3 and 4 are independent and run concurrently. `GEE_WORKERS=n` sets Earth Engine
