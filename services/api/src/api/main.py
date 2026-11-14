@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from api import accounts, mocks
+from api import accounts, assistant, mocks
 from api.analysis import run_field_analysis
 from api.contracts import FieldAnalysis, FieldRequest, SourcingRegion
 from api.settings import get_settings
@@ -22,6 +22,7 @@ app.add_middleware(
 )
 
 app.include_router(accounts.router)
+app.include_router(assistant.router)
 app.include_router(whatsapp_router)
 
 

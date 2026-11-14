@@ -402,6 +402,23 @@ class Account(Contract):
     created_at: str = Field(description="ISO 8601, UTC")
 
 
+class AccountUpdate(Contract):
+    """Profile changes; only the display name for now."""
+
+    name: str | None = Field(default=None, max_length=80)
+
+
+class PasswordChange(Contract):
+    current_password: str = Field(min_length=1, max_length=200)
+    new_password: str = Field(min_length=8, max_length=200)
+
+
+class AccountDeletion(Contract):
+    """Deleting an account needs the password again."""
+
+    password: str = Field(min_length=1, max_length=200)
+
+
 class SavedFieldInput(Contract):
     """A field a farmer keeps in their account: the drawn boundary plus the last analysis inputs."""
 
@@ -417,6 +434,37 @@ class SavedField(SavedFieldInput):
     updated_at: str = Field(description="ISO 8601, UTC")
 
 
+# --------------------------------------------------------------------------- assistant
+
+
+class ChatTurn(Contract):
+    role: Literal["user", "assistant"]
+    content: str = Field(min_length=1, max_length=4000)
+
+
+class AssistantField(Contract):
+    """A field the farmer is looking at, so the assistant can analyse it by name."""
+
+    name: str = Field(min_length=1, max_length=80)
+    request: FieldRequest
+    near: str | None = Field(default=None, max_length=120)
+    area_ha: float | None = Field(default=None, ge=0)
+
+
+class AssistantRequest(Contract):
+    messages: list[ChatTurn] = Field(min_length=1, max_length=24)
+    lang: Literal["ro", "en"] = "ro"
+    fields: list[AssistantField] = Field(default_factory=list, max_length=10)
+    page: str | None = Field(default=None, max_length=40, description="where the farmer asks from")
+    think: bool = Field(default=False, description="let the model reason before answering")
+
+
+class AssistantReply(Contract):
+    reply: str
+    tools_used: list[str]
+    demo_data: bool = Field(description="the answer used demonstration (mock) data")
+
+
 EXPORTED: dict[str, type[Contract]] = {
     "field_request": FieldRequest,
     "field_analysis": FieldAnalysis,
@@ -426,6 +474,11 @@ EXPORTED: dict[str, type[Contract]] = {
     "sign_up": SignUp,
     "sign_in": SignIn,
     "account": Account,
+    "account_update": AccountUpdate,
+    "password_change": PasswordChange,
+    "account_deletion": AccountDeletion,
     "saved_field_input": SavedFieldInput,
     "saved_field": SavedField,
+    "assistant_request": AssistantRequest,
+    "assistant_reply": AssistantReply,
 }

@@ -128,6 +128,49 @@ export const ShieldIcon = (p: IconProps) => (
   </Svg>
 );
 
+export const CloudRainIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M7 15a4 4 0 01-.5-7.97A5.5 5.5 0 0117 8.5a3.5 3.5 0 01.5 6.5" />
+    <path d="M8 18l-1 2M12 18l-1 2M16 18l-1 2" />
+  </Svg>
+);
+
+export const LeafIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14z" />
+    <path d="M5 19c3-4 6-7 10-9" />
+  </Svg>
+);
+
+export const DropIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 3c3.5 4.5 6 7.8 6 11a6 6 0 01-12 0c0-3.2 2.5-6.5 6-11z" />
+  </Svg>
+);
+
+export const LayersIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 4l9 4.5-9 4.5-9-4.5z" />
+    <path d="M3 12.5l9 4.5 9-4.5M3 16.5l9 4.5 9-4.5" />
+  </Svg>
+);
+
+export const ChatIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 5h16v11H9l-5 4z" />
+    <path d="M8 9.5h8M8 12.5h5" />
+  </Svg>
+);
+
+export const GridIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="4" y="4" width="7" height="7" rx="1" />
+    <rect x="13" y="4" width="7" height="7" rx="1" />
+    <rect x="4" y="13" width="7" height="7" rx="1" />
+    <rect x="13" y="13" width="7" height="7" rx="1" />
+  </Svg>
+);
+
 /** Same artwork as public/icons/icon.svg: a sprout under two signal arcs. */
 export const LogoMark = ({ size = 28, ...props }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 512 512" aria-hidden="true" focusable="false" {...props}>

@@ -13,8 +13,13 @@ const NAMES = [
   "sign_up",
   "sign_in",
   "account",
+  "account_update",
+  "password_change",
+  "account_deletion",
   "saved_field_input",
   "saved_field",
+  "assistant_request",
+  "assistant_reply",
 ];
 const OUT = "apps/web/src/lib/contracts.ts";
 

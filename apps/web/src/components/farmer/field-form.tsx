@@ -18,6 +18,7 @@ import type { Commune } from "./steps/communes";
 import { FieldStep, MAX_FIELD_HA, MIN_FIELD_HA } from "./steps/field-step";
 import { PrioritiesStep, levelsFrom, weightsFrom, type PriorityLevels } from "./steps/priorities-step";
 import { RotationStep, START_ROTATION } from "./steps/rotation-step";
+import { SaveToAccount } from "./steps/save-to-account";
 
 const DEFAULT_POINT: LatLon = { lat: 46.3, lon: 23.75 };
 const STEPS = ["field", "rotation", "priorities"] as const;
@@ -38,6 +39,7 @@ export function FieldForm({
   initialPlace = null,
   communes,
   notice,
+  onSavedToAccount,
   onSubmit,
 }: {
   /** Fields to start with (resumed or opened from My fields); the last one is the one being edited. */
@@ -52,6 +54,8 @@ export function FieldForm({
   communes: Commune[];
   /** Shown above the step, such as the place pinned from the feed screen. */
   notice?: ReactNode;
+  /** A field was saved to My fields from the form. */
+  onSavedToAccount?: () => void;
   /** Every field with its request; the API receives each field's centroid. */
   onSubmit: (fields: SubmittedField[]) => void;
 }) {
@@ -259,6 +263,28 @@ export function FieldForm({
           />
         ) : null}
         {step === 1 ? <RotationStep rotation={rotation} onChange={setRotation} /> : null}
+        {boundary && step < 2 ? (
+          <SaveToAccount
+            name={meta.name ?? ""}
+            onName={(name) => setMeta((m) => ({ ...m, name: name || null }))}
+            accountId={meta.accountId}
+            onSaved={(accountId, name) => {
+              setMeta({ accountId, name });
+              onSavedToAccount?.();
+            }}
+            fallbackName={place}
+            draft={{
+              request: {
+                location: point,
+                current_rotation: rotation as FieldRequest["current_rotation"],
+                priorities: weightsFrom(levels),
+                irrigated,
+              },
+              boundary,
+              near: place,
+            }}
+          />
+        ) : null}
         {step === 2 ? (
           <PrioritiesStep levels={levels} onLevels={setLevels} irrigated={irrigated} onIrrigated={setIrrigated} />
         ) : null}

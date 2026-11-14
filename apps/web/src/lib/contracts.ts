@@ -373,6 +373,27 @@ export interface Account {
   created_at: string;
 }
 
+/**
+ * Profile changes; only the display name for now.
+ */
+
+export interface AccountUpdate {
+  name?: string | null;
+}
+
+export interface PasswordChange {
+  current_password: string;
+  new_password: string;
+}
+
+/**
+ * Deleting an account needs the password again.
+ */
+
+export interface AccountDeletion {
+  password: string;
+}
+
 export interface SavedFieldInput {
   name: string;
   request: FieldRequest;
@@ -408,4 +429,90 @@ export interface SavedField {
    * ISO 8601, UTC
    */
   updated_at: string;
+}
+
+export interface AssistantRequest {
+  /**
+   * @minItems 1
+   * @maxItems 24
+   */
+  messages: [ChatTurn, ...ChatTurn[]];
+  lang?: "ro" | "en";
+  /**
+   * @maxItems 10
+   */
+  fields?:
+    | []
+    | [AssistantField]
+    | [AssistantField, AssistantField]
+    | [AssistantField, AssistantField, AssistantField]
+    | [AssistantField, AssistantField, AssistantField, AssistantField]
+    | [AssistantField, AssistantField, AssistantField, AssistantField, AssistantField]
+    | [AssistantField, AssistantField, AssistantField, AssistantField, AssistantField, AssistantField]
+    | [AssistantField, AssistantField, AssistantField, AssistantField, AssistantField, AssistantField, AssistantField]
+    | [
+        AssistantField,
+        AssistantField,
+        AssistantField,
+        AssistantField,
+        AssistantField,
+        AssistantField,
+        AssistantField,
+        AssistantField
+      ]
+    | [
+        AssistantField,
+        AssistantField,
+        AssistantField,
+        AssistantField,
+        AssistantField,
+        AssistantField,
+        AssistantField,
+        AssistantField,
+        AssistantField
+      ]
+    | [
+        AssistantField,
+        AssistantField,
+        AssistantField,
+        AssistantField,
+        AssistantField,
+        AssistantField,
+        AssistantField,
+        AssistantField,
+        AssistantField,
+        AssistantField
+      ];
+  /**
+   * where the farmer asks from
+   */
+  page?: string | null;
+  /**
+   * let the model reason before answering
+   */
+  think?: boolean;
+}
+
+export interface ChatTurn {
+  role: "user" | "assistant";
+  content: string;
+}
+/**
+ * A field the farmer is looking at, so the assistant can analyse it by name.
+ */
+
+export interface AssistantField {
+  name: string;
+  request: FieldRequest;
+  near?: string | null;
+  area_ha?: number | null;
+}
+
+export interface AssistantReply {
+  reply: string;
+  tools_used: string[];
+  /**
+   * the answer used demonstration (mock) data
+   */
+  demo_data: boolean;
 }

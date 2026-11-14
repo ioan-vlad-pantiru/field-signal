@@ -34,6 +34,7 @@ known-first-party = ["api", "farm_data", "farm_ml"]
 "*.ipynb" = ["E501"]
 # The assistant system prompt is prose; one rule per line reads better unwrapped.
 "services/api/src/api/whatsapp/assistant.py" = ["E501"]
+"services/api/src/api/assistant.py" = ["E501"]
 
 [tool.mypy]
 python_version = "3.12"

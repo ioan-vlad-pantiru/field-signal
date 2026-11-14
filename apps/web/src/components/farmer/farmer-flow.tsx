@@ -1,10 +1,11 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { analyzeField, type Loaded } from "@/lib/api";
 import { fieldInput, updateField, useAccount } from "@/lib/account";
+import { setAssistantFields } from "@/lib/assistant";
 import type { FieldAnalysis, LatLon, SavedField as AccountField } from "@/lib/contracts";
 import { Link } from "@/i18n/navigation";
 import { formatNumber } from "@/lib/format";
@@ -17,7 +18,8 @@ import { FieldForm, type FormStep } from "./field-form";
 import { ResultsSkeleton, ResultsView } from "./results-view";
 import { SaveField } from "./save-field";
 import { MAX_FIELDS, toDraft, type SubmittedField } from "./draft-field";
-import { FieldSwitcher } from "./results/field-switcher";
+import { ALL_FIELDS, FieldSwitcher } from "./results/field-switcher";
+import { ResultsOverview } from "./results/results-overview";
 import { useFieldLabel } from "./steps/field-list";
 import { CheckIcon } from "@/components/ui/icons";
 import { nearestCommune, useCommunes } from "./steps/communes";
@@ -56,14 +58,21 @@ function UrlPinnedFlow() {
   const lon = parseCoordinate(params.get("lon"), 180);
   const place = params.get("place")?.trim() || null;
   const pin = lat != null && lon != null ? { point: { lat, lon }, place } : null;
-  const savedId = params.get("saved");
-  if (savedId) return <AccountFieldFlow key={savedId} id={savedId} />;
+  const saved = params.get("saved");
+  if (saved) {
+    const ids = saved.split(",").filter(Boolean).slice(0, MAX_FIELDS);
+    const mode = params.get("run") === "1" ? "run" : params.get("edit") === "1" ? "edit" : "open";
+    return <AccountFieldFlow key={`${saved}:${mode}`} ids={ids} mode={mode} />;
+  }
   // Remount when the pin changes so the form picks up the new start point.
   return <Flow key={pin ? `${lat},${lon}` : "default"} pin={pin} />;
 }
 
-/** `?saved=<id>`: a field from My fields, opened on its last step once the account has loaded. */
-function AccountFieldFlow({ id }: { id: string }) {
+/**
+ * `?saved=<id>[,<id>…]`: fields from My fields, once the account has loaded. Opened on the last
+ * step; with `&run=1` analysed straight away; with `&edit=1` opened on the field step to redraw.
+ */
+function AccountFieldFlow({ ids, mode }: { ids: string[]; mode: "open" | "run" | "edit" }) {
   const account = useAccount();
   if (account.status === "loading") {
     return (
@@ -73,9 +82,12 @@ function AccountFieldFlow({ id }: { id: string }) {
       </div>
     );
   }
-  const field = account.status === "signed-in" ? account.fields.find((f) => f.id === id) : undefined;
+  const found =
+    account.status === "signed-in"
+      ? ids.map((id) => account.fields.find((f) => f.id === id)).filter((f): f is AccountField => f != null)
+      : [];
   // Signed out, offline or deleted: the normal flow, which offers what it can.
-  return <Flow pin={null} opened={field ?? null} />;
+  return <Flow pin={null} opened={found} openMode={found.length > 0 ? mode : "open"} />;
 }
 
 /**
@@ -179,7 +191,15 @@ function SavedFieldBar({ saved, onResume }: { saved: SavedField; onResume: () =>
   );
 }
 
-function Flow({ pin, opened = null }: { pin: UrlPin | null; opened?: AccountField | null }) {
+function Flow({
+  pin,
+  opened = [],
+  openMode = "open",
+}: {
+  pin: UrlPin | null;
+  opened?: AccountField[];
+  openMode?: "open" | "run" | "edit";
+}) {
   const t = useTranslations("Field");
   const locale = useAppLocale();
   const communes = useCommunes();
@@ -187,14 +207,19 @@ function Flow({ pin, opened = null }: { pin: UrlPin | null; opened?: AccountFiel
   const account = useAccount();
   const signedIn = account.status === "signed-in";
   const fieldLabel = useFieldLabel();
-  const [state, setState] = useState<State>({ step: "form" });
+  const autoRun = openMode === "run" && opened.length > 0;
+  const [state, setState] = useState<State>(autoRun ? { step: "loading" } : { step: "form" });
   /** The fields of the last run (or the ones opened), in order; the form resumes with them. */
-  const [fields, setFields] = useState<SubmittedField[]>(opened ? [fromAccount(opened)] : []);
+  const [fields, setFields] = useState<SubmittedField[]>(() => opened.map(fromAccount));
   /** Remounts the form with `fields`, opened on this step. */
-  const [resumed, setResumed] = useState<FormStep | null>(opened ? 2 : null);
+  const [resumed, setResumed] = useState<FormStep | null>(
+    opened.length === 0 ? null : openMode === "edit" ? 0 : 2,
+  );
   const [formKey, setFormKey] = useState(0);
   /** Which field's results are shown. */
-  const [selected, setSelected] = useState(0);
+  const [selected, setSelected] = useState(opened.length > 1 ? ALL_FIELDS : 0);
+  /** A field was saved from the form: keep the "Your fields" picker from appearing mid-edit. */
+  const [savedInForm, setSavedInForm] = useState(false);
   /** My fields entries updated by the last run. */
   const [updated, setUpdated] = useState<ReadonlySet<string>>(new Set());
 
@@ -204,7 +229,7 @@ function Flow({ pin, opened = null }: { pin: UrlPin | null; opened?: AccountFiel
       place: f.place ?? nearestCommune(communes, f.request.location)?.name ?? null,
     }));
     setFields(list);
-    setSelected(0);
+    setSelected(list.length > 1 ? ALL_FIELDS : 0);
     setUpdated(new Set());
     setState({ step: "loading" });
     window.scrollTo({ top: 0 });
@@ -230,6 +255,34 @@ function Flow({ pin, opened = null }: { pin: UrlPin | null; opened?: AccountFiel
     }
   }
 
+  // The assistant can analyse the fields on screen by name while results are shown.
+  useEffect(() => {
+    if (state.step !== "results") return;
+    setAssistantFields(
+      fields.map((f, i) => ({
+        name: fields.length > 1 ? fieldLabel(f, i) : (f.name ?? f.place ?? t("assistantField")),
+        request: f.request,
+        near: f.place,
+        area_ha: polygonAreaHa(f.boundary),
+      })),
+    );
+    return () => setAssistantFields([]);
+    // fieldLabel and t are new functions each render; the labels only change with the fields.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.step, fields]);
+
+  // Opened from My fields with "Analyse": analyse once, straight away (state starts at loading).
+  const autoStarted = useRef(!autoRun);
+  useEffect(() => {
+    if (autoStarted.current) return;
+    autoStarted.current = true;
+    Promise.all(opened.map((f) => analyzeField(f.request)))
+      .then((results) => setState({ step: "results", results }))
+      .catch(() => setState({ step: "error" }));
+    // Runs once on mount, for the fields the page was opened with.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function reopen(list: SubmittedField[], step: FormStep) {
     setFields(list);
     setResumed(step);
@@ -249,23 +302,23 @@ function Flow({ pin, opened = null }: { pin: UrlPin | null; opened?: AccountFiel
     case "error":
       return <ErrorState onRetry={() => (fields.length > 0 ? run(fields) : back())} />;
     case "results": {
-      const index = Math.min(selected, fields.length - 1);
+      const showAll = fields.length > 1 && selected === ALL_FIELDS;
+      const index = Math.min(Math.max(selected, 0), fields.length - 1);
       const field = fields[index];
       const result = state.results[index];
       const name = fields.length > 1 ? fieldLabel(field, index) : (field.name ?? field.place);
+      const pick = (i: number) => {
+        setSelected(i);
+        window.scrollTo({ top: 0 });
+      };
       return (
         <div>
           {fields.length > 1 ? (
-            <FieldSwitcher
-              fields={fields}
-              results={state.results}
-              selected={index}
-              onSelect={(i) => {
-                setSelected(i);
-                window.scrollTo({ top: 0 });
-              }}
-            />
+            <FieldSwitcher fields={fields} results={state.results} selected={showAll ? ALL_FIELDS : index} onSelect={pick} />
           ) : null}
+          {showAll ? (
+            <ResultsOverview fields={fields} results={state.results} onOpen={pick} />
+          ) : (
           <ResultsView
             key={index}
             analysis={result.data}
@@ -285,13 +338,14 @@ function Flow({ pin, opened = null }: { pin: UrlPin | null; opened?: AccountFiel
               />
             }
           />
+          )}
         </div>
       );
     }
     case "form": {
       // A pin from the feed screen is a new place: it wins over the saved field.
       const fresh = !pin && resumed === null && fields.length === 0;
-      const accountFields = fresh && signedIn && account.fields.length > 0 ? account.fields : null;
+      const accountFields = fresh && !savedInForm && signedIn && account.fields.length > 0 ? account.fields : null;
       const offerSaved = fresh && saved && !signedIn ? saved : null;
       return (
         <div>
@@ -322,6 +376,9 @@ function Flow({ pin, opened = null }: { pin: UrlPin | null; opened?: AccountFiel
                 </NoticeBar>
               ) : null
             }
+            onSavedToAccount={() => {
+              if (!accountFields) setSavedInForm(true);
+            }}
             onSubmit={run}
           />
         </div>

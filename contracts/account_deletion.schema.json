@@ -1,0 +1,18 @@
+{
+  "additionalProperties": false,
+  "description": "Deleting an account needs the password again.",
+  "properties": {
+    "password": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Password",
+      "type": "string"
+    }
+  },
+  "required": [
+    "password"
+  ],
+  "title": "AccountDeletion",
+  "type": "object",
+  "$id": "https://field-signal/contracts/account_deletion/0.1.0"
+}

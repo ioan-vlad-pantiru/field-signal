@@ -140,6 +140,25 @@ export async function deleteField(id: string) {
   withFields(fieldsOf().filter((f) => f.id !== id));
 }
 
+export async function updateProfile(name: string | null) {
+  const account = await call<Account>("/v1/auth/me", { method: "PATCH", body: JSON.stringify({ name }) });
+  if (state.status === "signed-in") set({ ...state, account });
+}
+
+/** Sets a new password; other devices are signed out, this one stays signed in. */
+export async function changePassword(currentPassword: string, newPassword: string) {
+  await call<void>("/v1/auth/password", {
+    method: "POST",
+    body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+  });
+}
+
+/** Deletes the account and every saved field. */
+export async function deleteAccount(password: string) {
+  await call<void>("/v1/auth/me", { method: "DELETE", body: JSON.stringify({ password }) });
+  set({ status: "signed-out" });
+}
+
 /** The editable part of a saved field, for a PUT. */
 export function fieldInput(field: SavedField): FieldDraft {
   return { name: field.name, request: field.request, boundary: field.boundary, near: field.near ?? null };

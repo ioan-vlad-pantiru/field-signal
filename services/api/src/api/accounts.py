@@ -28,7 +28,16 @@ from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
 
-from api.contracts import Account, SavedField, SavedFieldInput, SignIn, SignUp
+from api.contracts import (
+    Account,
+    AccountDeletion,
+    AccountUpdate,
+    PasswordChange,
+    SavedField,
+    SavedFieldInput,
+    SignIn,
+    SignUp,
+)
 from api.settings import get_settings
 
 COOKIE = "fs_session"
@@ -271,6 +280,51 @@ def sign_out(response: Response, fs_session: Annotated[str | None, Cookie()] = N
 @router.get("/auth/me")
 def me(account: CurrentAccount) -> Account:
     return account
+
+
+@router.patch("/auth/me")
+def update_me(body: AccountUpdate, account: CurrentAccount) -> Account:
+    name = (body.name or "").strip() or None
+    with connect() as db:
+        db.execute("UPDATE accounts SET name = ? WHERE id = ?", (name, account.id))
+    return account.model_copy(update={"name": name})
+
+
+def _check_password(account_id: str, password: str) -> None:
+    with connect() as db:
+        row = db.one("SELECT password_hash FROM accounts WHERE id = ?", (account_id,))
+    if row is None or not verify_password(password, row["password_hash"]):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "wrong_password")
+
+
+@router.post("/auth/password", status_code=status.HTTP_204_NO_CONTENT)
+def change_password(
+    body: PasswordChange,
+    account: CurrentAccount,
+    fs_session: Annotated[str | None, Cookie()] = None,
+) -> None:
+    """Sets a new password and signs out every other device."""
+    _check_password(account.id, body.current_password)
+    with connect() as db:
+        db.execute(
+            "UPDATE accounts SET password_hash = ? WHERE id = ?",
+            (hash_password(body.new_password), account.id),
+        )
+        db.execute(
+            "DELETE FROM sessions WHERE account_id = ? AND token_hash <> ?",
+            (account.id, _token_hash(fs_session or "")),
+        )
+
+
+@router.delete("/auth/me", status_code=status.HTTP_204_NO_CONTENT)
+def delete_me(body: AccountDeletion, account: CurrentAccount, response: Response) -> None:
+    """Deletes the account, its fields and its sessions."""
+    _check_password(account.id, body.password)
+    with connect() as db:
+        db.execute("DELETE FROM fields WHERE account_id = ?", (account.id,))
+        db.execute("DELETE FROM sessions WHERE account_id = ?", (account.id,))
+        db.execute("DELETE FROM accounts WHERE id = ?", (account.id,))
+    response.delete_cookie(COOKIE, path="/")
 
 
 # --------------------------------------------------------------------------- saved fields

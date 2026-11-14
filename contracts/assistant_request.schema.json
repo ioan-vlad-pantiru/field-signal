@@ -1,0 +1,220 @@
+{
+  "$defs": {
+    "AssistantField": {
+      "additionalProperties": false,
+      "description": "A field the farmer is looking at, so the assistant can analyse it by name.",
+      "properties": {
+        "name": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "request": {
+          "$ref": "#/$defs/FieldRequest"
+        },
+        "near": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Near"
+        },
+        "area_ha": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Area Ha"
+        }
+      },
+      "required": [
+        "name",
+        "request"
+      ],
+      "title": "AssistantField",
+      "type": "object"
+    },
+    "ChatTurn": {
+      "additionalProperties": false,
+      "properties": {
+        "role": {
+          "enum": [
+            "user",
+            "assistant"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "content": {
+          "maxLength": 4000,
+          "minLength": 1,
+          "title": "Content",
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "content"
+      ],
+      "title": "ChatTurn",
+      "type": "object"
+    },
+    "Crop": {
+      "enum": [
+        "maize",
+        "wheat",
+        "barley",
+        "soybean",
+        "sunflower",
+        "pea",
+        "cover_mustard",
+        "cover_phacelia",
+        "cover_vetch",
+        "fallow"
+      ],
+      "title": "Crop",
+      "type": "string"
+    },
+    "FieldRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "location": {
+          "$ref": "#/$defs/LatLon"
+        },
+        "current_rotation": {
+          "items": {
+            "$ref": "#/$defs/Crop"
+          },
+          "maxItems": 4,
+          "minItems": 2,
+          "title": "Current Rotation",
+          "type": "array"
+        },
+        "priorities": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "description": "weights 0-1 per priority; normalised server-side",
+          "propertyNames": {
+            "$ref": "#/$defs/Priority"
+          },
+          "title": "Priorities",
+          "type": "object"
+        },
+        "irrigated": {
+          "default": false,
+          "title": "Irrigated",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "location",
+        "current_rotation",
+        "priorities"
+      ],
+      "title": "FieldRequest",
+      "type": "object"
+    },
+    "LatLon": {
+      "additionalProperties": false,
+      "properties": {
+        "lat": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Lat",
+          "type": "number"
+        },
+        "lon": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Lon",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lat",
+        "lon"
+      ],
+      "title": "LatLon",
+      "type": "object"
+    },
+    "Priority": {
+      "enum": [
+        "yield",
+        "water",
+        "soil",
+        "risk"
+      ],
+      "title": "Priority",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "messages": {
+      "items": {
+        "$ref": "#/$defs/ChatTurn"
+      },
+      "maxItems": 24,
+      "minItems": 1,
+      "title": "Messages",
+      "type": "array"
+    },
+    "lang": {
+      "default": "ro",
+      "enum": [
+        "ro",
+        "en"
+      ],
+      "title": "Lang",
+      "type": "string"
+    },
+    "fields": {
+      "items": {
+        "$ref": "#/$defs/AssistantField"
+      },
+      "maxItems": 10,
+      "title": "Fields",
+      "type": "array"
+    },
+    "page": {
+      "anyOf": [
+        {
+          "maxLength": 40,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "where the farmer asks from",
+      "title": "Page"
+    },
+    "think": {
+      "default": false,
+      "description": "let the model reason before answering",
+      "title": "Think",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "messages"
+  ],
+  "title": "AssistantRequest",
+  "type": "object",
+  "$id": "https://field-signal/contracts/assistant_request/0.1.0"
+}

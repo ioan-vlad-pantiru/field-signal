@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
+import { Assistant } from "@/components/assistant/assistant";
 import { BottomNav } from "@/components/layout/nav";
 import { ServiceWorkerRegistration } from "@/components/layout/service-worker";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -58,6 +59,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
           <main className="mx-auto w-full max-w-[1200px] flex-1 px-4 pb-8 pt-5">{children}</main>
           <SiteFooter />
           <BottomNav />
+          <Assistant />
           <ServiceWorkerRegistration />
         </NextIntlClientProvider>
       </body>

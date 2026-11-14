@@ -1,19 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { getSourcingRegion, type Loaded } from "@/lib/api";
-import type { Crop, CropOutlook, SourcingRecommendation, SourcingRegion, Zone } from "@/lib/contracts";
+import type { Crop, CropOutlook, RiskLevel, SourcingRecommendation, SourcingRegion, Zone } from "@/lib/contracts";
 import { useAppLocale, useLocalized } from "@/lib/localized";
 import { ConfidenceBadge } from "@/components/ui/badges";
 import { CropDot } from "@/components/ui/crop-chip";
 import { Disclosure } from "@/components/ui/disclosure";
 import { CrossIcon } from "@/components/ui/icons";
-import { Section } from "@/components/ui/section";
 import { Segmented } from "@/components/ui/segmented";
 import { Sheet } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SourceChip } from "@/components/ui/source-chip";
+import { RISK_TONE, TONE_CLASSES, TONE_ICONS } from "@/components/ui/tone";
 import { DemoBanner, EmptyState, ErrorState } from "@/components/ui/states";
 import { AdoptionSlider } from "./adoption-slider";
 import { CommuneTable } from "./commune-table";
@@ -128,44 +128,51 @@ function Region({ result }: { result: Loaded<SourcingRegion> }) {
       {/* Phone: one column (top, map when chosen, then the rest). Laptop: sticky map left, work panel right. */}
       <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,4fr)_minmax(0,7fr)] lg:gap-x-10 lg:gap-y-0">
         <div className="flex flex-col gap-6 lg:col-start-2 lg:row-start-1">
-          <header>
-            <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-            <p className="mt-1 text-ink-muted">
+          <header className="rounded-2xl border border-line bg-surface p-5 sm:p-6">
+            <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">{t("title")}</h1>
+            <p className="mt-2 max-w-[60ch] text-lg text-ink-muted">{t("intro")}</p>
+            <p className="mt-3 text-sm text-ink-muted">
               {t("regionLine", { region: region.region_name, season: region.season, count: region.zones.length })}
             </p>
           </header>
 
           <Recommendation recommendation={region.recommendation} />
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-            <Segmented
-              label={t("cropToggle")}
-              value={crop}
-              onChange={setCrop}
-              className="w-full sm:w-auto"
-              options={region.reference_crops.map((c) => ({
-                value: c,
-                label: (
-                  <>
-                    <CropDot crop={c} />
-                    {tc(c)}
-                  </>
-                ),
-              }))}
-            />
-            {hasZones ? (
+          <section aria-labelledby="feed-crop" className="flex flex-col gap-4">
+            <h2 id="feed-crop" className="text-xl font-semibold tracking-tight">
+              {t("cropQuestion")}
+            </h2>
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
               <Segmented
-                label={t("view.label")}
-                value={view}
-                onChange={setView}
-                className="w-full sm:w-auto lg:hidden"
-                options={[
-                  { value: "list", label: t("view.list") },
-                  { value: "map", label: t("view.map") },
-                ]}
+                label={t("cropToggle")}
+                value={crop}
+                onChange={setCrop}
+                className="w-full sm:w-auto"
+                options={region.reference_crops.map((c) => ({
+                  value: c,
+                  label: (
+                    <>
+                      <CropDot crop={c} />
+                      {tc(c)}
+                    </>
+                  ),
+                }))}
               />
-            ) : null}
-          </div>
+              {hasZones ? (
+                <Segmented
+                  label={t("view.label")}
+                  value={view}
+                  onChange={setView}
+                  className="w-full sm:w-auto lg:hidden"
+                  options={[
+                    { value: "list", label: t("view.list") },
+                    { value: "map", label: t("view.map") },
+                  ]}
+                />
+              ) : null}
+            </div>
+            {hasZones ? <RiskSummary zones={region.zones} outlookFor={outlookFor} cropName={cropName} /> : null}
+          </section>
         </div>
 
         {hasZones ? (
@@ -208,9 +215,9 @@ function Region({ result }: { result: Loaded<SourcingRegion> }) {
           </aside>
         ) : null}
 
-        <div className="flex flex-col lg:col-start-2 lg:row-start-2">
+        <div className="mt-6 flex flex-col gap-6 lg:col-start-2 lg:row-start-2">
           {hasZones ? (
-            <div className={`mt-2 ${view === "list" ? "" : "max-lg:hidden"}`}>
+            <StepCard step={1} title={t("listTitle")} hint={t("listHint")} className={view === "list" ? "" : "max-lg:hidden"}>
               <CommuneTable
                 zones={region.zones}
                 outlookFor={outlookFor}
@@ -220,13 +227,13 @@ function Region({ result }: { result: Loaded<SourcingRegion> }) {
                 ticked={ticked}
                 onTick={tick}
               />
-            </div>
+            </StepCard>
           ) : (
             <EmptyState>{t("noZones")}</EmptyState>
           )}
 
           {region.zones.length >= 2 ? (
-            <Section title={t("compareTitle")} hint={t("compareHint")}>
+            <StepCard step={2} title={t("compareTitle")} hint={t("compareHint")}>
               {ticked.length === 2 ? (
                 <ZoneCompare zones={region.zones} crop={crop} ids={[ticked[0], ticked[1]]} />
               ) : (
@@ -234,26 +241,27 @@ function Region({ result }: { result: Loaded<SourcingRegion> }) {
                   {firstTicked ? t("compare.pickOne", { zone: firstTicked.name }) : t("compare.pickTwo")}
                 </p>
               )}
-            </Section>
+            </StepCard>
           ) : null}
 
-          <Section title={t("scenarioTitle")}>
+          <StepCard step={region.zones.length >= 2 ? 3 : 2} title={t("scenarioTitle")} hint={t("scenarioHint")}>
             <AdoptionSlider scenario={region.scenario} />
-          </Section>
+          </StepCard>
 
-          <Section title={t("caveatsTitle")}>
-            <ul className="max-w-[65ch] list-disc space-y-2 pl-5">
+          <section className="rounded-2xl bg-surface-sunken p-5 sm:p-6">
+            <h2 className="text-lg font-semibold">{t("caveatsTitle")}</h2>
+            <ul className="mt-3 max-w-[65ch] list-disc space-y-2 pl-5">
               {region.caveats.map((c, i) => (
                 <li key={i}>{l(c)}</li>
               ))}
             </ul>
-            <h3 className="mt-6 text-sm font-medium text-ink-muted">{t("sourcesTitle")}</h3>
+            <h3 className="mt-5 text-sm font-medium text-ink-muted">{t("sourcesTitle")}</h3>
             <div className="mt-2 flex flex-wrap gap-2">
               {region.sources.map((s) => (
                 <SourceChip key={s.dataset} source={s} />
               ))}
             </div>
-          </Section>
+          </section>
         </div>
       </div>
 
@@ -269,20 +277,21 @@ function Recommendation({ recommendation }: { recommendation: SourcingRecommenda
   const t = useTranslations("Feed");
   const l = useLocalized();
   return (
-    <section aria-labelledby="feed-recommendation" className="flex max-w-[720px] flex-col gap-4">
+    <section aria-labelledby="feed-recommendation" className="flex flex-col gap-4 rounded-2xl border border-field/40 bg-field-tint p-5 sm:p-6">
       <div>
-        <h2 id="feed-recommendation" className="text-3xl font-semibold tracking-tight text-balance lg:text-4xl">
+        <p className="text-sm font-semibold text-field-strong">{t("adviceLabel")}</p>
+        <h2 id="feed-recommendation" className="mt-1 text-2xl font-semibold tracking-tight text-balance lg:text-3xl">
           {l(recommendation.title)}
         </h2>
-        <p className="mt-2 text-ink-muted">{l(recommendation.text)}</p>
+        <p className="mt-2">{withoutMockTag(l(recommendation.text))}</p>
       </div>
       {recommendation.actions.length > 0 ? (
         <div>
           <h3 className="sr-only">{t("actionsTitle")}</h3>
           <ol className="flex flex-col">
             {recommendation.actions.map((a, i) => (
-              <li key={i} className="flex gap-3 border-t border-line py-2 last:border-b">
-                <span aria-hidden="true" className="w-5 shrink-0 font-semibold tabular-nums text-field">
+              <li key={i} className="flex gap-3 border-t border-field/25 py-2">
+                <span aria-hidden="true" className="w-5 shrink-0 font-semibold tabular-nums text-field-strong">
                   {i + 1}
                 </span>
                 {l(a)}
@@ -302,5 +311,79 @@ function Recommendation({ recommendation }: { recommendation: SourcingRecommenda
         </Disclosure>
       ) : null}
     </section>
+  );
+}
+
+/** The demo banner already says the data are made up, so the "[MOCK]" tag in mock text is noise here. */
+function withoutMockTag(text: string) {
+  return text.replace(/^\[MOCK\]\s*/, "");
+}
+
+/** A numbered card: one job on the page, with a line saying what it answers. */
+function StepCard({
+  step,
+  title,
+  hint,
+  className = "",
+  children,
+}: {
+  step: number;
+  title: string;
+  hint?: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className={`rounded-2xl border border-line bg-surface p-5 sm:p-6 ${className}`}>
+      <div className="flex items-start gap-3">
+        <span
+          aria-hidden="true"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-field-tint font-semibold tabular-nums text-field-strong"
+        >
+          {step}
+        </span>
+        <div>
+          <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
+          {hint ? <p className="mt-0.5 text-ink-muted">{hint}</p> : null}
+        </div>
+      </div>
+      <div className="mt-5">{children}</div>
+    </section>
+  );
+}
+
+const SUMMARY_LEVELS: RiskLevel[] = ["low", "medium", "high"];
+const SUMMARY_KEY = { low: "good", medium: "watch", high: "bad" } as const;
+
+/** How many communes fall in each supply-risk level for the chosen crop. */
+function RiskSummary({
+  zones,
+  outlookFor,
+  cropName,
+}: {
+  zones: Zone[];
+  outlookFor: (zone: Zone) => CropOutlook | undefined;
+  cropName: string;
+}) {
+  const t = useTranslations("Feed");
+  const tr = useTranslations("Risk");
+  return (
+    <ul className="grid gap-3 sm:grid-cols-3">
+      {SUMMARY_LEVELS.map((level) => {
+        const count = zones.filter((z) => outlookFor(z)?.availability.level === level).length;
+        const tone = RISK_TONE[level];
+        const Icon = TONE_ICONS[tone];
+        return (
+          <li key={level} className={`rounded-2xl p-4 ${TONE_CLASSES[tone].soft}`}>
+            <p className={`flex items-center gap-1.5 text-sm font-semibold ${TONE_CLASSES[tone].text}`}>
+              <Icon size={16} />
+              {tr(level)}
+            </p>
+            <p className="mt-2 font-display text-4xl font-semibold tabular-nums">{count}</p>
+            <p className="mt-1 text-sm">{t(`summary.${SUMMARY_KEY[level]}`, { count, crop: cropName })}</p>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
