@@ -32,6 +32,7 @@ from api.contracts import (
     Account,
     AccountDeletion,
     AccountUpdate,
+    Farm,
     PasswordChange,
     SavedField,
     SavedFieldInput,
@@ -65,6 +66,11 @@ CREATE TABLE IF NOT EXISTS fields (
     updated_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS fields_by_account ON fields(account_id, updated_at);
+CREATE TABLE IF NOT EXISTS farms (
+    account_id TEXT PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
+    body TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
 """
 
 Row = Mapping[str, Any]
@@ -396,3 +402,32 @@ def delete_field(field_id: str, account: CurrentAccount) -> None:
         )
     if deleted.rowcount == 0:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "field_not_found")
+
+
+# --------------------------------------------------------------------------- farm
+
+
+@router.get("/me/farm")
+def get_farm(account: CurrentAccount) -> Farm | None:
+    """The account's farm (parcels and fields), or null before one is saved."""
+    with connect() as db:
+        row = db.one("SELECT body FROM farms WHERE account_id = ?", (account.id,))
+    return Farm.model_validate_json(row["body"]) if row else None
+
+
+@router.put("/me/farm")
+def put_farm(body: Farm, account: CurrentAccount) -> Farm:
+    now = _iso(_now())
+    with connect() as db:
+        db.execute("DELETE FROM farms WHERE account_id = ?", (account.id,))
+        db.execute(
+            "INSERT INTO farms (account_id, body, updated_at) VALUES (?, ?, ?)",
+            (account.id, body.model_dump_json(), now),
+        )
+    return body
+
+
+@router.delete("/me/farm", status_code=status.HTTP_204_NO_CONTENT)
+def delete_farm(account: CurrentAccount) -> None:
+    with connect() as db:
+        db.execute("DELETE FROM farms WHERE account_id = ?", (account.id,))
