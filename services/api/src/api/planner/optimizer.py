@@ -1,9 +1,14 @@
-"""CP-SAT farm rotation optimizer (plan §3.7, §9): one candidate rotation per field.
+"""CP-SAT farm rotation optimizer (plan §3.7, §9, §10): candidate rotations per field.
 
 Plain data in and out; imports no FastAPI, contracts, weather or mock (plan §5a). Areas are
 integers in 0.1 ha, scores integers 0-1000 (the 0-100 total x 10), one value per weather scenario
-in one fixed order. A drawn field is a parcel: it carries exactly one rotation on its whole area,
-one crop per year. Diversity is a farm-level matter only (the rule rows below).
+in one fixed order. A drawn field is a parcel. `splits(farm_ha)` picks the mode, once, on the
+farm's unrounded area (the caller's `farm_ha`; by default the pieces' sum):
+- parcel mode (farm of SPLIT_BELOW_HA or more): every field carries exactly one rotation on its
+  whole area, one crop per year; no exception and no fallback to splitting;
+- split mode (smaller farm): a field of 10 ha or more may be divided between up to 3 rotations,
+  each on at least 5 ha; a smaller field carries one. Splitting is permitted, never forced, and
+  the result is an area split, not a planting map: where each block lies is not modelled.
 
 Signatures (T5 builds on these):
 
@@ -15,7 +20,9 @@ Signatures (T5 builds on these):
         risk_aversion: float = 0.3,        # 0-1; lambda = round(100 * risk_aversion)
         *, top: int = 3, max_time_s: float = 3.0, num_workers: int = 0,
         prune_above: int = PRUNE_ABOVE,
+        farm_ha: float | None = None,     # unrounded farm area; None: the pieces' sum
     ) -> FarmSolve
+    splits(farm_ha: float) -> bool                  # split mode: farm_ha < SPLIT_BELOW_HA
     yearly_areas(allocation: Mapping[tuple[str, str], int]) -> list[dict[str, int]]
     rule_checks(allocation: Mapping[tuple[str, str], int], legumes: Collection[str],
                 eco_practice: str | None) -> list[RuleResult]
@@ -25,10 +32,10 @@ Signatures (T5 builds on these):
 `scores` holds, per piece, the candidates valid for its field (crop history applied). A field's
 score for a rotation is the sum of its pieces' score x area; only rotations every piece of the
 field has are offered. Above `prune_above` (field, rotation) pairs, `solve_farm` keeps
-`MAX_CANDIDATES` per field itself; `FarmSolve.pruned` is true only when that removed a pair.
-An allocation is `{(piece_id, rotation_id): area_tenths_ha}`, every piece on its full area under
-its field's rotation; the helpers work for any allocation, including the farmer's current
-rotation (call `rule_checks` with `eco_practice=None`: nothing applies).
+`MAX_CANDIDATES` per field itself (both modes); `FarmSolve.pruned` is true only when that removed
+a pair. An allocation is `{(piece_id, rotation_id): area_tenths_ha}`; in parcel mode every piece
+is on its full area under its field's rotation. The helpers work for any allocation, including
+the farmer's current rotation (call `rule_checks` with `eco_practice=None`: nothing applies).
 `area_mean(allocation, scores)` gives the farm score per scenario on the 0-1000 scale; divide by
 10 for 0-100.
 
@@ -49,6 +56,12 @@ from ortools.sat.python import cp_model
 from api.planner.candidates import crops_of
 
 Key = tuple[str, str]  # (piece_id or field_id, rotation_id)
+
+# Product choice (owner, 14 Nov 2026), no regulatory source: below it a farm may split fields.
+SPLIT_BELOW_HA: float = 75
+MIN_BLOCK = 50  # 0.1 ha: in split mode a rotation takes 0 or at least 5 ha of a field
+MAX_ROTATIONS = 3  # rotations per field in split mode
+WHOLE_FIELD_BELOW = 100  # 0.1 ha: in split mode a field under 10 ha carries one rotation
 
 # Pruning threshold in (field, rotation) pairs, measured 14 Nov 2026 (15-core Mac, 3 s per solve,
 # structured test scores, top 3): 468 pairs (2 fields, 4 years) solve to OPTIMAL unpruned in
@@ -106,7 +119,7 @@ class RuleResult:
 
 @dataclass(frozen=True)
 class Plan:
-    allocation: dict[Key, int]  # every piece once, full area, its field's rotation
+    allocation: dict[Key, int]  # (piece, rotation) -> 0.1 ha; each piece's areas sum to its area
     scenario_totals: list[int]  # sum of score x area per scenario
     objective: int
     status: str  # CP-SAT status name of the solve that found it
@@ -129,6 +142,12 @@ def is_proven_optimal(status: cp_model.CpSolverStatus, pruned: bool, first_solve
     return status == cp_model.OPTIMAL and not pruned and first_solve
 
 
+def splits(farm_ha: float) -> bool:
+    """Split mode: the farm's unrounded area is strictly below SPLIT_BELOW_HA. The only mode
+    comparison; `solve_farm` decides with it."""
+    return farm_ha < SPLIT_BELOW_HA
+
+
 def solve_farm(
     pieces: Sequence[tuple[str, str, int]],
     scores: Mapping[Key, Sequence[int]],
@@ -140,6 +159,7 @@ def solve_farm(
     max_time_s: float = 3.0,
     num_workers: int = 0,
     prune_above: int = PRUNE_ABOVE,
+    farm_ha: float | None = None,
 ) -> FarmSolve:
     if eco_practice is not None and eco_practice not in ECO_PRACTICES:
         raise ValueError(f"unknown eco practice {eco_practice!r}")
@@ -148,11 +168,15 @@ def solve_farm(
     by_field = _field_scores(pieces, scores)
     kept = _prune(by_field) if len(by_field) > prune_above else by_field
     pruned = len(kept) < len(by_field)
+    split = splits(sum(a for _, _, a in pieces) / 10 if farm_ha is None else farm_ha)
+    if split:  # the split model works per piece, on the rotations its field kept
+        field_of = {p: f for p, f, _ in pieces}
+        kept = {k: list(s) for k, s in scores.items() if (field_of.get(k[0]), k[1]) in kept}
     lam = round(100 * risk_aversion)
     times: list[float] = []
     for practice in dict.fromkeys((eco_practice, None)):  # no plan: retry once without it
         plans, status, t = _rank(
-            pieces, kept, legumes, practice, lam, top, max_time_s, num_workers, pruned
+            pieces, kept, legumes, practice, lam, top, max_time_s, num_workers, pruned, split
         )
         times += t
         if plans:
@@ -163,7 +187,7 @@ def solve_farm(
 
 def _rank(
     pieces: Sequence[tuple[str, str, int]],
-    scores: Mapping[Key, Sequence[int]],  # (field_id, rotation_id) -> per scenario
+    scores: Mapping[Key, Sequence[int]],  # per scenario; split: per piece, parcel: per field
     legumes: Collection[str],
     practice: str | None,
     lam: int,
@@ -171,6 +195,7 @@ def _rank(
     max_time_s: float,
     num_workers: int,
     pruned: bool,
+    split: bool,
 ) -> tuple[list[Plan], str, list[float]]:
     m = cp_model.CpModel()
     field_area: dict[str, int] = defaultdict(int)
@@ -180,13 +205,41 @@ def _rank(
         of_field[f].append((p, a))
     total = sum(field_area.values())
 
-    # One rotation per field (no candidate left: INFEASIBLE).
-    x = {k: m.new_bool_var(f"x_{k[0]}_{k[1]}") for k in scores}
-    for f in field_area:
-        m.add_exactly_one(v for (g, _), v in x.items() if g == f)
+    # x: the objective's variables, keyed as `scores`; use[f, r]: field f carries rotation r;
+    # areas: the 0.1 ha each key grows, for the rules. No candidate left for a field: INFEASIBLE.
+    x: dict[Key, cp_model.IntVar]
+    use: dict[Key, cp_model.IntVar]
+    areas: Mapping[Key, cp_model.LinearExprT]
+    if split:  # 0.1 ha of a piece per rotation; few rotations per field, each 0 or >= MIN_BLOCK
+        area = {p: a for p, _, a in pieces}
+        field_of = {p: f for p, f, _ in pieces}
+        x = {k: m.new_int_var(0, area[k[0]], f"ha_{k[0]}_{k[1]}") for k in scores}
+        areas = x
+        per_piece: dict[str, list[cp_model.IntVar]] = defaultdict(list)
+        blocks: dict[Key, list[cp_model.IntVar]] = defaultdict(list)
+        for (p, r), v in x.items():
+            per_piece[p].append(v)
+            blocks[field_of[p], r].append(v)
+        for p, a in area.items():
+            m.add(cp_model.LinearExpr.sum(per_piece[p]) == a)
+        use = {}
+        per_field: dict[str, list[cp_model.IntVar]] = defaultdict(list)
+        for (f, r), vs in blocks.items():
+            u = use[f, r] = m.new_bool_var(f"use_{f}_{r}")
+            per_field[f].append(u)
+            block = cp_model.LinearExpr.sum(vs)
+            m.add(block >= min(MIN_BLOCK, field_area[f]) * u)
+            m.add(block <= field_area[f] * u)
+        for f, us in per_field.items():
+            cap = 1 if field_area[f] < WHOLE_FIELD_BELOW else MAX_ROTATIONS
+            m.add(cp_model.LinearExpr.sum(us) <= cap)
+    else:  # one rotation per field, on its whole area
+        x = use = {k: m.new_bool_var(f"x_{k[0]}_{k[1]}") for k in scores}
+        for f in field_area:
+            m.add_exactly_one(v for (g, _), v in x.items() if g == f)
+        areas = {k: field_area[k[0]] * v for k, v in x.items()}
 
     # The one eco practice selected: every plan year, on the whole farm area, as integers.
-    areas = {k: field_area[k[0]] * v for k, v in x.items()}
     for rule in RULES_2026:
         if practice is None or rule.practice != practice or total <= rule.above:
             continue
@@ -224,13 +277,14 @@ def _rank(
         status_name = solver.status_name(status)
         if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
             break  # INFEASIBLE: no further alternative (or no plan); UNKNOWN: out of time
-        on = [k for k in keys if solver.value(x[k])]
-        alloc = {(p, r): a for f, r in on for p, a in of_field[f]}
-        totals = [sum(scores[k][s] for k in on) for s in range(n_scen)]
+        vals = {k: n for k, v in x.items() if (n := solver.value(v))}
+        alloc = vals if split else {(p, r): a for f, r in vals for p, a in of_field[f]}
+        totals = [sum(scores[k][s] * n for k, n in vals.items()) for s in range(n_scen)]
         proven = is_proven_optimal(status, pruned, i == 0)
         plans.append(Plan(alloc, totals, round(solver.objective_value), status_name, proven))
-        # The next plan changes the rotation of at least two fields (of the only one if one).
-        m.add(cp_model.LinearExpr.sum([x[k] for k in on]) <= len(on) - min(2, len(on)))
+        # The next plan drops at least two (field, rotation) choices (the only one if one).
+        on = [u for u in use.values() if solver.value(u)]
+        m.add(cp_model.LinearExpr.sum(on) <= len(on) - min(2, len(on)))
     return plans, status_name, times
 
 
