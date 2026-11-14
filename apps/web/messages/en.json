@@ -103,6 +103,7 @@
       "restart": "Start over"
     },
     "mapLabel": "Map for drawing your field",
+    "mapUnavailable": "The map cannot be shown in this browser, so the field cannot be drawn here. Please try another browser or device.",
     "coordinates": "{lat}° N · {lon}° E",
     "needField": "Draw your field on the map to continue.",
     "needDone": "Press Done when all corners are in place.",

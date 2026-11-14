@@ -103,6 +103,7 @@
       "restart": "Desenați din nou"
     },
     "mapLabel": "Hartă pentru desenarea câmpului",
+    "mapUnavailable": "Harta nu poate fi afișată în acest browser, deci câmpul nu poate fi desenat aici. Vă rugăm să încercați alt browser sau alt dispozitiv.",
     "coordinates": "{lat}° N · {lon}° E",
     "needField": "Desenați câmpul pe hartă pentru a continua.",
     "needDone": "Apăsați Gata când toate colțurile sunt la locul lor.",
