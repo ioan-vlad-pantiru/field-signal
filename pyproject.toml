@@ -22,7 +22,7 @@ dev = [
 [tool.ruff]
 target-version = "py312"
 line-length = 100
-extend-exclude = ["apps", "node_modules", "data/raw", "data/cache"]
+extend-exclude = ["apps", "node_modules", "data/raw", "data/cache", "model"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
