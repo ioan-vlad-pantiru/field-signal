@@ -381,10 +381,51 @@ class FeatureRow(Contract):
     crops_yaml_version: str
 
 
+# --------------------------------------------------------------------------- farmer accounts
+
+
+class SignUp(Contract):
+    email: str = Field(min_length=3, max_length=254)
+    password: str = Field(min_length=8, max_length=200)
+    name: str | None = Field(default=None, max_length=80)
+
+
+class SignIn(Contract):
+    email: str = Field(min_length=3, max_length=254)
+    password: str = Field(min_length=1, max_length=200)
+
+
+class Account(Contract):
+    id: str
+    email: str
+    name: str | None = None
+    created_at: str = Field(description="ISO 8601, UTC")
+
+
+class SavedFieldInput(Contract):
+    """A field a farmer keeps in their account: the drawn boundary plus the last analysis inputs."""
+
+    name: str = Field(min_length=1, max_length=80)
+    request: FieldRequest
+    boundary: list[LatLon] = Field(min_length=3, max_length=500)
+    near: str | None = Field(default=None, max_length=120, description="nearest commune name")
+
+
+class SavedField(SavedFieldInput):
+    id: str
+    created_at: str = Field(description="ISO 8601, UTC")
+    updated_at: str = Field(description="ISO 8601, UTC")
+
+
 EXPORTED: dict[str, type[Contract]] = {
     "field_request": FieldRequest,
     "field_analysis": FieldAnalysis,
     "sourcing_region": SourcingRegion,
     "model_prediction": ModelPrediction,
     "feature_row": FeatureRow,
+    "sign_up": SignUp,
+    "sign_in": SignIn,
+    "account": Account,
+    "saved_field_input": SavedFieldInput,
+    "saved_field": SavedField,
 }

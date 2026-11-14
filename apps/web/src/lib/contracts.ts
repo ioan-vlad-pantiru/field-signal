@@ -351,3 +351,61 @@ export interface ModelPrediction {
 /**
  * An estimate with its uncertainty. `low <= mid <= high`.
  */
+
+export interface SignUp {
+  email: string;
+  password: string;
+  name?: string | null;
+}
+
+export interface SignIn {
+  email: string;
+  password: string;
+}
+
+export interface Account {
+  id: string;
+  email: string;
+  name?: string | null;
+  /**
+   * ISO 8601, UTC
+   */
+  created_at: string;
+}
+
+export interface SavedFieldInput {
+  name: string;
+  request: FieldRequest;
+  /**
+   * @minItems 3
+   * @maxItems 500
+   */
+  boundary: [LatLon, LatLon, LatLon, ...LatLon[]];
+  /**
+   * nearest commune name
+   */
+  near?: string | null;
+}
+
+export interface SavedField {
+  name: string;
+  request: FieldRequest;
+  /**
+   * @minItems 3
+   * @maxItems 500
+   */
+  boundary: [LatLon, LatLon, LatLon, ...LatLon[]];
+  /**
+   * nearest commune name
+   */
+  near?: string | null;
+  id: string;
+  /**
+   * ISO 8601, UTC
+   */
+  created_at: string;
+  /**
+   * ISO 8601, UTC
+   */
+  updated_at: string;
+}

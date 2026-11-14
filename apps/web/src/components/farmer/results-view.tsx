@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import type { FieldAnalysis, LatLon } from "@/lib/contracts";
 import type { DataOrigin } from "@/lib/api";
@@ -44,6 +44,7 @@ export function ResultsView({
   boundary,
   onBack,
   placeName = null,
+  save,
 }: {
   analysis: FieldAnalysis;
   origin: DataOrigin;
@@ -52,6 +53,8 @@ export function ResultsView({
   onBack: () => void;
   /** The place the farmer searched or drew at; preferred over the API's commune and county. */
   placeName?: string | null;
+  /** "Save field" control for the header. */
+  save?: ReactNode;
 }) {
   const t = useTranslations("Results");
   const nameOf = useRotationName();
@@ -74,7 +77,7 @@ export function ResultsView({
       {analysis.mock ? <DemoBanner origin={origin} /> : null}
 
       <div className={analysis.mock ? "mt-6" : ""}>
-        <ResultsHeader analysis={analysis} boundary={boundary} placeName={placeName} onBack={onBack} />
+        <ResultsHeader analysis={analysis} boundary={boundary} placeName={placeName} onBack={onBack} save={save} />
       </div>
 
       <div className="mt-8 md:mt-10 print:mt-4">

@@ -1,0 +1,100 @@
+from collections.abc import Iterator
+from pathlib import Path
+
+import pytest
+from fastapi.testclient import TestClient
+
+from api.main import app
+from api.settings import get_settings
+
+FIELD = {
+    "name": "Behind the barn",
+    "request": {
+        "location": {"lat": 46.3, "lon": 23.72},
+        "current_rotation": ["maize", "wheat"],
+        "priorities": {"yield": 0.5, "water": 0.5},
+        "irrigated": False,
+    },
+    "boundary": [
+        {"lat": 46.3, "lon": 23.72},
+        {"lat": 46.301, "lon": 23.72},
+        {"lat": 46.301, "lon": 23.722},
+    ],
+    "near": "Aiud",
+}
+
+
+@pytest.fixture
+def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClient]:
+    monkeypatch.setattr(get_settings(), "database_path", tmp_path / "test.db")
+    with TestClient(app) as test_client:
+        yield test_client
+
+
+def sign_up(client: TestClient, email: str = "Ana@Example.ro") -> None:
+    response = client.post(
+        "/v1/auth/signup", json={"email": email, "password": "grau-2026!", "name": "Ana"}
+    )
+    assert response.status_code == 201, response.text
+
+
+def test_signup_login_logout(client: TestClient) -> None:
+    sign_up(client)
+    me = client.get("/v1/auth/me").json()
+    assert me["email"] == "ana@example.ro"
+    assert (
+        client.post(
+            "/v1/auth/signup", json={"email": "ana@example.ro", "password": "x" * 8}
+        ).status_code
+        == 409
+    )
+
+    assert client.post("/v1/auth/logout").status_code == 204
+    assert client.get("/v1/auth/me").status_code == 401
+
+    bad = client.post("/v1/auth/login", json={"email": "ana@example.ro", "password": "nope"})
+    assert bad.status_code == 401
+    good = client.post(
+        "/v1/auth/login", json={"email": " ANA@example.ro", "password": "grau-2026!"}
+    )
+    assert good.status_code == 200
+    assert client.get("/v1/auth/me").status_code == 200
+
+
+def test_short_password_and_bad_email_rejected(client: TestClient) -> None:
+    assert (
+        client.post("/v1/auth/signup", json={"email": "a@b.ro", "password": "short"}).status_code
+        == 422
+    )
+    assert (
+        client.post(
+            "/v1/auth/signup", json={"email": "nope", "password": "long enough"}
+        ).status_code
+        == 422
+    )
+
+
+def test_fields_crud_and_isolation(client: TestClient) -> None:
+    assert client.get("/v1/me/fields").status_code == 401
+    sign_up(client)
+    created = client.post("/v1/me/fields", json=FIELD).json()
+    second = client.post("/v1/me/fields", json={**FIELD, "name": "By the river"}).json()
+    names = [f["name"] for f in client.get("/v1/me/fields").json()]
+    assert set(names) == {"Behind the barn", "By the river"}
+
+    renamed = client.put(f"/v1/me/fields/{created['id']}", json={**FIELD, "name": "North plot"})
+    assert renamed.status_code == 200
+    assert renamed.json()["name"] == "North plot"
+    assert client.get("/v1/me/fields").json()[0]["id"] == created["id"]
+
+    # Another farmer sees none of it.
+    client.post("/v1/auth/logout")
+    sign_up(client, "ion@example.ro")
+    assert client.get("/v1/me/fields").json() == []
+    assert client.get(f"/v1/me/fields/{second['id']}").status_code == 404
+    assert client.delete(f"/v1/me/fields/{second['id']}").status_code == 404
+
+    client.post("/v1/auth/logout")
+    client.post("/v1/auth/login", json={"email": "ana@example.ro", "password": "grau-2026!"})
+    assert client.delete(f"/v1/me/fields/{second['id']}").status_code == 204
+    assert len(client.get("/v1/me/fields").json()) == 1

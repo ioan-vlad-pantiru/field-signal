@@ -9,7 +9,8 @@
     "feed": "Furaje",
     "about": "Despre",
     "switchLocale": "EN",
-    "switchLocaleLabel": "Switch to English"
+    "switchLocaleLabel": "Switch to English",
+    "account": "Cont"
   },
   "Footer": {
     "credit": "Creat la NASA Space Apps Challenge 2026 · Date: NASA POWER, MODIS, SMAP, SoilGrids",
@@ -596,5 +597,73 @@
     "limitsTitle": "Ce nu poate vedea",
     "limitsLead": "Arată ce s-ar fi întâmplat în anii trecuți. Decizia pentru câmpul dumneavoastră vă aparține.",
     "weakEvidence": "Dovezi mai slabe (înainte de 2015)"
+  },
+  "Account": {
+    "title": "Contul meu",
+    "intro": "Păstrați aici câmpurile și deschideți-le din nou de pe telefon sau laptop.",
+    "signInTitle": "Intrați în cont",
+    "signUpTitle": "Creați un cont",
+    "signInTab": "Intrați în cont",
+    "signUpTab": "Cont nou",
+    "email": "Email",
+    "password": "Parolă",
+    "passwordHint": "Cel puțin 8 caractere.",
+    "name": "Numele dvs. (opțional)",
+    "signIn": "Intrați în cont",
+    "signUp": "Creați contul",
+    "working": "Un moment…",
+    "signOut": "Ieșiți din cont",
+    "signedInAs": "Conectat ca {email}",
+    "hello": "Bună ziua, {name}",
+    "loading": "Se încarcă contul…",
+    "offline": "Nu putem ajunge la server acum. Câmpurile dvs. sunt în siguranță; încercați din nou peste puțin timp.",
+    "retry": "Încercați din nou",
+    "errors": {
+      "email_taken": "Există deja un cont cu acest email. Intrați în cont.",
+      "wrong_credentials": "Emailul sau parola nu sunt corecte.",
+      "invalid_email": "Verificați adresa de email.",
+      "invalid": "Verificați emailul și folosiți o parolă de cel puțin 8 caractere.",
+      "offline": "Nu putem ajunge la server. Verificați conexiunea și încercați din nou.",
+      "server": "Ceva nu a mers la noi. Încercați din nou.",
+      "too_many_fields": "Ați ajuns la 200 de câmpuri. Ștergeți unul ca să adăugați altul.",
+      "field_not_found": "Acest câmp nu mai este în contul dvs."
+    },
+    "fields": {
+      "title": "Câmpurile mele",
+      "count": "{count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}} · {ha} ha în total",
+      "empty": "Niciun câmp încă. Desenați primul câmp și salvați-l din rezultate.",
+      "add": "Adăugați un câmp",
+      "open": "Deschideți",
+      "rename": "Redenumiți",
+      "renameLabel": "Numele câmpului",
+      "save": "Salvați",
+      "cancel": "Renunțați",
+      "delete": "Ștergeți",
+      "confirmDelete": "Ștergeți „{name}”?",
+      "confirmDeleteYes": "Da, ștergeți",
+      "near": "lângă {place}",
+      "area": "{ha} ha",
+      "updated": "Actualizat {date}",
+      "importTitle": "Un câmp pe acest dispozitiv",
+      "importText": "Ați desenat un câmp lângă {place} ({ha} ha) înainte să intrați în cont.",
+      "importTextNoPlace": "Ați desenat un câmp de {ha} ha înainte să intrați în cont.",
+      "import": "Adăugați-l la câmpurile mele"
+    },
+    "save": {
+      "save": "Salvați câmpul",
+      "saving": "Se salvează…",
+      "saved": "Salvat ca „{name}”",
+      "updated": "„{name}” actualizat",
+      "nameLabel": "Numele câmpului",
+      "confirm": "Salvați",
+      "cancel": "Renunțați",
+      "signInToSave": "Intrați în cont ca să salvați",
+      "failed": "Nu am putut salva. Încercați din nou."
+    },
+    "picker": {
+      "title": "Câmpurile dvs.",
+      "all": "Toate câmpurile ({count})",
+      "new": "Sau desenați un câmp nou mai jos."
+    }
   }
 }

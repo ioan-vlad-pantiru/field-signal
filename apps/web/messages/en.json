@@ -9,7 +9,8 @@
     "feed": "Feed buyer",
     "about": "About",
     "switchLocale": "RO",
-    "switchLocaleLabel": "Treceți la română"
+    "switchLocaleLabel": "Treceți la română",
+    "account": "Account"
   },
   "Footer": {
     "credit": "Created at NASA Space Apps Challenge 2026 · Data: NASA POWER, MODIS, SMAP, SoilGrids",
@@ -596,5 +597,73 @@
     "limitsTitle": "What it cannot see",
     "limitsLead": "It shows what would have happened in past years. The decision for your field stays yours.",
     "weakEvidence": "Weaker evidence (before 2015)"
+  },
+  "Account": {
+    "title": "My account",
+    "intro": "Keep your fields here and open any of them again from your phone or laptop.",
+    "signInTitle": "Sign in",
+    "signUpTitle": "Create an account",
+    "signInTab": "Sign in",
+    "signUpTab": "New account",
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "At least 8 characters.",
+    "name": "Your name (optional)",
+    "signIn": "Sign in",
+    "signUp": "Create account",
+    "working": "One moment…",
+    "signOut": "Sign out",
+    "signedInAs": "Signed in as {email}",
+    "hello": "Hello, {name}",
+    "loading": "Loading your account…",
+    "offline": "We can't reach the server right now. Your fields are safe; try again in a moment.",
+    "retry": "Try again",
+    "errors": {
+      "email_taken": "There is already an account with this email. Sign in instead.",
+      "wrong_credentials": "Email or password is wrong.",
+      "invalid_email": "Check the email address.",
+      "invalid": "Check the email and use a password of at least 8 characters.",
+      "offline": "We can't reach the server. Check your connection and try again.",
+      "server": "Something went wrong on our side. Try again.",
+      "too_many_fields": "You have reached 200 fields. Delete one to add another.",
+      "field_not_found": "This field is no longer in your account."
+    },
+    "fields": {
+      "title": "My fields",
+      "count": "{count, plural, one {# field} other {# fields}} · {ha} ha in total",
+      "empty": "No fields yet. Draw your first field and save it from the results.",
+      "add": "Add a field",
+      "open": "Open",
+      "rename": "Rename",
+      "renameLabel": "Field name",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "confirmDelete": "Delete “{name}”?",
+      "confirmDeleteYes": "Yes, delete",
+      "near": "near {place}",
+      "area": "{ha} ha",
+      "updated": "Updated {date}",
+      "importTitle": "A field on this device",
+      "importText": "You drew a field near {place} ({ha} ha) before signing in.",
+      "importTextNoPlace": "You drew a field of {ha} ha before signing in.",
+      "import": "Add it to my fields"
+    },
+    "save": {
+      "save": "Save field",
+      "saving": "Saving…",
+      "saved": "Saved as “{name}”",
+      "updated": "“{name}” updated",
+      "nameLabel": "Name this field",
+      "confirm": "Save",
+      "cancel": "Cancel",
+      "signInToSave": "Sign in to save",
+      "failed": "Could not save. Try again."
+    },
+    "picker": {
+      "title": "Your fields",
+      "all": "All fields ({count})",
+      "new": "Or draw a new field below."
+    }
   }
 }

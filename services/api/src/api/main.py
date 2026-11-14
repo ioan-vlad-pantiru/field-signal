@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from api import mocks
+from api import accounts, mocks
 from api.contracts import FieldAnalysis, FieldRequest, SourcingRegion
 from api.settings import get_settings
 
@@ -14,9 +14,12 @@ app = FastAPI(title=settings.app_name, version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(accounts.router)
 
 
 class Health(BaseModel):

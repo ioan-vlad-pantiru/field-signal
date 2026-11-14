@@ -5,7 +5,17 @@
 const { readFileSync, writeFileSync } = require("node:fs");
 const { compile } = require("json-schema-to-typescript");
 
-const NAMES = ["field_request", "field_analysis", "sourcing_region", "model_prediction"];
+const NAMES = [
+  "field_request",
+  "field_analysis",
+  "sourcing_region",
+  "model_prediction",
+  "sign_up",
+  "sign_in",
+  "account",
+  "saved_field_input",
+  "saved_field",
+];
 const OUT = "apps/web/src/lib/contracts.ts";
 
 // Pydantic puts a `title` on every property; that makes json-schema-to-typescript emit one
