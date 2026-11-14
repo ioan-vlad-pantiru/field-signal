@@ -8,41 +8,42 @@ import { cropFor, hexField, layoutField } from "@/lib/field-plan";
 import type { NonFarmland } from "@/lib/land-cover";
 import { formatNumber } from "@/lib/format";
 import { polygonAreaHa } from "@/lib/geo";
-import { useAppLocale, useLocalized } from "@/lib/localized";
-import { Card } from "@/components/ui/card";
+import { useAppLocale } from "@/lib/localized";
+import { Button } from "@/components/ui/button";
 import { CropDot } from "@/components/ui/crop-chip";
 import { FieldPlanMap, type PlotView } from "./field-plan-map";
 
 const STEP_MS = 1800;
 
 /**
- * "Which crop goes where": the chosen rotation laid out on the farmer's field, season by
- * season. The field outline is illustrative until farmers can draw their own.
+ * "Which crop goes where": the rotation selected on the results page laid out on the farmer's
+ * field, season by season. Without a drawn boundary the field outline is illustrative.
  */
 export function FieldPlan({
   center,
   boundary,
-  strategies,
+  strategy,
 }: {
   center: LatLon;
   boundary: LatLon[] | null;
-  strategies: Strategy[];
+  /** The page's selected rotation; the plan restarts at its first season when it changes. */
+  strategy: Strategy;
 }) {
   const t = useTranslations("Results.plan");
   const tc = useTranslations("Crops");
   const ts = useTranslations("CropsShort");
   const locale = useAppLocale();
-  const l = useLocalized();
-
-  const best = strategies.reduce((a, b) => (b.score.total > a.score.total ? b : a));
-  const [strategyId, setStrategyId] = useState(best.id);
-  const strategy = strategies.find((s) => s.id === strategyId) ?? best;
   const sequence = strategy.sequence;
   const seasons = sequence.length;
   const firstSeason = useMemo(() => new Date().getFullYear() + 1, []);
 
   const [season, setSeason] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [shownId, setShownId] = useState(strategy.id);
+  if (shownId !== strategy.id) {
+    setShownId(strategy.id);
+    setSeason(0);
+  }
   const hexes = useMemo(() => hexField(center, boundary), [center, boundary]);
   const [nonFarmland, setNonFarmland] = useState<Map<string, NonFarmland>>(() => new Map());
   const layout = useMemo(
@@ -68,61 +69,35 @@ export function FieldPlan({
   const cropsThisSeason = [...new Set(plots.map((p) => p.crop))];
   const year = firstSeason + season;
 
-  function pickStrategy(id: string) {
-    setStrategyId(id);
-    setSeason(0);
-  }
-
   return (
-    <Card className="flex flex-col gap-4">
-      <div role="tablist" aria-label={t("strategyLabel")} className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1">
-        {strategies.map((s) => (
-          <button
-            key={s.id}
-            type="button"
-            role="tab"
-            aria-selected={s.id === strategy.id}
-            onClick={() => pickStrategy(s.id)}
-            className={`press min-h-11 shrink-0 rounded-full border px-4 font-medium ${
-              s.id === strategy.id ? "border-field bg-field text-on-field" : "border-line bg-surface hover:border-field"
-            }`}
-          >
-            {l(s.name)}
-          </button>
-        ))}
-      </div>
-
+    <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm text-ink-muted">{t("season")}</p>
-          <p className="font-mono text-3xl font-semibold tracking-tight tabular-nums" aria-live="polite">
+          <p className="text-3xl font-semibold tracking-tight tabular-nums" aria-live="polite">
             {year}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
+        <div className="no-print flex items-center gap-2">
+          <Button
+            variant="secondary"
             onClick={() => setSeason((s) => (s - 1 + seasons) % seasons)}
             aria-label={t("previous")}
-            className="press inline-flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface text-xl hover:border-field"
+            className="w-11 px-0 text-xl"
           >
             ‹
-          </button>
-          <button
-            type="button"
-            onClick={() => setPlaying((p) => !p)}
-            className="press inline-flex min-h-11 items-center rounded-full bg-field px-5 font-semibold text-on-field hover:bg-field-strong"
-          >
+          </Button>
+          <Button variant="secondary" onClick={() => setPlaying((p) => !p)} aria-pressed={playing}>
             {playing ? t("pause") : t("play")}
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant="secondary"
             onClick={() => setSeason((s) => (s + 1) % seasons)}
             aria-label={t("next")}
-            className="press inline-flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface text-xl hover:border-field"
+            className="w-11 px-0 text-xl"
           >
             ›
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -160,10 +135,10 @@ export function FieldPlan({
         </li>
       </ul>
 
-      <div className="relative overflow-x-auto rounded-2xl border border-line">
+      <div className="relative overflow-x-auto">
         <table className="w-full min-w-[22rem] border-collapse text-left text-sm">
           <caption className="sr-only">{t("tableCaption")}</caption>
-          <thead className="bg-surface-sunken">
+          <thead className="border-b border-line">
             <tr>
               <th scope="col" className="px-3 py-2 font-semibold">
                 {t("plot")}
@@ -174,8 +149,8 @@ export function FieldPlan({
                     type="button"
                     onClick={() => setSeason(i)}
                     aria-pressed={i === season}
-                    className={`press min-h-11 w-full rounded-lg px-2 font-mono font-semibold tabular-nums ${
-                      i === season ? "bg-field text-on-field" : "hover:bg-surface"
+                    className={`press min-h-11 w-full rounded-lg px-2 font-semibold tabular-nums ${
+                      i === season ? "bg-field text-on-field" : "hover:bg-surface-sunken"
                     }`}
                   >
                     {firstSeason + i}
@@ -189,7 +164,7 @@ export function FieldPlan({
               <tr key={plot.id} className="border-t border-line">
                 <th scope="row" className="whitespace-nowrap px-3 py-2 font-semibold">
                   {plot.id}
-                  <span className="block font-mono text-xs font-normal text-ink-muted">
+                  <span className="block text-xs font-normal tabular-nums text-ink-muted">
                     {t("area", { ha: formatNumber(plot.areaHa, locale, 0) })}
                   </span>
                 </th>
@@ -198,7 +173,7 @@ export function FieldPlan({
                   return (
                     <td
                       key={i}
-                      className={`whitespace-nowrap px-2 py-2 transition-colors ${i === season ? "bg-field-tint" : ""}`}
+                      className={`whitespace-nowrap px-2 py-2 ${i === season ? "bg-surface-sunken" : ""}`}
                     >
                       <span className="inline-flex items-center gap-1.5">
                         <CropDot crop={crop} />
@@ -222,7 +197,7 @@ export function FieldPlan({
             })
           : t("note", { ha: formatNumber(layout.farmedHa, locale, 0), plots: seasons })}
       </p>
-    </Card>
+    </div>
   );
 }
 

@@ -117,20 +117,121 @@
     "analyze": "Analizează"
   },
   "Results": {
-    "back": "Schimbă câmpul sau rotația",
-    "period": "Perioada analizată: {start}–{end}",
-    "loading": "Analizăm 25 de ani de date pentru acest loc…",
-    "indicatorsTitle": "Ce arată datele pentru acest loc",
-    "indicatorsHint": "Ultimul an comparat cu media anilor. Linia punctată este media.",
-    "noComparison": "Nu avem destule date pentru comparație",
-    "nearNormal": "Aproape de medie",
-    "aboveNormal": "Peste medie",
-    "belowNormal": "Sub medie",
-    "whatIs": "Ce înseamnă: {term}",
-    "latest": "În {year}",
-    "mean": "Media anilor",
-    "meanLegend": "media",
-    "sparklineLabel": "Evoluția pentru {name}, {from}–{to}",
+    "back": "Schimbați câmpul sau rotația",
+    "print": "Tipăriți",
+    "copyLink": "Copiați linkul",
+    "linkCopied": "Linkul a fost copiat",
+    "copyFailed": "Nu am putut copia. Adresa se află în bara browserului.",
+    "actions": "Acțiuni pentru pagină",
+    "period": "{start}–{end}",
+    "area": "{ha} ha",
+    "meta": "{area} · sezoanele {period}",
+    "metaNoArea": "Sezoanele {period}",
+    "loading": "Citim 25 de ani de date pentru acest loc…",
+    "loadingSteps": {
+      "weather": "Căldura și ploaia din fiecare sezon",
+      "vegetation": "Cât de verzi au fost culturile, din satelit",
+      "soil": "Solul și apa din sol"
+    },
+    "nav": {
+      "label": "Pe această pagină",
+      "shift": "Schimbări",
+      "rotations": "Rotații",
+      "plan": "Plan",
+      "evidence": "Dovezi"
+    },
+    "verdict": {
+      "fewer": "Cu rotația {name} ați fi avut <b>{best, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} în loc de {current}</b> din {start} încoace.",
+      "same": "Rotația {name} se potrivește cel mai bine priorităților dumneavoastră. Din {start} ar fi avut tot atâtea sezoane slabe cât rotația de acum: <b>{count}</b>.",
+      "more": "Rotația {name} se potrivește cel mai bine priorităților dumneavoastră, deși din {start} ar fi avut <b>{best, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} față de {current}</b> cu rotația de acum.",
+      "keep": "Rotația dumneavoastră de acum se potrivește deja cel mai bine priorităților. Din {start} a avut <b>{count, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}</b>.",
+      "fit": "Se potrivește priorităților dumneavoastră: {best} din 100; rotația de acum: {current}",
+      "fitKeep": "Se potrivește priorităților dumneavoastră: {score} din 100",
+      "seeRotations": "Comparați rotațiile",
+      "fewerNone": "Cu rotația {name} nu ați fi avut <b>niciun sezon slab</b> din {start} încoace, față de <b>{current}</b> cu rotația de acum.",
+      "keepNone": "Rotația dumneavoastră de acum se potrivește deja cel mai bine priorităților. Din {start} nu a avut <b>niciun sezon slab</b>."
+    },
+    "shift": {
+      "title": "Ce s-a schimbat în acest loc",
+      "hint": "Media ultimilor cinci ani cu date față de primii zece. Sunt măsurători în acest loc, nu cauze.",
+      "statement": "{recent} în medie în {recentStart}–{recentEnd}, față de {early} în {earlyStart}–{earlyEnd}.",
+      "up": "Mai mult în ultimii ani",
+      "down": "Mai puțin în ultimii ani",
+      "steady": "Cam la fel",
+      "sparklineLabel": "{name} în fiecare an, {from}–{to}"
+    },
+    "rotations": {
+      "title": "Rotațiile comparate",
+      "hint": "Cea mai potrivită este prima. Fiecare pătrat este un sezon, din {start} până în {end}. Alegeți un an ca să vedeți toate cele trei rotații în acel an.",
+      "hintPhone": "Cea mai potrivită este prima. Fiecare pătrat este un sezon, din {start} până în {end}. Atingeți o rotație ca să vedeți fiecare an.",
+      "current": "Rotația de acum",
+      "best": "Cea mai potrivită",
+      "shown": "Afișată pe pagină",
+      "score": "{score} din 100",
+      "scoreLabel": "Potrivire cu prioritățile dumneavoastră",
+      "poor": "{count, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} din {start}",
+      "poorShort": "{count, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}",
+      "stripLabel": "{name}: {poor}",
+      "cellLabel": "{year}, {crop}: {status}, dovezi {evidence}",
+      "openYears": "Vedeți fiecare an pentru {name}",
+      "showDetails": "De ce această rotație",
+      "hideDetails": "Ascundeți explicația",
+      "yearTitle": "Sezonul {year}",
+      "closeYear": "Închideți sezonul {year}",
+      "yearsSheetTitle": "Fiecare sezon, cele mai noi primele",
+      "evidence": {
+        "high": "solide",
+        "medium": "medii",
+        "low": "slabe"
+      },
+      "evidenceLine": "Dovezi: {level}",
+      "weakEvidence": "Dovezi slabe (înainte de 2015)",
+      "noReasons": "Nimic deosebit în datele acestui sezon.",
+      "legend": "Legendă",
+      "range": "Probabil între {low} și {high}",
+      "breakdown": {
+        "yield_stability": "Recoltă constantă",
+        "water": "Apă",
+        "soil_health": "Sănătatea solului",
+        "low_risk": "Risc mic"
+      },
+      "year": "Sezonul"
+    },
+    "explain": {
+      "why": "Pe scurt",
+      "evidence": "Ce arată datele",
+      "source": "Sursa: {source}",
+      "benefits": "Avantaje",
+      "gaps": "Ce nu știm",
+      "risks": "Riscuri de verificat local",
+      "generatedBy": {
+        "template": "Text generat după un șablon, din valorile calculate mai sus.",
+        "llm": "Text scris de un model AI doar din valorile calculate mai sus."
+      }
+    },
+    "planTitle": "Ce cultivați și unde",
+    "planHint": "Câmpul împărțit în parcele, câte una pentru fiecare an al rotației. Așa aveți în fiecare an toate culturile din plan.",
+    "planRotation": "Rotația afișată",
+    "evidence": {
+      "title": "Dovezi",
+      "hint": "Măsurătorile din spatele rezultatelor, cu sursele lor.",
+      "show": "Vedeți dovezile",
+      "indicatorsTitle": "Măsurat în acest loc",
+      "indicatorsHint": "Ultimul an comparat cu media anilor. Linia punctată este media.",
+      "caveatsTitle": "De reținut",
+      "sourcesTitle": "Surse de date"
+    },
+    "indicator": {
+      "noComparison": "Nu avem destule date pentru comparație",
+      "nearNormal": "Aproape de medie",
+      "aboveNormal": "Peste medie",
+      "belowNormal": "Sub medie",
+      "whatIs": "Ce înseamnă: {term}",
+      "latest": "În {year}",
+      "mean": "Media anilor",
+      "meanLegend": "media",
+      "sparklineLabel": "Evoluția pentru {name}, {from}–{to}"
+    },
     "soil": {
       "title": "Solul",
       "depth": "Stratul de la suprafață ({depth})",
@@ -149,70 +250,7 @@
         "help": "Amestecul de argilă, nisip și praf. Solurile argiloase țin apa mai mult, cele nisipoase se usucă repede."
       }
     },
-    "strategiesTitle": "Trei rotații, comparate",
-    "strategiesHint": "Scorul arată cât de bine s-ar potrivi rotația cu prioritățile dumneavoastră. 100 este cel mai bun.",
-    "strategy": {
-      "listLabel": "Rotații comparate",
-      "current": "Rotația de acum",
-      "best": "Scorul cel mai bun",
-      "score": "Scor total",
-      "rangeLabel": "Scor probabil între {low} și {high}, cel mai probabil {mid}",
-      "low": "min {value}",
-      "mid": "probabil {value}",
-      "high": "max {value}",
-      "breakdown": {
-        "yield_stability": "Recoltă constantă",
-        "water": "Apă",
-        "soil_health": "Sănătatea solului",
-        "low_risk": "Risc mic"
-      }
-    },
-    "replayTitle": "Cum ar fi mers în fiecare an",
-    "replayHint": "Fiecare pătrat este un sezon. Atingeți un pătrat ca să vedeți de ce.",
-    "replay": {
-      "scrollLabel": "Tabel pe ani, se poate derula orizontal",
-      "caption": "Rezultatul fiecărei rotații în fiecare sezon",
-      "cellLabel": "{year}, {crop}: {status}, dovezi {evidence}",
-      "evidence": {
-        "high": "solide",
-        "medium": "medii",
-        "low": "slabe"
-      },
-      "legend": "Legendă",
-      "weakEvidence": "Dovezi slabe (înainte de 2015)",
-      "sheetTitle": "Sezonul {year}",
-      "evidenceLine": "Dovezi pentru acest an: {level}.",
-      "reasons": "De ce",
-      "noReasons": "Nimic deosebit în datele acestui sezon."
-    },
-    "explainTitle": "De ce aceste scoruri",
-    "explainHint": "Alegeți o rotație ca să vedeți explicația.",
-    "explain": {
-      "tabsLabel": "Alegeți rotația",
-      "why": "Pe scurt",
-      "evidence": "Ce arată datele",
-      "source": "Sursa: {source}",
-      "benefits": "Avantaje",
-      "gaps": "Ce nu știm",
-      "risks": "Riscuri de verificat local",
-      "generatedBy": {
-        "template": "Text generat după un șablon, din valorile calculate mai sus.",
-        "llm": "Text scris de un model AI doar din valorile calculate mai sus."
-      }
-    },
-    "caveatsTitle": "De reținut",
-    "sourcesTitle": "Surse de date",
-    "verdict": {
-      "title": "Se potrivește cel mai bine cu prioritățile dumneavoastră",
-      "keepTitle": "Rotația de acum are cel mai bun scor",
-      "delta": "+{delta} puncte",
-      "versus": "Rotația de acum are {current} din 100.",
-      "seeYears": "Vedeți fiecare an"
-    },
-    "planTitle": "Ce cultivați și unde",
-    "planHint": "Câmpul împărțit în parcele, câte una pentru fiecare an al rotației. Așa aveți în fiecare an toate culturile din plan.",
     "plan": {
-      "strategyLabel": "Alegeți rotația",
       "season": "Sezonul (anul recoltei)",
       "previous": "Sezonul anterior",
       "next": "Sezonul următor",
