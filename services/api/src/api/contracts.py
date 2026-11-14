@@ -562,6 +562,9 @@ class FarmImport(Contract):
 
 class FarmSuggestRequest(Contract):
     parcels: list[Parcel] = Field(min_length=1, max_length=1000)
+    declared_crops: dict[int, str] = Field(
+        default_factory=dict, description="crop declared per parcel id (e.g. from an imported file)"
+    )
 
 
 class FarmSuggestion(Contract):
