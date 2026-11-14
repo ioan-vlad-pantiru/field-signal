@@ -232,16 +232,24 @@ CROP_NAMES: dict[str, tuple[str, str]] = {
 }
 
 
-def _signature(parcel: Parcel, declared: str | None) -> tuple[str | None, ...]:
-    """What was grown: the declared crop (if any) and each mapped year's main crop."""
-    mapped = tuple(
+def _mapped(parcel: Parcel) -> tuple[str | None, ...]:
+    """Each mapped year's main crop, None where the map is unsure."""
+    return tuple(
         c.crop if c.crop and c.share >= MIN_CROP_SHARE else None for c in parcel.crop_history
     )
-    return ((declared.lower() if declared else None), *mapped)
 
 
-def _describe(signature: tuple[str | None, ...], parcel: Parcel, count: int) -> Localized:
-    declared, *mapped = signature
+def _signature(parcel: Parcel, declared: str | None, use_declared: bool) -> tuple[str | None, ...]:
+    """What groups parcels into one field. The farmer's own declaration beats the crop map (about
+    79% accurate, so its two years rarely agree exactly between neighbours); without one, the
+    mapped crops are all we have."""
+    if use_declared:
+        return (declared.lower() if declared else None,)
+    return _mapped(parcel)
+
+
+def _describe(declared: str | None, parcel: Parcel, count: int) -> Localized:
+    mapped = _mapped(parcel)
     years = [c.year for c in parcel.crop_history]
     ro: list[str] = [f"{count} parcele" if count != 1 else "1 parcelă"]
     en: list[str] = [f"{count} parcels" if count != 1 else "1 parcel"]
@@ -290,7 +298,8 @@ def suggest_fields(parcels: Sequence[Parcel], declared: dict[int, str]) -> list[
     lat0 = sum(c.lat for p in parcels for c in p.boundary) / sum(len(p.boundary) for p in parcels)
     frame = Frame.at(lat0)
     shapes = [frame.polygon(_ring(p)) for p in parcels]
-    sigs = [_signature(p, declared.get(p.id)) for p in parcels]
+    use_declared = any(declared.get(p.id) for p in parcels)
+    sigs = [_signature(p, declared.get(p.id), use_declared) for p in parcels]
     tree = shapely.STRtree(shapes)
     groups = _Groups(len(parcels))
     for i, shape in enumerate(shapes):
@@ -332,7 +341,7 @@ def suggest_fields(parcels: Sequence[Parcel], declared: dict[int, str]) -> list[
                 id=f"field-{n}",
                 name=f"Câmp {n}",
                 parcel_ids=sorted(parcels[m].id for m in members),
-                reason=_describe(sigs[lead], parcels[lead], len(members)),
+                reason=_describe(declared.get(parcels[lead].id), parcels[lead], len(members)),
             )
         )
     return fields

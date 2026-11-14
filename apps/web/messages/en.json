@@ -10,7 +10,8 @@
     "about": "About",
     "language": "Language",
     "languageLabel": "Language: {current}. Choose another language",
-    "account": "Account"
+    "account": "Account",
+    "farm": "My farm"
   },
   "Footer": {
     "credit": "Created at NASA Space Apps Challenge 2026 · Data: NASA POWER, MODIS, SMAP, SoilGrids",
@@ -874,5 +875,115 @@
       "offline": "We can't reach the server. Check your connection and try again."
     },
     "lookingAt": "Looking at {what}…"
+  },
+  "Farm": {
+    "title": "My farm",
+    "lead": "Bring in all your parcels, group them into fields, and get one plan for the whole farm: what to grow where, year by year.",
+    "nameLabel": "Farm name",
+    "defaultName": "My farm",
+    "save": {
+      "button": "Save farm",
+      "busy": "Saving…",
+      "done": "Saved",
+      "signIn": "Sign in to keep your farm",
+      "error": "Could not save. Try again."
+    },
+    "mapLabel": "Map of your farm's parcels",
+    "mapUnavailable": "The map cannot be shown in this browser. You can still import a file and plan.",
+    "basemap": {
+      "label": "Map view",
+      "satellite": "Satellite",
+      "map": "Map"
+    },
+    "brush": "Drag to select",
+    "summary": "{count, plural, =0 {No parcels yet} one {# parcel} other {# parcels}} · {ha} ha",
+    "selected": "{count, plural, one {# parcel selected} other {# parcels selected}}",
+    "fieldsCount": "{count, plural, =0 {No fields yet} one {# field} other {# fields}}",
+    "steps": {
+      "label": "Farm steps",
+      "parcels": "Parcels",
+      "fields": "Fields",
+      "plan": "Plan"
+    },
+    "import": {
+      "title": "Import from AGI Online",
+      "hint": "Upload the parcel file you export from your APIA account (a .zip shapefile), or a GeoJSON or KML file. We find the matching APIA parcels.",
+      "button": "Choose a file",
+      "busy": "Reading the file…",
+      "samples": "No file at hand? Try a demo export:",
+      "sample": {
+        "big": "large farm (about 150 parcels)",
+        "small": "small farm (6 parcels)"
+      },
+      "done": "Added {count, plural, =0 {no new parcels} one {# parcel} other {# parcels}} ({ha} ha).",
+      "unmatched": "{count, plural, one {# outline} other {# outlines}} in the file had no APIA parcel under {count, plural, one {it} other {them}}.",
+      "error": {
+        "unsupported_file": "This file type is not supported. Use a .zip shapefile, GeoJSON or KML.",
+        "no_outlines": "The file has no parcel outlines.",
+        "unreadable_file": "The file could not be read. Is it the export from AGI Online?",
+        "file_too_large": "The file is too large (over 20 MB).",
+        "offline": "No connection. Try again when you are online.",
+        "server": "Something went wrong. Try again."
+      }
+    },
+    "pick": {
+      "title": "Or pick parcels on the map",
+      "hint": "Zoom in to your village: the parcels declared to APIA appear. Tap a parcel to add it, tap it again to remove it.",
+      "how": "Many parcels? Switch on “Drag to select” and drag over them. A drag that starts on a green parcel removes instead."
+    },
+    "toFields": "Group into fields",
+    "clear": "Start again",
+    "fieldN": "Field {n}",
+    "fields": {
+      "title": "Your fields",
+      "hint": "A field is the parcels you farm the same way, with the same crops. They do not have to touch. We grouped them by the crops seen from satellite and by distance; change anything that is not right.",
+      "busy": "Grouping your parcels…",
+      "error": "Could not group the parcels.",
+      "retry": "Try again",
+      "again": "Group again from scratch",
+      "howToMove": "To move parcels to another field, tap them on the map (or drag over them), then choose where they go.",
+      "nameLabel": "Field name",
+      "size": "{ha} ha · {count, plural, one {# parcel} other {# parcels}}",
+      "select": "Show on the map"
+    },
+    "move": {
+      "label": "Move to",
+      "new": "A new field",
+      "button": "Move",
+      "clear": "Clear selection"
+    },
+    "soil": {
+      "title": "Parcels that differ",
+      "hint": "From soil maps (250 m), not a soil test. Worth a look before you plan them like the rest.",
+      "show": "Show",
+      "clay_high": "{count, plural, one {# parcel has} other {# parcels have}} much more clay than the rest of your farm: heavier to work, holds water longer.",
+      "clay_low": "{count, plural, one {# parcel has} other {# parcels have}} much less clay: lighter soil that dries out sooner.",
+      "carbon_low": "{count, plural, one {# parcel has} other {# parcels have}} less organic matter than the rest: legumes and cover crops help most here.",
+      "ph_low": "{count, plural, one {# parcel is} other {# parcels are}} acidic (pH under 5.5).",
+      "ph_high": "{count, plural, one {# parcel is} other {# parcels are}} alkaline (pH over 8)."
+    },
+    "back": "Back",
+    "toPlan": "Make the farm plan"
+  },
+  "FarmPlan": {
+    "empty": "Add at least one field with parcels first. Then we can plan the crops for the whole farm.",
+    "summary": "{count, plural, one {1 field} other {# fields}}, seasons {from} to {to}.",
+    "make": "Make the plan",
+    "remake": "Make the plan again",
+    "loading": "Making the plan. With many fields this can take a few seconds.",
+    "tableTitle": "Crops per field, year by year",
+    "tableHint": "Each field keeps its own rotation. The fields start at different points, so the farm grows a steady mix every year.",
+    "field": "Field",
+    "totalsTitle": "The whole farm, per year",
+    "totalsHint": "Hectares of each crop across all your fields.",
+    "legend": "Crops",
+    "checksTitle": "What to check",
+    "checkOk": "Fine",
+    "checkNotOk": "Needs a look",
+    "caveatsTitle": "Good to know",
+    "downloadTitle": "List for your APIA declaration",
+    "downloadHint": "A checklist to copy by hand into AGI Online, parcel by parcel. It is not an official import file.",
+    "downloadYear": "Year of the list",
+    "download": "Download the APIA list for {year}"
   }
 }
