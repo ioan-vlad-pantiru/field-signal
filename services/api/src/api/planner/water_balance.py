@@ -23,10 +23,13 @@ Array = NDArray[np.float64]
 DAYS = np.array([31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31])
 
 # PLACEHOLDERS, all of them. Constraint: (1 - DEPLETION_P) x CAPACITY_MM (75 mm) must stay above
-# the largest demand of one sub-step (KC_MAX x a July ET0 of up to about 190 mm / SUBSTEPS, about
-# 60 mm), or the bucket empties inside one sub-step and the result depends on SUBSTEPS.
+# the largest demand of one sub-step (KC_MAX x the highest monthly ET0 over all 110 POWER cells
+# and 44 seasons, 217 mm, / SUBSTEPS = 65 mm), or the bucket empties inside one sub-step and the
+# result depends on SUBSTEPS.
 CAPACITY_MM = 150.0  # plant-available water of the root zone, the same for every field and crop
-START_FILL = 0.9  # share of CAPACITY_MM in the bucket each January (reviewer's run: Dec 0.83-0.97)
+# Share of CAPACITY_MM in the bucket each January, an assumption. At Aiud (unknown history) the
+# December fill is 0.84-0.98 as a mean per crop, but single seasons fall to about 0.31 (maize).
+START_FILL = 0.9
 DEPLETION_P = 0.5  # share of CAPACITY_MM the crop uses before it is water-stressed
 KC_SLOPE, KC_INTERCEPT = 1.457, -0.1725  # crop coefficient = slope x NDVI + intercept (unverified)
 KC_MIN, KC_MAX = 0.15, 1.2  # KC_MIN must stay > 0: it keeps the score's demand above zero

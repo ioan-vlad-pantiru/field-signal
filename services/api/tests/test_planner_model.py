@@ -151,6 +151,45 @@ def test_water_follows_the_soil_water_balance() -> None:
     assert scoring.score([no_sm], {}) == _score([row], {})
 
 
+def test_reference_curve_without_ndvi_drops_the_rotation(monkeypatch: pytest.MonkeyPatch) -> None:
+    # A model with null or NaN monthly NDVI on the unknown-history rows (the reference curve):
+    # all of them drops the rotation, some of them builds the curve from the rest, no exception,
+    # and the reference cache keeps nothing bad, so the un-patched model scores as before.
+    real, piece = wm.outcomes, grid.pieces("A", FIELD_A)[:1]
+    hist, rots = {"A": ["wheat", "pea"]}, {"A": ["maize>wheat>pea"]}
+    good = scoring.farm_scores(piece, hist, rots, {})
+    assert good
+
+    def patch(bad: set[int], value: list[float] | None) -> None:
+        def fake(
+            point: str, last_two: tuple[str, str], rotation: tuple[str], start: int
+        ) -> list[RotationOutcome]:
+            rows = real(point, last_two, rotation, start)
+            if tuple(last_two) != ("", "") or start not in bad:
+                return rows
+            return [r.model_copy(update={"ndvi_monthly": value}) for r in rows]
+
+        monkeypatch.setattr(wm, "outcomes", fake)
+        scoring._cached_reference_kc.cache_clear()
+        scoring._parts.cache_clear()
+
+    for value in (None, [float("nan")] * 12):
+        patch({2012}, value)
+        assert scoring.farm_scores(piece, hist, rots, {}).keys() == good.keys()
+        patch(set(weather.seasons()), value)
+        assert scoring.farm_scores(piece, hist, rots, {}) == {}
+    monkeypatch.undo()
+    scoring._parts.cache_clear()  # its null for this history is a cached model answer
+    later = scoring.farm_scores(piece, hist, rots, {})
+    assert later.keys() == good.keys() and all((later[k] == good[k]).all() for k in good)
+
+
+def test_season_without_weather_drops_the_row() -> None:
+    row = wm.outcomes(AIUD, ["wheat", "pea"], ["maize"], 2012)[0]
+    for season in (weather.seasons().start - 1, weather.seasons().stop):
+        assert scoring.score([row.model_copy(update={"season": season})], {}) is None
+
+
 def test_legume_before_wheat_beats_wheat_after_wheat() -> None:
     for season in (1990, 2005, 2012, 2016):
         after_pea = _score(wm.outcomes(AIUD, ["maize", "pea"], ["wheat"], season), {})

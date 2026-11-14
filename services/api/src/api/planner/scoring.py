@@ -14,10 +14,11 @@ yield_stability   measures: expected yield level over the plan
 water             measures: whether the crop gets the water a good-year crop would use, at flowering
                   proxy:    mean over plan years of min(1, sum ETa / sum ETm) over the crop's
                             flowering months (FAO-33 relative evapotranspiration). ETa: a monthly
-                            one-layer bucket from ndvi_monthly, rain and Hargreaves ET0, starting
-                            each January refilled. ETm: the same ET0 x the crop coefficient of the
-                            reference NDVI curve (P90 over seasons, unknown history, per point and
-                            crop). ETa follows NDVI, so this score partly follows yield.
+                            one-layer bucket from ndvi_monthly, rain and Hargreaves ET0, assumed
+                            refilled each January (START_FILL). ETm: the same ET0 x the crop
+                            coefficient of the reference NDVI curve (P90 over seasons, unknown
+                            history, per point and crop). ETa follows NDVI, so this score partly
+                            follows yield.
                   not:      irrigation, groundwater, soil texture or depth (one soil assumed),
                             water carried over from last year, the farm's water use; it does not
                             read rootzone_sm_critical or et_season_mm
@@ -98,36 +99,55 @@ def _cell_weather(cell: str) -> tuple[Array, Array]:
     return wb.et0_mm(m[..., 0], m[..., 1], float(cell.split("_")[0])), m[..., 2]
 
 
+class _NoReference(Exception):
+    """Raised, not returned, so the LRU cache below keeps no value for that point and crop."""
+
+
 @lru_cache(maxsize=4096)
-def _reference_kc(point: str, crop: str) -> Array:
-    """Crop coefficient of a good-year crop per month: P90 over all seasons of the world model's
-    monthly NDVI for an unknown history."""
-    ndvi = [wm.outcomes(point, ("", ""), (crop,), s)[0].ndvi_monthly for s in wm.scenarios(1)]
-    kc = wb.crop_coefficient(np.percentile(np.array(ndvi, dtype=float), 90, axis=0))
+def _cached_reference_kc(point: str, crop: str) -> Array:
+    rows = [wm.outcomes(point, ("", ""), (crop,), s)[0].ndvi_monthly for s in wm.scenarios(1)]
+    ndvi = np.array([r for r in rows if r is not None], dtype=float).reshape(-1, 12)
+    ndvi = ndvi[np.isfinite(ndvi).all(-1)]
+    if not len(ndvi):
+        raise _NoReference
+    kc = wb.crop_coefficient(np.percentile(ndvi, 90, axis=0))
     kc.setflags(write=False)
     return kc
 
 
+def _reference_kc(point: str, crop: str) -> Array | None:
+    """Crop coefficient of a good-year crop per month: P90 over the seasons of the world model's
+    monthly NDVI for an unknown history, rows with a null or non-finite value left out; None
+    (not cached) when no row is left."""
+    try:
+        return _cached_reference_kc(point, crop)
+    except _NoReference:
+        return None
+
+
 def _year_parts(rows: Sequence[RotationOutcome]) -> Array | None:
     """[row, (yield mid, water ratio, off-season NDVI mid, yield P10)] for rows of one grid point
-    and crop (any seasons); None when a value the scores need is null. `water` = min(1, sum ETa /
-    sum ETm) over the flowering months; see the module header."""
+    and crop (any seasons); None when a value the scores need is null or not finite, a season has
+    no weather, or the crop has no reference curve. `water` = min(1, sum ETa / sum ETm) over the
+    flowering months; see the module header."""
     point, crop = rows[0].grid_point_id, rows[0].crop
-    if crop not in CROPS:
+    if crop not in CROPS or any(r.season not in weather.seasons() for r in rows):
         return None
     cols = []
     for r in rows:
         if r.yield_rel is None or r.ndvi_offseason is None or r.ndvi_monthly is None:
             return None
         cols.append((r.yield_rel.mid, r.ndvi_offseason.mid, r.yield_rel.low))
+    x, ndvi = np.array(cols), np.array([r.ndvi_monthly for r in rows], dtype=float)
+    kc = _reference_kc(point, crop)
+    if kc is None or not (np.isfinite(x).all() and np.isfinite(ndvi).all()):
+        return None
     et0, rain = _cell_weather(weather.cell_id(*map(float, point.split("_"))))
     i = np.array([r.season for r in rows]) - weather.seasons().start
     f = crop_months(crop)[2]  # the bucket runs from January to the last flowering month
-    ndvi = np.array([r.ndvi_monthly for r in rows], dtype=float)
     _, eta, _, _ = wb.bucket(ndvi[:, : f.stop], et0[i, : f.stop], rain[i, : f.stop])
-    etm = _reference_kc(point, crop)[f] * et0[i, f]
+    etm = kc[f] * et0[i, f]
     water = np.minimum(1, eta[:, f].sum(-1) / np.maximum(etm.sum(-1), 1e-9))
-    x = np.array(cols)
     return np.column_stack([x[:, 0], water, x[:, 1], x[:, 2]])
 
 

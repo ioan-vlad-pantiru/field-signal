@@ -296,10 +296,10 @@ def _caveats(
         _l(
             "Apa din sol din scorul de apă este un bilanț lunar modelat al ploii și al consumului "
             "de apă al culturii (din NDVI și temperatură), cu același sol presupus pentru fiecare "
-            "câmp și reumplut în fiecare iarnă; nu este o măsurătoare.",
+            "câmp și presupus a fi reumplut în fiecare iarnă; nu este o măsurătoare.",
             "Soil water in the water score is a modelled monthly balance of rain and crop water "
             "use (from NDVI and temperature), with the same soil assumed for every field and "
-            "refilled each winter; it is not a measurement.",
+            "assumed refilled each winter; it is not a measurement.",
         ),
         _l(
             "Acoperirea este grila NASA POWER peste România: un câmp aflat chiar dincolo de "
