@@ -157,8 +157,7 @@ def build(kb: KnowledgeBase | None = None) -> pd.DataFrame:
         }
 
     # AppEEARS outputs are optional so the table can be built before the tasks finish
-    m, sm_path = appeears.OUT / "modis.parquet", appeears.OUT / "smap.parquet"
-    vi = pd.read_parquet(m) if m.exists() else None
+    vi, sm = appeears.load("modis"), appeears.load("smap")
     cube_path = modis_cube.OUT / "modis.parquet"
     if cube_path.exists():  # AppEEARS rows where a point has them, cube rows for the other points
         cube = pd.read_parquet(cube_path)
@@ -167,7 +166,7 @@ def build(kb: KnowledgeBase | None = None) -> pd.DataFrame:
             cube = cube[~pd.MultiIndex.from_frame(cube[pt]).isin(pd.MultiIndex.from_frame(vi[pt]))]
         vi = pd.concat([vi, cube], ignore_index=True)
     modis = by_point(vi.drop(columns="satellite")) if vi is not None else {}
-    smap = by_point(pd.read_parquet(sm_path)) if sm_path.exists() else {}
+    smap = by_point(sm) if sm is not None else {}
     smap = {z: d.groupby(level=0).mean() for z, d in smap.items()}
     soils = pd.concat([pts[["zone_id"]], soil.sample(pts["lat"], pts["lon"])], axis=1)
     soils = soils.groupby("zone_id").mean().round(2)

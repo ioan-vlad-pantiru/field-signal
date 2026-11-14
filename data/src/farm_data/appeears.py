@@ -5,11 +5,16 @@ Credentials: EARTHDATA_USERNAME / EARTHDATA_PASSWORD (env or `.env`), else ~/.ne
 
     uv run --package farm-data python -m farm_data.appeears submit   # once; tasks queue for ~1 h
     uv run --package farm-data python -m farm_data.appeears fetch    # waits, then writes parquet
+    uv run --package farm-data python -m farm_data.appeears missing  # counts only, no submit
+
+`submit` after the first run queues a new batch (`<name>-2`, ...) for points no task covers.
 
 Outputs (data/cache/appeears/):
-- modis.parquet: point x 16-day composite, MOD13Q1 (Terra) and MYD13Q1 (Aqua): ndvi, evi,
+- modis.parquet (batch 1; later batches modis-2.parquet ...): point x 16-day composite,
+  MOD13Q1 (Terra) and MYD13Q1 (Aqua): ndvi, evi,
   reliability (0 good, 1 marginal, 2 snow/ice, 3 cloudy, -1 fill)
-- smap.parquet: point x day, SPL4SMGP root-zone soil moisture (m³/m³), daily mean of 3-hourly
+- smap.parquet (smap-2.parquet ...): point x day, SPL4SMGP root-zone soil moisture (m³/m³),
+  daily mean of 3-hourly
 """
 
 from __future__ import annotations
@@ -18,9 +23,11 @@ import io
 import json
 import netrc
 import os
+import re
 import sys
 import time
 from datetime import date
+from typing import Any
 
 import pandas as pd
 import requests
@@ -32,6 +39,7 @@ from farm_data import CACHE, DATA_DIR
 API = "https://appeears.earthdatacloud.nasa.gov/api"
 OUT = CACHE / "appeears"
 TASKS = OUT / "tasks.json"  # task name -> id, so `fetch` finds what `submit` queued
+FAILED = {"error", "expired", "deleted"}  # terminal: points count as uncovered, never fetched
 MODIS = {
     "MOD13Q1.061": ["_250m_16_days_NDVI", "_250m_16_days_EVI", "_250m_16_days_pixel_reliability"],
     "MYD13Q1.061": ["_250m_16_days_NDVI", "_250m_16_days_EVI", "_250m_16_days_pixel_reliability"],
@@ -39,6 +47,10 @@ MODIS = {
 SMAP = {"SPL4SMGP.008": ["Geophysical_Data_sm_rootzone"]}
 MODIS_DATES = (date(2000, 1, 1), date(2025, 12, 31))
 SMAP_DATES = (date(2015, 3, 31), date(2025, 12, 31))  # SMAP record starts 31 Mar 2015
+BASES = {  # task base name -> (layers, dates); batch n >= 2 is "<base>-<n>"
+    "field-signal-modis-ndvi": (MODIS, MODIS_DATES),
+    "field-signal-smap-rootzone": (SMAP, SMAP_DATES),
+}
 
 
 def session() -> requests.Session:
@@ -112,15 +124,18 @@ class AppEEARS:
             raise RuntimeError(f"AppEEARS rejected {name}: {r.status_code} {r.text[:300]}")
         return str(r.json()["task_id"])
 
-    def status(self, task_id: str) -> str:
+    def task(self, task_id: str) -> dict[str, Any]:
         r = self.s.get(f"{API}/task/{task_id}", timeout=60)
         r.raise_for_status()
-        return str(r.json()["status"])
+        return dict(r.json())
+
+    def status(self, task_id: str) -> str:
+        return str(self.task(task_id)["status"])
 
     def wait(self, task_id: str, timeout_s: int = 6 * 3600, poll_s: int = 60) -> None:
         t0 = time.monotonic()
         while (st := self.status(task_id)) != "done":
-            if st in {"error", "expired", "deleted"}:
+            if st in FAILED:
                 raise RuntimeError(f"AppEEARS task {task_id}: {st}")
             if time.monotonic() - t0 > timeout_s:
                 raise TimeoutError(f"AppEEARS task {task_id} still {st}")
@@ -149,19 +164,45 @@ def _points() -> pd.DataFrame:
     return pts.assign(id=pts["zone_id"] + "#" + pts["point"].astype(str), category=pts["zone_type"])
 
 
+def _batch(name: str) -> tuple[str, int]:
+    """Task name -> (base name, batch number); batch 1 keeps the bare base name."""
+    for b in BASES:
+        if name == b:
+            return b, 1
+        if name.startswith(b + "-") and name[len(b) + 1 :].isdigit():
+            return b, int(name[len(b) + 1 :])
+    raise KeyError(name)
+
+
+def missing_points(api: AppEEARS, tasks: dict[str, str]) -> dict[str, pd.DataFrame]:
+    """Per base name: the sample points that no live task of that base covers yet."""
+    pts, covered = _points(), {b: set[str]() for b in BASES}
+    for name, tid in tasks.items():
+        t = api.task(tid)
+        if t["status"] not in FAILED:
+            covered[_batch(name)[0]] |= {str(c["id"]) for c in t["params"]["coordinates"]}
+    return {b: pts[~pts["id"].isin(ids)] for b, ids in covered.items()}
+
+
 def submit() -> dict[str, str]:
-    api, pts = AppEEARS(), _points()
-    tasks = {
-        "field-signal-modis-ndvi": api.submit_points(
-            "field-signal-modis-ndvi", MODIS, pts, *MODIS_DATES
-        ),
-        "field-signal-smap-rootzone": api.submit_points(
-            "field-signal-smap-rootzone", SMAP, pts, *SMAP_DATES
-        ),
-    }
+    """First call: one task per base. Later calls: one new batch per base for points no task
+    covers (idempotent); returns only the new tasks."""
+    api = AppEEARS()
+    old = json.loads(TASKS.read_text()) if TASKS.exists() else {}
+    todo = missing_points(api, old) if old else {b: _points() for b in BASES}
+    new: dict[str, str] = {}
     OUT.mkdir(parents=True, exist_ok=True)
-    TASKS.write_text(json.dumps(tasks, indent=2))
-    return tasks
+    for base, pts in todo.items():
+        if pts.empty:
+            continue
+        n = 1 + max((_batch(k)[1] for k in old if _batch(k)[0] == base), default=0)
+        name = base if n == 1 else f"{base}-{n}"
+        layers, dates = BASES[base]
+        new[name] = api.submit_points(name, layers, pts, *dates)
+        part = TASKS.with_name(TASKS.name + ".part")  # save each task id at once: a later POST
+        part.write_text(json.dumps({**old, **new}, indent=2))  # failing must not orphan it
+        part.rename(TASKS)
+    return new
 
 
 def _split_id(df: pd.DataFrame) -> pd.DataFrame:
@@ -200,20 +241,34 @@ def tidy_smap(raw: pd.DataFrame) -> pd.DataFrame:
 def fetch(wait: bool = True) -> None:
     """Download + tidy each finished task once. `wait=False` skips tasks still queued."""
     api, tasks = AppEEARS(), json.loads(TASKS.read_text())
-    for name, tidy in (
-        ("field-signal-modis-ndvi", tidy_modis),
-        ("field-signal-smap-rootzone", tidy_smap),
-    ):
-        out = OUT / ("modis.parquet" if "modis" in name else "smap.parquet")
+    for name, tid in tasks.items():
+        base, n = _batch(name)
+        stem = "modis" if "modis" in base else "smap"
+        out = OUT / (f"{stem}.parquet" if n == 1 else f"{stem}-{n}.parquet")
         if out.exists():
             continue
-        if not wait and (st := api.status(tasks[name])) != "done":
+        st = api.status(tid)
+        if st in FAILED or (not wait and st != "done"):
             print(f"{name}: {st}")
             continue
-        api.wait(tasks[name])
-        raw = api.results(tasks[name])
-        tidy(raw).to_parquet(out, index=False)
+        api.wait(tid)
+        raw = api.results(tid)
+        part = out.with_name(out.name + ".part")  # shared folder: never expose a half-written file
+        (tidy_modis if stem == "modis" else tidy_smap)(raw).to_parquet(part, index=False)
+        part.rename(out)
         print(f"{name}: {len(raw)} raw rows -> {out}")
+
+
+def load(stem: str) -> pd.DataFrame | None:
+    """All finished batches of `stem` ("modis" or "smap"), batch 1 first; a point/date found in
+    two batches is kept once."""
+    fs = [f for f in OUT.glob(f"{stem}*.parquet") if re.fullmatch(rf"{stem}(-\d+)?", f.stem)]
+    fs.sort(key=lambda f: int(f.stem.partition("-")[2] or 1))  # other names (smap-old) skipped
+    if not fs:
+        return None
+    df = pd.concat([pd.read_parquet(f) for f in fs], ignore_index=True)
+    key = [c for c in ("zone_id", "point", "date", "satellite") if c in df]
+    return df.drop_duplicates(key, ignore_index=True)
 
 
 if __name__ == "__main__":
@@ -224,5 +279,8 @@ if __name__ == "__main__":
         api = AppEEARS()
         for n, t in json.loads(TASKS.read_text()).items():
             print(n, t, api.status(t))
+    elif cmd == "missing":  # GET only
+        for b, m in missing_points(AppEEARS(), json.loads(TASKS.read_text())).items():
+            print(b, len(m), "missing points")
     else:
-        fetch(wait=cmd != "poll")  # `fetch` waits for both tasks; `poll` takes what is done
+        fetch(wait=cmd != "poll")  # `fetch` waits for every task; `poll` takes what is done

@@ -3,11 +3,14 @@
 
     uv run --package farm-data python data/scripts/build_features.py            # everything
     uv run --package farm-data python data/scripts/build_features.py --no-wait  # skip AppEEARS
+    uv run --package farm-data python data/scripts/build_features.py --submit   # + new batch
 
 Steps (each is cached and skipped when its output exists):
 1. zones + cropland sample points        -> data/cache/zones/
 2. NASA POWER 1981-2025 for every point  -> data/cache/power/
-3. AppEEARS MODIS NDVI + SMAP L4 points  -> data/cache/appeears/   (submit once, then wait)
+3. AppEEARS MODIS NDVI + SMAP L4 points  -> data/cache/appeears/   (waits for queued tasks;
+   submits only when tasks.json is missing or with --submit, which queues a batch for points
+   no task covers yet; --no-wait never logs in, submits or fetches)
 4. INS TEMPO county yields               -> data/cache/ins/
 5. feature table                         -> data/cache/features/{field,commune,county}.parquet
    and one real row per zone type        -> contracts/examples/feature_row.example.json
@@ -34,6 +37,7 @@ EXAMPLE = (
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--no-wait", action="store_true", help="build without waiting for AppEEARS")
+    ap.add_argument("--submit", action="store_true", help="queue AppEEARS tasks for new points")
     a = ap.parse_args()
 
     if not (zones.OUT / "points.parquet").exists():
@@ -48,9 +52,9 @@ def main() -> None:
         list(ex.map(lambda r: power.fetch(r.lat, r.lon, *features.POWER_RANGE), pts.itertuples()))
     print("POWER: ok")
 
-    if not appeears.TASKS.exists():
-        print("AppEEARS: submitted", appeears.submit())
-    if not a.no_wait and not (appeears.OUT / "smap.parquet").exists():
+    if not a.no_wait:  # offline (--no-wait) builds read whatever AppEEARS output exists
+        if a.submit or not appeears.TASKS.exists():
+            print("AppEEARS: submitted", appeears.submit())  # only points no task covers yet
         appeears.fetch()
 
     for t in ins.TABLES:
