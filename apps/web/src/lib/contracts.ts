@@ -846,3 +846,313 @@ export interface PlanCheck {
   title: Localized;
   detail: Localized;
 }
+
+export interface RotationOutcome {
+  /**
+   * '{lat:.5f}_{lon:.5f}' of the centre of the 0.0025° (about 250 m) grid cell
+   */
+  grid_point_id: string;
+  /**
+   * crop sequence joined by '>', e.g. 'maize>wheat>pea'
+   */
+  rotation: string;
+  /**
+   * scenario id: first harvest season of the weather window, e.g. 1987
+   */
+  weather_start_season: number;
+  /**
+   * year inside the plan, 1-based
+   */
+  plan_year: number;
+  crop: Crop;
+  /**
+   * harvest year of the weather used: start + plan_year - 1
+   */
+  season: number;
+  /**
+   * yield relative to the crop's local normal (1.0 = normal)
+   */
+  yield_rel?: Range | null;
+  /**
+   * peak-season NDVI
+   */
+  ndvi_peak?: Range | null;
+  /**
+   * mean NDVI outside the crop's season (soil cover)
+   */
+  ndvi_offseason?: Range | null;
+  /**
+   * monthly NDVI, January to December of the harvest year, ensemble P50; the planner's soil-water balance reads it
+   */
+  ndvi_monthly?:
+    [number, number, number, number, number, number, number, number, number, number, number, number] | null;
+  /**
+   * root-zone soil moisture in the crop's critical months; the planner does not read it (it computes soil water from ndvi_monthly and the weather); may be null
+   */
+  rootzone_sm_critical?: Range | null;
+  /**
+   * evapotranspiration over the crop's season; the planner does not read it; may be null
+   */
+  et_season_mm?: Range | null;
+  /**
+   * 'mock-0' for the mock world model
+   */
+  model_version: string;
+}
+/**
+ * An estimate with its uncertainty. `low <= mid <= high`.
+ */
+
+export interface OptimizerRequest {
+  /**
+   * @minItems 1
+   * @maxItems 10
+   */
+  fields:
+    | [OptimizerField]
+    | [OptimizerField, OptimizerField]
+    | [OptimizerField, OptimizerField, OptimizerField]
+    | [OptimizerField, OptimizerField, OptimizerField, OptimizerField]
+    | [OptimizerField, OptimizerField, OptimizerField, OptimizerField, OptimizerField]
+    | [OptimizerField, OptimizerField, OptimizerField, OptimizerField, OptimizerField, OptimizerField]
+    | [OptimizerField, OptimizerField, OptimizerField, OptimizerField, OptimizerField, OptimizerField, OptimizerField]
+    | [
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField
+      ]
+    | [
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField
+      ]
+    | [
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField,
+        OptimizerField
+      ];
+  /**
+   * non-negative weights per priority; normalised server-side, all zero = equal
+   */
+  priorities: {
+    [k: string]: number;
+  };
+  /**
+   * 0 = best average, 1 = best worst weather window
+   */
+  risk_aversion?: number;
+  plan_years?: number;
+  /**
+   * enforce one practice of the voluntary PD-04 eco-scheme (eco_practice); false = nothing from PD-04 is enforced
+   */
+  eco_scheme?: boolean;
+  /**
+   * the one PD-04 practice enforced when eco_scheme is true; ignored otherwise. The two are alternatives, never enforced together
+   */
+  eco_practice?: "diversification" | "legume_share";
+}
+
+export interface OptimizerField {
+  /**
+   * unique within the request
+   */
+  id: string;
+  name?: string | null;
+  /**
+   * @minItems 3
+   * @maxItems 500
+   */
+  boundary: [LatLon, LatLon, LatLon, ...LatLon[]];
+  /**
+   * the farmer's reference cycle, as in FieldRequest; scored as the baseline
+   *
+   * @minItems 2
+   * @maxItems 4
+   */
+  current_rotation: [Crop, Crop] | [Crop, Crop, Crop] | [Crop, Crop, Crop, Crop];
+  /**
+   * observed crops of past seasons, most recent harvest last; null = unknown, then the cycle current_rotation is read backwards (an assumption, stated in caveats)
+   */
+  crop_history?:
+    [] | [Crop] | [Crop, Crop] | [Crop, Crop, Crop] | [Crop, Crop, Crop, Crop] | [Crop, Crop, Crop, Crop, Crop] | null;
+}
+
+export interface OptimizerResponse {
+  schema_version?: string;
+  mock?: boolean;
+  /**
+   * world model behind the scores; 'mock-0' for the mock
+   */
+  model_version: string;
+  plan_years: number;
+  total_area_ha: number;
+  /**
+   * number of weather windows scored
+   */
+  scenario_count: number;
+  /**
+   * start season of the first weather window
+   */
+  scenario_first: number;
+  /**
+   * start season of the last weather window
+   */
+  scenario_last: number;
+  /**
+   * plans[0] is the best solution found (optimal for the model only when proven_optimal), the others are alternatives; empty if none is feasible
+   *
+   * @maxItems 3
+   */
+  plans: [] | [OptimizerPlan] | [OptimizerPlan, OptimizerPlan] | [OptimizerPlan, OptimizerPlan, OptimizerPlan];
+  /**
+   * the farmer's current rotation; null when it cannot be scored
+   */
+  current?: OptimizerPlan | null;
+  caveats: Localized[];
+  sources: DataSource[];
+}
+/**
+ * One farm plan. Scores are 0-100 decision metrics (higher is better), not probabilities.
+ * `score_range` is the spread across weather windows, not a confidence interval.
+ */
+
+export interface OptimizerPlan {
+  /**
+   * 1 = best solution found (optimal for the model only when proven_optimal); 2-3 = alternatives that drop at least two (field, rotation) choices of every better plan (the only one if it has one), not the next-best solutions; 0 = the farmer's current rotation
+   */
+  rank: number;
+  /**
+   * one entry per field on a farm of 75 ha or more; one or more per field (up to 3) on a smaller farm
+   */
+  allocations: Allocation[];
+  score: ScoreBreakdown;
+  score_range: Range;
+  worst: ScenarioScore;
+  best: ScenarioScore;
+  yearly_areas: YearAreas[];
+  /**
+   * provisional rule checks, not a statement of GAEC 7 or PD-04 compliance
+   */
+  rules: RuleCheck[];
+  confidence: Confidence;
+  /**
+   * true only when the solver proved the plan optimal for the model (no candidate pruned); otherwise the plan is the best solution found; false for the baseline
+   */
+  proven_optimal: boolean;
+}
+/**
+ * Hectares of one rotation on one field. A farm of 75 ha or more: one allocation per field,
+ * on the field's whole area. A smaller farm: a field of 10 ha or more may hold up to 3 (at least
+ * 5 ha each), an area split, not a planting map (where each block lies is not decided).
+ */
+
+export interface Allocation {
+  field_id: string;
+  area_ha: number;
+  /**
+   * one crop per plan year
+   *
+   * @minItems 3
+   * @maxItems 5
+   */
+  sequence: [Crop, Crop, Crop] | [Crop, Crop, Crop, Crop] | [Crop, Crop, Crop, Crop, Crop];
+}
+/**
+ * mean over weather windows, area-weighted; 0-100, not a probability
+ */
+
+export interface ScenarioScore {
+  /**
+   * first harvest season of the weather window
+   */
+  start_season: number;
+  /**
+   * last harvest season of the weather window
+   */
+  end_season: number;
+  /**
+   * 0-100 decision metric, not a probability
+   */
+  total: number;
+}
+
+export interface YearAreas {
+  plan_year: number;
+  areas: OptimizerCropArea[];
+}
+
+export interface OptimizerCropArea {
+  crop: Crop;
+  area_ha: number;
+  /**
+   * share of the whole farm area
+   */
+  share_pct: number;
+}
+/**
+ * A provisional farm-level crop rule check (payment conditions, simplified): not a statement
+ * of GAEC 7 or PD-04 compliance. `max_*` rules are upper limits; `legume_share` is a lower
+ * limit.
+ */
+
+export interface RuleCheck {
+  id: "max_crop_share" | "max_two_crops_share" | "legume_share";
+  /**
+   * rule profile and year, e.g. 'GAEC 7 2026', 'PD-04 2026'
+   */
+  source: string;
+  limit_pct: number;
+  /**
+   * worst plan year
+   */
+  value_pct: number;
+  /**
+   * true only for the practice enforced in this request
+   */
+  applies: boolean;
+  /**
+   * value_pct meets limit_pct; computed even when not applied
+   */
+  passed: boolean;
+  /**
+   * the limit was read in the official document; false = unverified
+   */
+  verified: boolean;
+}
+
+export type OptimizerJobStatus = "queued" | "running" | "done" | "rejected" | "failed";
+
+export interface OptimizerJob {
+  id: string;
+  status: OptimizerJobStatus;
+  /**
+   * seconds since the job was submitted
+   */
+  elapsed_s: number;
+  /**
+   * set when status is done
+   */
+  result?: OptimizerResponse | null;
+  /**
+   * why, when rejected or failed
+   */
+  detail?: string | null;
+}

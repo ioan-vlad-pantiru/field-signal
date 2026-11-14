@@ -20,5 +20,5 @@
   ],
   "title": "SignIn",
   "type": "object",
-  "$id": "https://field-signal/contracts/sign_in/0.1.0"
+  "$id": "https://field-signal/contracts/sign_in/0.2.0"
 }

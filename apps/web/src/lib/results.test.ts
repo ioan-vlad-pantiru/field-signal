@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { Indicator, SeasonOutcome, Status, Strategy } from "./contracts.ts";
-import { indicatorShift, placeShifts, poorSeasons, rankStrategies, replayYears, verdict } from "./results.ts";
+import { indicatorShift, placeShifts, poorSeasons, rankStrategies, replayYears, ruleStatus, verdict } from "./results.ts";
 
 function outcomes(statuses: Status[], from = 2001): SeasonOutcome[] {
   return statuses.map((status, i) => ({
@@ -124,5 +124,15 @@ describe("placeShifts", () => {
       shifts.map((s) => s.indicator.id),
       ["big", "drop", "mid"],
     );
+  });
+});
+
+describe("ruleStatus", () => {
+  it("a waived rule whose value breaks the limit is below the size threshold, not within", () => {
+    assert.equal(ruleStatus({ id: "max_crop_share", limit_pct: 75, value_pct: 100, passed: true }), "belowThreshold");
+    assert.equal(ruleStatus({ id: "legume_share", limit_pct: 2, value_pct: 0, passed: true }), "belowThreshold");
+    assert.equal(ruleStatus({ id: "max_crop_share", limit_pct: 75, value_pct: 60, passed: true }), "within");
+    assert.equal(ruleStatus({ id: "legume_share", limit_pct: 2, value_pct: 5, passed: true }), "within");
+    assert.equal(ruleStatus({ id: "max_two_crops_share", limit_pct: 95, value_pct: 100, passed: false }), "outside");
   });
 });

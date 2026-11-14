@@ -18,5 +18,5 @@
   },
   "title": "AccountUpdate",
   "type": "object",
-  "$id": "https://field-signal/contracts/account_update/0.1.0"
+  "$id": "https://field-signal/contracts/account_update/0.2.0"
 }

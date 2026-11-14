@@ -1,7 +1,7 @@
 # contracts
 
 Shared data formats between `data/` (Bogdan), `ml/` (Răzvan), `services/api/` and `apps/web/` (Vlad).
-Agree here before changing anything downstream. Version: **0.1.0** (13 Nov 2026).
+Agree here before changing anything downstream. Version: **0.2.0** (14 Nov 2026; adds the farm planner contracts, nothing removed or renamed).
 
 ```
  data/  ──(1) features.parquet──▶  ml/  ──(2) predictions.parquet──▶  services/api  ──(3) JSON──▶  apps/web
@@ -12,8 +12,10 @@ Agree here before changing anything downstream. Version: **0.1.0** (13 Nov 2026)
 |---|---|---|---|
 | 1 | Features: zone × crop × season | Parquet | this file (below) |
 | 2 | Model predictions | Parquet or JSON Lines, one `ModelPrediction` per row | `model_prediction.schema.json` |
+| 2b | World model → farm planner | Parquet or JSON Lines, one `RotationOutcome` per row | `rotation_outcome.schema.json` |
 | 3a | Farmer screen | `POST /v1/fields/analyze` → `FieldAnalysis` | `field_request.schema.json`, `field_analysis.schema.json` |
 | 3b | Buyer screen | `GET /v1/sourcing/region?season=2025` → `SourcingRegion` | `sourcing_region.schema.json` |
+| 3c | Farm optimizer | `POST /v1/farm/optimize` → `OptimizerResponse` | `optimizer_request.schema.json`, `optimizer_response.schema.json` |
 
 **Source of truth:** the pydantic models in `services/api/src/api/contracts.py`. Do not edit the
 `*.schema.json` files or `apps/web/src/lib/contracts.ts` by hand; regenerate them:
@@ -93,6 +95,31 @@ top_drivers [Reason], model_version, cv_metric_name, cv_metric_value`.
   as `code`.
 - `cv_metric_*`: leave-one-year-out score, so the app can show how good the model is.
 
+## (2b) World-model outcomes for the farm planner: `RotationOutcome`
+
+One row per `grid_point_id × rotation × weather_start_season × plan_year` (see
+`rotation_outcome.schema.json`). The world model (`ml/`) owns everything up to these yearly physical
+summaries; the planner (`services/api/src/api/planner/`) owns normalisation, weights and rules, so
+the rows carry no scores.
+
+- `grid_point_id`: `"{lat:.5f}_{lon:.5f}"` of the centre of a 0.0025° (about 250 m) cell of the
+  SoilGrids raster grid (west 20.2, north 48.3).
+- `rotation`: the crop sequence joined by `>`, e.g. `maize>wheat>pea`.
+- `weather_start_season`: the scenario id, the first harvest season of a window of `plan_years`
+  consecutive seasons from the weather record; `season = weather_start_season + plan_year − 1`.
+- `plan_year`: 1–5 (plans run 3, 4 or 5 years).
+- `yield_rel`, `ndvi_peak`, `ndvi_offseason`, `rootzone_sm_critical`, `et_season_mm`: `Range` with
+  low/mid/high = P10/P50/P90 over ensemble members, i.e. the spread across ensemble members for one
+  weather window (not across weather windows); null = not predicted, and the planner then drops
+  that rotation for that grid point. The planner does not read `rootzone_sm_critical` or
+  `et_season_mm`: they may be null.
+- `ndvi_monthly`: 12 NDVI values, January to December of the harvest year, the P50 over ensemble
+  members; null drops the rotation. The planner computes soil water from it and the weather.
+- `model_version`: `"lstm-<run>"` for the trained world model (`model/`, served by
+  `api.planner.world_model`; e.g. `"lstm-monthly_delta"`), `"mock-0"` when the API falls back to
+  the declared mock (its inputs are not deployed, or `PLANNER_WORLD_MODEL=mock`). On the LSTM,
+  `yield_rel` is an NDVI proxy (season peak NDVI against the crop's training curve), not a yield.
+
 ## (3a) Field cells: per-hexagon farmland mask (proposal, #22)
 
 `FieldAnalysis.field_cells` is optional: `null` (the default, and every current mock) means the
@@ -111,3 +138,35 @@ can extend beyond ring 3. Serving drawn fields needs either the web to centre it
 | `cropland_fraction` | float 0–1 | share of the hexagon mapped as cropland |
 
 The map behind the fractions (e.g. EUCROPMAP) and its year go in `FieldAnalysis.sources`.
+
+## (3c) Farm optimizer: `POST /v1/farm/optimize`
+
+`OptimizerRequest`: 1–10 fields (`id`, optional `name`, drawn `boundary`, `current_rotation` as the
+farmer's reference cycle of 2–4 crops, optional `crop_history` of 0–5 observed crops with the most
+recent harvest last), shared `priorities` (non-negative weights, normalised server-side),
+`risk_aversion` 0–1 (default 0.3), `plan_years` 3, 4 or 5 (default 4), `eco_scheme` (default
+false: nothing from the voluntary PD-04 eco-scheme is enforced) and `eco_practice`
+(`diversification`, the default, or `legume_share`; read only when `eco_scheme` is true, and only
+that one practice is enforced). Without `crop_history`, the cycle `current_rotation` is read
+backwards as the field's history, an assumption stated in `caveats`.
+
+`OptimizerResponse`: up to 3 `plans` plus `current`, the farmer's own rotation scored the same way
+(rank 0, null if it cannot be scored). `plans[0]` (rank 1) is the best solution found; it is
+optimal for the model only when `proven_optimal` is true. Ranks 2–3 are alternatives that drop at
+least two (field, rotation) choices of each better plan (the only one if it has one), not the second
+and third best solutions. The server picks the mode from the selected area (75 ha is a product
+threshold, not a regulatory one): at 75 ha or more each field carries exactly one rotation, so
+`allocations` holds one entry per field with the field's area; under 75 ha a field of 10 ha or more
+may be divided between up to 3 rotations of at least 5 ha each (an area split, not a planting map),
+so `allocations` holds one or more entries per field, summing to its area. Each `OptimizerPlan`
+also gives the area-weighted mean `score` (0–100 decision metrics, not probabilities, same four
+parts as `ScoreBreakdown`), `score_range` (the spread across weather windows: worst / median / best) with the
+`worst` and `best` windows named, crop areas per plan year, and `rules`. Each `RuleCheck` row
+(`max_crop_share`, `max_two_crops_share`, `legume_share`) names its `source` (profile and year, e.g.
+`GAEC 7 2026`, `PD-04 2026`), the limit, the worst-year value, `applies` (true only for the practice
+enforced in this request), `passed` and `verified` (the limit was read in the official document).
+Rule rows are provisional checks, not a statement of GAEC 7 or PD-04 compliance. `confidence` is how
+far the model behind the numbers has been validated: `low` for every plan built on the mock world
+model, and still `low` on the trained LSTM until its scores are checked against harvests. `mock`
+is false and `model_version` is `"lstm-<run>"` on the trained model; true and `"mock-0"` on the
+mock fallback.

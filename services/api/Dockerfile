@@ -1,6 +1,9 @@
 # Field Signal API. Build from the repo root: docker build -f services/api/Dockerfile .
 FROM python:3.12-slim
 COPY --from=ghcr.io/astral-sh/uv:0.9.5 /uv /usr/local/bin/uv
+# One BLAS thread: the container gets 1 vCPU, and OpenBLAS would start one thread per host core
+# and thrash (the world model's LSTM ran over 10x slower).
+ENV OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy UV_PROJECT_ENVIRONMENT=/opt/venv PATH="/opt/venv/bin:$PATH"
 WORKDIR /app
 # The uv workspace needs every member's pyproject to read the lockfile; only the API is installed.

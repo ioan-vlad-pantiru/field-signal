@@ -25,5 +25,5 @@
   ],
   "title": "AssistantReply",
   "type": "object",
-  "$id": "https://field-signal/contracts/assistant_reply/0.1.0"
+  "$id": "https://field-signal/contracts/assistant_reply/0.2.0"
 }

@@ -1,4 +1,4 @@
-import type { Indicator, Strategy, YearValue } from "./contracts.ts";
+import type { Indicator, RuleCheck, Strategy, YearValue } from "./contracts.ts";
 
 /** Seasons a rotation's replay marks as poor (`status === "bad"`). */
 export function poorSeasons(strategy: Pick<Strategy, "replay">): number {
@@ -100,4 +100,26 @@ export function placeShifts(indicators: readonly Indicator[], limit = 3): Shift[
     .filter((s): s is Shift => s !== null)
     .sort((a, b) => Math.abs(b.relative) - Math.abs(a.relative))
     .slice(0, limit);
+}
+
+export type RuleStatus = "within" | "outside" | "belowThreshold";
+
+/**
+ * A provisional rule row's label. `passed` with a value past the limit means the API waived the rule
+ * because the farm is below its size threshold; that must not read "within the limit".
+ */
+export function ruleStatus(rule: Pick<RuleCheck, "id" | "limit_pct" | "value_pct" | "passed">): RuleStatus {
+  if (!rule.passed) return "outside";
+  const breaks = rule.id === "legume_share" ? rule.value_pct < rule.limit_pct : rule.value_pct > rule.limit_pct;
+  return breaks ? "belowThreshold" : "within";
+}
+
+/**
+ * A farm plan's allocation rows with each field's rows together, fields in first-seen order. On a farm
+ * under 75 ha one field may carry several rotations, each its own row with the same `field_id`.
+ */
+export function byField<T extends { field_id: string }>(rows: readonly T[]): T[] {
+  const order = new Map<string, number>();
+  for (const row of rows) if (!order.has(row.field_id)) order.set(row.field_id, order.size);
+  return [...rows].sort((a, b) => order.get(a.field_id)! - order.get(b.field_id)!);
 }

@@ -14,5 +14,5 @@
   ],
   "title": "AccountDeletion",
   "type": "object",
-  "$id": "https://field-signal/contracts/account_deletion/0.1.0"
+  "$id": "https://field-signal/contracts/account_deletion/0.2.0"
 }

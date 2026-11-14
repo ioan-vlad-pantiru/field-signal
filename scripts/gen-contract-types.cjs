@@ -30,6 +30,10 @@ const NAMES = [
   "farm_suggestion",
   "farm_plan_request",
   "farm_plan",
+  "rotation_outcome",
+  "optimizer_request",
+  "optimizer_response",
+  "optimizer_job",
 ];
 const OUT = "apps/web/src/lib/contracts.ts";
 

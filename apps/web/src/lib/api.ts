@@ -2,10 +2,13 @@ import type {
   FieldAnalysis,
   FieldRequest,
   MergedParcels,
+  OptimizerJob,
+  OptimizerRequest,
+  OptimizerResponse,
   ParcelCollection,
   SourcingRegion,
 } from "@/lib/contracts";
-import { mockFieldAnalysis, mockSourcingRegion } from "@/lib/mocks";
+import { mockFieldAnalysis, mockOptimizer, mockSourcingRegion } from "@/lib/mocks";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const TIMEOUT_MS = 5000;
@@ -19,7 +22,7 @@ export interface Loaded<T> {
 }
 
 /** The API answered but rejected the request (4xx): a real error, not a reason to fall back. */
-class ApiRequestError extends Error {
+export class ApiRequestError extends Error {
   constructor(
     readonly path: string,
     readonly status: number,
@@ -28,11 +31,11 @@ class ApiRequestError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+async function request<T>(path: string, init?: RequestInit, timeoutMs = TIMEOUT_MS): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
     headers: { "Content-Type": "application/json", ...init?.headers },
-    signal: AbortSignal.timeout(TIMEOUT_MS),
+    signal: AbortSignal.timeout(timeoutMs),
   });
   if (!response.ok) {
     throw new ApiRequestError(path, response.status);
@@ -70,6 +73,55 @@ export function getSourcingRegion(season = 2025): Promise<Loaded<SourcingRegion>
     () => request<SourcingRegion>(`/v1/sourcing/region?season=${season}`),
     mockSourcingRegion,
   );
+}
+
+const JOB_POLL_MS = 2000;
+const JOB_MAX_MS = 5 * 60_000;
+
+/**
+ * One farm plan for all fields together, computed as a background job on the API (the trained
+ * world model can take half a minute on a big farm): starts the job, then polls it until it is
+ * done. The page stays usable meanwhile. `onProgress` gets the seconds since the job started;
+ * `signal` stops polling (a newer run replaced this one). A rejected job throws a 422
+ * `ApiRequestError`; an unreachable API falls back to the bundled mock plan.
+ */
+export function optimizeFarm(
+  body: OptimizerRequest,
+  { signal, onProgress }: { signal?: AbortSignal; onProgress?: (elapsedS: number) => void } = {},
+): Promise<Loaded<OptimizerResponse>> {
+  return withFallback(async () => {
+    const path = "/v1/farm/optimize/jobs";
+    let job = await request<OptimizerJob>(path, { method: "POST", body: JSON.stringify(body) });
+    const deadline = Date.now() + JOB_MAX_MS;
+    while (job.status === "queued" || job.status === "running") {
+      onProgress?.(job.elapsed_s);
+      await sleep(JOB_POLL_MS, signal);
+      if (Date.now() > deadline) throw new Error("The farm plan took too long.");
+      job = await request<OptimizerJob>(`${path}/${job.id}`);
+    }
+    if (job.status === "done" && job.result) return job.result;
+    if (job.status === "rejected") throw new ApiRequestError(path, 422);
+    throw new ApiRequestError(path, 500);
+  }, mockOptimizer).then((loaded) => {
+    // An aborted run never resolves into the page, not even with the fallback plan.
+    signal?.throwIfAborted();
+    return loaded;
+  });
+}
+
+function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) return reject(signal.reason);
+    const timer = setTimeout(resolve, ms);
+    signal?.addEventListener(
+      "abort",
+      () => {
+        clearTimeout(timer);
+        reject(signal.reason);
+      },
+      { once: true },
+    );
+  });
 }
 
 /** A map box in degrees. */

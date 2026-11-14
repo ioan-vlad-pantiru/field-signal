@@ -281,5 +281,5 @@
   ],
   "title": "Farm",
   "type": "object",
-  "$id": "https://field-signal/contracts/farm/0.1.0"
+  "$id": "https://field-signal/contracts/farm/0.2.0"
 }

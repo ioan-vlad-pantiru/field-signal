@@ -34,5 +34,5 @@
   ],
   "title": "Account",
   "type": "object",
-  "$id": "https://field-signal/contracts/account/0.1.0"
+  "$id": "https://field-signal/contracts/account/0.2.0"
 }
