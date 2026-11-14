@@ -12,6 +12,7 @@ import { mockFieldAnalysis, mockOptimizer, mockSourcingRegion } from "@/lib/mock
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const TIMEOUT_MS = 5000;
+const ANALYZE_TIMEOUT_MS = 60_000;
 
 /** Where a response came from: the running API, or the typed mocks bundled with the app. */
 export type DataOrigin = "api" | "fallback";
@@ -60,10 +61,12 @@ async function withFallback<T>(load: () => Promise<T>, fallback: T): Promise<Loa
 export function analyzeField(body: FieldRequest): Promise<Loaded<FieldAnalysis>> {
   return withFallback(
     () =>
-      request<FieldAnalysis>("/v1/fields/analyze", {
-        method: "POST",
-        body: JSON.stringify(body),
-      }),
+      request<FieldAnalysis>(
+        "/v1/fields/analyze",
+        { method: "POST", body: JSON.stringify(body) },
+        // The trained model scores every rotation for the field: a few seconds on the API.
+        ANALYZE_TIMEOUT_MS,
+      ),
     mockFieldAnalysis,
   );
 }
