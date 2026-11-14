@@ -18,6 +18,7 @@ export function SaveField({
   request,
   boundary,
   placeName,
+  defaultName = null,
   savedId,
   justUpdated,
   onSaved,
@@ -25,6 +26,8 @@ export function SaveField({
   request: FieldRequest;
   boundary: LatLon[];
   placeName: string | null;
+  /** Suggested name; the place name when not given. */
+  defaultName?: string | null;
   savedId: string | null;
   /** The flow updated the saved field with this run's choices. */
   justUpdated: boolean;
@@ -93,7 +96,7 @@ export function SaveField({
         <input
           id={`${id}-name`}
           name="name"
-          defaultValue={placeName ?? ""}
+          defaultValue={defaultName ?? placeName ?? ""}
           maxLength={80}
           required
           autoFocus

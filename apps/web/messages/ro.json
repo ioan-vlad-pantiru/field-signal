@@ -157,6 +157,21 @@
       "noPlace": "Continuați cu câmpul de {ha} ha",
       "resume": "Continuați",
       "forget": "Câmp nou"
+    },
+    "multi": {
+      "addAnother": "Adăugați încă un câmp",
+      "addAnotherHint": "Păstrează acest câmp și începe următorul. Toate câmpurile se analizează împreună.",
+      "listTitle": "{count, plural, one {# câmp păstrat} few {# câmpuri păstrate} other {# de câmpuri păstrate}} · {ha} ha",
+      "fieldN": "Câmpul {n}",
+      "fieldNear": "Câmpul {n} · {place}",
+      "area": "{ha} ha",
+      "edit": "Modificați",
+      "remove": "Scoateți",
+      "editLabel": "Modificați {field}",
+      "removeLabel": "Scoateți {field}",
+      "continueWith": "Continuați cu {count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}}",
+      "analyze": "Arătați-mi cele 25 de sezoane pentru {count, plural, few {# câmpuri} other {# de câmpuri}}",
+      "editing": "Acum modificați: {field}"
     }
   },
   "Results": {
@@ -316,6 +331,12 @@
         "built_up": "zonă construită"
       },
       "mapUnavailable": "Harta nu poate fi afișată în acest browser. Tabelul parcelelor de mai jos conține în continuare tot planul."
+    },
+    "fields": {
+      "title": "{count, plural, few {# câmpuri} other {# de câmpuri}} · {ha} ha în total",
+      "area": "{ha} ha",
+      "keep": "Rotația dvs. e cea mai bună",
+      "best": "Cea mai bună: „{name}”"
     }
   },
   "Feed": {
@@ -663,7 +684,10 @@
     "picker": {
       "title": "Câmpurile dvs.",
       "all": "Toate câmpurile ({count})",
-      "new": "Sau desenați un câmp nou mai jos."
+      "new": "Sau desenați un câmp nou mai jos.",
+      "pickHint": "Bifați unul sau mai multe ca să le analizați împreună.",
+      "openOne": "Deschideți câmpul",
+      "openMany": "Analizați {count, plural, few {# câmpuri} other {# de câmpuri}}"
     }
   }
 }

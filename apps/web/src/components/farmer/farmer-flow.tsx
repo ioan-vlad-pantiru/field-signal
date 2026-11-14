@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { analyzeField, type Loaded } from "@/lib/api";
 import { fieldInput, updateField, useAccount } from "@/lib/account";
-import type { FieldAnalysis, FieldRequest, LatLon, SavedField as AccountField } from "@/lib/contracts";
+import type { FieldAnalysis, LatLon, SavedField as AccountField } from "@/lib/contracts";
 import { Link } from "@/i18n/navigation";
 import { formatNumber } from "@/lib/format";
 import { useAppLocale } from "@/lib/localized";
@@ -16,6 +16,10 @@ import { ErrorState } from "@/components/ui/states";
 import { FieldForm, type FormStep } from "./field-form";
 import { ResultsSkeleton, ResultsView } from "./results-view";
 import { SaveField } from "./save-field";
+import { MAX_FIELDS, toDraft, type SubmittedField } from "./draft-field";
+import { FieldSwitcher } from "./results/field-switcher";
+import { useFieldLabel } from "./steps/field-list";
+import { CheckIcon } from "@/components/ui/icons";
 import { nearestCommune, useCommunes } from "./steps/communes";
 import { forgetField, saveField, useSavedField, type SavedField } from "./steps/saved-field";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,8 +27,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 type State =
   | { step: "form" }
   | { step: "loading" }
-  | { step: "results"; result: Loaded<FieldAnalysis> }
+  | { step: "results"; results: Loaded<FieldAnalysis>[] }
   | { step: "error" };
+
+function fromAccount(field: AccountField): SubmittedField {
+  return { request: field.request, boundary: field.boundary, place: field.near ?? null, accountId: field.id, name: field.name };
+}
+
+function fromLocal(field: SavedField): SubmittedField {
+  return { request: field.request, boundary: field.boundary, place: field.near, accountId: null, name: null };
+}
 
 /** A pin passed in the URL (`?lat=…&lon=…&place=…`), e.g. from the feed screen's zone sheet. */
 interface UrlPin {
@@ -79,35 +91,72 @@ export function FarmerFlow() {
   );
 }
 
-/** A signed-in farmer's fields, most recently used first, as a quick start. */
-function AccountFieldsBar({ fields, onOpen }: { fields: AccountField[]; onOpen: (field: AccountField) => void }) {
+/** A signed-in farmer's fields, most recently used first: tick one or several and open them together. */
+function AccountFieldsBar({ fields, onOpen }: { fields: AccountField[]; onOpen: (fields: AccountField[]) => void }) {
   const t = useTranslations("Account.picker");
   const area = useTranslations("Account.fields");
   const locale = useAppLocale();
-  const shown = fields.slice(0, 4);
+  const [chosen, setChosen] = useState<ReadonlySet<string>>(new Set());
+  const shown = fields.slice(0, MAX_FIELDS);
+  const picked = shown.filter((f) => chosen.has(f.id));
+
+  function toggle(id: string) {
+    setChosen((prev) => {
+      const next = new Set(prev);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
+  }
+
   return (
     <div className="mb-5 border-b border-line pb-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <p className="text-lg font-semibold">{t("title")}</p>
+        <div>
+          <p className="text-lg font-semibold">{t("title")}</p>
+          <p className="text-sm text-ink-muted">{t("pickHint")}</p>
+        </div>
         {fields.length > shown.length ? (
           <Link href="/account" className="press min-h-11 rounded-lg font-medium text-field">
             {t("all", { count: fields.length })}
           </Link>
         ) : null}
       </div>
-      <ul className="mt-2 flex flex-wrap gap-2">
-        {shown.map((field) => (
-          <li key={field.id}>
-            <Button variant="secondary" onClick={() => onOpen(field)} className="max-w-full">
-              <span className="truncate">{field.name}</span>
-              <span className="shrink-0 tabular-nums text-ink-muted">
-                {area("area", { ha: formatNumber(polygonAreaHa(field.boundary), locale, 0) })}
-              </span>
-            </Button>
-          </li>
-        ))}
+      <ul className="mt-3 flex flex-wrap gap-2">
+        {shown.map((field) => {
+          const on = chosen.has(field.id);
+          return (
+            <li key={field.id} className="max-w-full">
+              <button
+                type="button"
+                aria-pressed={on}
+                onClick={() => toggle(field.id)}
+                className={`press inline-flex min-h-11 max-w-full items-center gap-2 rounded-xl border px-3 font-medium ${
+                  on ? "border-field bg-field-tint text-ink" : "border-line bg-surface hover:border-ink"
+                }`}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`grid size-5 shrink-0 place-items-center rounded-md border ${
+                    on ? "border-field bg-field text-on-field" : "border-line"
+                  }`}
+                >
+                  {on ? <CheckIcon size={14} /> : null}
+                </span>
+                <span className="truncate">{field.name}</span>
+                <span className="shrink-0 tabular-nums text-ink-muted">
+                  {area("area", { ha: formatNumber(polygonAreaHa(field.boundary), locale, 0) })}
+                </span>
+              </button>
+            </li>
+          );
+        })}
       </ul>
-      <p className="mt-3 text-ink-muted">{t("new")}</p>
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <Button disabled={picked.length === 0} onClick={() => onOpen(picked)}>
+          {picked.length > 1 ? t("openMany", { count: picked.length }) : t("openOne")}
+        </Button>
+        <p className="text-ink-muted">{t("new")}</p>
+      </div>
     </div>
   );
 }
@@ -137,99 +186,127 @@ function Flow({ pin, opened = null }: { pin: UrlPin | null; opened?: AccountFiel
   const saved = useSavedField();
   const account = useAccount();
   const signedIn = account.status === "signed-in";
+  const fieldLabel = useFieldLabel();
   const [state, setState] = useState<State>({ step: "form" });
-  const [lastRequest, setLastRequest] = useState<FieldRequest | null>(opened?.request ?? null);
-  const [boundary, setBoundary] = useState<LatLon[] | null>(opened?.boundary ?? null);
-  /** Remounts the form with the saved field, opened on its last step. */
+  /** The fields of the last run (or the ones opened), in order; the form resumes with them. */
+  const [fields, setFields] = useState<SubmittedField[]>(opened ? [fromAccount(opened)] : []);
+  /** Remounts the form with `fields`, opened on this step. */
   const [resumed, setResumed] = useState<FormStep | null>(opened ? 2 : null);
-  /** The commune the farmer chose: picked in the search, from the feed link, or the saved field's. */
-  const [placeName, setPlaceName] = useState<string | null>(opened?.near ?? pin?.place ?? null);
-  /** The field in My fields this flow works on; each run updates it. */
-  const [accountFieldId, setAccountFieldId] = useState<string | null>(opened?.id ?? null);
-  const [updatedAccountField, setUpdatedAccountField] = useState(false);
+  const [formKey, setFormKey] = useState(0);
+  /** Which field's results are shown. */
+  const [selected, setSelected] = useState(0);
+  /** My fields entries updated by the last run. */
+  const [updated, setUpdated] = useState<ReadonlySet<string>>(new Set());
 
-  async function run(request: FieldRequest, drawn: LatLon[] | null, place: string | null) {
-    setLastRequest(request);
-    setBoundary(drawn);
-    setPlaceName(place);
+  async function run(submitted: SubmittedField[]) {
+    const list = submitted.map((f) => ({
+      ...f,
+      place: f.place ?? nearestCommune(communes, f.request.location)?.name ?? null,
+    }));
+    setFields(list);
+    setSelected(0);
+    setUpdated(new Set());
     setState({ step: "loading" });
     window.scrollTo({ top: 0 });
-    const near = place ?? nearestCommune(communes, request.location)?.name ?? null;
-    const accountField = signedIn ? account.fields.find((f) => f.id === accountFieldId) : undefined;
-    setUpdatedAccountField(false);
-    if (drawn && accountField) {
-      // Keep the saved field in step with what the farmer just ran; results never wait for it.
-      updateField(accountField.id, { ...fieldInput(accountField), request, boundary: drawn, near })
-        .then(() => setUpdatedAccountField(true))
-        .catch(() => undefined);
-    } else if (drawn && !signedIn) {
-      saveField({ request, boundary: drawn, near });
+    for (const field of list) {
+      const accountField = signedIn ? account.fields.find((f) => f.id === field.accountId) : undefined;
+      if (accountField) {
+        // Keep the saved field in step with what the farmer just ran; results never wait for it.
+        const body = { ...fieldInput(accountField), request: field.request, boundary: field.boundary, near: field.place };
+        updateField(accountField.id, body)
+          .then(() => setUpdated((prev) => new Set(prev).add(accountField.id)))
+          .catch(() => undefined);
+      }
+    }
+    const lastField = list.at(-1);
+    if (!signedIn && lastField) {
+      saveField({ request: lastField.request, boundary: lastField.boundary, near: lastField.place });
     }
     try {
-      setState({ step: "results", result: await analyzeField(request) });
+      const results = await Promise.all(list.map((f) => analyzeField(f.request)));
+      setState({ step: "results", results });
     } catch {
       setState({ step: "error" });
     }
   }
 
-  /** "Change field or rotation": back to the rotation step, everything kept. */
-  function back() {
-    setResumed(1);
+  function reopen(list: SubmittedField[], step: FormStep) {
+    setFields(list);
+    setResumed(step);
+    setFormKey((k) => k + 1);
     setState({ step: "form" });
-    window.scrollTo({ top: 0 });
   }
 
-  function resume(field: SavedField | AccountField) {
-    setLastRequest(field.request);
-    setBoundary(field.boundary);
-    setPlaceName(field.near ?? null);
-    setAccountFieldId("id" in field ? field.id : null);
-    setResumed(2);
+  /** "Change field or rotation": back to the rotation step, every field kept. */
+  function back() {
+    reopen(fields, 1);
+    window.scrollTo({ top: 0 });
   }
 
   switch (state.step) {
     case "loading":
       return <ResultsSkeleton />;
     case "error":
-      return <ErrorState onRetry={() => (lastRequest ? run(lastRequest, boundary, placeName) : back())} />;
-    case "results":
+      return <ErrorState onRetry={() => (fields.length > 0 ? run(fields) : back())} />;
+    case "results": {
+      const index = Math.min(selected, fields.length - 1);
+      const field = fields[index];
+      const result = state.results[index];
+      const name = fields.length > 1 ? fieldLabel(field, index) : (field.name ?? field.place);
       return (
-        <ResultsView
-          analysis={state.result.data}
-          origin={state.result.origin}
-          boundary={boundary}
-          placeName={placeName}
-          onBack={back}
-          save={
-            boundary && lastRequest ? (
+        <div>
+          {fields.length > 1 ? (
+            <FieldSwitcher
+              fields={fields}
+              results={state.results}
+              selected={index}
+              onSelect={(i) => {
+                setSelected(i);
+                window.scrollTo({ top: 0 });
+              }}
+            />
+          ) : null}
+          <ResultsView
+            key={index}
+            analysis={result.data}
+            origin={result.origin}
+            boundary={field.boundary}
+            placeName={name}
+            onBack={back}
+            save={
               <SaveField
-                request={lastRequest}
-                boundary={boundary}
-                placeName={placeName ?? nearestCommune(communes, lastRequest.location)?.name ?? null}
-                savedId={accountFieldId}
-                justUpdated={updatedAccountField}
-                onSaved={setAccountFieldId}
+                request={field.request}
+                boundary={field.boundary}
+                placeName={field.place}
+                defaultName={name}
+                savedId={field.accountId}
+                justUpdated={field.accountId != null && updated.has(field.accountId)}
+                onSaved={(id) => setFields((prev) => prev.map((f, i) => (i === index ? { ...f, accountId: id } : f)))}
               />
-            ) : null
-          }
-        />
+            }
+          />
+        </div>
       );
+    }
     case "form": {
       // A pin from the feed screen is a new place: it wins over the saved field.
-      const fresh = !pin && resumed === null && !lastRequest;
+      const fresh = !pin && resumed === null && fields.length === 0;
       const accountFields = fresh && signedIn && account.fields.length > 0 ? account.fields : null;
       const offerSaved = fresh && saved && !signedIn ? saved : null;
       return (
         <div>
-          {accountFields ? <AccountFieldsBar fields={accountFields} onOpen={resume} /> : null}
-          {offerSaved ? <SavedFieldBar saved={offerSaved} onResume={() => resume(offerSaved)} /> : null}
+          {accountFields ? (
+            <AccountFieldsBar fields={accountFields} onOpen={(list) => reopen(list.map(fromAccount), 2)} />
+          ) : null}
+          {offerSaved ? <SavedFieldBar saved={offerSaved} onResume={() => reopen([fromLocal(offerSaved)], 2)} /> : null}
           <FieldForm
-            key={resumed === null ? "new" : `resumed-${lastRequest?.location.lat},${lastRequest?.location.lon}`}
-            initial={lastRequest}
-            initialBoundary={boundary}
+            key={formKey}
+            initialFields={fields.map(toDraft)}
+            initialPriorities={fields[0]?.request.priorities}
+            initialIrrigated={fields[0]?.request.irrigated ?? false}
             initialStep={resumed ?? 0}
             startPoint={pin?.point}
-            initialPlace={placeName}
+            initialPlace={pin?.place ?? null}
             communes={communes}
             notice={
               pin ? (

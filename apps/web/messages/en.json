@@ -157,6 +157,21 @@
       "noPlace": "Continue with your field of {ha} ha",
       "resume": "Continue",
       "forget": "Start a new field"
+    },
+    "multi": {
+      "addAnother": "Add another field",
+      "addAnotherHint": "Keeps this field and starts the next one. All fields are analysed together.",
+      "listTitle": "{count, plural, one {# field kept} other {# fields kept}} · {ha} ha",
+      "fieldN": "Field {n}",
+      "fieldNear": "Field {n} · {place}",
+      "area": "{ha} ha",
+      "edit": "Edit",
+      "remove": "Remove",
+      "editLabel": "Edit {field}",
+      "removeLabel": "Remove {field}",
+      "continueWith": "Continue with {count, plural, one {# field} other {# fields}}",
+      "analyze": "Show 25 seasons for {count} fields",
+      "editing": "Now editing: {field}"
     }
   },
   "Results": {
@@ -316,6 +331,12 @@
         "built_up": "built-up land"
       },
       "mapUnavailable": "The map cannot be shown in this browser. The plot table below still holds the whole plan."
+    },
+    "fields": {
+      "title": "{count} fields · {ha} ha in total",
+      "area": "{ha} ha",
+      "keep": "Your rotation is the best",
+      "best": "Best: “{name}”"
     }
   },
   "Feed": {
@@ -663,7 +684,10 @@
     "picker": {
       "title": "Your fields",
       "all": "All fields ({count})",
-      "new": "Or draw a new field below."
+      "new": "Or draw a new field below.",
+      "pickHint": "Tick one or several to analyse them together.",
+      "openOne": "Open field",
+      "openMany": "Analyse {count} fields"
     }
   }
 }

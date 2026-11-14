@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import type { Crop, FieldRequest, LatLon } from "@/lib/contracts";
 import { formatNumber } from "@/lib/format";
@@ -8,10 +8,12 @@ import { polygonAreaHa, polygonCentroid } from "@/lib/geo";
 import { useAppLocale } from "@/lib/localized";
 import { SATELLITE_ATTRIBUTION, type Basemap } from "@/components/map/use-map";
 import { Button } from "@/components/ui/button";
-import { ArrowLeftIcon } from "@/components/ui/icons";
+import { ArrowLeftIcon, PlusIcon } from "@/components/ui/icons";
 import { Segmented } from "@/components/ui/segmented";
 import { Stepper } from "@/components/ui/stepper";
+import { MAX_FIELDS, type DraftField, type SubmittedField } from "./draft-field";
 import { FieldMap, type MapFocus, type MapMode } from "./field-map";
+import { FieldList } from "./steps/field-list";
 import type { Commune } from "./steps/communes";
 import { FieldStep, MAX_FIELD_HA, MIN_FIELD_HA } from "./steps/field-step";
 import { PrioritiesStep, levelsFrom, weightsFrom, type PriorityLevels } from "./steps/priorities-step";
@@ -24,10 +26,13 @@ export type FormStep = 0 | 1 | 2;
 /**
  * The farmer's three steps (field, rotation, what matters) beside one map. Laptop: map on the
  * left, sticky; phone: map on top and a sticky action bar under the panel.
+ * After the rotation, "Add another field" keeps the field and starts the next one; priorities are
+ * shared, and all fields are analysed together.
  */
 export function FieldForm({
-  initial,
-  initialBoundary,
+  initialFields,
+  initialPriorities,
+  initialIrrigated = false,
   initialStep = 0,
   startPoint,
   initialPlace = null,
@@ -35,9 +40,10 @@ export function FieldForm({
   notice,
   onSubmit,
 }: {
-  initial: FieldRequest | null;
-  /** The field the farmer drew last time, if any. */
-  initialBoundary: LatLon[] | null;
+  /** Fields to start with (resumed or opened from My fields); the last one is the one being edited. */
+  initialFields: DraftField[];
+  initialPriorities?: FieldRequest["priorities"];
+  initialIrrigated?: boolean;
   initialStep?: FormStep;
   /** Where the map opens when there is no earlier request (e.g. a point passed from the feed screen). */
   startPoint?: LatLon | null;
@@ -46,27 +52,73 @@ export function FieldForm({
   communes: Commune[];
   /** Shown above the step, such as the place pinned from the feed screen. */
   notice?: ReactNode;
-  /** `boundary` is the drawn field; the API still receives a point, its centroid. */
-  onSubmit: (request: FieldRequest, boundary: LatLon[], place: string | null) => void;
+  /** Every field with its request; the API receives each field's centroid. */
+  onSubmit: (fields: SubmittedField[]) => void;
 }) {
   const t = useTranslations("Field");
   const locale = useAppLocale();
 
-  const [step, setStep] = useState<FormStep>(initialBoundary ? initialStep : 0);
-  const [point, setPoint] = useState<LatLon>(initial?.location ?? startPoint ?? DEFAULT_POINT);
-  const [rotation, setRotation] = useState<Crop[]>(initial ? [...initial.current_rotation] : START_ROTATION);
-  const [levels, setLevels] = useState<PriorityLevels>(() => levelsFrom(initial?.priorities));
-  const [irrigated, setIrrigated] = useState(initial?.irrigated ?? false);
-  const [corners, setCorners] = useState<LatLon[]>(initialBoundary ?? []);
-  const [mode, setMode] = useState<MapMode>(initialBoundary ? "locked" : "draw");
+  const last = initialFields.at(-1) ?? null;
+  /** Fields kept for this analysis, besides the one being edited. */
+  const [added, setAdded] = useState<DraftField[]>(() => initialFields.slice(0, -1));
+  const [step, setStep] = useState<FormStep>(last ? initialStep : 0);
+  const [point, setPoint] = useState<LatLon>(last?.point ?? startPoint ?? DEFAULT_POINT);
+  const [rotation, setRotation] = useState<Crop[]>(last ? [...last.rotation] : START_ROTATION);
+  const [levels, setLevels] = useState<PriorityLevels>(() => levelsFrom(initialPriorities));
+  const [irrigated, setIrrigated] = useState(initialIrrigated);
+  const [corners, setCorners] = useState<LatLon[]>(last?.boundary ?? []);
+  const [mode, setMode] = useState<MapMode>(last ? "locked" : "draw");
+  /** My fields id and name of the field being edited, if it came from there. */
+  const [meta, setMeta] = useState({ accountId: last?.accountId ?? null, name: last?.name ?? null });
   const [basemap, setBasemap] = useState<Basemap>("satellite");
   const [focus, setFocus] = useState<MapFocus | null>(null);
   const [mapFailed, setMapFailed] = useState(false);
-  const [place, setPlace] = useState<string | null>(initialPlace);
+  const [place, setPlace] = useState<string | null>(last ? last.place : initialPlace);
 
   const areaHa = polygonAreaHa(corners);
   const boundary = mode === "locked" && corners.length >= 3 ? corners : null;
   const drawing = step === 0 && mode === "draw";
+  const others = useMemo(() => added.map((f) => f.boundary), [added]);
+  /** No field being edited (nothing drawn yet) but some already kept: the farmer can go on with those. */
+  const onlyAdded = !boundary && corners.length === 0 && added.length > 0;
+  const canAddAnother = boundary !== null && added.length + 1 < MAX_FIELDS;
+  const total = added.length + (boundary ? 1 : 0);
+
+  function current(): DraftField | null {
+    return boundary ? { boundary, point, rotation, place, ...meta } : null;
+  }
+
+  /** Load a field into the editor (empty for a new one). */
+  function load(field: DraftField | null) {
+    setCorners(field?.boundary ?? []);
+    setMode(field ? "locked" : "draw");
+    if (field) setPoint(field.point);
+    if (field) setRotation([...field.rotation]);
+    if (field) setPlace(field.place);
+    setMeta({ accountId: field?.accountId ?? null, name: field?.name ?? null });
+  }
+
+  function addAnother() {
+    const field = current();
+    if (!field) return;
+    setAdded((prev) => [...prev, field]);
+    // The next field starts where this one is, with the same rotation as a first guess; zoom out a
+    // little so the neighbouring parcels are in view.
+    load(null);
+    setFocus((prev) => ({ point, zoom: 15, seq: (prev?.seq ?? 0) + 1 }));
+    go(0);
+  }
+
+  function editAdded(index: number) {
+    const field = current();
+    setAdded((prev) => [...prev.filter((_, i) => i !== index), ...(field ? [field] : [])]);
+    load(added[index]);
+    go(0);
+  }
+
+  function removeAdded(index: number) {
+    setAdded((prev) => prev.filter((_, i) => i !== index));
+  }
 
   function finishDrawing() {
     if (corners.length < 3 || areaHa < MIN_FIELD_HA || areaHa > MAX_FIELD_HA) return;
@@ -83,20 +135,27 @@ export function FieldForm({
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    if (!boundary) return;
+    if (!boundary && !onlyAdded) return;
     if (step < 2) {
-      go((step + 1) as FormStep);
+      // With nothing new drawn, the kept fields already have their rotations: straight to priorities.
+      go(boundary ? ((step + 1) as FormStep) : 2);
       return;
     }
+    const field = current();
+    const priorities = weightsFrom(levels);
     onSubmit(
-      {
-        location: point,
-        current_rotation: rotation as FieldRequest["current_rotation"],
-        priorities: weightsFrom(levels),
-        irrigated,
-      },
-      boundary,
-      place,
+      [...added, ...(field ? [field] : [])].map((f) => ({
+        request: {
+          location: f.point,
+          current_rotation: f.rotation as FieldRequest["current_rotation"],
+          priorities,
+          irrigated,
+        },
+        boundary: f.boundary,
+        place: f.place,
+        accountId: f.accountId,
+        name: f.name,
+      })),
     );
   }
 
@@ -117,6 +176,7 @@ export function FieldForm({
           mode={drawing ? "draw" : "locked"}
           corners={corners}
           closed={mode === "locked"}
+          others={others}
           onAddCorner={(c) => setCorners((prev) => [...prev, c])}
           label={t("mapLabel")}
           basemap={basemap}
@@ -168,6 +228,14 @@ export function FieldForm({
       <div id="field-step-panel" className="flex min-w-0 flex-col gap-6">
         <Stepper label={t("steps.label")} steps={stepLabels} current={step} onSelect={(i) => go(i as FormStep)} />
         {notice}
+        {added.length > 0 ? (
+          <FieldList fields={added} onEdit={editAdded} onRemove={removeAdded} />
+        ) : null}
+        {added.length > 0 && !onlyAdded ? (
+          <p className="-mb-3 text-sm font-semibold text-field">
+            {t("multi.editing", { field: meta.name ?? t("multi.fieldN", { n: added.length + 1 }) })}
+          </p>
+        ) : null}
 
         {step === 0 ? (
           <FieldStep
@@ -186,6 +254,7 @@ export function FieldForm({
             onRestart={() => {
               setCorners([]);
               setMode("draw");
+              setMeta({ accountId: null, name: null });
             }}
           />
         ) : null}
@@ -194,9 +263,19 @@ export function FieldForm({
           <PrioritiesStep levels={levels} onLevels={setLevels} irrigated={irrigated} onIrrigated={setIrrigated} />
         ) : null}
 
+        {step > 0 && canAddAnother ? (
+          <div className="flex flex-col items-start gap-1 border-t border-line pt-5">
+            <Button variant="secondary" onClick={addAnother}>
+              <PlusIcon size={18} />
+              {t("multi.addAnother")}
+            </Button>
+            <p className="text-sm text-ink-muted">{t("multi.addAnotherHint")}</p>
+          </div>
+        ) : null}
+
         {/* Always in view: above the phone bottom navigation, at the viewport bottom from 640 px. */}
         <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 -mx-4 border-t border-line bg-surface px-4 py-3 shadow-3 sm:bottom-0 lg:mx-0 lg:px-0 lg:shadow-none">
-          {!boundary ? (
+          {!boundary && !onlyAdded ? (
             <p className="mb-2 text-center text-sm font-medium text-ink-muted" aria-live="polite">
               {mode === "draw" && corners.length >= 3 ? t("needDone") : t("needField")}
             </p>
@@ -208,8 +287,14 @@ export function FieldForm({
                 <span className="max-sm:sr-only">{t("back")}</span>
               </Button>
             ) : null}
-            <Button type="submit" size="lg" disabled={!boundary} className="flex-1">
-              {step === 2 ? t("analyze") : t("continue")}
+            <Button type="submit" size="lg" disabled={!boundary && !onlyAdded} className="flex-1">
+              {step === 2
+                ? total > 1
+                  ? t("multi.analyze", { count: total })
+                  : t("analyze")
+                : onlyAdded
+                  ? t("multi.continueWith", { count: added.length })
+                  : t("continue")}
             </Button>
           </div>
         </div>

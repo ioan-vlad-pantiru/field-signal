@@ -18,6 +18,7 @@ export interface MapFocus {
 }
 
 const DRAW = "fs-draw";
+const OTHERS = "fs-others";
 const DRAW_ZOOM = 14;
 
 type DrawData = Extract<Parameters<GeoJSONSource["setData"]>[0], { type: "FeatureCollection" }>;
@@ -46,6 +47,23 @@ function drawData(corners: LatLon[], closed: boolean): DrawData {
   return { type: "FeatureCollection", features };
 }
 
+/** Fields already added to this analysis, drawn quieter than the one being edited. */
+function othersData(fields: LatLon[][]): DrawData {
+  return {
+    type: "FeatureCollection",
+    features: fields
+      .filter((f) => f.length >= 3)
+      .map((f) => {
+        const ring = f.map((c): [number, number] => [c.lon, c.lat]);
+        return {
+          type: "Feature",
+          properties: {},
+          geometry: { type: "Polygon", coordinates: [[...ring, ring[0]]] },
+        };
+      }),
+  };
+}
+
 function token(name: string, fallback: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
 }
@@ -64,6 +82,7 @@ export function FieldMap({
   mode,
   corners,
   closed,
+  others = [],
   onAddCorner,
   label,
   basemap,
@@ -75,6 +94,8 @@ export function FieldMap({
   mode: MapMode;
   corners: LatLon[];
   closed: boolean;
+  /** Other fields in the same analysis, shown for orientation. */
+  others?: LatLon[][];
   onAddCorner: (point: LatLon) => void;
   label: string;
   basemap: Basemap;
@@ -108,6 +129,19 @@ export function FieldMap({
     });
     whenStyleReady(map, () => {
       const field = token("--field", "#1f6b45");
+      map.addSource(OTHERS, { type: "geojson", data: othersData([]) });
+      map.addLayer({
+        id: "fs-others-area",
+        type: "fill",
+        source: OTHERS,
+        paint: { "fill-color": "#ffffff", "fill-opacity": 0.18 },
+      });
+      map.addLayer({
+        id: "fs-others-edge",
+        type: "line",
+        source: OTHERS,
+        paint: { "line-color": "#ffffff", "line-width": 2, "line-dasharray": [2, 1.5] },
+      });
       map.addSource(DRAW, { type: "geojson", data: drawData([], false) });
       map.addLayer({
         id: "fs-draw-area",
@@ -202,6 +236,14 @@ export function FieldMap({
       }
     });
   }, [map, corners, closed]);
+
+  useEffect(() => {
+    if (!map) return;
+    const update = () => map.getSource<GeoJSONSource>(OTHERS)?.setData(othersData(others));
+    // The source exists once the layers are set up; until then, wait for the style to load.
+    if (map.getSource(OTHERS)) update();
+    else whenStyleReady(map, update);
+  }, [map, others]);
 
   useEffect(() => {
     if (failed) onUnavailable?.();
