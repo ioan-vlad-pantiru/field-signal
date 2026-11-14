@@ -165,19 +165,120 @@
   },
   "Results": {
     "back": "Change field or rotation",
-    "period": "Period analysed: {start}–{end}",
-    "loading": "Analysing 25 years of data for this place…",
-    "indicatorsTitle": "What the data show for this place",
-    "indicatorsHint": "Latest year compared with the average of all years. The dashed line is the average.",
-    "noComparison": "Not enough data to compare",
-    "nearNormal": "Close to average",
-    "aboveNormal": "Above average",
-    "belowNormal": "Below average",
-    "whatIs": "What this means: {term}",
-    "latest": "In {year}",
-    "mean": "Average",
-    "meanLegend": "average",
-    "sparklineLabel": "Trend for {name}, {from}–{to}",
+    "print": "Print",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "copyFailed": "Could not copy. The address is in your browser's address bar.",
+    "actions": "Page actions",
+    "period": "{start}–{end}",
+    "area": "{ha} ha",
+    "meta": "{area} · seasons {period}",
+    "metaNoArea": "Seasons {period}",
+    "loading": "Reading 25 years of data for this place…",
+    "loadingSteps": {
+      "weather": "Heat and rain in every season",
+      "vegetation": "How green the crops were, from satellite",
+      "soil": "Soil and soil water"
+    },
+    "nav": {
+      "label": "On this page",
+      "shift": "Shift",
+      "rotations": "Rotations",
+      "plan": "Plan",
+      "evidence": "Evidence"
+    },
+    "verdict": {
+      "fewer": "With the {name} rotation you would have had <b>{best, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}} instead of {current}</b> since {start}.",
+      "same": "{name} fits your priorities best. Since {start} it would have had as many poor seasons as your rotation: <b>{count}</b>.",
+      "more": "{name} fits your priorities best, though since {start} it would have had <b>{best, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}} against {current}</b> with your rotation.",
+      "keep": "Your current rotation already fits your priorities best. Since {start} it had <b>{count, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}}</b>.",
+      "fit": "Fits your priorities {best} of 100; your rotation now {current}",
+      "fitKeep": "Fits your priorities {score} of 100",
+      "seeRotations": "Compare the rotations",
+      "fewerNone": "With the {name} rotation you would have had <b>no poor seasons instead of {current}</b> since {start}.",
+      "keepNone": "Your current rotation already fits your priorities best. Since {start} it had <b>no poor seasons</b>."
+    },
+    "shift": {
+      "title": "What changed at this place",
+      "hint": "Average of the last five years with data against the first ten. These are measurements at this place, not causes.",
+      "statement": "{recent} on average in {recentStart}–{recentEnd}, against {early} in {earlyStart}–{earlyEnd}.",
+      "up": "Higher lately",
+      "down": "Lower lately",
+      "steady": "About the same",
+      "sparklineLabel": "{name} every year, {from}–{to}"
+    },
+    "rotations": {
+      "title": "Rotations compared",
+      "hint": "Best fit first. Each square is one season, {start} to {end}. Select a year to see all three rotations in it.",
+      "hintPhone": "Best fit first. Each square is one season, {start} to {end}. Tap a rotation to see every year.",
+      "current": "Your rotation now",
+      "best": "Best fit",
+      "shown": "Shown on this page",
+      "score": "{score} of 100",
+      "scoreLabel": "Fit with your priorities",
+      "poor": "{count, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}} since {start}",
+      "poorShort": "{count, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}}",
+      "stripLabel": "{name}: {poor}",
+      "cellLabel": "{year}, {crop}: {status}, {evidence} evidence",
+      "openYears": "See every year of {name}",
+      "showDetails": "Why this rotation",
+      "hideDetails": "Hide the explanation",
+      "yearTitle": "Season {year}",
+      "closeYear": "Close season {year}",
+      "yearsSheetTitle": "Every season, newest first",
+      "evidence": {
+        "high": "strong",
+        "medium": "medium",
+        "low": "weak"
+      },
+      "evidenceLine": "Evidence: {level}",
+      "weakEvidence": "Weak evidence (before 2015)",
+      "noReasons": "Nothing unusual in this season's data.",
+      "legend": "Legend",
+      "range": "Likely between {low} and {high}",
+      "breakdown": {
+        "yield_stability": "Steady harvest",
+        "water": "Water",
+        "soil_health": "Soil health",
+        "low_risk": "Low risk"
+      },
+      "year": "Season"
+    },
+    "explain": {
+      "why": "In short",
+      "evidence": "What the data show",
+      "source": "Source: {source}",
+      "benefits": "Benefits",
+      "gaps": "What we don't know",
+      "risks": "Risks to check locally",
+      "generatedBy": {
+        "template": "Text built from a template, using only the values computed above.",
+        "llm": "Text written by an AI model, using only the values computed above."
+      }
+    },
+    "planTitle": "What to grow where",
+    "planHint": "Your field split into plots, one for each year of the rotation, so every crop in the plan is on the farm each year.",
+    "planRotation": "Rotation shown",
+    "evidence": {
+      "title": "Evidence",
+      "hint": "The measurements behind the results, with their sources.",
+      "show": "Show the evidence",
+      "indicatorsTitle": "Measured at this place",
+      "indicatorsHint": "Latest year compared with the average of all years. The dashed line is the average.",
+      "caveatsTitle": "Keep in mind",
+      "sourcesTitle": "Data sources"
+    },
+    "indicator": {
+      "noComparison": "Not enough data to compare",
+      "nearNormal": "Close to average",
+      "aboveNormal": "Above average",
+      "belowNormal": "Below average",
+      "whatIs": "What this means: {term}",
+      "latest": "In {year}",
+      "mean": "Average",
+      "meanLegend": "average",
+      "sparklineLabel": "Trend for {name}, {from}–{to}"
+    },
     "soil": {
       "title": "Soil",
       "depth": "Top layer ({depth})",
@@ -196,70 +297,7 @@
         "help": "The mix of clay, sand and silt. Clay soils hold water longer; sandy soils dry out quickly."
       }
     },
-    "strategiesTitle": "Three rotations, compared",
-    "strategiesHint": "The score shows how well each rotation fits your priorities. 100 is best.",
-    "strategy": {
-      "listLabel": "Rotations compared",
-      "current": "Your rotation now",
-      "best": "Best score",
-      "score": "Total score",
-      "rangeLabel": "Likely score between {low} and {high}, most likely {mid}",
-      "low": "min {value}",
-      "mid": "likely {value}",
-      "high": "max {value}",
-      "breakdown": {
-        "yield_stability": "Steady harvest",
-        "water": "Water",
-        "soil_health": "Soil health",
-        "low_risk": "Low risk"
-      }
-    },
-    "replayTitle": "How each year would have gone",
-    "replayHint": "Each square is one season. Tap a square to see why.",
-    "replay": {
-      "scrollLabel": "Table by year, scrolls sideways",
-      "caption": "Outcome of each rotation in each season",
-      "cellLabel": "{year}, {crop}: {status}, {evidence} evidence",
-      "evidence": {
-        "high": "strong",
-        "medium": "medium",
-        "low": "weak"
-      },
-      "legend": "Legend",
-      "weakEvidence": "Weak evidence (before 2015)",
-      "sheetTitle": "Season {year}",
-      "evidenceLine": "Evidence for this year: {level}.",
-      "reasons": "Why",
-      "noReasons": "Nothing unusual in this season's data."
-    },
-    "explainTitle": "Why these scores",
-    "explainHint": "Pick a rotation to read the explanation.",
-    "explain": {
-      "tabsLabel": "Pick a rotation",
-      "why": "In short",
-      "evidence": "What the data show",
-      "source": "Source: {source}",
-      "benefits": "Benefits",
-      "gaps": "What we don't know",
-      "risks": "Risks to check locally",
-      "generatedBy": {
-        "template": "Text built from a template, using only the values computed above.",
-        "llm": "Text written by an AI model, using only the values computed above."
-      }
-    },
-    "caveatsTitle": "Keep in mind",
-    "sourcesTitle": "Data sources",
-    "verdict": {
-      "title": "Best fit for your priorities",
-      "keepTitle": "Your current rotation scores best",
-      "delta": "+{delta} points",
-      "versus": "Your current rotation scores {current} of 100.",
-      "seeYears": "See every year"
-    },
-    "planTitle": "What to grow where",
-    "planHint": "Your field split into plots, one for each year of the rotation, so every crop in the plan is on the farm each year.",
     "plan": {
-      "strategyLabel": "Choose the rotation",
       "season": "Season (harvest year)",
       "previous": "Previous season",
       "next": "Next season",

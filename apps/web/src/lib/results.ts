@@ -1,0 +1,103 @@
+import type { Indicator, Strategy, YearValue } from "./contracts.ts";
+
+/** Seasons a rotation's replay marks as poor (`status === "bad"`). */
+export function poorSeasons(strategy: Pick<Strategy, "replay">): number {
+  return strategy.replay.filter((outcome) => outcome.status === "bad").length;
+}
+
+/** Best fit with the farmer's priorities first; ties keep the API's order. */
+export function rankStrategies<T extends Pick<Strategy, "score">>(strategies: readonly T[]): T[] {
+  return strategies
+    .map((strategy, index) => ({ strategy, index }))
+    .sort((a, b) => b.strategy.score.total - a.strategy.score.total || a.index - b.index)
+    .map(({ strategy }) => strategy);
+}
+
+/** Every season any rotation was replayed in, oldest first: the shared year axis. */
+export function replayYears(strategies: readonly Pick<Strategy, "replay">[]): number[] {
+  return [...new Set(strategies.flatMap((s) => s.replay.map((r) => r.year)))].sort((a, b) => a - b);
+}
+
+export type VerdictKind =
+  /** The current rotation already fits best. */
+  | "keep"
+  /** Another rotation fits best and had fewer poor seasons. */
+  | "fewer"
+  /** Another rotation fits best with as many poor seasons. */
+  | "same"
+  /** Another rotation fits best on the priorities, but had more poor seasons. */
+  | "more";
+
+export interface Verdict<T extends Strategy = Strategy> {
+  kind: VerdictKind;
+  best: T;
+  /** The farmer's rotation now; the best one when the API marks none as current. */
+  current: T;
+  bestPoor: number;
+  currentPoor: number;
+}
+
+export function verdict<T extends Strategy>(strategies: readonly T[]): Verdict<T> {
+  const [best] = rankStrategies(strategies);
+  const current = strategies.find((s) => s.is_current) ?? best;
+  const bestPoor = poorSeasons(best);
+  const currentPoor = poorSeasons(current);
+  const kind: VerdictKind =
+    best === current ? "keep" : bestPoor < currentPoor ? "fewer" : bestPoor === currentPoor ? "same" : "more";
+  return { kind, best, current, bestPoor, currentPoor };
+}
+
+/** Years averaged at each end of a series to describe what changed. */
+export const SHIFT_EARLY_YEARS = 10;
+export const SHIFT_RECENT_YEARS = 5;
+/** Changes smaller than this share of the early mean read as "about the same". */
+export const SHIFT_STEADY_BAND = 0.05;
+
+export interface Period {
+  start: number;
+  end: number;
+  mean: number;
+}
+
+export interface Shift {
+  indicator: Indicator;
+  early: Period;
+  recent: Period;
+  direction: "up" | "down" | "steady";
+  /** Recent mean minus early mean, as a share of the early mean. */
+  relative: number;
+}
+
+function period(points: YearValue[]): Period {
+  const values = points.map((p) => p.value as number);
+  return {
+    start: points[0].year,
+    end: points[points.length - 1].year,
+    mean: values.reduce((sum, v) => sum + v, 0) / values.length,
+  };
+}
+
+/**
+ * What changed at this place: the mean of the last five years with data against the mean of the
+ * first ten. Only series with enough years for two periods that do not overlap qualify.
+ */
+export function indicatorShift(indicator: Indicator): Shift | null {
+  const present = indicator.series
+    .filter((p) => p.value !== null && Number.isFinite(p.value))
+    .sort((a, b) => a.year - b.year);
+  if (present.length < SHIFT_EARLY_YEARS + SHIFT_RECENT_YEARS) return null;
+  const early = period(present.slice(0, SHIFT_EARLY_YEARS));
+  const recent = period(present.slice(-SHIFT_RECENT_YEARS));
+  const relative = (recent.mean - early.mean) / (Math.abs(early.mean) || 1);
+  const direction = Math.abs(relative) < SHIFT_STEADY_BAND ? "steady" : relative > 0 ? "up" : "down";
+  return { indicator, early, recent, direction, relative };
+}
+
+/** Up to `limit` shifts, largest change first. */
+export function placeShifts(indicators: readonly Indicator[], limit = 3): Shift[] {
+  return indicators
+    .map(indicatorShift)
+    .filter((s): s is Shift => s !== null)
+    .sort((a, b) => Math.abs(b.relative) - Math.abs(a.relative))
+    .slice(0, limit);
+}
