@@ -1,5 +1,6 @@
-"""Optimizer tests (plan §5 T4). Inline tables and deterministic stand-in scores; no other planner
-module. Timing tests print their figures (run with `-s` to see them)."""
+"""Optimizer tests (plan §5 T4). Inline tables and deterministic stand-in scores; one regression
+test builds the service's scores (grid, mock world model, scoring). Timing tests print their
+figures (run with `-s` to see them)."""
 
 import random
 import time
@@ -10,6 +11,8 @@ import pytest
 from ortools.sat.python import cp_model
 
 import api.planner.optimizer as optimizer
+from api.contracts import Priority
+from api.planner import grid, scoring
 from api.planner.candidates import (
     candidates,
     crops_of,
@@ -18,6 +21,8 @@ from api.planner.candidates import (
     is_valid,
     rotation_id,
 )
+from api.planner.crops import CROPS as TRAITS
+from api.planner.crops import LEGUMES as CROP_LEGUMES
 from api.planner.optimizer import (
     MAX_PIECES,
     RULES_2026,
@@ -40,6 +45,13 @@ MAIZE_FIRST = {"maize": 90, "wheat": 60, "barley": 50, "sunflower": 50, "pea": 1
 DEMO = {"A": [62] * 6, "B": [80]}  # 37.2 ha in six pieces and an 8 ha field: split mode
 LARGE = {"A": [124] * 6, "B": [160]}  # DEMO at twice the area, 90.4 ha: parcel mode
 FOUR_FIELDS = {f: [100, 100] for f in "WXYZ"}  # 80 ha, four 20 ha parcels: parcel mode
+AIUD = {  # the API tests' demo farm, about 37 ha and 8 ha (split mode)
+    "f1": [(46.3000, 23.7460), (46.3003, 23.7538), (46.2953, 23.7546), (46.2948, 23.7457)],
+    "f2": [(46.3022, 23.7560), (46.3024, 23.7607), (46.3004, 23.7609), (46.3002, 23.7558)],
+}
+_MX, _MY = grid.metres_per_degree(46.297)  # one 74.99 ha field, 0.006° tall, as the API tests
+_EAST = 23.74 + 74.99e4 / (_MX * _MY * 0.006)
+ONE_74_99 = {"f1": [(46.3, 23.74), (46.3, _EAST), (46.294, _EAST), (46.294, 23.74)]}
 SCENARIOS = {3: 42, 4: 41, 5: 40}  # windows inside 1982-2025
 SLOW = 30.0  # time limit where a test needs OPTIMAL; these solve in about 1 s here
 
@@ -129,6 +141,24 @@ def check_blocks(result: FarmSolve, pieces: Pieces) -> None:
         for f, af in field_area.items():
             used = [v for (g, _), v in blocks.items() if g == f]
             assert len(used) <= (1 if af < 100 else 3) and min(used) >= min(50, af)
+
+
+def service_farm(fields: dict[str, list[tuple[float, float]]], years: int) -> tuple[Pieces, Scores]:
+    """Pieces and scores built as the service builds them (grid pieces, mock world model,
+    scoring) for fields last cropped maize-wheat-maize."""
+    ps = [p for f, b in fields.items() for p in grid.pieces(f, b)]
+    hist = history_from_cycle(["maize", "wheat", "maize"])
+    min_return = {c: v.min_return_years for c, v in TRAITS.items()}
+    rids = candidates(list(TRAITS), years, min_return, hist)
+    base = rotation_id(cycle(["maize", "wheat", "maize"], years))
+    table = scoring.farm_scores(
+        ps,
+        {f: hist for f in fields},
+        {f: [*dict.fromkeys([*rids, base])] for f in fields},
+        {Priority.YIELD: 0.5, Priority.WATER: 0.8, Priority.SOIL: 0.6, Priority.RISK: 0.4},
+    )
+    scores = {k: v for k, v in scoring.totals(table).items() if k[1] in set(rids)}
+    return [(p.piece_id, p.field_id, p.area_tenths_ha) for p in ps], scores
 
 
 def one_field(tenths: int, n: int = 5) -> dict[str, list[int]]:
@@ -396,6 +426,25 @@ def test_pruned_versus_unpruned_gap() -> None:
         assert cut.plans[0].objective <= full.plans[0].objective
         gap = 100 * (full.plans[0].objective - cut.plans[0].objective) / full.plans[0].objective
         print(f"\npruned vs unpruned, lambda={round(100 * risk)}: gap {gap:.4f} %")
+
+
+@pytest.mark.parametrize(
+    ("fields", "years", "farm_ha"),
+    [(AIUD, 3, None), (AIUD, 4, None), (AIUD, 5, None), (ONE_74_99, 4, 74.99)],
+    ids=["aiud-3y", "aiud-4y", "aiud-5y", "one-74.99ha-4y"],
+)
+def test_split_mode_plans_on_the_services_scores(
+    fields: dict[str, list[tuple[float, float]]], years: int, farm_ha: float | None
+) -> None:
+    """Regression: on CP-SAT's default presolve the unpruned 4-year models stopped after presolve
+    with no plan (UNKNOWN) within the 3 s limit. The 74.99 ha field's pieces sum to 75.0 ha, so
+    its unrounded area is passed as the service does."""
+    pieces, scores = service_farm(fields, years)
+    ha = farm_ha or sum(a for *_, a in pieces) / 10
+    result = solve_farm(pieces, scores, CROP_LEGUMES, farm_ha=ha)
+    print(f"\n{ha:.2f} ha, {years} years: {result.times_s} {[p.status for p in result.plans]}")
+    assert splits(ha) and len(result.plans) == 3
+    check_blocks(result, pieces)
 
 
 def test_demo_farm_four_years_top3_within_15s() -> None:

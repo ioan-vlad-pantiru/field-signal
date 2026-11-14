@@ -62,6 +62,13 @@ SPLIT_BELOW_HA: float = 75
 MIN_BLOCK = 50  # 0.1 ha: in split mode a rotation takes 0 or at least 5 ha of a field
 MAX_ROTATIONS = 3  # rotations per field in split mode
 WHOLE_FIELD_BELOW = 100  # 0.1 ha: in split mode a field under 10 ha carries one rotation
+# Split-mode solver settings, measured 14 Nov 2026 on the service's mock-world-model scores
+# (15-core Mac, 3 s per solve). On defaults the unpruned split model (45 ha demo or one 74.99 ha
+# field, 4 years, about 3000 piece pairs) spends its time in single-threaded presolve (probing and
+# the big-linear-overlap passes, about 1 s each) and stops after presolve with no plan (UNKNOWN);
+# without them the same farms reach OPTIMAL in about 0.55 s per solve, and every 3- and 5-year
+# split case measured gets faster with the same objectives. Parcel mode keeps the defaults.
+SPLIT_PRESOLVE = {"cp_model_probing_level": 0, "find_big_linear_overlap": False}
 
 # Pruning threshold in (field, rotation) pairs, measured 14 Nov 2026 (15-core Mac, 3 s per solve,
 # structured test scores, top 3): 468 pairs (2 fields, 4 years) solve to OPTIMAL unpruned in
@@ -268,6 +275,9 @@ def _rank(
     solver = cp_model.CpSolver()
     solver.parameters.max_time_in_seconds = max_time_s
     solver.parameters.num_workers = num_workers
+    if split:  # see SPLIT_PRESOLVE
+        for name, value in SPLIT_PRESOLVE.items():
+            setattr(solver.parameters, name, value)
     plans: list[Plan] = []
     times: list[float] = []
     status_name = "INFEASIBLE"
