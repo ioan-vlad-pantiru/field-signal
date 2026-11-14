@@ -2,6 +2,7 @@
 test builds the service's scores (grid, mock world model, scoring). Timing tests print their
 figures (run with `-s` to see them)."""
 
+import logging
 import random
 import time
 from itertools import pairwise
@@ -445,6 +446,34 @@ def test_split_mode_plans_on_the_services_scores(
     print(f"\n{ha:.2f} ha, {years} years: {result.times_s} {[p.status for p in result.plans]}")
     assert splits(ha) and len(result.plans) == 3
     check_blocks(result, pieces)
+
+
+def test_one_log_line_per_solve(caplog: pytest.LogCaptureFixture) -> None:
+    pieces, scores = farm(DEMO, 3, 5)
+    with caplog.at_level(logging.INFO, logger="api.planner.optimizer"):
+        result = solve_farm(pieces, scores, LEGUMES, top=2, max_time_s=SLOW)
+    lines = [r.getMessage() for r in caplog.records if r.getMessage().startswith("farm solve")]
+    print("\n" + "\n".join(lines))
+    assert len(lines) == len(result.times_s) == 2
+    for keys in ("mode=split", "status=OPTIMAL", "gap=0.0000%", "candidates=", "pieces=7"):
+        assert all(keys in line for line in lines)
+
+
+def test_an_invalid_model_raises_and_is_not_retried(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    calls: list[int] = []
+
+    def invalid(*_: Any) -> cp_model.CpSolverStatus:
+        calls.append(1)
+        return cp_model.MODEL_INVALID
+
+    monkeypatch.setattr(cp_model.CpSolver, "solve", invalid)
+    pieces, scores = farm(DEMO, 3, 2)
+    with pytest.raises(RuntimeError, match="rejected the farm model"):
+        solve_farm(pieces, scores, LEGUMES, "diversification")
+    assert len(calls) == 1  # neither "no plan" nor the retry without the practice
+    assert "CP-SAT rejected the model" in caplog.text
 
 
 def test_demo_farm_four_years_top3_within_15s() -> None:
