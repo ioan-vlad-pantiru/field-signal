@@ -1,0 +1,17 @@
+{
+  "region": "full",
+  "countries": ["RO", "HU", "BG", "HR", "SK", "AT1", "RS12"],
+  "sample_target_points": 300000,
+  "points_produced": 299987,
+  "spacing": "at most one point per 250 m MODIS cell",
+  "sampling_frame": "centre pixel a target crop in >=1 year and 3x3 window class-uniform; no confidence or purity cut",
+  "confidence_filter": "none at storage time; sweep 50/60/70/80 at analysis",
+  "purity_threshold": "none (purity_m250 stored per point-year; lagged covariate only)",
+  "hrl_years": [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
+  "embedding_years_present": [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025],
+  "hls_window": "monthly median, full year 2016-01-01..latest, L30+S30, Fmask-cleared",
+  "modis": "MOD13Q1 NDVI + SummaryQA stored; quality filter applied at analysis",
+  "holdout_nuts3": ["RO121", "RO113", "RO125", "RO126", "RO423"],
+  "gee_workers_final_run": 4,
+  "gee_project_tier": "REGISTERED_NOT_COMMERCIALLY (restricted mode after quota exhaustion)"
+}

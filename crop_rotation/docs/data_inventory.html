@@ -1,0 +1,318 @@
+<title>Crop-rotation data inventory</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#f7f7f4; --surface:#ffffff; --fg:#15181a; --muted:#5b6560; --rule:#dcded9;
+  --accent:#2c6e49; --accent-soft:#e7efe9; --warn:#8a5a12; --warn-soft:#f6ecdc;
+  --mono-bg:#f0f1ee;
+  --serif:"Source Serif 4",Georgia,serif;
+  --sans:"Public Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1211; --surface:#151a18; --fg:#e7eae7; --muted:#9aa6a0; --rule:#262c29;
+    --accent:#74c39a; --accent-soft:#17281f; --warn:#d8a55c; --warn-soft:#2a2114;
+    --mono-bg:#1b211e; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1211; --surface:#151a18; --fg:#e7eae7; --muted:#9aa6a0; --rule:#262c29;
+  --accent:#74c39a; --accent-soft:#17281f; --warn:#d8a55c; --warn-soft:#2a2114;
+  --mono-bg:#1b211e; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--fg); font-family:var(--sans);
+  font-size:15px; line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0 clamp(40px,7vw,88px);
+}
+.wrap{max-width:1080px;margin:0 auto}
+header.top{padding-block:clamp(32px,5vw,56px) 24px;border-bottom:1px solid var(--rule)}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(28px,4.4vw,42px);line-height:1.12;margin:.35em 0 .3em;text-wrap:balance;letter-spacing:-.01em}
+.lede{color:var(--muted);max-width:62ch;font-size:16px;margin:0}
+.scope{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.chip{font-size:12px;padding:4px 10px;border:1px solid var(--rule);border-radius:999px;color:var(--muted);background:var(--surface)}
+.chip b{color:var(--fg);font-weight:600}
+section{padding-block:clamp(28px,4vw,44px) 0}
+h2{font-family:var(--serif);font-weight:600;font-size:clamp(20px,2.6vw,26px);margin:0 0 .2em;text-wrap:balance}
+.sub{color:var(--muted);margin:0 0 20px;max-width:64ch}
+.tablewrap{overflow-x:auto;border:1px solid var(--rule);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:820px;font-size:13.5px}
+th,td{text-align:left;padding:12px 14px;vertical-align:top;border-bottom:1px solid var(--rule)}
+thead th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--mono-bg);white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+td.name{font-weight:600;white-space:nowrap}
+td.name small{display:block;font-weight:400;color:var(--muted);font-size:11.5px;margin-top:2px;letter-spacing:.02em}
+code{font-family:var(--mono);font-size:12.2px;background:var(--mono-bg);padding:1px 5px;border-radius:4px;word-break:break-word}
+.num{font-variant-numeric:tabular-nums}
+ul.tight{margin:0;padding-left:1.1em}
+ul.tight li{margin:.18em 0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:16px 18px}
+.card h3{margin:0 0 .5em;font-size:14px;font-family:var(--sans);font-weight:600;letter-spacing:.01em}
+.card.warn{background:var(--warn-soft);border-color:color-mix(in oklab,var(--warn) 35%,transparent)}
+.card.warn h3{color:var(--warn)}
+.card p{margin:.35em 0 0;color:var(--muted);font-size:13.5px}
+.note{color:var(--muted);font-size:13px;margin-top:14px}
+footer{margin-top:clamp(36px,5vw,56px);padding-top:18px;border-top:1px solid var(--rule);color:var(--muted);font-size:12.5px}
+@media (max-width:560px){
+  body{font-size:14.5px}
+  th,td{padding:10px 12px}
+}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">Crop rotation · training data</div>
+  <h1>Crop-rotation data inventory</h1>
+  <p class="lede">Every source we download, the exact product identifiers behind it, and the processing applied before it reaches the training tables. Built for a side-by-side comparison with another team's download.</p>
+  <div class="scope">
+    <span class="chip"><b>RO · HU · BG · HR · SK</b> plus AT1 (eastern Austria) and RS12 (Vojvodina)</span>
+    <span class="chip">Labels <b>2017–2024</b></span>
+    <span class="chip">Weather from <b>1981</b></span>
+    <span class="chip">Sample unit <b>point-year</b></span>
+  </div>
+</header>
+
+<section>
+  <h2>Sources we download</h2>
+  <p class="sub">Nine products. The "what we do to it" column is the part that makes two downloads differ even when both teams fetched the same product.</p>
+  <div class="tablewrap">
+  <table>
+    <thead>
+      <tr><th>Dataset</th><th>Exact identifier</th><th>Native grid</th><th>Coverage used</th><th>What our code does to it</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="name">Crop types<small>HRL VLCC</small></td>
+        <td><code>clms_vlcc_crop-types_europe_10m_yearly_v1</code><br><small>Copernicus Data Space, password-auth OData</small></td>
+        <td>10 m, EPSG:3035<br>100 km tiles</td>
+        <td>2017–2024<br><small>no 2025 product exists</small></td>
+        <td>
+          <ul class="tight">
+            <li>Identifier → 7 target crops + <code>other</code> via a frozen code map</li>
+            <li><code>0</code>, <code>65535</code> (fill) and permanent-crop classes <code>2100 2200 2310 2320 3200</code> are excluded, not relabelled</li>
+            <li>Per-year legend check against that map; an unknown code halts the step</li>
+            <li>3×3 class-uniformity test at 10 m to decide sampling eligibility</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td class="name">Crop confidence<small>HRL CTYCL</small></td>
+        <td><code>clms_vlcc_crop-types-confidence-layer_europe_10m_yearly_v1</code></td>
+        <td>10 m, EPSG:3035<br>100 km tiles</td>
+        <td>2017–2024</td>
+        <td>
+          <ul class="tight">
+            <li>Stored per point-year as <code>confidence</code>, <b>never used as a filter</b></li>
+            <li>Sentinels <code>253</code> (no cropland) and <code>255</code> (outside) → null</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td class="name">Satellite embedding<small>Google, annual</small></td>
+        <td><code>GOOGLE/SATELLITE_EMBEDDING/V1/ANNUAL</code></td>
+        <td>10 m<br>64 bands A00–A63</td>
+        <td>2017–2025<br><small>2025 exists; years probed, not assumed</small></td>
+        <td>
+          <ul class="tight">
+            <li>Collection is tiled (~10.6k images/year) → <b>mosaicked per year</b> before sampling</li>
+            <li>Single-pixel read at each point; no averaging, so no renormalisation needed</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td class="name">EUCROPMAP<small>JRC</small></td>
+        <td><code>JRC/D5/EUCROPMAP/V1</code></td>
+        <td>10 m</td>
+        <td>2018 and 2022 only</td>
+        <td>
+          <ul class="tight">
+            <li>Class label at the point, kept as a <b>cross-check</b> column</li>
+            <li>Not ground truth: derived from the same satellites, so agreement overstates accuracy</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td class="name">MODIS NDVI<small>MOD13Q1</small></td>
+        <td><code>MODIS/061/MOD13Q1</code> band <code>NDVI</code></td>
+        <td>250 m, 16-day</td>
+        <td>2000-02-18 → present<br><small>614 composites</small></td>
+        <td>
+          <ul class="tight">
+            <li>Scale factor ×0.0001 applied</li>
+            <li>Every composite kept; no temporal filtering at build time</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td class="name">MODIS quality<small>SummaryQA</small></td>
+        <td><code>MODIS/061/MOD13Q1</code> band <code>SummaryQA</code></td>
+        <td>250 m, 16-day</td>
+        <td>2000-02-18 → present</td>
+        <td>
+          <ul class="tight">
+            <li>Stored raw alongside NDVI so quality filtering is a choice made at analysis time</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td class="name">HLS NDVI<small>Harmonised Landsat–Sentinel</small></td>
+        <td><code>NASA/HLS/HLSL30/v002</code><br><code>NASA/HLS/HLSS30/v002</code></td>
+        <td>30 m</td>
+        <td>2016-01 → present<br><small>130 monthly composites</small></td>
+        <td>
+          <ul class="tight">
+            <li>NDVI = L30 <code>B5/B4</code>, S30 <b><code>B8A</code>/B4</b> — S30 carries B8A, not B8</li>
+            <li>Fmask bits for cloud, adjacent-to-cloud, shadow and snow removed before compositing</li>
+            <li>Collapsed to <b>monthly medians for every month</b>, not just the growing season</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td class="name">SMAP root zone<small>L4, version 008</small></td>
+        <td><code>NASA/SMAP/SPL4SMGP/008</code> band <code>sm_rootzone</code></td>
+        <td>9 km EASE-Grid 2.0<br>3-hourly</td>
+        <td>2015-03 → present<br><small>426 ten-day means</small></td>
+        <td>
+          <ul class="tight">
+            <li>3-hourly → <b>10-day means computed by us</b></li>
+            <li>Aggregated per grid cell, not per point, and joined on <code>cell_id</code></li>
+            <li>8 of 434 windows have no granules and simply contribute no rows</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td class="name">SoilGrids<small>ISRIC, topsoil</small></td>
+        <td><code>projects/soilgrids-isric/{clay,sand,soc,phh2o}_mean</code></td>
+        <td>250 m</td>
+        <td>static</td>
+        <td>
+          <ul class="tight">
+            <li>0–30 cm by <b>thickness weighting</b>: <code>(5a + 10b + 15c) / 30</code></li>
+            <li>Units: clay/sand g/kg→%, SOC dg/kg→g/kg, pH ÷10</li>
+            <li>Band names asserted at runtime, not assumed</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td class="name">SRTM<small>elevation</small></td>
+        <td><code>USGS/SRTMGL1_003</code></td>
+        <td>30 m</td>
+        <td>static</td>
+        <td>
+          <ul class="tight">
+            <li>Elevation stored, and <b>slope derived</b> via <code>ee.Terrain.slope</code></li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td class="name">NASA POWER<small>daily weather</small></td>
+        <td><code>/api/temporal/daily/point</code>, <code>community=AG</code></td>
+        <td>0.5° × 0.625°<br><small>solar is on a separate 1° grid</small></td>
+        <td>1981-01-01 → yesterday</td>
+        <td>
+          <ul class="tight">
+            <li><code>T2M_MAX</code>, <code>T2M_MIN</code>, <code>PRECTOTCORR</code>, <code>ALLSKY_SFC_SW_DWN</code>, <code>RH2M</code>, <code>WS2M</code></li>
+            <li>Plus <code>IMERG_PRECTOT</code> as a second precipitation series, resolved from the live dictionary</li>
+            <li>Fill −999 → null, never imputed</li>
+            <li>One request per grid cell, joined on <code>cell_id</code></li>
+          </ul>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2>What we build on top</h2>
+  <p class="sub">Two derived tables carry the labels; everything above lands as raw long-format Parquet and is joined at analysis time.</p>
+  <div class="grid2">
+    <div class="card">
+      <h3>points.parquet — one row per point</h3>
+      <p><code>point_id, lon, lat, country, nuts3, county, holdout, cell_id, modal_crop, inclusion_probability</code></p>
+      <p>Sampled as 300,000 points stratified by country × modal crop, with a floor per stratum, one point per 250 m cell to avoid pseudo-replication, and each point's inclusion probability stored. Points in Alba, Cluj, Mureș, Sibiu and Hunedoara are flagged <code>holdout=True</code>.</p>
+    </div>
+    <div class="card">
+      <h3>crops.parquet — one row per point-year</h3>
+      <p><code>point_id, year, crop, confidence, purity_m250, flags</code></p>
+      <p>Every year 2017–2024 is stored for every point, including non-crop and low-confidence years. Fallow and temporary grass are rotation states, not missing data. <code>purity_m250</code> is the share of the containing 250 m MODIS cell growing that point's crop.</p>
+    </div>
+  </div>
+  <p class="note">Raw files are long format: <code>point_id, date_or_year, variable, value</code>. The only exception is <code>power</code> and <code>smap_sm</code>, keyed by <code>cell_id</code> — expanding a daily 1981 series to 300k points would be roughly 10<sup>10</sup> identical rows.</p>
+</section>
+
+<section>
+  <h2>Numbers to compare against</h2>
+  <p class="sub">Measured on a 1,000-point pilot county, so they scale predictably. If your colleague's row counts per point differ from these, the processing differs even when the source product matches.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Dataset</th><th>Rows per 1,000 points</th><th>Values per point</th><th>What drives the count</th></tr></thead>
+    <tbody>
+      <tr><td class="name">embedding</td><td class="num">576,000</td><td class="num">576</td><td>9 years × 64 bands</td></tr>
+      <tr><td class="name">modis_ndvi / modis_qa</td><td class="num">613,974</td><td class="num">614</td><td>one row per 16-day composite since 2000</td></tr>
+      <tr><td class="name">hls_ndvi</td><td class="num">124,375</td><td class="num">124</td><td>130 months, less 5,625 cloud-masked cells</td></tr>
+      <tr><td class="name">smap_sm</td><td class="num">20,022</td><td class="num">426 per cell</td><td>426 ten-day windows × 47 cells</td></tr>
+      <tr><td class="name">eucropmap</td><td class="num">1,998</td><td class="num">2</td><td>2018 and 2022 only</td></tr>
+      <tr><td class="name">soilgrids</td><td class="num">3,818</td><td class="num">4</td><td>clay, sand, SOC, pH</td></tr>
+      <tr><td class="name">srtm</td><td class="num">2,000</td><td class="num">2</td><td>elevation, slope</td></tr>
+      <tr><td class="name">power</td><td class="num">117,264</td><td class="num">7 × 16,756 days</td><td>per cell: 7 variables, 1981→present</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2>Gotchas that make identical sources look different</h2>
+  <div class="grid2">
+    <div class="card warn">
+      <h3>Masked pixels disappear as rows</h3>
+      <p>Earth Engine omits a masked pixel entirely rather than returning NaN, so "0 % missing" overstates coverage. Compare row counts against points × dates — that is how the 5,625 missing HLS months were found.</p>
+    </div>
+    <div class="card warn">
+      <h3>HLS S30 has B8A, not B8</h3>
+      <p>S30 is harmonised to Sentinel-2 apart from the red and red-edge bands. An NDVI computed with B8 is silently wrong; ours uses B8A paired with L30 B5.</p>
+    </div>
+    <div class="card warn">
+      <h3>SMAP is version 008</h3>
+      <p><code>SPL4SMGP/008</code>, not 007. The two are different products and are not interchangeable in a comparison.</p>
+    </div>
+    <div class="card warn">
+      <h3>HRL confidence sentinels</h3>
+      <p><code>253</code> and <code>255</code> sit above any plausible threshold. Treating them as percentages makes every "no cropland" pixel look maximally confident.</p>
+    </div>
+    <div class="card warn">
+      <h3>Two POWER grids</h3>
+      <p>Most variables are on 0.5° × 0.625°; <code>ALLSKY_SFC_SW_DWN</code> is on 1° and starts in 1984, so 1981–1983 solar is genuinely absent rather than zero.</p>
+    </div>
+    <div class="card warn">
+      <h3>Embedding is annual and tiled</h3>
+      <p>One mosaic per year; years present are probed rather than hardcoded, which is how 2025 was found to exist even though the catalogue text stops at 2024.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>What we deliberately do not do</h2>
+  <ul class="tight" style="max-width:66ch">
+    <li>No imputation, interpolation or gap filling — a missing value stays missing.</li>
+    <li>No regridding to a common raster; each dataset keeps its native grid and scale.</li>
+    <li>No confidence, purity or quality filtering at build time. All of it is stored so filters remain reversible choices.</li>
+    <li>No cross-dataset joins baked into the files. <code>cell_id</code> and <code>point_id</code> are the join keys.</li>
+    <li>No synthetic or derived labels beyond the HRL class mapping and geometric derivations (slope, purity, composites).</li>
+  </ul>
+</section>
+
+<footer>
+  Built 14 November 2026 · pipeline committed in <code>crop_rotation</code> · every figure on this page was read from produced files or the live service, not estimated.
+</footer>
+</div>
