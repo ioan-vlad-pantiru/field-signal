@@ -1,34 +1,26 @@
 {
   "App": {
     "name": "Field Signal",
-    "description": "Ajutor pentru alegerea rotației culturilor, pe baza datelor din satelit și a vremii din ultimii 25 de ani."
+    "description": "Ajutor la alegerea rotației, din 25 de ani de date meteo și din satelit."
   },
   "Nav": {
     "label": "Navigare principală",
-    "field": "Câmpul meu",
-    "feed": "Furaje",
-    "stocks": "Stocuri",
-    "about": "Despre",
     "language": "Limba",
-    "languageLabel": "Limba: {current}. Alegeți altă limbă",
-    "account": "Cont",
-    "farm": "Ferma mea"
-  },
-  "Footer": {
-    "credit": "Creat la NASA Space Apps Challenge 2026 · Date: NASA POWER, MODIS, SMAP, SoilGrids",
-    "team": "Echipa Farm Titans"
+    "fields": "Câmpuri",
+    "buyers": "Cumpărători",
+    "more": "Mai mult",
+    "home": "Field Signal, prima pagină"
   },
   "Banner": {
     "title": "Date demonstrative",
-    "text": "Cifrele de mai jos sunt inventate pentru demonstrație. Nu luați decizii pe baza lor.",
-    "offline": "Serverul nu răspunde, așa că afișăm datele incluse în aplicație."
+    "text": "Aceste cifre sunt doar pentru demonstrație. Nu luați decizii pe baza lor.",
+    "offline": "Serverul nu răspunde, așa că vedeți datele incluse în aplicație."
   },
   "Common": {
     "verifyAgronomist": "Verificați cu un agronom",
-    "close": "Închide",
+    "close": "Închideți",
     "sequence": "Ordinea culturilor",
     "errorTitle": "Nu am putut încărca rezultatele",
-    "errorText": "Cererea nu a fost acceptată. Verificați datele introduse și încercați din nou.",
     "retry": "Încercați din nou"
   },
   "Status": {
@@ -65,246 +57,102 @@
     "seasons": "sezoane"
   },
   "Field": {
-    "steps": {
-      "label": "Pași",
-      "field": "Câmp",
-      "rotation": "Rotație",
-      "priorities": "Priorități"
-    },
-    "field": {
-      "title": "Alegeți câmpul",
-      "hint": "Găsiți locul, apoi atingeți parcelele câmpului pe hartă."
-    },
+    "mapLabel": "Hartă: atingeți parcelele câmpului",
+    "mapUnavailable": "Harta nu merge în acest browser. Încercați alt browser sau alt dispozitiv.",
+    "coordinates": "{lat}° N · {lon}° E",
+    "pinned": "Locul marcat: {place}",
+    "toFields": "Înapoi la câmpurile mele",
     "search": {
-      "label": "Căutați comuna",
-      "placeholder": "De exemplu Aiud",
-      "none": "Nu există o comună cu acest nume în zona acoperită.",
-      "results": "{count, plural, one {1 comună găsită} few {# comune găsite} other {# de comune găsite}}"
+      "label": "Căutați o comună",
+      "placeholder": "Căutați o comună",
+      "none": "Nicio comună cu acest nume aici.",
+      "results": "{count, plural, one {o comună} few {# comune} other {# de comune}}"
     },
     "locate": {
       "button": "Folosiți locația mea",
-      "busy": "Vă căutăm locația…",
-      "failed": "Locația dumneavoastră nu este disponibilă. Căutați comuna în schimb."
+      "busy": "Vă căutăm…",
+      "failed": "Locația nu e disponibilă. Căutați comuna."
     },
     "basemap": {
-      "label": "Vedere hartă",
-      "satellite": "Satelit",
-      "map": "Hartă"
+      "satellite": "Afișați satelitul",
+      "map": "Afișați harta"
     },
-    "draw": {
-      "yourField": "Câmpul dumneavoastră",
-      "area": "{ha} ha"
-    },
-    "mapLabel": "Hartă pentru desenarea câmpului",
-    "mapUnavailable": "Harta nu poate fi afișată în acest browser, deci câmpul nu poate fi desenat aici. Vă rugăm să încercați alt browser sau alt dispozitiv.",
-    "coordinates": "{lat}° N · {lon}° E",
-    "needField": "Alegeți parcelele câmpului pe hartă pentru a continua.",
-    "pinnedFromFeed": "Locul vine din ecranul Furaje: {place}",
+    "area": "{ha} ha",
+    "needField": "Atingeți parcelele câmpului",
     "continue": "Continuați",
-    "back": "Înapoi",
-    "rotation": {
-      "title": "Ce cultivați aici?",
-      "hint": "Rotația de pe acest câmp, an după an.",
-      "presets": "Rotații obișnuite",
-      "change": "Anul {n}: {crop}. Schimbați cultura",
-      "changeShort": "Schimbați",
-      "addYear": "Adăugați un an",
-      "pickerLabel": "Cultura pentru anul {n}",
-      "limits": "Între {min} și {max} ani."
-    },
-    "year": "Anul {n}",
-    "removeCrop": "Scoateți {crop} din anul {n}",
-    "rotationFull": "Rotația are {max} ani, cel mai mult pe care îl comparăm. Scoateți un an ca să adăugați altul.",
-    "prioritiesTitle": "Ce contează pentru dumneavoastră?",
-    "prioritiesHint": "Spuneți cât contează fiecare. După asta ordonăm rotațiile.",
-    "level": {
-      "less": "Mai puțin",
-      "matters": "Contează",
-      "most": "Cel mai mult"
-    },
-    "priority": {
-      "yield": {
-        "label": "Recoltă sigură",
-        "hint": "Producție cât mai constantă de la an la an"
-      },
-      "water": {
-        "label": "Apă",
-        "hint": "Culturi care se descurcă în veri secetoase"
-      },
-      "soil": {
-        "label": "Sănătatea solului",
-        "hint": "Mai multă materie organică, sol acoperit iarna"
-      },
-      "risk": {
-        "label": "Risc mic",
-        "hint": "Cât mai puțini ani slabi"
-      }
-    },
-    "irrigatedTitle": "Câmpul este irigat",
-    "irrigatedHint": "Activați dacă puteți uda culturile vara.",
-    "analyze": "Arătați-mi cele 25 de sezoane",
-    "saved": {
-      "near": "Continuați cu câmpul de lângă {place}, {ha} ha",
-      "noPlace": "Continuați cu câmpul de {ha} ha",
-      "resume": "Continuați",
-      "forget": "Câmp nou"
+    "analyze": "Vedeți 25 de sezoane",
+    "assistantField": "Câmpul meu",
+    "parcel": {
+      "mapHint": "Atingeți parcelele dvs.",
+      "zoomHint": "Măriți ca să vedeți parcelele",
+      "brushHint": "Trageți peste parcele",
+      "brush": "Selectare prin tragere",
+      "selected": "{count, plural, one {# parcelă} few {# parcele} other {# de parcele}} · {ha} ha",
+      "use": "Folosiți ca un câmp",
+      "joining": "Le unim…",
+      "separate": "Fiecare separat",
+      "clear": "Deselectați",
+      "restart": "Alegeți din nou",
+      "tooSmall": "Doar {ha} ha. Un câmp are nevoie de cel puțin {min} ha.",
+      "tooBig": "{ha} ha depășește {max} ha. Alegeți mai puține.",
+      "failed": "Nu le-am putut uni. Încercați din nou.",
+      "separateSmall": "{count, plural, one {O parcelă are} few {# parcele au} other {# de parcele au}} sub {min} ha și rămân alese.",
+      "separateFull": "Cel mult {max} câmpuri odată."
     },
     "multi": {
-      "addAnother": "Adăugați încă un câmp",
-      "addAnotherHint": "Păstrează acest câmp și începe următorul. Toate câmpurile se analizează împreună.",
-      "listTitle": "{count, plural, one {# câmp păstrat} few {# câmpuri păstrate} other {# de câmpuri păstrate}} · {ha} ha",
+      "count": "{count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}}",
+      "listTitle": "Câmpurile din această analiză",
       "fieldN": "Câmpul {n}",
       "fieldNear": "Câmpul {n} · {place}",
-      "area": "{ha} ha",
+      "area": "{ha} ha",
       "edit": "Modificați",
       "remove": "Scoateți",
       "editLabel": "Modificați {field}",
       "removeLabel": "Scoateți {field}",
+      "addAnother": "Adăugați încă un câmp",
       "continueWith": "Continuați cu {count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}}",
-      "analyze": "Arătați-mi cele 25 de sezoane pentru {count, plural, few {# câmpuri} other {# de câmpuri}}",
-      "editing": "Acum modificați: {field}"
+      "analyze": "Vedeți 25 de sezoane pentru {count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}}"
+    },
+    "setup": {
+      "title": "Câmpul dvs.",
+      "titleMany": "{count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}}",
+      "rotation": "Culturile, an de an",
+      "change": "Anul {n}: {crop}. Schimbați",
+      "remove": "Scoateți {crop} din anul {n}",
+      "addYear": "Adăugați un an",
+      "pickerLabel": "Cultura din anul {n}",
+      "presets": "Rotații obișnuite",
+      "priorities": "Ce contează cel mai mult",
+      "priority": {
+        "yield": "Recoltă constantă",
+        "water": "Rezistă la secetă",
+        "soil": "Sănătatea solului",
+        "risk": "Mai puțini ani slabi"
+      },
+      "fineTune": "Mai multe opțiuni",
+      "simple": "Simplu",
+      "level": {
+        "less": "Puțin",
+        "matters": "Contează",
+        "most": "Cel mai mult"
+      },
+      "irrigated": "Câmpul este irigat"
     },
     "save": {
-      "title": "Salvați acest câmp",
-      "nameLabel": "Numele câmpului",
+      "nameLabel": "Nume (opțional)",
       "namePlaceholder": "de ex. În spatele grajdului",
-      "save": "Salvați în câmpurile mele",
+      "save": "Salvați",
       "update": "Salvați modificările",
       "saving": "Se salvează…",
-      "savedAs": "Salvat în Câmpurile mele ca „{name}”",
-      "inMyFields": "În Câmpurile mele · modificări nesalvate",
-      "signIn": "Conectați-vă",
-      "signInHint": "ca să salvați acest câmp în cont.",
-      "nameNeeded": "Dați întâi un nume câmpului.",
+      "saved": "Salvat",
+      "signIn": "Intrați în cont ca să salvați câmpul",
+      "nameNeeded": "Dați mai întâi un nume câmpului.",
       "failed": "Nu s-a putut salva. Încercați din nou."
-    },
-    "assistantField": "Câmpul meu",
-    "parcel": {
-      "hint": "Atingeți parcelele ca să le selectați sau porniți „Selectare prin tragere” ca să selectați mai multe deodată. Apoi folosiți-le ca un singur câmp (nu trebuie să se atingă) sau adăugați-le ca câmpuri separate. Acestea sunt parcelele declarate la APIA.",
-      "mapHint": "Atingeți parcelele dumneavoastră",
-      "selected": "{count, plural, one {# parcelă selectată} few {# parcele selectate} other {# de parcele selectate}} · {ha} ha",
-      "use": "Folosiți ca un câmp",
-      "joining": "Unim parcelele…",
-      "clear": "Anulați selecția",
-      "tooSmall": "Împreună au {ha} ha. Un câmp are nevoie de cel puțin {min} ha: atingeți și parcelele de lângă.",
-      "tooBig": "Au {ha} ha, peste {max} ha. Selectați mai puține parcele.",
-      "failed": "Parcelele nu au putut fi unite. Încercați din nou.",
-      "brush": "Selectați trăgând",
-      "brushHint": "Trageți peste parcelele dumneavoastră",
-      "brushHelp": "Trageți peste parcelele dumneavoastră ca să le selectați. Începeți pe o parcelă verde ca să o deselectați. Mutați harta cu două degete sau opriți „Selectați trăgând”.",
-      "separate": "Adăugați fiecare ca solă separată",
-      "separateSmall": "{count, plural, one {O parcelă are} few {# parcele au} other {# de parcele au}} sub {min} ha, prea puțin pentru o solă separată: au rămas selectate. Folosiți-le împreună ca un câmp sau cu parcelele vecine.",
-      "separateFull": "Puteți analiza cel mult {max} câmpuri deodată. Parcelele rămase sunt încă selectate.",
-      "zoomHint": "Măriți harta ca să vedeți parcelele",
-      "zoomHelp": "Măriți harta pe ferma dumneavoastră ca să vedeți parcelele declarate la APIA, apoi atingeți-le pe ale dumneavoastră. Deocamdată contururile parcelelor sunt disponibile pentru județul Alba.",
-      "restart": "Alegeți alte parcele"
     }
   },
   "Results": {
-    "back": "Schimbați câmpul sau rotația",
-    "print": "Tipăriți",
-    "copyLink": "Copiați linkul",
-    "linkCopied": "Linkul a fost copiat",
-    "copyFailed": "Nu am putut copia. Adresa se află în bara browserului.",
-    "actions": "Acțiuni pentru pagină",
     "period": "{start}–{end}",
     "area": "{ha} ha",
-    "meta": "{area} · sezoanele {period}",
-    "metaNoArea": "Sezoanele {period}",
-    "loading": "Citim 25 de ani de date pentru acest loc…",
-    "loadingSteps": {
-      "weather": "Căldura și ploaia din fiecare sezon",
-      "vegetation": "Cât de verzi au fost culturile, din satelit",
-      "soil": "Solul și apa din sol"
-    },
-    "nav": {
-      "label": "Pe această pagină",
-      "shift": "Schimbări",
-      "rotations": "Rotații",
-      "plan": "Plan",
-      "evidence": "Dovezi"
-    },
-    "verdict": {
-      "fewer": "Cu rotația „{name}” ați fi avut <b>{best, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} în loc de {current}</b> din {start} încoace.",
-      "same": "„{name}” se potrivește cel mai bine priorităților dumneavoastră. Din {start} ar fi avut <b>{count, plural, =0 {niciun sezon slab} one {# sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}</b>, la fel ca rotația actuală.",
-      "more": "Rotația „{name}” se potrivește cel mai bine priorităților dumneavoastră, deși din {start} ar fi avut <b>{best, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} față de {current}</b> cu rotația de acum.",
-      "keep": "Rotația dumneavoastră de acum se potrivește deja cel mai bine priorităților. Din {start} a avut <b>{count, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}</b>.",
-      "fit": "Se potrivește priorităților dumneavoastră: {best} din 100; rotația de acum: {current}",
-      "fitKeep": "Se potrivește priorităților dumneavoastră: {score} din 100",
-      "seeRotations": "Comparați rotațiile",
-      "fewerNone": "Cu rotația „{name}” nu ați fi avut <b>niciun sezon slab</b> din {start} încoace, față de <b>{current}</b> cu rotația de acum.",
-      "keepNone": "Rotația dumneavoastră de acum se potrivește deja cel mai bine priorităților. Din {start} nu a avut <b>niciun sezon slab</b>."
-    },
-    "shift": {
-      "title": "Ce s-a schimbat în acest loc",
-      "hint": "Media ultimilor cinci ani cu date față de primii zece. Sunt măsurători în acest loc, nu cauze.",
-      "statement": "{recent} în medie în {recentStart}–{recentEnd}, față de {early} în {earlyStart}–{earlyEnd}.",
-      "up": "Mai mult în ultimii ani",
-      "down": "Mai puțin în ultimii ani",
-      "steady": "Cam la fel",
-      "sparklineLabel": "{name} în fiecare an, {from}–{to}"
-    },
-    "rotations": {
-      "title": "Rotațiile comparate",
-      "hint": "Cea mai potrivită este prima. Fiecare pătrat este un sezon, din {start} până în {end}. Alegeți un an ca să vedeți toate cele trei rotații în acel an.",
-      "hintPhone": "Cea mai potrivită este prima. Fiecare pătrat este un sezon, din {start} până în {end}. Atingeți o rotație ca să vedeți fiecare an.",
-      "current": "Rotația de acum",
-      "best": "Cea mai potrivită",
-      "shown": "Afișată pe pagină",
-      "score": "{score} din 100",
-      "scoreLabel": "Potrivire cu prioritățile dumneavoastră",
-      "poor": "{count, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} din {start}",
-      "poorShort": "{count, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}",
-      "stripLabel": "{name}: {poor}",
-      "cellLabel": "{year}, {crop}: {status}, dovezi {evidence}",
-      "openYears": "Vedeți fiecare an pentru {name}",
-      "showDetails": "De ce această rotație",
-      "hideDetails": "Ascundeți explicația",
-      "yearTitle": "Sezonul {year}",
-      "closeYear": "Închideți sezonul {year}",
-      "yearsSheetTitle": "Fiecare sezon, cele mai noi primele",
-      "evidence": {
-        "high": "solide",
-        "medium": "medii",
-        "low": "slabe"
-      },
-      "evidenceLine": "Dovezi: {level}",
-      "weakEvidence": "Dovezi slabe (înainte de 2015)",
-      "noReasons": "Nimic deosebit în datele acestui sezon.",
-      "legend": "Legendă",
-      "range": "Probabil între {low} și {high}",
-      "breakdown": {
-        "yield_stability": "Recoltă constantă",
-        "water": "Apă",
-        "soil_health": "Sănătatea solului",
-        "low_risk": "Risc mic"
-      },
-      "year": "Sezonul"
-    },
-    "explain": {
-      "why": "Pe scurt",
-      "evidence": "Ce arată datele",
-      "source": "Sursa: {source}",
-      "benefits": "Avantaje",
-      "gaps": "Ce nu știm",
-      "risks": "Riscuri de verificat local",
-      "generatedBy": {
-        "template": "Text generat după un șablon, din valorile calculate mai sus.",
-        "llm": "Text scris de un model AI doar din valorile calculate mai sus."
-      }
-    },
-    "planTitle": "Ce cultivați și unde",
-    "planHint": "Câmpul împărțit în parcele, câte una pentru fiecare an al rotației. Așa aveți în fiecare an toate culturile din plan.",
-    "planRotation": "Rotația afișată",
-    "evidence": {
-      "title": "Dovezi",
-      "hint": "Măsurătorile din spatele rezultatelor, cu sursele lor.",
-      "show": "Vedeți dovezile",
-      "indicatorsTitle": "Măsurat în acest loc",
-      "indicatorsHint": "Ultimul an comparat cu media anilor. Linia punctată este media.",
-      "caveatsTitle": "De reținut",
-      "sourcesTitle": "Surse de date"
-    },
     "indicator": {
       "noComparison": "Nu avem destule date pentru comparație",
       "nearNormal": "Aproape de medie",
@@ -317,7 +165,6 @@
       "sparklineLabel": "Evoluția pentru {name}, {from}–{to}"
     },
     "soil": {
-      "title": "Solul",
       "depth": "Stratul de la suprafață ({depth})",
       "whatIs": "Ce înseamnă: {term}",
       "mix": "{clay}% argilă · {sand}% nisip · {silt}% praf",
@@ -334,30 +181,14 @@
         "help": "Amestecul de argilă, nisip și praf. Solurile argiloase țin apa mai mult, cele nisipoase se usucă repede."
       }
     },
-    "plan": {
-      "season": "Sezonul (anul recoltei)",
-      "previous": "Sezonul anterior",
-      "next": "Sezonul următor",
-      "play": "Arată anii",
-      "pause": "Oprește",
-      "mapLabel": "Câmpul dumneavoastră în {year}: {crop}",
-      "mapUnavailable": "Harta nu poate fi afișată în acest browser. Sezoanele de mai jos conțin în continuare tot planul.",
-      "seasons": "Sezoanele rotației pe acest câmp",
-      "noteField": "Câmpul dumneavoastră, {area} ha, din parcelele APIA. În fiecare sezon tot câmpul are cultura acelui an; planul se repetă la fiecare {years} ani.",
-      "notePin": "Cercul marchează punctul ales; desenați conturul câmpului ca să vedeți forma lui reală. În fiecare sezon tot câmpul are cultura acelui an; planul se repetă la fiecare {years} ani."
-    },
-    "fields": {
-      "title": "{count, plural, few {# câmpuri} other {# de câmpuri}} · {ha} ha în total",
-      "area": "{ha} ha",
-      "keep": "Rotația dvs. e cea mai bună",
-      "best": "Cea mai bună: „{name}”",
-      "all": "Toate câmpurile",
-      "allHint": "Hartă și rezumat"
+    "shift": {
+      "statement": "{recent} în medie în {recentStart}–{recentEnd}, față de {early} în {earlyStart}–{earlyEnd}.",
+      "up": "Mai mult în ultimii ani",
+      "down": "Mai puțin în ultimii ani",
+      "steady": "Cam la fel",
+      "sparklineLabel": "{name} în fiecare an, {from}–{to}"
     },
     "overview": {
-      "title": "{count} câmpuri",
-      "summary": "Pe {count} din {total} câmpuri o altă rotație ar fi avut mai puține sezoane slabe ({ha} ha).",
-      "summaryNone": "Rotațiile dumneavoastră merg deja la fel de bine ca oricare comparată, pe toate cele {ha} ha.",
       "mapLabel": "Harta celor {count} câmpuri analizate, colorate după rezultat",
       "legendFewer": "O altă rotație a avut mai puține sezoane slabe",
       "legendOther": "O altă rotație se potrivește mai bine priorităților",
@@ -365,41 +196,132 @@
       "area": "{ha} ha",
       "rowBest": "Cea mai bună: „{name}” · {best, plural, =0 {niciun sezon slab} one {# sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} în loc de {current}",
       "rowKeep": "Rotația dumneavoastră este cea mai bună · {poor, plural, =0 {niciun sezon slab} one {# sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}",
-      "open": "Vedeți câmpul"
+      "title": "{count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}}",
+      "open": "Deschideți",
+      "summary": "Altă rotație a mers mai bine pe {count} din {total, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}} ({ha} ha).",
+      "summaryNone": "Rotațiile dumneavoastră merg deja cât oricare dintre cele comparate ({ha} ha)."
+    },
+    "rotations": {
+      "stripLabel": "{name}: {poor}",
+      "poor": "{count, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} din {start}",
+      "poorShort": "{count, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}",
+      "scoreLabel": "Potrivire cu prioritățile dumneavoastră",
+      "best": "Cea mai potrivită",
+      "current": "Rotația de acum",
+      "breakdown": {
+        "yield_stability": "Recoltă constantă",
+        "water": "Apă",
+        "soil_health": "Sănătatea solului",
+        "low_risk": "Risc mic"
+      },
+      "weakEvidence": "Dovezi slabe (înainte de 2015)",
+      "title": "Rotații",
+      "legend": "Cum citiți sezoanele",
+      "dot": "Rotația {n} din {total}",
+      "of100": "din 100",
+      "scoreLine": "Potrivire {score} din 100 · probabil {low}–{high}"
+    },
+    "explain": {
+      "source": "Sursa: {source}",
+      "generatedBy": {
+        "template": "Text generat după un șablon, din valorile calculate mai sus.",
+        "llm": "Text scris de un model AI doar din valorile calculate mai sus."
+      },
+      "why": "De ce",
+      "evidence": "Dovezi",
+      "benefits": "Avantaje",
+      "gaps": "Ce nu știm",
+      "risks": "Riscuri",
+      "seasons": "Sezon cu sezon",
+      "data": "Datele din spate",
+      "simulator": "Vedeți-o pe un câmp"
+    },
+    "plan": {
+      "previous": "Sezonul anterior",
+      "next": "Sezonul următor",
+      "pause": "Pauză",
+      "mapLabel": "Câmpul dumneavoastră în {year}: {crop}",
+      "mapUnavailable": "Harta nu poate fi afișată în acest browser. Sezoanele de mai jos conțin tot planul.",
+      "play": "Derulați sezoanele",
+      "season": "Sezonul (anul recoltei)",
+      "plot": "Parcela",
+      "notFarmland": "Nu se cultivă: {ha} ha ({reasons})",
+      "hexScale": "1 hexagon = 1 ha",
+      "reason": {
+        "road": "drum",
+        "building": "clădiri",
+        "water": "apă",
+        "woods": "pădure",
+        "built_up": "zonă construită"
+      }
+    },
+    "back": "Schimbați câmpul sau culturile",
+    "share": "Trimiteți sau tipăriți",
+    "shareTitle": "Trimiteți acest plan",
+    "copyLink": "Copiați linkul",
+    "linkCopied": "Link copiat",
+    "copyFailed": "Nu s-a putut copia. Linkul e în bara de adrese.",
+    "print": "Tipăriți o pagină",
+    "meta": "{area} · {period}",
+    "loading": "Citim 25 de sezoane pentru acest câmp…",
+    "planTitle": "Câmpul dvs., sezon cu sezon",
+    "verdict": {
+      "label": "Cel mai potrivit pentru acest câmp",
+      "keep": "<b>Păstrați rotația.</b> Se potrivește cel mai bine acestui câmp.",
+      "fewer": "Treceți la {name}: <b>{best, plural, one {# sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}</b> în loc de {current} din {start}.",
+      "fewerNone": "Treceți la {name}: <b>niciun sezon slab</b> în loc de {current} din {start}.",
+      "same": "<b>{name}</b> se potrivește cel mai bine priorităților dvs., cu tot atâtea sezoane slabe.",
+      "more": "<b>{name}</b> se potrivește cel mai bine priorităților, dar a avut {best, plural, one {# sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}, nu {current}, din {start}.",
+      "risk": "Riscul principal acum: {risk}. A lovit {count, plural, one {un sezon} few {# sezoane} other {# de sezoane}} din rotația actuală.",
+      "noRisk": "Niciun risc meteo nu iese în evidență.",
+      "data": "Datele din spate"
+    },
+    "evidence": {
+      "title": "Datele din spate",
+      "period": "Sezoanele {start}–{end}",
+      "changed": "Ce s-a schimbat aici",
+      "measured": "Măsurat aici",
+      "soil": "Solul",
+      "caveats": "De reținut",
+      "terms": "Termeni folosiți",
+      "sources": "Surse"
+    },
+    "fields": {
+      "label": "Câmpurile din această analiză",
+      "all": "Toate câmpurile"
+    },
+    "save": {
+      "save": "Salvați câmpul",
+      "title": "Salvați acest câmp",
+      "nameLabel": "Nume",
+      "confirm": "Salvați",
+      "saving": "Se salvează…",
+      "saved": "Salvat ca „{name}”",
+      "updated": "„{name}” actualizat",
+      "toFields": "Mergeți la câmpurile mele",
+      "signIn": "Intrați în cont",
+      "signInWhy": "Intrați în cont ca să păstrați câmpul și răspunsul pe orice dispozitiv.",
+      "failed": "Nu s-a putut salva. Încercați din nou."
     }
   },
   "Optimizer": {
-    "title": "Planul fermei",
-    "hint": "Toate câmpurile dumneavoastră, planificate împreună și testate pe vremea din anii trecuți.",
-    "loading": "Rulăm modelul culturilor pe câmpurile tale…",
-    "loadingHint": "Rulează în fundal: între timp poți citi rezultatele fiecărui câmp de mai sus.",
-    "loadingBackground": "Încă rulează ({s} s). Rulează în fundal: restul paginii funcționează între timp.",
-    "error": "Planul fermei nu a putut fi făcut de această dată. Rezultatele fiecărui câmp de mai sus nu sunt afectate.",
-    "invalid": "Aceste câmpuri nu au putut fi planificate: un câmp este în afara zonei acoperite, este prea mare sau conturul lui nu este valid. Rezultatele fiecărui câmp de mai sus nu sunt afectate.",
     "meta": "Plan pe {years} ani · {ha} ha · {count, plural, one {o fereastră meteo din trecut} few {# ferestre meteo din trecut} other {# de ferestre meteo din trecut}}, sezoanele {first}–{last} · {model}",
-    "none": "Nu s-a găsit niciun plan pentru aceste câmpuri. Vedeți notele de mai jos.",
-    "best": "Cea mai bună soluție găsită",
-    "bestOptimal": "Cea mai bună soluție găsită, optimă pentru model",
-    "alternative": "Alternativa {n}",
-    "of100": "din 100",
-    "vsCurrent": "{diff} față de rotația de acum",
-    "rangeLabel": "Scor pe vremea din trecut: cel mai rău {low}, tipic {mid}, cel mai bun {high} din 100",
+    "bestCase": "Cea mai bună vreme",
     "worst": "Cea mai rea vreme",
     "typical": "Tipic",
-    "bestCase": "Cea mai bună vreme",
     "window": "sezoanele {start}–{end}",
     "median": "mediana",
     "perField": "Rotațiile pe câmpuri",
-    "perFieldHint": "Fiecare rând este o rotație: o cultură pe an, în această ordine începând cu anul 1. Fiecare câmp păstrează o singură rotație și schimbă cultura în fiecare an, cum cere regula UE de rotație a culturilor (BCAM/GAEC 7).",
     "ha": "{ha} ha",
-    "details": "Părțile scorului, ponderea culturilor și verificarea regulilor",
-    "shares": "Ponderea culturilor în fermă, pe an de plan",
     "year": "Anul {n}",
     "pct": "{value} %",
-    "caveats": "Ce nu vă spune acest plan",
+    "alternative": "Alternativa {n}",
+    "best": "Cea mai bună soluție găsită",
+    "bestOptimal": "Cea mai bună soluție găsită, optimă pentru model",
+    "rangeLabel": "Scor pe vremea din trecut: cel mai rău {low}, tipic {mid}, cel mai bun {high} din 100",
+    "modelName": "modelul de culturi Field Signal{runs, plural, one {} other {, # rulări}}",
     "rules": {
       "title": "Verificarea regulilor",
-      "hint": "Verificări ale culturilor fermei în anul cel mai nefavorabil al planului, după ghidurile APIA 2026. Nu vă spun dacă ferma primește plăți.",
       "max_crop_share": "Cultura principală cel mult {limit} % din fermă",
       "max_two_crops_share": "Primele două culturi cel mult {limit} % împreună",
       "legume_share": "Leguminoase cel puțin {limit} % din fermă",
@@ -408,30 +330,68 @@
       "outside": "În afara limitei",
       "belowThreshold": "Ferma este sub pragul de suprafață al regulii",
       "applied": "Impusă în acest plan",
-      "notApplied": "Neimpusă",
       "unverified": "Neverificată",
       "crop_change": "Cultura se schimbă în fiecare an pe fiecare câmp",
       "metByRotation": "Nu este necesar când cultura se schimbă în fiecare an (rotație, BCAM/GAEC 7)",
       "onlyWithEcoScheme": "Doar dacă aplicați eco-schema PD-04"
     },
-    "retry": "Încearcă din nou",
-    "modelName": "modelul de culturi Field Signal{runs, plural, one {} other {, # rulări}}"
+    "retry": "Încercați din nou",
+    "shares": "Ponderea culturilor în fermă, pe an de plan",
+    "of100": "din 100",
+    "vsCurrent": "{diff} față de acum",
+    "title": "Planul fermei",
+    "loading": "Planificăm toate câmpurile împreună…",
+    "loadingFor": "Încă planificăm ({s} s). Între timp puteți citi restul.",
+    "error": "Planul nu a putut fi făcut de această dată.",
+    "invalid": "Aceste câmpuri nu pot fi planificate împreună (în afara zonei, prea mari sau contur nevalid).",
+    "none": "Nu s-a găsit niciun plan pentru aceste câmpuri.",
+    "summary": "Plan pe {years} ani · {ha} ha, testat pe vremea din trecut",
+    "open": "Vedeți planul",
+    "details": "Părțile scorului, culturi, reguli",
+    "caveats": "Ce nu vă spune planul",
+    "perFieldHint": "Fiecare câmp păstrează o rotație și schimbă cultura în fiecare an, cum cere regula UE de rotație (BCAM/GAEC 7).",
+    "perFieldInfo": "De ce o rotație pe câmp"
   },
   "Feed": {
-    "title": "De unde cumpărați furaje anul acesta",
-    "intro": "Vedeți ce comune vor avea probabil destul porumb, grâu sau orz anul acesta și unde calitatea ar putea fi o problemă.",
-    "loading": "Încărcăm zonele…",
-    "regionLine": "{region} · sezonul {season} · {count} comune",
-    "cropToggle": "Alegeți cultura",
+    "title": "De unde cumpărați furaje",
+    "meta": "{region} · {season} · {count, plural, one {# comună} few {# comune} other {# de comune}}",
+    "loading": "Încărcăm comunele…",
+    "loaded": "{count, plural, one {# comună încărcată} few {# comune încărcate} other {# de comune încărcate}}",
+    "error": "Nu am putut încărca comunele.",
+    "cropToggle": "Cultura",
+    "counts": {
+      "low": "destul",
+      "medium": "la limită",
+      "high": "lipsă"
+    },
+    "summary": {
+      "good": "{count, plural, one {comună ar trebui să aibă} few {comune ar trebui să aibă} other {de comune ar trebui să aibă}} destul {crop}",
+      "watch": "{count, plural, one {comună ar putea avea} few {comune ar putea avea} other {de comune ar putea avea}} mai puțin {crop} decât de obicei",
+      "bad": "{count, plural, one {comună e probabil să nu aibă} few {comune e probabil să nu aibă} other {de comune e probabil să nu aibă}} destul {crop}"
+    },
+    "advice": {
+      "open": "Ce e de făcut",
+      "actions": "Ce e de făcut",
+      "assumptions": "Presupuneri"
+    },
+    "map": {
+      "open": "Hartă",
+      "count": "{count, plural, one {# comună} few {# comune} other {# de comune}}",
+      "close": "Închideți harta"
+    },
+    "mapTitle": "Risc de aprovizionare · {crop}",
     "mapLabel": "Hartă cu riscul de aprovizionare pentru {crop}",
-    "mapUnavailable": "Harta nu poate fi afișată în acest browser. Tabelul comunelor conține aceleași comune și riscuri.",
+    "mapUnavailable": "Harta nu poate fi afișată în acest browser. Lista are aceleași comune.",
     "markerLabel": "{zone}: {risk}",
+    "communes": "Comunele, cele mai sigure întâi",
     "noCropData": "Fără date pentru această cultură",
-    "noZones": "Nu avem încă zone pentru această regiune.",
+    "noZones": "Nu avem încă comune pentru această regiune.",
     "sheetTitle": "{zone} · {crop}",
+    "detailEmpty": "Alegeți o comună ca să vedeți ce o așteaptă.",
+    "closeDetail": "Închideți detaliile",
     "zone": {
       "area": "{ha} ha cultivate",
-      "availability": "Cantitate",
+      "availability": "Disponibilitate",
       "riskScore": "Scor de risc",
       "yieldAnomaly": "Recolta față de normal",
       "anomalyRange": "între {low}% și {high}%",
@@ -450,35 +410,8 @@
       "lowerRiskOther": "Dacă nu cultivați aceeași plantă doi ani la rând, riscul scade de obicei în 3 ani. Comparați rotațiile pentru un câmp din această comună.",
       "compareHere": "Comparați rotațiile aici"
     },
-    "compareTitle": "Comparați două comune",
-    "compareHint": "Care dintre cele două comune bifate e mai sigură pentru cumpărare.",
-    "compare": {
-      "summary": "La {crop}, {a} e mai bună la {winsA} din {total} indicatori, {b} la {winsB}.",
-      "caption": "{a} comparată cu {b}, pentru {crop}",
-      "supplyRisk": "Risc de aprovizionare",
-      "riskScore": "Scor de risc (mai mic e mai bine)",
-      "anomaly": "{mid}% (între {low}% și {high}%)",
-      "area": "Suprafață cultivată",
-      "flagDays": "{observed} zile cu risc, față de {normal} de obicei",
-      "confidence": "Încredere",
-      "better": "mai bine",
-      "note": "„Mai bine” compară doar cele două zone, indicator cu indicator. Toate cifrele sunt estimări cu interval; verificați încrederea fiecărei zone.",
-      "pickTwo": "Bifați două comune în tabel pentru a le compara.",
-      "pickOne": "Bifați încă o comună pentru a o compara cu {zone}.",
-      "measure": "Indicator"
-    },
-    "recommendationTitle": "Recomandare",
-    "assumptions": "Presupuneri",
-    "caveatsTitle": "De reținut",
-    "metaTitle": "Cumpărători de furaje",
-    "actionsTitle": "Ce puteți face",
-    "view": {
-      "label": "Afișați comunele ca",
-      "list": "Listă",
-      "map": "Hartă"
-    },
     "table": {
-      "caption": "Comunele pentru {crop}. Întâi cele cu riscul de aprovizionare cel mai mic, dacă nu sortați după altă coloană.",
+      "caption": "Comunele pentru {crop}, întâi cele cu riscul de aprovizionare cel mai mic.",
       "name": "Comuna",
       "area": "Suprafață",
       "risk": "Risc de aprovizionare",
@@ -491,40 +424,52 @@
       "warnings": "{count, plural, one {# semnal} few {# semnale} other {# de semnale}}",
       "open": "Detalii pentru {zone}"
     },
-    "detailEmpty": "Selectați o comună din tabel sau de pe hartă pentru a vedea recolta, calitatea și apa.",
-    "closeDetail": "Închideți detaliile",
-    "sourcesTitle": "Surse",
-    "adviceLabel": "Recomandarea noastră",
-    "cropQuestion": "Ce cultură cumpărați?",
-    "summary": {
-      "good": "{count, plural, one {comună ar trebui să aibă} few {comune ar trebui să aibă} other {de comune ar trebui să aibă}} destul {crop}",
-      "watch": "{count, plural, one {comună ar putea avea} few {comune ar putea avea} other {de comune ar putea avea}} mai puțin {crop} decât de obicei",
-      "bad": "{count, plural, one {comună e probabil să nu aibă} few {comune e probabil să nu aibă} other {de comune e probabil să nu aibă}} destul {crop}"
+    "compare": {
+      "pill": "Comparați {count}",
+      "pickOne": "Mai bifați una",
+      "clear": "Ștergeți bifele",
+      "title": "Comparație",
+      "subtitle": "{a} și {b} · {crop}",
+      "summary": "La {crop}, {a} e mai bună la {winsA} din {total} indicatori, {b} la {winsB}.",
+      "caption": "{a} comparată cu {b}, pentru {crop}",
+      "supplyRisk": "Risc de aprovizionare",
+      "riskScore": "Scor de risc (mai mic e mai bine)",
+      "anomaly": "{mid}% (între {low}% și {high}%)",
+      "area": "Suprafață cultivată",
+      "flagDays": "{observed} zile cu risc, față de {normal} de obicei",
+      "confidence": "Încredere",
+      "better": "mai bine",
+      "note": "„Mai bine” compară doar aceste două comune, indicator cu indicator. Toate cifrele sunt estimări cu interval."
     },
-    "listTitle": "Toate comunele, cele mai sigure primele",
-    "listHint": "Atingeți o comună ca să vedeți de ce. Bifați două ca să le comparați."
+    "track": {
+      "row": "Cât am nimerit",
+      "value": "{hits} din {total} sezoane estimate corect",
+      "summary": "din {total} ani trecuți estimați corect",
+      "cropSummary": "{hits} din {total} corect",
+      "hit": "Estimat corect",
+      "miss": "Ratat",
+      "seasonLabel": "{season}: {risk}, recolta {anomaly} față de tendință. {result}.",
+      "honest": "Arătăm intenționat și anii ratați: niciun scor de risc nu nimerește fiecare an."
+    },
+    "about": {
+      "row": "Despre date",
+      "caveats": "De reținut",
+      "sources": "Surse"
+    }
   },
   "About": {
-    "title": "Despre Field Signal",
-    "intro": "Field Signal pune la un loc 25 de ani de date despre vreme, umiditatea solului și starea vegetației, ca să vedeți cum s-ar fi descurcat diferite rotații pe câmpul dumneavoastră.",
-    "judgment": "Instrumentul sprijină judecata fermierului. Nu o înlocuiește.",
-    "whatTitle": "Ce face",
-    "what": {
-      "farmer": "Pentru fermieri: compară rotația de acum cu două alternative (cel puțin una cu mazăre) și arată, an de an, cum ar fi mers fiecare.",
-      "buyer": "Pentru cumpărătorii de furaje: arată pe comune riscul de a nu găsi destulă recoltă, riscurile de calitate (aflatoxine, fuzarioză, ploi la recoltare) și impactul asupra mediului.",
-      "transparency": "Fiecare cifră are sursa, perioada, presupunerile și nivelul de încredere lângă ea."
-    },
-    "sourcesTitle": "Datele folosite",
-    "sourcesHint": "Date publice. Rezoluția arată cât de mare este „pixelul” fiecărei surse.",
-    "table": {
-      "dataset": "Sursa",
-      "use": "La ce o folosim",
-      "resolution": "Rezoluție",
-      "period": "Perioadă",
-      "nasaData": "Date NASA",
-      "otherData": "Altă sursă publică"
+    "title": "Despre și date",
+    "lead": "25 de sezoane de vreme, sol și imagini din satelit, refăcute pe câmpul dumneavoastră.",
+    "how": {
+      "title": "Cum funcționează",
+      "text": "Alegeți câmpul și spuneți ce cultivați. Refacem pe el fiecare sezon din 2001 încoace, cu secete și primăveri ploioase cu tot, și comparăm rotația dumneavoastră cu alte două, dintre care cel puțin una cu mazăre. Cumpărătorii de furaje văd aceleași semnale, comună cu comună.",
+      "judgment": "Arată ce ar fi adus sezoanele trecute. Decizia rămâne a dumneavoastră; pașii riscanți merită discutați cu un agronom."
     },
     "sources": {
+      "title": "Surse de date",
+      "nasa": "NASA",
+      "other": "Altă sursă publică",
+      "note": "Folosim date publice, gratuite, de la NASA și de la alte instituții. NASA nu este partener și nu susține acest instrument.",
       "power": "Căldură, ploaie și umezeala aerului, zi de zi",
       "modis": "Cât de verde și viguroasă este vegetația (NDVI)",
       "smap": "Apa din sol, în zona rădăcinilor",
@@ -532,31 +477,26 @@
       "eucropmap": "Ce culturi sunt unde, pentru suprafețe pe comună",
       "ins": "Producții oficiale pe județ, pentru verificarea modelului"
     },
-    "aiTitle": "Rolul inteligenței artificiale",
+    "glossaryTitle": "Glosar",
     "ai": {
+      "title": "Inteligența artificială",
       "modelTitle": "Modelul de risc",
       "model": "Un model mic estimează șansa unui an slab pentru fiecare zonă și cultură, din semnalele de vreme și vegetație din perioadele critice. Îl testăm lăsând deoparte câte un an și publicăm și reușitele, și greșelile.",
       "textTitle": "Explicațiile",
       "text": "Un model de limbaj transformă cifrele calculate în text simplu. Are voie să folosească doar valorile calculate de noi și un format fix."
     },
-    "limitsTitle": "Ce nu poate vedea",
     "limits": {
+      "title": "Ce nu poate vedea",
       "hail": "Grindina și alte fenomene locale de scurtă durată.",
       "pests": "Dăunătorii și bolile din câmpul dumneavoastră.",
       "markets": "Prețurile și piețele.",
       "management": "Lucrările, hibrizii și îngrășămintele folosite de dumneavoastră.",
       "scale": "Datele de vreme descriu o zonă de zeci de kilometri, nu exact parcela."
     },
-    "demoTitle": "Despre datele din demonstrație",
-    "demo": "În această versiune, cifrele sunt demonstrative. Le marcăm clar cu „Date demonstrative” până când legăm datele reale.",
-    "judgmentDetail": "Arată ce s-ar fi întâmplat în anii trecuți. Decizia pentru câmpul dumneavoastră rămâne a dumneavoastră.",
-    "whatCards": {
-      "farmer": "Pentru fermieri",
-      "buyer": "Pentru cumpărătorii de furaje",
-      "transparency": "Totul la vedere"
-    },
-    "nasaNote": "Folosim date publice, gratuite, publicate de NASA și de alte instituții. NASA nu este partener și nu susține acest instrument.",
-    "aiHint": "Inteligența artificială face două lucruri mici și verificabile. Nu ia decizii în locul dumneavoastră."
+    "demo": {
+      "title": "Date demonstrative",
+      "text": "Acolo unde încă nu avem date reale, arătăm cifre demonstrative și le marcăm mereu cu „Date demonstrative”."
+    }
   },
   "CropsShort": {
     "maize": "Porumb",
@@ -573,10 +513,9 @@
   "Simulator": {
     "eyebrow": "Simulator de câmp",
     "backToField": "Înapoi la câmpul meu",
-    "title": "Vedeți rotația pe un câmp",
-    "intro": "Un tractor mic seamănă fiecare cultură din rotație, câmpul crește și se recoltează, apoi urmează cultura următoare. Maroniul înseamnă sol gol; verdele înseamnă câmp acoperit.",
-    "banner": "Ilustrație — nu este un plan de lucru pentru utilaj.",
-    "demoNote": "Rotații demo și un câmp demo lângă Aiud. Lunile de semănat și recoltat sunt cele obișnuite în județul Alba; ale dumneavoastră pot fi altele.",
+    "title": "Rotația pe un câmp",
+    "intro": "Fiecare cultură semănată, crescută și recoltată, sezon după sezon.",
+    "demoNote": "O ilustrație, nu un plan de lucru. Un câmp demo lângă Aiud; lunile de semănat și recoltat sunt cele obișnuite în județul Alba, ale dumneavoastră pot fi altele.",
     "strategyLabel": "Rotația",
     "shapeLabel": "Forma câmpului",
     "shape": {
@@ -584,7 +523,7 @@
       "irregular": "Neregulată"
     },
     "loading": "Se încarcă câmpul 3D…",
-    "noWebgl": "3D nu funcționează pe acest dispozitiv, așa că vedeți același câmp de sus, în plan.",
+    "noWebgl": "3D nu funcționează pe acest dispozitiv, așa că vedeți același câmp de sus.",
     "year": "Anul {n}",
     "valueText": "{year}, {crop}: {phase}, {month}",
     "phase": {
@@ -597,17 +536,16 @@
       "stubble": "Miriște după recoltare"
     },
     "controls": {
-      "play": "Pornește",
+      "play": "Porniți",
       "pause": "Pauză",
       "restart": "De la început",
       "prev": "Pasul anterior",
       "next": "Pasul următor",
-      "prevShort": "Înapoi",
-      "nextShort": "Înainte",
       "speed": "Viteză",
       "scrub": "Cronologie",
       "camera": "Cameră",
-      "keys": "Taste: Spațiu pornește sau oprește · ← → pas · 1 2 4 viteză · R de la început · C cameră"
+      "keys": "Spațiu pornește sau oprește · ← → pas · 1 2 4 viteză · R de la început · C cameră",
+      "keysLabel": "Scurtături de tastatură"
     },
     "camera": {
       "overview": "Ansamblu",
@@ -630,129 +568,67 @@
       "scale": "Lunile la scară"
     },
     "stats": {
-      "title": "Lucrul pe câmp, la o operațiune",
-      "illustrative": "Estimări ilustrative pentru acest câmp demo, nu un plan de lucru.",
+      "title": "Lucrul pe câmp",
+      "illustrative": "Estimări ilustrative pentru acest câmp demo: semănătoare de {width} m, plus {laps} ture pe zona de întoarcere, {work} km/h la lucru și {turn} km/h la întoarceri.",
       "area": "Suprafața",
       "passes": "Treceri",
-      "passesHint": "semănătoare de {width} m, plus {laps} ture pe zona de întoarcere",
       "distance": "Distanță parcursă",
       "time": "Timp de lucru",
-      "timeHint": "{work} km/h la lucru, {turn} km/h la întoarceri",
       "bare": "Luni de sol gol între culturi",
       "seasons": "Cultura în fiecare an"
     },
     "seasonRow": "semănat în {sow}, recoltat în {harvest}",
     "seasonRowCover": "semănat în {sow}, încorporat în sol în {harvest}",
-    "reducedMotion": "Ați cerut mai puțină mișcare, deci câmpul nu se animă. Folosiți Înapoi și Înainte ca să treceți prin fiecare sezon.",
-    "openLink": "Vedeți pe un câmp"
+    "reducedMotion": "Ați cerut mai puțină mișcare, așa că câmpul stă pe loc. Treceți prin sezoane cu săgețile.",
+    "aboutDemo": "Despre această ilustrație"
   },
   "Home": {
     "title": "Ce culturi merg cel mai bine pe câmpul dumneavoastră?",
     "lead": "Refacem ultimele 25 de sezoane pe pământul dumneavoastră, ca să puteți planifica următorul.",
     "start": "Alegeți câmpul",
-    "buyer": {
-      "title": "Cumpărători de furaje",
-      "text": "Vedeți, comună cu comună, unde vor fi probabil porumb, grâu și orz anul acesta și cu ce risc de calitate.",
-      "cta": "Deschideți pagina pentru cumpărători"
-    },
     "imageAlt": "Transilvania văzută din satelit, vara: terenuri agricole în centru, înconjurate de Carpații împăduriți.",
     "imageCredit": "Transilvania, 2 iulie 2025. Imagine: NASA Worldview, MODIS pe satelitul Terra.",
     "sceneNote": "Ilustrație: o vale de exemplu, nu un câmp real.",
-    "proofTitle": "Exemplu: un câmp de lângă {place}",
-    "proofSentence": "{current, plural, =0 {Niciun sezon slab} one {Un sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} cu {currentCrops}. {best, plural, =0 {Niciunul} one {Unul} other {#}} cu {bestCrops}.",
-    "proofHint": "Un pătrat pentru fiecare an. × înseamnă an slab, ! an de urmărit.",
-    "stripLabel": "{name}: {bad, plural, =0 {niciun sezon slab} one {un sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} și {watch, plural, =0 {niciun sezon de urmărit} one {un sezon de urmărit} few {# sezoane de urmărit} other {# de sezoane de urmărit}} din {total}",
-    "current": "Rotația de acum",
+    "proof": {
+      "line": "{current, plural, =0 {Niciun sezon slab} one {Un sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} cu {currentCrops}. {best, plural, =0 {Niciunul} one {Unul} other {#}} cu {bestCrops}.",
+      "stripLabel": "{name}: {bad, plural, =0 {niciun sezon slab} one {un sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} și {watch, plural, =0 {niciun sezon de urmărit} one {un sezon de urmărit} few {# sezoane de urmărit} other {# de sezoane de urmărit}} din {total}",
+      "title": "{seasons} de sezoane lângă {place}",
+      "current": "Rotația de acum",
+      "legend": "× sezon slab · ! sezon de urmărit"
+    },
     "steps": {
-      "field": {
-        "title": "Alegeți câmpul",
-        "text": "Găsiți-l pe harta din satelit și atingeți parcelele."
+      "title": "Cum funcționează",
+      "field": "Atingeți parcelele pe hartă.",
+      "rotation": "Spuneți ce cultivați.",
+      "result": "Comparați trei rotații, sezon cu sezon."
+    },
+    "doors": {
+      "title": "Începeți de aici",
+      "farmer": {
+        "title": "Sunt fermier",
+        "text": "Planificați rotația următoare"
       },
-      "rotation": {
-        "title": "Spuneți ce cultivați",
-        "text": "Culturile și ce contează cel mai mult: recolta, apa, solul sau riscul."
-      },
-      "result": {
-        "title": "Vedeți ce merge mai bine",
-        "text": "25 de sezoane pentru rotația dumneavoastră și alte două."
+      "buyer": {
+        "title": "Cumpăr furaje",
+        "text": "Vedeți unde va fi recolta"
       }
     },
-    "stats": {
-      "seasons": "sezoane verificate, din 2001 până în 2025",
-      "sources": "surse de date publice, inclusiv NASA",
-      "rotations": "rotații puse alături"
-    },
-    "whatTitle": "Ce este Field Signal?",
-    "whatText": "Un instrument pentru fermierii din România. Alegeți câmpul și ne spuneți ce cultivați. Refacem fiecare sezon din 2001 încoace pe el, cu secetele, primăverile ploioase și caniculele, și vă arătăm ce rotație ar fi rezistat cel mai bine.",
-    "whatJudgment": "Construit pe date publice de la sateliții NASA și din înregistrările meteo, verificat cu producțiile oficiale pe județ.",
-    "lookTitle": "Ce urmărim pe câmpul dumneavoastră",
-    "look": {
-      "weather": {
-        "title": "Vremea, zi de zi",
-        "text": "Căldură, ploaie și îngheț din 2001."
-      },
-      "plants": {
-        "title": "Sănătatea plantelor, din spațiu",
-        "text": "Cât de verzi au fost culturile, sezon de sezon."
-      },
-      "water": {
-        "title": "Apa din sol",
-        "text": "Câtă umiditate au avut rădăcinile."
-      },
-      "soil": {
-        "title": "Solul dumneavoastră",
-        "text": "Textură, pH și materie organică."
-      }
-    },
-    "getTitle": "Ce primiți",
-    "get": {
-      "compare": {
-        "title": "Rotația dumneavoastră, an cu an",
-        "text": "Fiecare sezon bun sau slab, marcat pe o singură bandă."
-      },
-      "alternatives": {
-        "title": "Două rotații care au mers mai bine",
-        "text": "Cel puțin una cu mazăre."
-      },
-      "plan": {
-        "title": "Un plan pentru parcele",
-        "text": "Ce cultură merge unde, sezon de sezon."
-      },
-      "ask": {
-        "title": "Răspunsuri la întrebări",
-        "text": "Întrebați simplu, în română sau engleză."
-      }
-    },
-    "stepsTitle": "Cum funcționează",
-    "audienceTitle": "Pentru cine este",
-    "farmer": {
-      "title": "Fermieri",
-      "text": "Planificați sezonul următor cu 25 de ani de sezoane în spate.",
-      "cta": "Alegeți câmpul"
-    },
-    "limitsTitle": "Ce nu poate vedea",
-    "ctaTitle": "Vreți să vedeți câmpul dumneavoastră?",
-    "ctaText": "Atingeți parcelele pe hartă. Nu aveți nevoie de cont."
+    "credit": "Făcut la NASA Space Apps 2026 de Farm Titans · Date: NASA POWER, MODIS, SMAP, SoilGrids"
   },
   "Account": {
-    "title": "Contul meu",
-    "intro": "Păstrați aici câmpurile și deschideți-le din nou de pe telefon sau laptop.",
+    "title": "Cont",
+    "intro": "Câmpurile dumneavoastră, pe orice dispozitiv.",
     "signInTitle": "Intrați în cont",
     "signUpTitle": "Creați un cont",
-    "signInTab": "Intrați în cont",
-    "signUpTab": "Cont nou",
     "email": "Email",
     "password": "Parolă",
-    "passwordHint": "Cel puțin 8 caractere.",
-    "name": "Numele dvs. (opțional)",
+    "name": "Numele (opțional)",
     "signIn": "Intrați în cont",
-    "signUp": "Creați contul",
+    "signUp": "Creați cont",
     "working": "Un moment…",
     "signOut": "Ieșiți din cont",
-    "signedInAs": "Conectat ca {email}",
-    "hello": "Bună ziua, {name}",
     "loading": "Se încarcă contul…",
-    "offline": "Nu putem ajunge la server acum. Câmpurile dvs. sunt în siguranță; încercați din nou peste puțin timp.",
+    "offline": "Nu putem ajunge la server. Câmpurile sunt în siguranță; încercați din nou puțin mai târziu.",
     "retry": "Încercați din nou",
     "errors": {
       "email_taken": "Există deja un cont cu acest email. Intrați în cont.",
@@ -765,67 +641,7 @@
       "field_not_found": "Acest câmp nu mai este în contul dvs.",
       "wrong_password": "Parola nu este corectă."
     },
-    "fields": {
-      "title": "Câmpurile mele",
-      "empty": "Alegeți un câmp pe hartă, vedeți cele 25 de sezoane, apoi salvați-l aici. Puteți păstra câte câmpuri lucrați.",
-      "add": "Adăugați un câmp",
-      "rename": "Redenumiți",
-      "renameLabel": "Numele câmpului",
-      "save": "Salvați",
-      "cancel": "Renunțați",
-      "delete": "Ștergeți",
-      "confirmDelete": "Ștergeți „{name}”?",
-      "confirmDeleteYes": "Da, ștergeți",
-      "near": "lângă {place}",
-      "area": "{ha} ha",
-      "updated": "Actualizat {date}",
-      "importTitle": "Un câmp pe acest dispozitiv",
-      "importText": "Ați ales un câmp lângă {place} ({ha} ha) înainte să intrați în cont.",
-      "importTextNoPlace": "Ați ales un câmp de {ha} ha înainte să intrați în cont.",
-      "import": "Adăugați-l la câmpurile mele",
-      "summary": "{count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}} · {ha} ha · {places, plural, =0 {} one {# comună} few {# comune} other {# de comune}}",
-      "emptyTitle": "Niciun câmp încă",
-      "drawFirst": "Alegeți primul câmp",
-      "mapLabel": "Harta {count, plural, one {câmpului} other {celor # câmpuri}}",
-      "search": "Căutați un câmp",
-      "searchPlaceholder": "Nume sau comună",
-      "sort": "Ordonați după",
-      "sortRecent": "Recente",
-      "sortName": "Nume",
-      "sortArea": "Suprafață",
-      "selectAll": "Selectați tot",
-      "selectHint": "Selectați câmpuri ca să le analizați împreună, cel mult {max} odată.",
-      "selectField": "Selectați {name}",
-      "noMatch": "Niciun câmp nu se potrivește cu „{query}”.",
-      "selectionLabel": "Câmpuri selectate",
-      "selected": "{count, plural, one {# câmp selectat} few {# câmpuri selectate} other {# de câmpuri selectate}} · {ha} ha",
-      "clear": "Anulați",
-      "analyse": "Analizați",
-      "analyseMany": "Analizați {count} câmpuri împreună",
-      "edit": "Modificați",
-      "irrigated": "irigat"
-    },
-    "save": {
-      "save": "Salvați câmpul",
-      "saving": "Se salvează…",
-      "saved": "Salvat ca „{name}”",
-      "updated": "„{name}” actualizat",
-      "nameLabel": "Numele câmpului",
-      "confirm": "Salvați",
-      "cancel": "Renunțați",
-      "signInToSave": "Intrați în cont ca să salvați",
-      "failed": "Nu am putut salva. Încercați din nou."
-    },
-    "picker": {
-      "title": "Câmpurile dvs.",
-      "all": "Toate câmpurile ({count})",
-      "new": "Sau alegeți un câmp nou mai jos.",
-      "pickHint": "Bifați unul sau mai multe ca să le analizați împreună.",
-      "openOne": "Deschideți câmpul",
-      "openMany": "Analizați {count, plural, few {# câmpuri} other {# de câmpuri}}"
-    },
     "profile": {
-      "title": "Profil și securitate",
       "email": "Email",
       "since": "Cont creat în",
       "name": "Nume",
@@ -833,25 +649,29 @@
       "nameSaved": "Numele a fost salvat.",
       "passwordTitle": "Schimbați parola",
       "currentPassword": "Parola actuală",
-      "newPassword": "Parola nouă",
-      "changePassword": "Schimbați parola",
+      "newPassword": "Parola nouă (cel puțin 8 caractere)",
+      "changePassword": "Schimbați",
       "passwordChanged": "Parola a fost schimbată. Celelalte dispozitive au fost deconectate.",
       "deleteTitle": "Ștergeți contul",
-      "deleteText": "Se șterg contul și {count, plural, =0 {} one {câmpul salvat} few {cele # câmpuri salvate} other {cele # de câmpuri salvate}}. Nu se poate anula.",
-      "deleteStart": "Ștergeți contul…",
-      "deletePassword": "Introduceți parola pentru confirmare",
-      "deleteConfirm": "Ștergeți contul definitiv"
-    }
+      "deleteText": "{count, plural, =0 {Se șterge contul.} one {Se șterg contul și câmpul salvat.} few {Se șterg contul și cele # câmpuri salvate.} other {Se șterg contul și cele # de câmpuri salvate.}} Nu se poate anula.",
+      "deletePassword": "Parola dumneavoastră",
+      "deleteConfirm": "Ștergeți",
+      "nameEmpty": "Adăugați-vă numele",
+      "cancel": "Anulați"
+    },
+    "newPassword": "Parolă (cel puțin 8 caractere)",
+    "noAccount": "Nu aveți cont?",
+    "haveAccount": "Aveți deja cont?"
   },
   "Assistant": {
     "launcher": "Întrebați",
     "title": "Asistentul Field Signal",
     "model": "Răspunde din câmpurile dumneavoastră și datele NASA · Qwen",
-    "intro": "Întrebați orice despre Field Signal, rotația culturilor sau datele din spate. Ușor sau greu.",
-    "introFields": "Văd {count, plural, one {câmpul dumneavoastră} few {cele # câmpuri} other {cele # de câmpuri}} și pot căuta cele 25 de sezoane. Întrebați orice, ușor sau greu.",
+    "intro": "Întrebați despre rotații, despre date sau despre cum funcționează Field Signal.",
+    "introFields": "Văd {count, plural, one {câmpul dumneavoastră} few {cele # câmpuri} other {cele # de câmpuri}} și cele 25 de sezoane. Întrebați orice.",
     "placeholder": "Scrieți o întrebare…",
     "send": "Trimiteți",
-    "think": "Gândește temeinic",
+    "think": "Gândire mai atentă",
     "thinkHint": "mai încet, pentru întrebări grele",
     "newChat": "Conversație nouă",
     "close": "Închideți asistentul",
@@ -884,9 +704,17 @@
   },
   "Farm": {
     "title": "Ferma mea",
-    "lead": "Aduceți toate parcelele, grupați-le în sole și primiți un singur plan pentru toată ferma: ce cultivați și unde, an de an.",
-    "nameLabel": "Numele fermei",
     "defaultName": "Ferma mea",
+    "nameLabel": "Numele fermei",
+    "backToFields": "Înapoi la câmpurile mele",
+    "backToParcels": "Înapoi la parcele",
+    "backToGroups": "Înapoi la sole",
+    "step": "Pasul {step} din {total}: {name}",
+    "stepName": {
+      "1": "Parcele",
+      "2": "Sole",
+      "3": "Plan"
+    },
     "save": {
       "button": "Salvați ferma",
       "busy": "Se salvează…",
@@ -897,7 +725,6 @@
     "mapLabel": "Harta parcelelor fermei",
     "mapUnavailable": "Harta nu poate fi afișată în acest browser. Puteți totuși importa un fișier și face planul.",
     "basemap": {
-      "label": "Tipul hărții",
       "satellite": "Satelit",
       "map": "Hartă"
     },
@@ -905,21 +732,23 @@
     "summary": "{count, plural, =0 {Nicio parcelă încă} one {# parcelă} few {# parcele} other {# de parcele}} · {ha} ha",
     "selected": "{count, plural, one {# parcelă selectată} few {# parcele selectate} other {# de parcele selectate}}",
     "fieldsCount": "{count, plural, =0 {Nicio solă încă} one {# solă} few {# sole} other {# de sole}}",
-    "steps": {
-      "label": "Pașii fermei",
-      "parcels": "Parcele",
-      "fields": "Sole",
-      "plan": "Plan"
+    "hint": {
+      "pick": "Măriți harta, apoi atingeți parcelele ca să le adăugați",
+      "brushPick": "Trageți peste parcele ca să le adăugați",
+      "select": "Atingeți parcelele ca să le mutați",
+      "brushSelect": "Trageți peste parcele ca să le selectați"
     },
+    "needParcels": "Importați un fișier sau atingeți parcele pe hartă.",
     "import": {
-      "title": "Import din AGI Online",
-      "hint": "Încărcați fișierul cu parcele exportat din contul dumneavoastră APIA (un shapefile .zip) sau un fișier GeoJSON ori KML. Găsim parcelele APIA potrivite.",
+      "open": "Import",
+      "title": "Importați parcelele",
+      "formats": "Export AGI Online (.zip), GeoJSON sau KML",
       "button": "Alegeți un fișier",
       "busy": "Citim fișierul…",
-      "samples": "Nu aveți fișierul la îndemână? Încercați un export demonstrativ:",
+      "samples": "Sau încercați un exemplu:",
       "sample": {
-        "big": "fermă mare (circa 150 de parcele)",
-        "small": "fermă mică (6 parcele)"
+        "big": "Fermă mare",
+        "small": "Fermă mică"
       },
       "done": "Am adăugat {count, plural, =0 {nicio parcelă nouă} one {# parcelă} few {# parcele} other {# de parcele}} ({ha} ha).",
       "unmatched": "{count, plural, one {Un contur} few {# contururi} other {# de contururi}} din fișier nu {count, plural, one {are} other {au}} nicio parcelă APIA dedesubt.",
@@ -932,35 +761,36 @@
         "server": "Ceva nu a mers. Încercați din nou."
       }
     },
-    "pick": {
-      "title": "Sau alegeți parcelele pe hartă",
-      "hint": "Măriți harta pe satul dumneavoastră: apar parcelele declarate la APIA. Atingeți o parcelă ca să o adăugați, atingeți-o din nou ca să o scoateți.",
-      "how": "Multe parcele? Porniți „Selectați trăgând” și trageți peste ele. Dacă începeți pe o parcelă verde, le scoateți."
+    "rematch": {
+      "button": "Actualizați la cele mai noi parcele APIA",
+      "busy": "Potrivim…",
+      "same": "Parcelele dumneavoastră se potrivesc deja cu cele mai noi parcele APIA (2025).",
+      "done": "{changed, plural, =0 {Nicio parcelă nu s-a schimbat} one {O parcelă s-a schimbat} few {# parcele s-au schimbat} other {# de parcele s-au schimbat}}. {missing, plural, =0 {} one {O parcelă nu mai are nicio parcelă APIA dedesubt și a rămas cum era.} few {# parcele nu mai au nicio parcelă APIA dedesubt și au rămas cum erau.} other {# de parcele nu mai au nicio parcelă APIA dedesubt și au rămas cum erau.}}",
+      "error": "Nu am putut potrivi parcelele. Încercați din nou."
     },
-    "toFields": "Grupați în sole",
     "clear": "Începeți din nou",
+    "toFields": "Grupați în sole",
+    "toPlan": "Planificați ferma",
     "fieldN": "Sola {n}",
     "fields": {
       "title": "Solele dumneavoastră",
-      "hint": "O solă înseamnă parcelele lucrate la fel, cu aceleași culturi. Nu trebuie să fie lipite. Le-am grupat după culturile văzute din satelit și după distanță; schimbați ce nu este corect.",
       "busy": "Grupăm parcelele…",
       "error": "Nu am putut grupa parcelele.",
-      "retry": "Încercați din nou",
-      "again": "Grupați din nou de la zero",
-      "howToMove": "Ca să mutați parcele în altă solă, atingeți-le pe hartă (sau trageți peste ele), apoi alegeți unde merg.",
+      "again": "Grupați din nou",
       "nameLabel": "Numele solei",
       "size": "{ha} ha · {count, plural, one {# parcelă} few {# parcele} other {# de parcele}}",
       "select": "Arătați pe hartă"
     },
     "move": {
-      "label": "Mutați în",
-      "new": "O solă nouă",
-      "button": "Mutați",
-      "clear": "Anulați selecția"
+      "open": "Mutați în…",
+      "title": "Mutați {count, plural, one {# parcelă} few {# parcele} other {# de parcele}} în",
+      "new": "Solă nouă",
+      "clear": "Anulați"
     },
     "soil": {
+      "row": "{count, plural, one {O parcelă diferă} few {# parcele diferă} other {# de parcele diferă}} ca sol",
       "title": "Parcele care diferă",
-      "hint": "Din hărți de sol (250 m), nu dintr-o analiză de sol. Merită o privire înainte să le planificați la fel ca pe restul.",
+      "note": "Din hărți de sol (250 m), nu dintr-o analiză de sol.",
       "show": "Arătați",
       "clay_high": "{count, plural, one {O parcelă are} few {# parcele au} other {# de parcele au}} mult mai multă argilă decât restul fermei: se lucrează mai greu și ține apa mai mult.",
       "clay_low": "{count, plural, one {O parcelă are} few {# parcele au} other {# de parcele au}} mult mai puțină argilă: sol ușor, care se usucă mai repede.",
@@ -968,8 +798,6 @@
       "ph_low": "{count, plural, one {O parcelă este acidă} few {# parcele sunt acide} other {# de parcele sunt acide}} (pH sub 5,5).",
       "ph_high": "{count, plural, one {O parcelă este alcalină} few {# parcele sunt alcaline} other {# de parcele sunt alcaline}} (pH peste 8)."
     },
-    "back": "Înapoi",
-    "toPlan": "Faceți planul fermei",
     "parcel": {
       "title": "Parcela APIA {id}",
       "area": "{ha} ha",
@@ -988,10 +816,7 @@
       "soilNote": "Din hărți de sol (SoilGrids, 250 m): o estimare, nu o analiză de sol.",
       "unknown": "Necunoscut",
       "moveLabel": "Mutați în",
-      "moveNew": "O solă nouă",
-      "move": "Mutați",
       "remove": "Scoateți din fermă",
-      "close": "Închideți",
       "sources": "APIA LPIS 2025 (data.gov.ro) · JRC EUCROPMAP · ISRIC SoilGrids.",
       "landUses": {
         "TA": "Teren arabil",
@@ -1034,64 +859,50 @@
         "wetlands": "Zonă umedă",
         "bare_land": "Teren gol"
       }
-    },
-    "rematch": {
-      "title": "Parcele dintr-un an anterior?",
-      "hint": "APIA redesenează parcelele în fiecare an și numerele lor se pot schimba. Potriviți ferma cu cele mai noi parcele APIA; solele rămân cum sunt.",
-      "button": "Actualizați la cele mai noi parcele APIA",
-      "busy": "Potrivim…",
-      "same": "Parcelele dumneavoastră se potrivesc deja cu cele mai noi parcele APIA (2025).",
-      "done": "{changed, plural, =0 {Nicio parcelă nu s-a schimbat} one {O parcelă s-a schimbat} few {# parcele s-au schimbat} other {# de parcele s-au schimbat}}. {missing, plural, =0 {} one {O parcelă nu mai are nicio parcelă APIA dedesubt și a rămas cum era.} few {# parcele nu mai au nicio parcelă APIA dedesubt și au rămas cum erau.} other {# de parcele nu mai au nicio parcelă APIA dedesubt și au rămas cum erau.}}",
-      "error": "Nu am putut potrivi parcelele. Încercați din nou."
     }
   },
   "FarmPlan": {
+    "title": "Planul întregii ferme",
+    "priorities": "Ce contează cel mai mult",
     "empty": "Adăugați mai întâi cel puțin o solă cu parcele. Apoi putem planifica culturile pentru toată ferma.",
     "summary": "{count, plural, one {1 solă} few {# sole} other {# de sole}}, sezoanele {from}–{to}.",
     "make": "Faceți planul",
     "remake": "Refaceți planul",
-    "loading": "Facem planul. Cu multe sole poate dura câteva secunde.",
-    "tableTitle": "Culturile pe fiecare solă, an de an",
-    "tableHint": "Fiecare solă își păstrează rotația. Solele pornesc din puncte diferite, astfel încât ferma are în fiecare an un amestec echilibrat de culturi.",
+    "loading": "Facem planul…",
+    "error": "Nu am putut face planul.",
+    "tableTitle": "Culturi pe sole",
     "field": "Sola",
     "totalsTitle": "Toată ferma, pe ani",
-    "totalsHint": "Hectarele fiecărei culturi, pe toate solele dumneavoastră.",
     "legend": "Culturi",
     "checksTitle": "Ce să verificați",
     "checkOk": "În regulă",
     "checkNotOk": "De verificat",
     "caveatsTitle": "Bine de știut",
-    "downloadTitle": "Lista pentru declarația APIA",
-    "downloadHint": "O listă de verificare pe care o copiați de mână în AGI Online, parcelă cu parcelă. Nu este un fișier oficial de import.",
+    "downloadTitle": "Lista APIA",
+    "downloadNote": "O listă de copiat de mână în AGI Online, nu un fișier de import.",
     "downloadYear": "Anul listei",
     "download": "Descărcați lista APIA pentru {year}"
   },
-  "FeedExtra": {
-    "validation": {
-      "title": "Cum s-a descurcat riscul în anii trecuți",
-      "summary": "din {total} ani trecuți estimați corect",
-      "cropSummary": "{hits} din {total} corect",
-      "hit": "Estimat corect",
-      "miss": "Ratat",
-      "seasonLabel": "{season}: {risk}, recolta {anomaly} față de tendință. {result}.",
-      "honest": "Arătăm intenționat și anii ratați. Niciun scor de risc nu nimerește fiecare an, iar dumneavoastră trebuie să vedeți unde a greșit acesta.",
-      "tableTitle": "Vedeți fiecare an",
-      "colCrop": "Cultura",
-      "colSeason": "Anul",
-      "colRisk": "Riscul pe care l-am fi dat",
-      "colYield": "Recolta față de tendință",
-      "colResult": "Rezultat"
-    }
-  },
   "Stocks": {
-    "metaTitle": "Stocuri și furnizori",
     "title": "Stocuri și furnizori",
-    "intro": "Câte zile mai ajung materiile prime din depozit și din ce țări putem completa ce lipsește până la 90 de zile.",
-    "demo": "Date demonstrative — scenariu ilustrativ. Stocurile și volumele furnizorilor sunt inventate; regulile comerciale sunt publice, iar timpii de livrare sunt estimări.",
-    "context": "Situația la {date} · anul de comercializare {year} · fereastra de aprovizionare {window}",
+    "meta": "Situația la {date}",
+    "report": "Raport",
+    "reportLabel": "Raport în română (PDF)",
+    "empty": "Nu există încă materii prime pe această linie.",
+    "about": "Despre date",
+    "headline": {
+      "label": "Cel mai mare deficit",
+      "daysLeft": "{days, plural, one {zi rămasă} few {zile rămase} other {de zile rămase}}",
+      "line": "lipsesc {tonnes} · cea mai bună sursă: {country}",
+      "short": "lipsesc {tonnes}",
+      "none": "Toate materiile prime acoperă {target} de zile."
+    },
+    "legendLabel": "Niveluri de stare",
+    "share": "({share}%)",
+    "more": "Vedeți încă {count, plural, one {# țară} few {# țări} other {# de țări}}",
+    "fewer": "Vedeți mai puține",
     "pathLabel": "Direcția de producție",
     "inventoryTitle": "Stocul pe materii prime",
-    "inventoryHint": "Atingeți o materie primă pentru a vedea furnizorii ei.",
     "inventoryCaption": "Stocuri, consum și zile de acoperire, de la cea mai expusă materie primă",
     "col": {
       "ingredient": "Materie primă",
@@ -1103,7 +914,6 @@
     },
     "tonnes": "{value} t",
     "days": "{days, plural, one {# zi} few {# zile} other {# de zile}}",
-    "rowDetail": "Stoc {stock} · consum {use}/lună · în drum {incoming}",
     "status": {
       "red": "Critic",
       "amber": "Atenție",
@@ -1112,11 +922,9 @@
     "legend": "Critic: sub {red} de zile. Atenție: sub {amber} de zile. Acoperit: {amber} de zile sau mai mult. Ținta: {target} de zile de acoperire.",
     "supplyTitle": "Furnizori pentru {name}",
     "shortfall": "Lipsesc {tonnes} până la {target} de zile de acoperire.",
-    "noShortfall": "Stocul acoperă deja {target} de zile. Nu trebuie cumpărat nimic acum.",
+    "noShortfall": "Stocul acoperă deja {target} de zile. Nu e nevoie să cumpărați nimic acum.",
     "noCandidates": "Nu avem prognoze de furnizori pentru această materie primă.",
     "allocationTitle": "Împărțire recomandată",
-    "allocationHint": "Calcul prudent: folosim volumul minim estimat al fiecărei țări și cel mult 4 țări.",
-    "allocationLine": "{country}: {tonnes} ({share}%)",
     "uncovered": "{tonnes} rămân neacoperite de furnizorii din prognoză. Căutați o materie primă alternativă sau un furnizor nou.",
     "bridge": "Unele livrări recomandate ajung după epuizarea stocului: este nevoie de o achiziție-punte de la un furnizor apropiat.",
     "concentrated": "Peste jumătate din cantitate vine dintr-o singură țară: risc de concentrare.",
@@ -1140,7 +948,7 @@
     "route": "Rută: {route} · aprox. {days}",
     "pros": "Avantaje",
     "cons": "Dezavantaje",
-    "more": "Încă {count, plural, one {# țară} few {# țări} other {# de țări}}",
+    "context": "Situația la {date} · anul de comercializare {year} · fereastra de aprovizionare {window}",
     "methodTitle": "Cum calculăm",
     "method": {
       "cover": "Zile de acoperire = (stoc + cantitatea în drum) ÷ consumul zilnic, unde consumul zilnic = consumul lunar ÷ 30. Sub {red} de zile starea este critică, sub {amber} de zile cere atenție.",
@@ -1152,7 +960,78 @@
       "friction": "Ușurință comercială: pornește de la 100. Scădem 30 în afara UE, 30 pentru risc de război, 10 pentru ecartament feroviar de 1520 mm, 15 pentru restricții la export în 2022 și 20 pentru șrot de soia din țări unde soia modificată genetic este frecventă.",
       "allocation": "Împărțirea: luăm cel mult 4 țări, în ordinea scorului. La prima trecere fiecare dă cel mult volumul ei minim estimat și cel mult jumătate din deficit; la a doua trecere completăm până la volumul minim, fără plafon.",
       "assumptions": "Ipoteze: stocurile, consumul și volumele furnizorilor sunt inventate. Regulile UE și Schengen, ecartamentul și restricțiile la export din 2022 sunt fapte publice. Timpii de livrare sunt estimări. Prețurile nu intră în calcul."
+    }
+  },
+  "Buyers": {
+    "title": "Cumpărători",
+    "viewLabel": "Ce vreți să vedeți",
+    "region": "Zonă",
+    "stocks": "Stocuri"
+  },
+  "More": {
+    "title": "Mai mult",
+    "account": "Cont",
+    "signIn": "Intrați în cont",
+    "signInDetail": "Câmpurile dumneavoastră, pe orice dispozitiv",
+    "about": "Despre și date",
+    "aboutDetail": "Cum funcționează, surse NASA, limite",
+    "language": "Limba",
+    "ask": "Întrebați Field Signal",
+    "askDetail": "Despre culturi, date sau aplicație",
+    "credit": "Făcut la NASA Space Apps 2026 de Farm Titans"
+  },
+  "Fields": {
+    "title": "Câmpurile mele",
+    "summary": "{count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}} · {ha} ha",
+    "add": "Adăugați un câmp",
+    "import": "Importați din fișier",
+    "select": "Alegeți",
+    "done": "Gata",
+    "search": "Căutați printre câmpuri",
+    "analyze": "Analizați",
+    "analyzeMany": "{count, plural, =0 {Alegeți câmpuri} one {Analizați # câmp} few {Analizați # câmpuri} other {Analizați # de câmpuri}}",
+    "max": "Cel mult {max} câmpuri odată.",
+    "area": "{ha} ha",
+    "notYet": "Neanalizat încă",
+    "keep": "Rotația dvs. e cea mai potrivită",
+    "better": "Mai bine: {crops}",
+    "other": "Merită văzut: {crops}",
+    "thisDevice": "pe acest telefon",
+    "keepOnAccount": "Păstrați-l în cont",
+    "save": "Salvați",
+    "forget": "Ștergeți de pe telefon",
+    "signIn": "Intrați în cont",
+    "signInWhy": "ca să aveți câmpurile pe orice dispozitiv.",
+    "options": "Opțiuni pentru {name}",
+    "edit": "Schimbați câmpul sau culturile",
+    "rename": "Redenumiți",
+    "name": "Nume",
+    "saveName": "Salvați numele",
+    "delete": "Ștergeți",
+    "deleteConfirm": "Ștergeți „{name}”? Nu se poate anula.",
+    "cancel": "Anulați",
+    "failed": "Nu a mers. Încercați din nou."
+  },
+  "Glossary": {
+    "et": {
+      "term": "ET (evapotranspirație)",
+      "text": "Apa pe care câmpul o pierde în aer, din sol și prin plante."
     },
-    "report": "Generează raportul PDF (în română)"
+    "ndvi": {
+      "term": "NDVI",
+      "text": "Cât de verde și de deasă se vede cultura din satelit, de la 0 (sol gol) la 1 (foarte bogată)."
+    },
+    "soilMoisture": {
+      "term": "Anomalia umidității solului",
+      "text": "Cât de umed sau de uscat a fost solul la rădăcini față de obișnuitul acelei perioade."
+    },
+    "waterBalance": {
+      "term": "Bilanț hidric",
+      "text": "Ploaia minus apa pierdută de câmp (ET). Sub zero înseamnă că planta a dus lipsă de apă."
+    },
+    "frost": {
+      "term": "Risc de îngheț",
+      "text": "Nopți sub 0 °C într-o fază în care cultura poate fi afectată, de exemplu la înflorire."
+    }
   }
 }

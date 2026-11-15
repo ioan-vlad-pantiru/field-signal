@@ -13,45 +13,37 @@ import { TONE_CLASSES, TONE_ICONS, type Tone } from "@/components/ui/tone";
 /** How far from the mean (as a share of it) still counts as "normal". */
 const NORMAL_BAND = 0.1;
 
-/** Indicators, soil, caveats and sources: everything the results rest on. */
-export function Evidence({ analysis }: { analysis: FieldAnalysis }) {
-  const t = useTranslations("Results.evidence");
+/** The indicators measured at this place: latest year against the average, with a sparkline. */
+export function IndicatorList({ analysis }: { analysis: FieldAnalysis }) {
+  return (
+    <ul className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
+      {analysis.indicators.map((indicator) => (
+        <IndicatorItem key={indicator.id} indicator={indicator} />
+      ))}
+    </ul>
+  );
+}
+
+export function Caveats({ analysis }: { analysis: FieldAnalysis }) {
   const l = useLocalized();
   return (
-    <div className="flex flex-col gap-10">
-      <div>
-        <h3 className="text-lg font-semibold">{t("indicatorsTitle")}</h3>
-        <p className="mt-1 max-w-[65ch] text-ink-muted">{t("indicatorsHint")}</p>
-        <ul className={`mt-5 grid gap-x-8 gap-y-8 sm:grid-cols-2`}>
-          {analysis.indicators.map((indicator) => (
-            <IndicatorItem key={indicator.id} indicator={indicator} />
-          ))}
-        </ul>
-      </div>
+    <ul className="list-disc space-y-2 pl-5">
+      {analysis.caveats.map((c, i) => (
+        <li key={i}>{l(c)}</li>
+      ))}
+    </ul>
+  );
+}
 
-      <Soil soil={analysis.soil} />
-
-      <div className="grid gap-10 md:grid-cols-2">
-        <div>
-          <h3 className="mb-3 text-lg font-semibold">{t("caveatsTitle")}</h3>
-          <ul className="list-disc space-y-2 pl-5">
-            {analysis.caveats.map((c, i) => (
-              <li key={i}>{l(c)}</li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <h3 className="mb-3 text-lg font-semibold">{t("sourcesTitle")}</h3>
-          <ul className="flex flex-col items-start gap-2">
-            {analysis.sources.map((s) => (
-              <li key={s.dataset} className="max-w-full">
-                <SourceChip source={s} />
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </div>
+export function Sources({ analysis }: { analysis: FieldAnalysis }) {
+  return (
+    <ul className="flex flex-col items-start gap-2">
+      {analysis.sources.map((s) => (
+        <li key={s.dataset} className="max-w-full">
+          <SourceChip source={s} />
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -102,7 +94,7 @@ function IndicatorItem({ indicator }: { indicator: Indicator }) {
           </div>
         </dl>
       ) : null}
-      <p className="inline-flex items-center gap-1.5 text-sm font-medium">
+      <p className="inline-flex items-center gap-1.5 text-sm font-semibold">
         <span className={TONE_CLASSES[tone].text}>
           <ToneIcon size={16} />
         </span>
@@ -128,7 +120,7 @@ function IndicatorItem({ indicator }: { indicator: Indicator }) {
   );
 }
 
-function Soil({ soil }: { soil: SoilProfile }) {
+export function Soil({ soil }: { soil: SoilProfile }) {
   const t = useTranslations("Results.soil");
   const locale = useAppLocale();
   const l = useLocalized();
@@ -149,10 +141,7 @@ function Soil({ soil }: { soil: SoilProfile }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <h3 className="text-lg font-semibold">{t("title")}</h3>
-        <p className="text-ink-muted">{t("depth", { depth: soil.depth ?? "0-30cm" })}</p>
-      </div>
+      <p className="text-sm text-ink-muted">{t("depth", { depth: soil.depth ?? "0-30cm" })}</p>
       <dl className="grid gap-6 sm:grid-cols-3">
         {rows.map((row) => (
           <div key={row.key}>

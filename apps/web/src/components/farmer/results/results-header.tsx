@@ -6,10 +6,12 @@ import type { FieldAnalysis, LatLon } from "@/lib/contracts";
 import { formatNumber } from "@/lib/format";
 import { fieldAreaHa, fieldCentroid } from "@/lib/geo";
 import { useAppLocale } from "@/lib/localized";
-import { Button } from "@/components/ui/button";
-import { ArrowLeftIcon } from "@/components/ui/icons";
+import { Button, IconButton } from "@/components/ui/button";
+import { ArrowLeftIcon, LinkIcon, PrintIcon, ShareIcon } from "@/components/ui/icons";
+import { ScreenHeader } from "@/components/ui/screen-header";
+import { Sheet } from "@/components/ui/sheet";
 
-/** Place, area and period, with the page's three actions. */
+/** Place, area and period, with compact actions: change the field, save, share or print. */
 export function ResultsHeader({
   analysis,
   boundary,
@@ -23,20 +25,21 @@ export function ResultsHeader({
   parts?: LatLon[][];
   placeName: string | null;
   onBack: () => void;
-  /** "Save field" control, when the farmer drew a field. */
+  /** The "Save" action, when the farmer chose a field. */
   save?: ReactNode;
 }) {
   const t = useTranslations("Results");
   const locale = useAppLocale();
   const { location } = analysis;
   const place = placeName || [location.commune, location.county].filter(Boolean).join(", ") || location.label;
-  // The drawn field is where the farmer is; the API may answer for a nearby point (or the mock's).
+  // The field chosen is where the farmer is; the API may answer for a nearby point (or the mock's).
   const point = boundary ? fieldCentroid({ boundary, parts }) : location.point;
   const period = t("period", { start: analysis.period_start, end: analysis.period_end });
   const meta = boundary
     ? t("meta", { area: t("area", { ha: formatNumber(fieldAreaHa({ boundary, parts }), locale, 1) }), period })
-    : t("metaNoArea", { period });
+    : period;
 
+  const [shareOpen, setShareOpen] = useState(false);
   const [copy, setCopy] = useState<"idle" | "copied" | "failed">("idle");
   useEffect(() => {
     if (copy === "idle") return;
@@ -59,27 +62,48 @@ export function ResultsHeader({
   }
 
   return (
-    <header className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1">
-        <h1 className="font-display text-3xl font-semibold tracking-tight md:text-4xl">{place}</h1>
-        <p className="tabular-nums text-ink-muted">{meta}</p>
-      </div>
-      <div role="group" aria-label={t("actions")} className="no-print -ml-3 flex flex-wrap items-center gap-1">
-        <Button variant="quiet" onClick={onBack}>
-          <ArrowLeftIcon size={18} />
-          {t("back")}
-        </Button>
-        {save}
-        <Button variant="quiet" onClick={() => window.print()}>
-          {t("print")}
-        </Button>
-        <Button variant="quiet" onClick={copyLink}>
-          {t("copyLink")}
-        </Button>
-        <span role="status" className="text-sm text-ink-muted">
-          {copy === "copied" ? t("linkCopied") : copy === "failed" ? t("copyFailed") : null}
-        </span>
-      </div>
-    </header>
+    <>
+      <ScreenHeader
+        title={place}
+        meta={meta}
+        back={
+          <IconButton label={t("back")} onClick={onBack} className="no-print -ml-2">
+            <ArrowLeftIcon size={20} />
+          </IconButton>
+        }
+        actions={
+          <>
+            {save}
+            <IconButton label={t("share")} onClick={() => setShareOpen(true)}>
+              <ShareIcon size={20} />
+            </IconButton>
+          </>
+        }
+      />
+      <Sheet open={shareOpen} onClose={() => setShareOpen(false)} title={t("shareTitle")}>
+        <div className="flex flex-col gap-2 pb-2">
+          <Button variant="secondary" size="lg" className="justify-start" onClick={copyLink}>
+            <LinkIcon size={20} />
+            {copy === "copied" ? t("linkCopied") : t("copyLink")}
+          </Button>
+          <Button
+            variant="secondary"
+            size="lg"
+            className="justify-start"
+            onClick={() => {
+              setShareOpen(false);
+              // Let the sheet close before the print dialog takes over.
+              window.setTimeout(() => window.print(), 350);
+            }}
+          >
+            <PrintIcon size={20} />
+            {t("print")}
+          </Button>
+          <p role="status" className="min-h-5 text-sm text-ink-muted">
+            {copy === "failed" ? t("copyFailed") : null}
+          </p>
+        </div>
+      </Sheet>
+    </>
   );
 }

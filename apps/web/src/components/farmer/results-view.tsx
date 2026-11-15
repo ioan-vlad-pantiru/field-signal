@@ -4,19 +4,20 @@ import { useMemo, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import type { FieldAnalysis, LatLon } from "@/lib/contracts";
 import type { DataOrigin } from "@/lib/api";
-import { placeShifts, rankStrategies, replayYears, verdict as buildVerdict } from "@/lib/results";
-import { Segmented } from "@/components/ui/segmented";
+import { mainRisk, placeShifts, rankStrategies, replayYears, verdict as buildVerdict } from "@/lib/results";
+import { InfoTip } from "@/components/ui/info-tip";
+import { SeasonLegend } from "@/components/ui/season-strip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SourceChip } from "@/components/ui/source-chip";
 import { DemoBanner } from "@/components/ui/states";
+import { SwipeDeck } from "@/components/ui/swipe-deck";
 import { FieldPlan } from "./field-plan";
-import { Evidence } from "./results/evidence";
+import { DataSheet } from "./results/data-sheet";
 import { ResultsHeader } from "./results/results-header";
-import { Rotations } from "./results/rotations";
-import { ShiftList } from "./results/shift";
-import { LAPTOP, useMediaQuery } from "./results/use-media-query";
 import { useRotationName } from "./results/rotation-name";
-import { Verdict } from "./results/verdict";
+import { StrategyCard } from "./results/strategy-card";
+import { StrategySheet } from "./results/strategy-sheet";
+import { VerdictCard } from "./results/verdict";
 
 /**
  * A clean one-page plan on paper: the site chrome goes (it lives in the layout, so it is hidden from
@@ -25,15 +26,14 @@ import { Verdict } from "./results/verdict";
 const PRINT_CSS = `@media print {
   body > header, body > nav, body > footer { display: none !important; }
   main { max-width: none !important; padding: 0 !important; }
+  .snap-deck { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; overflow: visible !important; }
   @page { margin: 14mm; }
 }`;
 
-type DetailTab = "rotations" | "shift" | "evidence";
-
 /**
- * One field's results, map first: the selected rotation on the field, then the verdict, then one
- * detail at a time (rotations compared, what changed at this place, evidence). One selected
- * rotation drives the map and the comparison.
+ * One field's results: the field on the 3D map, the answer in one card, then the rotations as
+ * cards (swipe on a phone, a row of three on a laptop). The card in view drives the map; tapping
+ * one opens its full explanation. The data behind it is one tap from the verdict or any rotation.
  */
 export function ResultsView({
   analysis,
@@ -43,164 +43,136 @@ export function ResultsView({
   onBack,
   placeName = null,
   save,
+  after,
 }: {
   analysis: FieldAnalysis;
   origin: DataOrigin;
-  /** The field the farmer drew, if any; the field plan fills it with hexagons. */
+  /** The field the farmer chose, if any. */
   boundary: LatLon[] | null;
   /** Further pieces of the same field (parcels that do not touch). */
   parts?: LatLon[][];
   onBack: () => void;
-  /** The place the farmer searched or drew at; preferred over the API's commune and county. */
+  /** The place the farmer searched or chose; preferred over the API's commune and county. */
   placeName?: string | null;
-  /** "Save field" control for the header. */
+  /** The "Save" header action. */
   save?: ReactNode;
+  /** Shown after the rotations, such as the optimized plan card. */
+  after?: ReactNode;
 }) {
   const t = useTranslations("Results");
+  const ts = useTranslations("Status");
   const nameOf = useRotationName();
-  const laptop = useMediaQuery(LAPTOP);
 
   const ranked = useMemo(() => rankStrategies(analysis.strategies), [analysis.strategies]);
   const verdict = useMemo(() => buildVerdict(analysis.strategies), [analysis.strategies]);
+  const risk = useMemo(() => mainRisk(analysis.strategies), [analysis.strategies]);
   const years = useMemo(() => replayYears(analysis.strategies), [analysis.strategies]);
   const shifts = useMemo(() => placeShifts(analysis.indicators), [analysis.indicators]);
   const [selectedId, setSelectedId] = useState(ranked[0].id);
+  const [sheetId, setSheetId] = useState<string | null>(null);
+  const [dataOpen, setDataOpen] = useState(false);
   const selected = ranked.find((s) => s.id === selectedId) ?? ranked[0];
-
-  const tabs: DetailTab[] = ["rotations", ...(shifts.length > 0 ? (["shift"] as const) : []), "evidence"];
-  const [tab, setTab] = useState<DetailTab>("rotations");
-  const start = years[0] ?? analysis.period_start;
-  const end = years.at(-1) ?? analysis.period_end;
+  const selectedIndex = ranked.indexOf(selected);
+  const sheet = ranked.find((s) => s.id === sheetId) ?? null;
+  const weak = ranked.some((r) => r.replay.some((o) => o.evidence_level === "low"));
 
   return (
-    <div className="flex flex-col print:text-[11pt]">
+    <div className="flex flex-col gap-5 print:gap-3 print:text-[11pt]">
       <style>{PRINT_CSS}</style>
+      <ResultsHeader analysis={analysis} boundary={boundary} parts={parts} placeName={placeName} onBack={onBack} save={save} />
       {analysis.mock ? <DemoBanner origin={origin} /> : null}
 
-      <div className={analysis.mock ? "mt-6" : ""}>
-        <ResultsHeader analysis={analysis} boundary={boundary} parts={parts} placeName={placeName} onBack={onBack} save={save} />
-      </div>
-
-      {/* The map first: the selected rotation laid out on the field, season by season. */}
-      <section aria-label={t("planTitle")} className="mt-6 flex flex-col gap-4 print:mt-4">
-        <div className="no-print flex flex-wrap items-end justify-between gap-3">
-          {/* Names are too long for a segmented control on a phone; a native select fits them. */}
-          <div className="hidden sm:block">
-            <Segmented
-              label={t("planRotation")}
-              value={selected.id}
-              onChange={setSelectedId}
-              options={ranked.map((s) => ({ value: s.id, label: nameOf(s) }))}
-            />
-          </div>
-          <label className="flex w-full flex-col gap-1 sm:hidden">
-            <span className="text-sm text-ink-muted">{t("planRotation")}</span>
-            <select
-              value={selected.id}
-              onChange={(event) => setSelectedId(event.target.value)}
-              className="min-h-11 rounded-xl border border-line bg-surface px-3 font-medium text-ink"
-            >
-              {ranked.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {nameOf(s)}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
+      <section aria-label={t("planTitle")} className="-mx-gutter sm:mx-0">
         <p className="hidden font-semibold print:block">{nameOf(selected)}</p>
         <FieldPlan center={analysis.location.point} boundary={boundary} parts={parts} strategy={selected} />
-        <ul className="hidden flex-wrap gap-2 print:flex">
-          {analysis.sources.map((s) => (
-            <li key={s.dataset}>
-              <SourceChip source={s} />
-            </li>
-          ))}
-        </ul>
       </section>
 
-      <div className="mt-10 border-t border-line pt-8 print:mt-4">
-        <Verdict verdict={verdict} start={analysis.period_start} />
-      </div>
+      <VerdictCard verdict={verdict} risk={risk} start={analysis.period_start} onData={() => setDataOpen(true)} />
 
-      {/* Details one at a time, so the page stays short. */}
-      <div className="no-print mt-10">
-        <div role="tablist" aria-label={t("nav.label")} className="flex gap-1 overflow-x-auto border-b border-line">
-          {tabs.map((id) => (
-            <button
-              key={id}
-              type="button"
-              role="tab"
-              id={`tab-${id}`}
-              aria-selected={tab === id}
-              aria-controls={`panel-${id}`}
-              onClick={() => setTab(id)}
-              className={`press -mb-px min-h-12 shrink-0 border-b-2 px-3 font-medium ${
-                tab === id ? "border-field text-ink" : "border-transparent text-ink-muted hover:text-ink"
-              }`}
-            >
-              {t(`nav.${id}`)}
-            </button>
-          ))}
+      <section aria-labelledby="rotations-title" className="flex flex-col gap-2">
+        <div className="flex items-center gap-1">
+          <h2 id="rotations-title" className="text-lg font-semibold">
+            {t("rotations.title")}
+          </h2>
+          <InfoTip label={t("rotations.legend")}>
+            <SeasonLegend
+              labels={{
+                good: ts("good"),
+                watch: ts("watch"),
+                bad: ts("bad"),
+                no_data: ts("no_data"),
+                ...(weak ? { lowEvidence: t("rotations.weakEvidence") } : {}),
+              }}
+            />
+          </InfoTip>
         </div>
-        <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className="pt-6">
-          {tab === "rotations" ? (
-            <>
-              <p className="mb-6 max-w-[65ch] text-ink-muted">
-                {t(laptop ? "rotations.hint" : "rotations.hintPhone", { start, end })}
-              </p>
-              <Rotations
-                ranked={ranked}
+        <SwipeDeck
+          label={t("rotations.title")}
+          active={selectedIndex}
+          onActive={(i) => setSelectedId(ranked[i].id)}
+          dotLabel={(i) => t("rotations.dot", { n: i + 1, total: ranked.length })}
+        >
+          {ranked.map((strategy, i) => (
+            <div key={strategy.id} className="rise h-full" style={{ "--i": i + 2 } as React.CSSProperties}>
+              <StrategyCard
+                strategy={strategy}
                 years={years}
                 start={analysis.period_start}
-                selectedId={selected.id}
-                onSelect={setSelectedId}
-                laptop={laptop}
+                isBest={i === 0}
+                selected={strategy.id === selected.id}
+                onOpen={() => {
+                  setSelectedId(strategy.id);
+                  setSheetId(strategy.id);
+                }}
               />
-            </>
-          ) : null}
-          {tab === "shift" ? (
-            <>
-              <p className="mb-6 max-w-[65ch] text-ink-muted">{t("shift.hint")}</p>
-              <ShiftList shifts={shifts} />
-            </>
-          ) : null}
-          {tab === "evidence" ? (
-            <>
-              <p className="mb-6 max-w-[65ch] text-ink-muted">{t("evidence.hint")}</p>
-              <Evidence analysis={analysis} />
-            </>
-          ) : null}
-        </div>
-      </div>
+            </div>
+          ))}
+        </SwipeDeck>
+      </section>
+
+      {after}
+
+      <ul className="hidden flex-wrap gap-2 print:flex">
+        {analysis.sources.map((s) => (
+          <li key={s.dataset}>
+            <SourceChip source={s} />
+          </li>
+        ))}
+      </ul>
+
+      <StrategySheet
+        strategy={sheet}
+        onClose={() => setSheetId(null)}
+        onData={() => {
+          setSheetId(null);
+          setDataOpen(true);
+        }}
+      />
+      <DataSheet open={dataOpen} onClose={() => setDataOpen(false)} analysis={analysis} shifts={shifts} />
     </div>
   );
 }
 
+/** The results' own shape while the 25 seasons load, so nothing jumps when they arrive. */
 export function ResultsSkeleton() {
   const t = useTranslations("Results");
   return (
-    <div className="flex flex-col gap-8" aria-busy="true">
-      <div className="flex flex-col gap-2">
-        <p role="status" className="font-medium">
-          {t("loading")}
-        </p>
-        <ul className="flex flex-col gap-1 text-ink-muted">
-          {(["weather", "vegetation", "soil"] as const).map((key) => (
-            <li key={key}>{t(`loadingSteps.${key}`)}</li>
-          ))}
-        </ul>
+    <div className="flex flex-col gap-5" aria-busy="true">
+      <div className="flex items-center gap-3">
+        <Skeleton className="size-tap rounded-full" />
+        <div className="flex flex-1 flex-col gap-2">
+          <Skeleton className="h-7 w-2/3" />
+          <Skeleton className="h-4 w-1/3" />
+        </div>
       </div>
-      <div className="flex flex-col gap-3">
-        <Skeleton className="h-10 w-3/4" />
-        <Skeleton className="h-10 w-1/2" />
-      </div>
-      <div className="flex flex-col gap-6 border-t border-line pt-8">
+      <p role="status" aria-live="polite" className="font-semibold">
+        {t("loading")}
+      </p>
+      <Skeleton className="-mx-gutter h-[min(56svh,26rem)] rounded-[var(--radius-xl)] sm:mx-0 sm:h-[28rem]" />
+      <Skeleton className="h-48 rounded-[var(--radius-xl)]" />
+      <div className="-mx-gutter flex gap-3 overflow-hidden px-gutter lg:mx-0 lg:grid lg:grid-cols-3 lg:px-0">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="grid gap-3 lg:grid-cols-[19rem_minmax(0,1fr)] lg:gap-8">
-            <Skeleton className="h-16" />
-            <Skeleton className="h-9 self-center" />
-          </div>
+          <Skeleton key={i} className="h-64 w-[86%] max-w-sm shrink-0 rounded-[var(--radius-xl)] sm:w-[60%] lg:w-auto lg:max-w-none" />
         ))}
       </div>
     </div>

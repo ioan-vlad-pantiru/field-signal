@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import type { DataOrigin, Loaded } from "@/lib/api";
 import type { OptimizerPlan, OptimizerResponse, RuleCheck } from "@/lib/contracts";
@@ -13,8 +13,9 @@ import { RangeBar } from "@/components/ui/charts";
 import { CropDot } from "@/components/ui/crop-chip";
 import { Disclosure } from "@/components/ui/disclosure";
 import { Button } from "@/components/ui/button";
-import { NoticeBar } from "@/components/ui/notice-bar";
-import { Section } from "@/components/ui/section";
+import { GridIcon } from "@/components/ui/icons";
+import { InfoTip } from "@/components/ui/info-tip";
+import { Sheet } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SourceChip } from "@/components/ui/source-chip";
 import { DemoBanner, EmptyState } from "@/components/ui/states";
@@ -34,10 +35,11 @@ function Pill({ children }: { children: ReactNode }) {
 }
 
 /**
- * All submitted fields planned together (`POST /v1/farm/optimize`), below the per-field results. Its own
- * loading and error state: a slow solve or a rejected request never touches the per-field results.
+ * All submitted fields planned together (`POST /v1/farm/optimize/jobs`, a background job) as one
+ * compact card; the full plan opens in its own sheet. Its own loading and error state: a slow solve
+ * or a rejected request never touches the per-field results.
  */
-export function OptimizerSection({
+export function OptimizerCard({
   state,
   names,
   onRetry,
@@ -48,34 +50,65 @@ export function OptimizerSection({
   onRetry?: () => void;
 }) {
   const t = useTranslations("Optimizer");
+  const locale = useAppLocale();
+  const [open, setOpen] = useState(false);
+  const n = (v: number) => formatNumber(v, locale, 0);
+  const best = state.status === "done" ? state.result.data.plans[0] : undefined;
+  const current = state.status === "done" ? state.result.data.current : undefined;
+  const diff = best && current ? Math.round(best.score.total - current.score.total) : null;
+
   return (
-    <Section id="farm-plan" title={t("title")} hint={t("hint")} className="print:hidden">
-      {state.status === "loading" ? (
-        <div className="flex flex-col gap-3" aria-busy="true">
-          <p role="status" className="font-medium">
-            {t("loading")}
-          </p>
-          <p className="text-sm text-ink-muted">
-            {state.elapsedS !== undefined && state.elapsedS >= 3
-              ? t("loadingBackground", { s: Math.round(state.elapsedS) })
-              : t("loadingHint")}
-          </p>
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-24 w-full" />
-        </div>
-      ) : state.status === "error" ? (
-        <div className="flex flex-col items-start gap-3">
-          <NoticeBar>{t(state.invalid ? "invalid" : "error")}</NoticeBar>
-          {!state.invalid && onRetry ? (
-            <Button variant="secondary" onClick={onRetry}>
-              {t("retry")}
-            </Button>
+    <section aria-labelledby="farm-plan" className="rise print:hidden" style={{ "--i": 4 } as React.CSSProperties}>
+      <div className="flex flex-col gap-3 rounded-[var(--radius-xl)] bg-surface p-4 shadow-1">
+        <div className="flex items-start gap-3">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-field-soft text-field-strong">
+            <GridIcon size={20} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h2 id="farm-plan" className="font-semibold">
+              {t("title")}
+            </h2>
+            <p className="text-sm text-ink-muted" role="status" aria-live="polite">
+              {state.status === "loading"
+                ? state.elapsedS !== undefined && state.elapsedS >= 3
+                  ? t("loadingFor", { s: Math.round(state.elapsedS) })
+                  : t("loading")
+                : state.status === "error"
+                  ? t(state.invalid ? "invalid" : "error")
+                  : best
+                    ? t("summary", { years: state.result.data.plan_years, ha: formatNumber(state.result.data.total_area_ha, locale, 1) })
+                    : t("none")}
+            </p>
+          </div>
+          {best ? (
+            <p className="shrink-0 text-right">
+              <span className="font-display text-3xl font-semibold tabular-nums leading-none">{n(best.score.total)}</span>
+              {diff !== null ? (
+                <span className={`block text-xs font-semibold tabular-nums ${diff > 0 ? "text-status-good" : "text-ink-muted"}`}>
+                  {t("vsCurrent", { diff: `${diff > 0 ? "+" : ""}${n(diff)}` })}
+                </span>
+              ) : null}
+            </p>
           ) : null}
         </div>
-      ) : (
-        <OptimizerBody data={state.result.data} origin={state.result.origin} names={names} />
-      )}
-    </Section>
+        {state.status === "loading" ? <Skeleton className="h-2 w-full" /> : null}
+        {state.status === "error" && !state.invalid && onRetry ? (
+          <Button variant="secondary" onClick={onRetry} className="self-start">
+            {t("retry")}
+          </Button>
+        ) : null}
+        {state.status === "done" && best ? (
+          <Button variant="tonal" onClick={() => setOpen(true)} aria-haspopup="dialog">
+            {t("open")}
+          </Button>
+        ) : null}
+      </div>
+      {state.status === "done" ? (
+        <Sheet open={open} onClose={() => setOpen(false)} snap title={t("title")}>
+          <OptimizerBody data={state.result.data} origin={state.result.origin} names={names} />
+        </Sheet>
+      ) : null}
+    </section>
   );
 }
 
@@ -91,7 +124,7 @@ function OptimizerBody({ data, origin, names }: { data: OptimizerResponse; origi
   };
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6 pb-2">
       {data.mock ? <DemoBanner origin={origin} /> : null}
       <p className="tabular-nums text-ink-muted">
         {t("meta", {
@@ -200,14 +233,16 @@ function PlanView({
       </div>
 
       <div>
-        <h4 className="font-semibold">{t("perField")}</h4>
-        <p className="text-sm text-ink-muted">{t("perFieldHint")}</p>
+        <div className="flex items-center gap-1">
+          <h4 className="font-semibold">{t("perField")}</h4>
+          <InfoTip label={t("perFieldInfo")}>{t("perFieldHint")}</InfoTip>
+        </div>
         {/* One row per rotation; a field on a farm under 75 ha may have several rows (same field_id). */}
         <ul className="mt-2 flex flex-col divide-y divide-line">
           {byField(plan.allocations).map((a, i) => (
             <li key={`${a.field_id}:${i}`} className="flex flex-col gap-1.5 py-2">
               <p>
-                <span className="font-medium">{fieldName(a.field_id)}</span>{" "}
+                <span className="font-semibold">{fieldName(a.field_id)}</span>{" "}
                 <span className="tabular-nums text-ink-muted">· {t("ha", { ha: formatNumber(a.area_ha, locale, 1) })}</span>
               </p>
               <CropSequence sequence={a.sequence} />
@@ -285,7 +320,6 @@ function Rules({ rules }: { rules: RuleCheck[] }) {
   return (
     <div>
       <h4 className="font-semibold">{t("title")}</h4>
-      <p className="text-sm text-ink-muted">{t("hint")}</p>
       <ul className="mt-2 flex flex-col divide-y divide-line">
         {rules.map((rule, i) => {
           // GAEC 7 is met by rotation OR diversification: with the rotation met, the

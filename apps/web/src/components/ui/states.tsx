@@ -1,38 +1,57 @@
 "use client";
 
+import { useId, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import type { DataOrigin } from "@/lib/api";
-import { NoticeBar } from "./notice-bar";
+import { AlertIcon } from "./icons";
+import { Button } from "./button";
 
-/** Shown whenever the data has `mock: true`, so demo numbers are never mistaken for real ones. */
+/**
+ * Shown whenever the data has `mock: true`, so demo numbers are never mistaken for real ones:
+ * a small chip, the full note one tap away.
+ */
 export function DemoBanner({ origin }: { origin: DataOrigin }) {
   const t = useTranslations("Banner");
+  const id = useId();
   return (
-    <NoticeBar>
-      <strong className="font-semibold">{t("title")}.</strong> {t("text")} {origin === "fallback" ? t("offline") : null}
-    </NoticeBar>
+    <>
+      <button
+        type="button"
+        popoverTarget={id}
+        className="press inline-flex min-h-tap w-fit items-center gap-1.5 rounded-pill bg-status-watch-tint px-3 text-sm font-semibold text-ink"
+      >
+        <AlertIcon size={16} className="text-status-watch" />
+        {t("title")}
+      </button>
+      <div id={id} popover="auto" role="note" className="tip">
+        <p className="font-semibold">{t("title")}</p>
+        <p className="mt-1 text-sm text-ink-muted">
+          {t("text")} {origin === "fallback" ? t("offline") : null}
+        </p>
+      </div>
+    </>
   );
 }
 
-export function ErrorState({ onRetry }: { onRetry: () => void }) {
+/** One friendly line and a retry. */
+export function ErrorState({ onRetry, children }: { onRetry: () => void; children?: ReactNode }) {
   const t = useTranslations("Common");
   return (
-    <div role="alert" className="flex flex-col items-start gap-3 rounded-2xl border border-status-bad bg-status-bad-tint p-4">
-      <p className="font-semibold">{t("errorTitle")}</p>
-      <p>{t("errorText")}</p>
-      <button
-        type="button"
-        onClick={onRetry}
-        className="press min-h-11 rounded-xl bg-field px-4 font-semibold text-on-field"
-      >
-        {t("retry")}
-      </button>
+    <div role="alert" className="flex flex-col items-center gap-3 rounded-[var(--radius-lg)] bg-surface px-5 py-8 text-center shadow-1">
+      <span className="flex size-12 items-center justify-center rounded-full bg-status-bad-tint text-status-bad">
+        <AlertIcon size={22} />
+      </span>
+      <p className="font-semibold">{children ?? t("errorTitle")}</p>
+      <Button onClick={onRetry}>{t("retry")}</Button>
     </div>
   );
 }
 
-export function EmptyState({ children }: { children: React.ReactNode }) {
+export function EmptyState({ children, action }: { children: ReactNode; action?: ReactNode }) {
   return (
-    <p className="rounded-2xl border border-dashed border-line p-6 text-center text-ink-muted">{children}</p>
+    <div className="flex flex-col items-center gap-3 rounded-[var(--radius-lg)] border-2 border-dashed border-line px-5 py-8 text-center text-ink-muted">
+      <p>{children}</p>
+      {action}
+    </div>
   );
 }

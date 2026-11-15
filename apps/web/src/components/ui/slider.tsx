@@ -26,7 +26,7 @@ export function Slider({
   return (
     <div>
       <div className="flex items-baseline justify-between gap-3">
-        <label htmlFor={id} className="font-medium">
+        <label htmlFor={id} className="font-semibold">
           {label}
         </label>
         <span className="tabular-nums text-ink-muted" aria-hidden="true">

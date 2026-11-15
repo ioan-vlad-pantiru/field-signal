@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { Indicator, SeasonOutcome, Status, Strategy } from "./contracts.ts";
-import { indicatorShift, placeShifts, poorSeasons, rankStrategies, replayYears, ruleStatus, verdict } from "./results.ts";
+import { firstSentence, indicatorShift, mainRisk, placeShifts, poorSeasons, rankStrategies, replayYears, ruleStatus, verdict } from "./results.ts";
 
 function outcomes(statuses: Status[], from = 2001): SeasonOutcome[] {
   return statuses.map((status, i) => ({
@@ -134,5 +134,52 @@ describe("ruleStatus", () => {
     assert.equal(ruleStatus({ id: "max_crop_share", limit_pct: 75, value_pct: 60, passed: true }), "within");
     assert.equal(ruleStatus({ id: "legume_share", limit_pct: 2, value_pct: 5, passed: true }), "within");
     assert.equal(ruleStatus({ id: "max_two_crops_share", limit_pct: 95, value_pct: 100, passed: false }), "outside");
+  });
+});
+
+describe("mainRisk", () => {
+  const reason = (code: string) => ({ code, label: { en: code, ro: code } });
+  function withReasons(rows: [Status, string[]][], isCurrent = true): Strategy {
+    const s = strategy("cur", 50, rows.map(([status]) => status), isCurrent);
+    s.replay = s.replay.map((o, i) => ({ ...o, reasons: rows[i][1].map(reason) }));
+    return s;
+  }
+
+  it("names the reason seen in most weak seasons of the current rotation", () => {
+    const current = withReasons([
+      ["bad", ["heat", "dry"]],
+      ["watch", ["dry"]],
+      ["good", ["dry", "dry"]],
+      ["bad", ["frost"]],
+    ]);
+    const other = withReasons([["bad", ["frost"]], ["bad", ["frost"]]], false);
+    assert.deepEqual(mainRisk([other, current]), { code: "dry", label: { en: "dry", ro: "dry" }, seasons: 2 });
+  });
+
+  it("breaks ties by the reason seen first", () => {
+    const current = withReasons([["bad", ["heat"]], ["bad", ["frost"]]]);
+    assert.equal(mainRisk([current])?.code, "heat");
+  });
+
+  it("is null when no weak season has a reason", () => {
+    assert.equal(mainRisk([withReasons([["good", ["heat"]], ["bad", []]])]), null);
+    assert.equal(mainRisk([]), null);
+  });
+
+  it("falls back to the first rotation when none is current", () => {
+    const first = withReasons([["bad", ["wet"]]], false);
+    assert.equal(mainRisk([first])?.code, "wet");
+  });
+});
+
+describe("firstSentence", () => {
+  it("keeps the first sentence only", () => {
+    assert.equal(firstSentence("Fewer dry summers. Wheat also helps the soil."), "Fewer dry summers.");
+  });
+  it("returns the whole text when there is no full stop", () => {
+    assert.equal(firstSentence("  No stop here "), "No stop here");
+  });
+  it("does not cut inside numbers", () => {
+    assert.equal(firstSentence("Yield rose 4.5 t/ha. Then fell."), "Yield rose 4.5 t/ha.");
   });
 });

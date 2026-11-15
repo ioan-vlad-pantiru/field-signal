@@ -123,3 +123,42 @@ export function byField<T extends { field_id: string }>(rows: readonly T[]): T[]
   for (const row of rows) if (!order.has(row.field_id)) order.set(row.field_id, order.size);
   return [...rows].sort((a, b) => order.get(a.field_id)! - order.get(b.field_id)!);
 }
+
+export interface MainRisk {
+  /** Stable reason code, e.g. "heat_at_flowering". */
+  code: string;
+  label: Strategy["replay"][number]["reasons"][number]["label"];
+  /** Weak seasons (watch or bad) of the current rotation in which this reason appeared. */
+  seasons: number;
+}
+
+/**
+ * The reason that most often made the current rotation's past seasons weak (watch or bad). Same
+ * rule as the WhatsApp bot (`services/api/src/api/whatsapp/models.py::_main_risk`), so the web and
+ * the bot name the same risk: count each reason code over those seasons; ties go to the code seen
+ * first. Null when no weak season has a reason.
+ */
+export function mainRisk(strategies: readonly Pick<Strategy, "is_current" | "replay">[]): MainRisk | null {
+  const current = strategies.find((s) => s.is_current) ?? strategies[0];
+  if (!current) return null;
+  const found = new Map<string, MainRisk>();
+  for (const season of current.replay) {
+    if (season.status !== "bad" && season.status !== "watch") continue;
+    for (const reason of season.reasons) {
+      const entry = found.get(reason.code);
+      if (entry) {
+        entry.seasons += 1;
+        entry.label = reason.label;
+      } else found.set(reason.code, { code: reason.code, label: reason.label, seasons: 1 });
+    }
+  }
+  let best: MainRisk | null = null;
+  for (const entry of found.values()) if (!best || entry.seasons > best.seasons) best = entry;
+  return best;
+}
+
+/** The first sentence of a text, for a one-line summary on a card (the rest is one tap away). */
+export function firstSentence(text: string): string {
+  const match = /^([\s\S]+?[.!?])(\s|$)/.exec(text.trim());
+  return (match ? match[1] : text).trim();
+}

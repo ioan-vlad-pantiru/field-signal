@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
-import { AssistantError, ask, dropLastQuestion, resetConversation, useAssistant, type Message } from "@/lib/assistant";
+import { AssistantError, ask, dropLastQuestion, OPEN_ASSISTANT_EVENT, resetConversation, useAssistant, type Message } from "@/lib/assistant";
 import { CrossIcon } from "@/components/ui/icons";
 
 /** Inline **bold** only; everything else stays plain text. */
@@ -99,6 +99,13 @@ export function Assistant() {
     if (open) input.current?.focus();
   }, [open]);
 
+  // "Ask Field Signal" rows and header actions open the panel from anywhere.
+  useEffect(() => {
+    const onOpen = () => setOpen(true);
+    window.addEventListener(OPEN_ASSISTANT_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_ASSISTANT_EVENT, onOpen);
+  }, []);
+
   useEffect(() => {
     log.current?.scrollTo({ top: log.current.scrollHeight, behavior: "smooth" });
   }, [messages, busy]);
@@ -147,13 +154,13 @@ export function Assistant() {
         ref={launcher}
         type="button"
         onClick={() => setOpen(true)}
-        className="no-print press fixed bottom-[calc(9.5rem+env(safe-area-inset-bottom))] right-4 z-30 inline-flex min-h-12 items-center gap-2 rounded-full bg-field px-4 font-semibold text-on-field shadow-[var(--shadow-2)] hover:bg-field-strong sm:bottom-6 sm:right-6"
+        aria-label={t("launcher")}
+        className="no-print press fixed bottom-[calc(var(--bar-gap)+env(safe-area-inset-bottom))] right-4 z-30 inline-flex size-[var(--bar-h)] items-center justify-center gap-2 rounded-pill bg-field font-semibold text-on-field shadow-float hover:bg-field-strong sm:bottom-6 sm:right-6 sm:size-14 [html[data-sheets]_&]:hidden"
       >
-        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M4 5h16v11H9l-5 4z" />
           <path d="M8.5 10h.01M12 10h.01M15.5 10h.01" />
         </svg>
-        {t("launcher")}
       </button>
     );
   }
@@ -166,9 +173,9 @@ export function Assistant() {
       onKeyDown={(e) => {
         if (e.key === "Escape") close();
       }}
-      className="no-print fixed inset-x-0 bottom-0 top-16 z-40 flex flex-col border-line bg-surface shadow-[var(--shadow-3)] sm:inset-x-auto sm:bottom-6 sm:right-6 sm:top-auto sm:h-[min(640px,calc(100svh-7rem))] sm:w-[400px] sm:rounded-2xl sm:border"
+      className="no-print fixed inset-x-0 bottom-0 z-40 flex h-[88dvh] flex-col overflow-hidden rounded-t-[var(--radius-xl)] bg-surface-raised shadow-3 sm:inset-x-auto sm:bottom-6 sm:right-6 sm:h-[min(640px,calc(100svh-7rem))] sm:w-[400px] sm:rounded-[var(--radius-xl)] sm:shadow-float"
     >
-      <header className="flex items-center justify-between gap-2 border-b border-line py-2 pl-4 pr-2">
+      <header className="flex items-center justify-between gap-2 py-3 pl-5 pr-3 shadow-[0_1px_0_var(--line)]">
         <div>
           <h2 id={`${id}-title`} className="font-semibold">
             {t("title")}
@@ -184,7 +191,7 @@ export function Assistant() {
                 setError(null);
               }}
               disabled={busy}
-              className="press min-h-11 whitespace-nowrap rounded-lg px-3 text-sm font-medium text-field hover:bg-surface-sunken disabled:opacity-40"
+              className="press min-h-tap whitespace-nowrap rounded-pill px-3 text-sm font-semibold text-field hover:bg-surface-sunken disabled:opacity-40"
             >
               {t("newChat")}
             </button>
@@ -193,14 +200,14 @@ export function Assistant() {
             type="button"
             onClick={close}
             aria-label={t("close")}
-            className="press grid size-11 place-items-center rounded-lg text-ink-muted hover:bg-surface-sunken hover:text-ink"
+            className="press grid size-tap place-items-center rounded-full bg-surface-sunken text-ink-muted hover:text-ink"
           >
             <CrossIcon size={20} />
           </button>
         </div>
       </header>
 
-      <div ref={log} className="flex-1 overflow-y-auto px-4 py-4" aria-live="polite">
+      <div ref={log} className="flex-1 overflow-y-auto overscroll-contain px-4 py-4" aria-live="polite">
         {messages.length === 0 ? (
           <div className="flex flex-col gap-4">
             <p className="text-ink-muted">{fields.length > 0 ? t("introFields", { count: fields.length }) : t("intro")}</p>
@@ -210,7 +217,7 @@ export function Assistant() {
                   <button
                     type="button"
                     onClick={() => void send(s)}
-                    className="press w-full rounded-xl border border-line px-3 py-2.5 text-left hover:border-field"
+                    className="press min-h-tap w-full rounded-[var(--radius-lg)] bg-surface px-4 py-2.5 text-left shadow-1 ring-1 ring-line hover:ring-field"
                   >
                     {s}
                   </button>
@@ -231,13 +238,13 @@ export function Assistant() {
           </ol>
         )}
         {error ? (
-          <p role="alert" className="mt-4 rounded-lg bg-status-bad-tint px-3 py-2 text-sm">
+          <p role="alert" className="mt-4 rounded-[var(--radius-md)] bg-status-bad-tint px-3 py-2 text-sm">
             {error}
           </p>
         ) : null}
       </div>
 
-      <form onSubmit={submit} className="border-t border-line p-3">
+      <form onSubmit={submit} className="p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-1px_0_var(--line)]">
         <label htmlFor={`${id}-q`} className="sr-only">
           {t("placeholder")}
         </label>
@@ -251,12 +258,12 @@ export function Assistant() {
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={onKeyDown}
             placeholder={t("placeholder")}
-            className="min-h-11 flex-1 resize-none rounded-xl border border-line bg-surface px-3 py-2 text-base outline-offset-2 placeholder:text-ink-muted focus-visible:outline-3 focus-visible:outline-[var(--focus)]"
+            className="min-h-tap flex-1 resize-none rounded-[var(--radius-lg)] bg-surface-sunken px-4 py-2.5 text-base outline-offset-2 placeholder:text-ink-muted focus-visible:outline-3 focus-visible:outline-[var(--focus)]"
           />
           <button
             type="submit"
             disabled={busy || !draft.trim()}
-            className="press min-h-11 rounded-xl bg-field px-4 font-medium text-on-field hover:bg-field-strong disabled:opacity-40"
+            className="press min-h-tap rounded-pill bg-field px-5 font-semibold text-on-field hover:bg-field-strong disabled:opacity-40"
           >
             {t("send")}
           </button>
@@ -269,7 +276,7 @@ export function Assistant() {
             className="mt-0.5 size-4 accent-[var(--field)]"
           />
           <span>
-            <span className="font-medium">{t("think")}</span> <span className="text-ink-muted">{t("thinkHint")}</span>
+            <span className="font-semibold">{t("think")}</span> <span className="text-ink-muted">{t("thinkHint")}</span>
           </span>
         </label>
       </form>
@@ -303,7 +310,7 @@ function MessageItem({ message }: { message: Message }) {
     : t("working");
   if (message.role === "user") {
     return (
-      <li className="ml-8 self-end rounded-2xl rounded-br-md bg-field-tint px-3 py-2">
+      <li className="ml-10 self-end rounded-[var(--radius-lg)] rounded-br-[var(--radius-xs)] bg-field-tint px-4 py-2.5">
         <span className="sr-only">{t("you")}: </span>
         {message.content}
       </li>

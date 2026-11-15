@@ -3,19 +3,19 @@
 import { useTranslations } from "next-intl";
 import { formatNumber } from "@/lib/format";
 import { useAppLocale, useLocalized } from "@/lib/localized";
-import { AMBER_DAYS, RED_DAYS, TARGET_DAYS, type CoverStatus, type RowAssessment } from "@/lib/stocks";
+import type { CoverStatus, RowAssessment } from "@/lib/stocks";
 import { TONE_CLASSES, TONE_ICONS, type Tone } from "@/components/ui/tone";
 
 const COVER_TONE: Record<CoverStatus, Tone> = { red: "bad", amber: "watch", ok: "good" };
 
-/** Status as icon + text, never colour alone. */
+/** Status as icon + word, never colour alone. */
 export function CoverBadge({ status }: { status: CoverStatus }) {
   const t = useTranslations("Stocks.status");
   const tone = COVER_TONE[status];
   const Icon = TONE_ICONS[tone];
   return (
     <span
-      className={`inline-flex w-fit items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-sm font-medium ${TONE_CLASSES[tone].soft} ${TONE_CLASSES[tone].text}`}
+      className={`inline-flex w-fit items-center gap-1 whitespace-nowrap rounded-pill px-2.5 py-1 text-sm ${TONE_CLASSES[tone].soft} ${TONE_CLASSES[tone].text}`}
     >
       <Icon size={16} />
       <span className="text-ink">{t(status)}</span>
@@ -23,105 +23,121 @@ export function CoverBadge({ status }: { status: CoverStatus }) {
   );
 }
 
-export function InventoryTable({
+function useCoverDays() {
+  const t = useTranslations("Stocks");
+  return (a: RowAssessment) => (Number.isFinite(a.cover_days) ? t("days", { days: Math.floor(a.cover_days) }) : "—");
+}
+
+/** Phones: one card per ingredient, most exposed first: name and status, days of cover on the right. */
+export function InventoryCards({
   rows,
-  selectedId,
-  onSelect,
+  onOpen,
+  className = "",
 }: {
   rows: RowAssessment[];
-  selectedId: string | null;
-  onSelect: (id: string) => void;
+  onOpen: (id: string) => void;
+  className?: string;
+}) {
+  const t = useTranslations("Stocks");
+  const l = useLocalized();
+  const days = useCoverDays();
+  return (
+    <ul className={`flex flex-col gap-2 ${className}`} aria-label={t("inventoryCaption")}>
+      {rows.map((a) => (
+        <li key={a.row.id}>
+          <button
+            type="button"
+            aria-haspopup="dialog"
+            onClick={() => onOpen(a.row.id)}
+            className="press flex min-h-16 w-full items-center justify-between gap-3 rounded-[var(--radius-lg)] bg-surface px-4 py-3 text-left shadow-1"
+          >
+            <span className="flex min-w-0 flex-col gap-1.5">
+              <span className="truncate font-semibold">{l(a.row.name)}</span>
+              <CoverBadge status={a.status} />
+            </span>
+            <span className="shrink-0 font-display text-2xl font-semibold tabular-nums">{days(a)}</span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** Tablets and laptops: stock, use, incoming and cover per ingredient. A row opens its suppliers. */
+export function InventoryTable({
+  rows,
+  onOpen,
+  className = "",
+}: {
+  rows: RowAssessment[];
+  onOpen: (id: string) => void;
+  className?: string;
 }) {
   const t = useTranslations("Stocks");
   const locale = useAppLocale();
   const l = useLocalized();
+  const days = useCoverDays();
   const tonnes = (value: number) => t("tonnes", { value: formatNumber(value, locale, 0) });
-  // Secondary columns show from tablets up; on phones they sit under the ingredient name.
-  const secondary = "hidden px-2 py-2 text-right tabular-nums md:table-cell";
+  const num = "px-2 py-2 text-right tabular-nums";
+  const head = "px-2 py-3 font-normal";
 
   return (
-    <section aria-labelledby="stocks-inventory" className="flex flex-col gap-3">
-      <div>
-        <h2 id="stocks-inventory" className="text-xl font-semibold tracking-tight">
-          {t("inventoryTitle")}
-        </h2>
-        <p className="mt-1 text-ink-muted">{t("inventoryHint")}</p>
-      </div>
+    <div className={`overflow-hidden rounded-[var(--radius-lg)] bg-surface px-2 shadow-1 ${className}`}>
       <table className="w-full text-left">
         <caption className="sr-only">{t("inventoryCaption")}</caption>
         <thead className="text-sm text-ink-muted">
           <tr className="border-b border-line">
-            <th scope="col" className="py-2 pr-2 font-medium">
+            <th scope="col" className={head}>
               {t("col.ingredient")}
             </th>
-            <th scope="col" className={`${secondary} font-medium`}>
+            <th scope="col" className={`${head} text-right`}>
               {t("col.stock")}
             </th>
-            <th scope="col" className={`${secondary} font-medium`}>
+            <th scope="col" className={`${head} text-right`}>
               {t("col.use")}
             </th>
-            <th scope="col" className={`${secondary} font-medium`}>
+            <th scope="col" className={`${head} text-right`}>
               {t("col.incoming")}
             </th>
-            <th scope="col" className="px-2 py-2 text-right font-medium">
+            <th scope="col" className={`${head} text-right`}>
               {t("col.cover")}
             </th>
-            <th scope="col" className="hidden py-2 pl-2 font-medium md:table-cell">
+            <th scope="col" className={head}>
               {t("col.status")}
             </th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((a) => {
-            const selected = a.row.id === selectedId;
-            const name = l(a.row.name);
-            return (
-              <tr
-                key={a.row.id}
-                onClick={() => onSelect(a.row.id)}
-                className={`cursor-pointer border-b border-line ${selected ? "bg-surface-sunken" : "hover:bg-surface-sunken"}`}
-              >
-                <td className="py-1 pr-2">
-                  <button
-                    type="button"
-                    aria-pressed={selected}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onSelect(a.row.id);
-                    }}
-                    className="min-h-11 w-full rounded-lg py-1 pl-1 text-left"
-                  >
-                    <span className={`block ${selected ? "font-semibold" : "font-medium"}`}>{name}</span>
-                    <span className="block text-sm tabular-nums text-ink-muted md:hidden">
-                      {t("rowDetail", {
-                        stock: tonnes(a.row.stock_t),
-                        use: tonnes(a.row.monthly_use_t),
-                        incoming: tonnes(a.row.incoming_t),
-                      })}
-                    </span>
-                  </button>
-                </td>
-                <td className={secondary}>{tonnes(a.row.stock_t)}</td>
-                <td className={secondary}>{tonnes(a.row.monthly_use_t)}</td>
-                <td className={secondary}>{tonnes(a.row.incoming_t)}</td>
-                <td className="whitespace-nowrap px-2 py-1 text-right font-semibold tabular-nums">
-                  {Number.isFinite(a.cover_days) ? t("days", { days: Math.floor(a.cover_days) }) : "—"}
-                  {/* Phones: the status sits under the days, so the name column keeps its width. */}
-                  <span className="mt-1 flex justify-end font-normal md:hidden">
-                    <CoverBadge status={a.status} />
-                  </span>
-                </td>
-                <td className="hidden py-1 pl-2 md:table-cell">
-                  <CoverBadge status={a.status} />
-                </td>
-              </tr>
-            );
-          })}
+          {rows.map((a) => (
+            <tr
+              key={a.row.id}
+              onClick={() => onOpen(a.row.id)}
+              className="cursor-pointer border-b border-line last:border-b-0 hover:bg-surface-sunken"
+            >
+              <td className="px-2 py-1">
+                <button
+                  type="button"
+                  aria-haspopup="dialog"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onOpen(a.row.id);
+                  }}
+                  className="min-h-tap w-full rounded-[var(--radius-sm)] text-left font-semibold hover:underline"
+                >
+                  {l(a.row.name)}
+                </button>
+              </td>
+              <td className={num}>{tonnes(a.row.stock_t)}</td>
+              <td className={num}>{tonnes(a.row.monthly_use_t)}</td>
+              <td className={num}>{tonnes(a.row.incoming_t)}</td>
+              <td className={`${num} whitespace-nowrap font-semibold`}>{days(a)}</td>
+              <td className="px-2 py-1">
+                <CoverBadge status={a.status} />
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
-      <p className="text-sm text-ink-muted">
-        {t("legend", { red: RED_DAYS, amber: AMBER_DAYS, target: TARGET_DAYS })}
-      </p>
-    </section>
+    </div>
   );
 }

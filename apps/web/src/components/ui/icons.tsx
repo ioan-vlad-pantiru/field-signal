@@ -180,6 +180,102 @@ export const SelectDragIcon = (p: IconProps) => (
 );
 
 /** Same artwork as public/icons/icon.svg: a sprout under two signal arcs. */
+export const ChevronRightIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M9.5 6l6 6-6 6" />
+  </Svg>
+);
+
+export const ChevronLeftIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M14.5 6l-6 6 6 6" />
+  </Svg>
+);
+
+export const MoreIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="5.5" cy="12" r="1.2" fill="currentColor" />
+    <circle cx="12" cy="12" r="1.2" fill="currentColor" />
+    <circle cx="18.5" cy="12" r="1.2" fill="currentColor" />
+  </Svg>
+);
+
+export const SearchIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path d="M20 20l-4.2-4.2" />
+  </Svg>
+);
+
+export const LocateIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="3.5" />
+    <path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3" />
+    <circle cx="12" cy="12" r="7.5" />
+  </Svg>
+);
+
+export const ShareIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 3.5v11M7.5 8L12 3.5 16.5 8" />
+    <path d="M5 12.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19v-6.5" />
+  </Svg>
+);
+
+export const EditIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z" />
+    <path d="M13.5 6.5l4 4" />
+  </Svg>
+);
+
+export const BookmarkIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M6.5 3.5h11V21L12 16.5 6.5 21z" />
+  </Svg>
+);
+
+export const UploadIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 15V3.5M7.5 8L12 3.5 16.5 8" />
+    <path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15" />
+  </Svg>
+);
+
+export const PlayIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M8 5.5v13l10.5-6.5z" fill="currentColor" />
+  </Svg>
+);
+
+export const PauseIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M8 5.5v13M16 5.5v13" strokeWidth={3} />
+  </Svg>
+);
+
+export const PrintIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M7 8.5V3.5h10v5" />
+    <rect x="3.5" y="8.5" width="17" height="8" rx="2" />
+    <path d="M7 14h10v6.5H7z" />
+  </Svg>
+);
+
+export const LinkIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1" />
+    <path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1" />
+  </Svg>
+);
+
+export const ChartIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 20V4M4 20h16" />
+    <path d="M8 16l4-5 3 3 5-7" />
+  </Svg>
+);
+
 export const LogoMark = ({ size = 28, ...props }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 512 512" aria-hidden="true" focusable="false" {...props}>
     <rect width="512" height="512" rx="112" fill="#24603f" />

@@ -8,28 +8,41 @@ import { mergeParcels } from "@/lib/api";
 import { fieldAreaHa, fieldCentroid, fieldRings, polygonAreaHa, polygonCentroid } from "@/lib/geo";
 import { useAppLocale } from "@/lib/localized";
 import { SATELLITE_ATTRIBUTION, type Basemap } from "@/components/map/use-map";
-import { Button } from "@/components/ui/button";
-import { ArrowLeftIcon, PlusIcon, SelectDragIcon } from "@/components/ui/icons";
-import { Segmented } from "@/components/ui/segmented";
-import { Stepper } from "@/components/ui/stepper";
+import { ActionBar } from "@/components/ui/action-bar";
+import { Button, IconButton } from "@/components/ui/button";
+import { AlertIcon, ArrowLeftIcon, LayersIcon, PlusIcon, SatelliteIcon, SelectDragIcon } from "@/components/ui/icons";
+import { Sheet } from "@/components/ui/sheet";
 import { MAX_FIELDS, type DraftField, type SubmittedField } from "./draft-field";
 import { FieldMap, type MapFocus, type MapMode } from "./field-map";
 import { FieldList } from "./steps/field-list";
 import type { Commune } from "./steps/communes";
-import { FieldStep, MAX_FIELD_HA, MIN_FIELD_HA } from "./steps/field-step";
+import { COMMUNE_ZOOM, LocateButton, LOCATION_ZOOM, MAX_FIELD_HA, MIN_FIELD_HA, PlaceSearch } from "./steps/field-step";
 import { PrioritiesStep, levelsFrom, weightsFrom, type PriorityLevels } from "./steps/priorities-step";
-import { RotationStep, START_ROTATION } from "./steps/rotation-step";
+import { RotationEditor, START_ROTATION } from "./steps/rotation-step";
 import { SaveToAccount } from "./steps/save-to-account";
 
 const DEFAULT_POINT: LatLon = { lat: 46.3, lon: 23.75 };
-const STEPS = ["field", "rotation", "priorities"] as const;
+/** 0: the map (choose the field) · 1 and 2: the setup sheet open (rotation and priorities). */
 export type FormStep = 0 | 1 | 2;
 
+/** A floating chip on the map. */
+function MapChip({ children, tone = "glass" }: { children: ReactNode; tone?: "glass" | "watch" }) {
+  return (
+    <p
+      className={`pointer-events-auto flex min-h-tap w-fit max-w-full items-center gap-2 rounded-pill px-4 text-sm font-semibold shadow-float backdrop-blur-md ${
+        tone === "watch" ? "bg-status-watch-tint text-ink" : "bg-glass text-ink"
+      }`}
+    >
+      {children}
+    </p>
+  );
+}
+
 /**
- * The farmer's three steps (field, rotation, what matters) beside one map. Laptop: map on the
- * left, sticky; phone: map on top and a sticky action bar under the panel.
- * After the rotation, "Add another field" keeps the field and starts the next one; priorities are
- * shared, and all fields are analysed together.
+ * Choose the field on a full-bleed map (APIA parcels), then set the rotation and what matters in
+ * one sheet. Search, locate, basemap and drag-to-select float on the map; the one primary action
+ * sits in the thumb zone. "Add another field" keeps this field and starts the next; priorities are
+ * shared and all fields are analysed together.
  */
 export function FieldForm({
   initialFields,
@@ -40,6 +53,7 @@ export function FieldForm({
   initialPlace = null,
   communes,
   notice,
+  onBack,
   onSavedToAccount,
   onSubmit,
 }: {
@@ -48,13 +62,15 @@ export function FieldForm({
   initialPriorities?: FieldRequest["priorities"];
   initialIrrigated?: boolean;
   initialStep?: FormStep;
-  /** Where the map opens when there is no earlier request (e.g. a point passed from the feed screen). */
+  /** Where the map opens when there is no earlier request (e.g. a point passed from the buyer map). */
   startPoint?: LatLon | null;
-  /** The place name known so far (feed link or saved field), replaced by a commune picked in the search. */
+  /** The place name known so far (buyer link or saved field), replaced by a commune picked in the search. */
   initialPlace?: string | null;
   communes: Commune[];
-  /** Shown above the step, such as the place pinned from the feed screen. */
+  /** Shown on the map, such as the place pinned from the buyer map. */
   notice?: ReactNode;
+  /** Back to My fields, when the farmer came from there. */
+  onBack?: () => void;
   /** A field was saved to My fields from the form. */
   onSavedToAccount?: () => void;
   /** Every field with its request; the API receives each field's centroid. */
@@ -66,7 +82,8 @@ export function FieldForm({
   const last = initialFields.at(-1) ?? null;
   /** Fields kept for this analysis, besides the one being edited. */
   const [added, setAdded] = useState<DraftField[]>(() => initialFields.slice(0, -1));
-  const [step, setStep] = useState<FormStep>(last ? initialStep : 0);
+  const [setupOpen, setSetupOpen] = useState(initialFields.length > 0 && initialStep > 0);
+  const [listOpen, setListOpen] = useState(false);
   const [point, setPoint] = useState<LatLon>(last?.point ?? startPoint ?? DEFAULT_POINT);
   const [rotation, setRotation] = useState<Crop[]>(last ? [...last.rotation] : START_ROTATION);
   const [levels, setLevels] = useState<PriorityLevels>(() => levelsFrom(initialPriorities));
@@ -80,6 +97,7 @@ export function FieldForm({
   const [basemap, setBasemap] = useState<Basemap>("satellite");
   const [focus, setFocus] = useState<MapFocus | null>(null);
   const [mapFailed, setMapFailed] = useState(false);
+  const [locateFailed, setLocateFailed] = useState(false);
   const [place, setPlace] = useState<string | null>(last ? last.place : initialPlace);
   const [parcelsShown, setParcelsShown] = useState(false);
   /** APIA parcels the farmer tapped, to become one field. */
@@ -93,12 +111,13 @@ export function FieldForm({
   const areaHa = fieldAreaHa({ boundary: corners, parts });
   const selectedHa = selected.reduce((sum, p) => sum + p.area_ha, 0);
   const boundary = mode === "locked" && corners.length >= 3 ? corners : null;
-  const drawing = step === 0 && mode === "draw";
+  const drawing = mode === "draw";
   const others = useMemo(() => added.flatMap((f) => fieldRings(f)), [added]);
-  /** No field being edited (nothing drawn yet) but some already kept: the farmer can go on with those. */
+  /** No field being edited (nothing chosen yet) but some already kept: the farmer can go on with those. */
   const onlyAdded = !boundary && corners.length === 0 && added.length > 0;
   const canAddAnother = boundary !== null && added.length + 1 < MAX_FIELDS;
   const total = added.length + (boundary ? 1 : 0);
+  const ready = boundary !== null || onlyAdded;
 
   function current(): DraftField | null {
     return boundary ? { boundary, parts, point, rotation, place, ...meta } : null;
@@ -125,14 +144,15 @@ export function FieldForm({
     // little so the neighbouring parcels are in view.
     load(null);
     setFocus((prev) => ({ point, zoom: 15, seq: (prev?.seq ?? 0) + 1 }));
-    go(0);
+    setSetupOpen(false);
   }
 
   function editAdded(index: number) {
     const field = current();
     setAdded((prev) => [...prev.filter((_, i) => i !== index), ...(field ? [field] : [])]);
     load(added[index]);
-    go(0);
+    setListOpen(false);
+    setSetupOpen(false);
   }
 
   function removeAdded(index: number) {
@@ -190,10 +210,9 @@ export function FieldForm({
     );
   }
 
-  /** The selected parcels become one field, as if their outline had been drawn and Done pressed.
-   * Parcels that do not touch stay separate pieces of the same field. */
-  async function applySelected() {
-    if (selected.length === 0 || joining) return;
+  /** The selected parcels become one field. Parcels that do not touch stay separate pieces of it. */
+  async function applySelected(): Promise<boolean> {
+    if (selected.length === 0 || joining) return false;
     let outline: LatLon[];
     let pieces: LatLon[][] = [];
     if (selected.length === 1) {
@@ -204,7 +223,7 @@ export function FieldForm({
       setJoining(false);
       if (!result.ok) {
         setPickNote(t("parcel.failed"));
-        return;
+        return false;
       }
       outline = result.data.boundary.map((c) => ({ lat: c.lat, lon: c.lon }));
       pieces = (result.data.parts ?? []).map((ring) => ring.map((c) => ({ lat: c.lat, lon: c.lon })));
@@ -217,29 +236,36 @@ export function FieldForm({
           ? t("parcel.tooSmall", { ha: size, min: MIN_FIELD_HA })
           : t("parcel.tooBig", { ha: size, max: formatNumber(MAX_FIELD_HA, locale, 0) }),
       );
-      return;
+      return false;
     }
     setPickNote(null);
     setSelected([]);
+    setBrush(false);
     setCorners(outline);
     setParts(pieces);
     const c = fieldCentroid({ boundary: outline, parts: pieces });
     setPoint({ lat: Number(c.lat.toFixed(4)), lon: Number(c.lon.toFixed(4)) });
     setMode("locked");
+    return true;
   }
 
-  function go(next: FormStep) {
-    setStep(next);
-    // On a phone the panel sits under the map: bring the new step's title into view.
-    document.getElementById("field-step-panel")?.scrollIntoView({ block: "start", behavior: "auto" });
+  function restart() {
+    setCorners([]);
+    setParts([]);
+    setMode("draw");
+    setMeta({ accountId: null, name: null });
   }
 
-  function submit(event: FormEvent) {
+  async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!boundary && !onlyAdded) return;
-    if (step < 2) {
-      // With nothing new drawn, the kept fields already have their rotations: straight to priorities.
-      go(boundary ? ((step + 1) as FormStep) : 2);
+    if (!setupOpen && drawing && selected.length > 0) {
+      // One primary action: Continue makes the selected parcels the field, then opens the setup.
+      if (await applySelected()) setSetupOpen(true);
+      return;
+    }
+    if (!ready) return;
+    if (!setupOpen) {
+      setSetupOpen(true);
       return;
     }
     const field = current();
@@ -261,21 +287,19 @@ export function FieldForm({
     );
   }
 
-  const stepLabels = STEPS.map((s) => t(`steps.${s}`));
+  const hint = !parcelsShown ? t("parcel.zoomHint") : brush ? t("parcel.brushHint") : t("parcel.mapHint");
+  const editingName = meta.name ?? place ?? t("multi.fieldN", { n: added.length + 1 });
 
   return (
-    <form
-      onSubmit={submit}
-      className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start lg:gap-10"
-    >
+    <form onSubmit={submit} className="flex flex-col">
+      {/* Full-bleed on phones: the map runs edge to edge, from the top to just above the action bar. */}
       <div
-        className={`relative lg:sticky lg:top-[5.25rem] lg:h-[calc(100svh-7.5rem)] lg:min-h-[480px] ${
-          step === 0 ? "h-[max(55svh,320px)]" : "h-[max(28svh,200px)]"
-        }`}
+        className="field-map-frame relative -mx-gutter -mt-[max(1rem,env(safe-area-inset-top))] h-[calc(100dvh-var(--bar-space)-6.5rem)] min-h-[420px] overflow-hidden sm:mx-0 sm:mt-0 sm:h-[calc(100dvh-14rem)] sm:rounded-[var(--radius-xl)] sm:shadow-2"
+        style={{ viewTransitionName: "none" }}
       >
         <FieldMap
           value={point}
-          mode={drawing ? "draw" : "locked"}
+          mode={drawing && !setupOpen ? "draw" : "locked"}
           corners={corners}
           closed={mode === "locked"}
           others={others}
@@ -291,164 +315,215 @@ export function FieldForm({
           onUnavailable={() => setMapFailed(true)}
           className="h-full"
         />
-        {mapFailed ? null : (
-        <div className="absolute left-2 top-2 z-[1]">
-          <Segmented
-            label={t("basemap.label")}
-            options={[
-              { value: "satellite", label: t("basemap.satellite") },
-              { value: "map", label: t("basemap.map") },
-            ]}
-            value={basemap}
-            onChange={setBasemap}
-            className="shadow-2"
-          />
-        </div>
-        )}
-        {drawing && !mapFailed && parcelsShown && corners.length === 0 ? (
-          <button
-            type="button"
-            aria-pressed={brush}
-            onClick={() => setBrush((on) => !on)}
-            className={`press absolute bottom-9 left-2 z-[1] inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-semibold shadow-2 ${
-              brush ? "bg-field-strong text-on-field" : "bg-surface/95 text-ink"
-            }`}
-          >
-            <SelectDragIcon size={18} />
-            {t("parcel.brush")}
-          </button>
-        ) : null}
-        {drawing && !mapFailed ? (
-          // Phone: the panel starts below the map, so the map itself says what to do and how big the field is.
-          <p
-            aria-hidden="true"
-            className="absolute left-2 top-16 z-[1] max-w-[calc(100%-4rem)] rounded-lg bg-surface/90 px-2.5 py-1 text-sm tabular-nums text-ink shadow-2 lg:hidden"
-          >
-            {selected.length > 0
-              ? t("parcel.selected", { count: selected.length, ha: formatNumber(selectedHa, locale, 1) })
-              : t(parcelsShown ? (brush ? "parcel.brushHint" : "parcel.mapHint") : "parcel.zoomHint")}
-          </p>
-        ) : null}
-        {basemap === "satellite" && !mapFailed ? (
-          // Licence: the credit stays visible, on one small line; the full text is also behind the (i) control.
-          <p className="absolute bottom-2 left-2 right-10 z-[1] flex">
-            <a
-              href={SATELLITE_ATTRIBUTION.href}
-              target="_blank"
-              rel="noopener"
-              title={SATELLITE_ATTRIBUTION.text}
-              className="truncate rounded-md bg-surface/90 px-1.5 py-px text-[11px] leading-4 text-ink underline-offset-2 hover:underline"
-            >
-              {SATELLITE_ATTRIBUTION.text}
-            </a>
-          </p>
-        ) : null}
-      </div>
 
-      <div id="field-step-panel" className="flex min-w-0 flex-col gap-6">
-        <Stepper label={t("steps.label")} steps={stepLabels} current={step} onSelect={(i) => go(i as FormStep)} />
-        {notice}
-        {added.length > 0 ? (
-          <FieldList fields={added} onEdit={editAdded} onRemove={removeAdded} />
-        ) : null}
-        {added.length > 0 && !onlyAdded ? (
-          <p className="-mb-3 text-sm font-semibold text-field">
-            {t("multi.editing", { field: meta.name ?? t("multi.fieldN", { n: added.length + 1 }) })}
-          </p>
-        ) : null}
-
-        {step === 0 ? (
-          <FieldStep
-            communes={communes}
-            onFocus={(p, zoom, name) => {
-              setFocus((prev) => ({ point: p, zoom, seq: (prev?.seq ?? 0) + 1 }));
-              setPlace(name);
-            }}
-            mode={mode}
-            areaHa={areaHa}
-            parcelsShown={parcelsShown}
-            brush={brush}
-            pickNote={pickNote}
-            selectedCount={selected.length}
-            selectedHa={selectedHa}
-            joining={joining}
-            onUseSelected={applySelected}
-            onAddSeparate={selected.length > 1 && total < MAX_FIELDS ? addSeparate : undefined}
-            onClearSelected={() => {
-              setSelected([]);
-              setPickNote(null);
-            }}
-            onRestart={() => {
-              setCorners([]);
-              setParts([]);
-              setMode("draw");
-              setMeta({ accountId: null, name: null });
-            }}
-          />
-        ) : null}
-        {step === 1 ? <RotationStep rotation={rotation} onChange={setRotation} /> : null}
-        {boundary && step < 2 ? (
-          <SaveToAccount
-            name={meta.name ?? ""}
-            onName={(name) => setMeta((m) => ({ ...m, name: name || null }))}
-            accountId={meta.accountId}
-            onSaved={(accountId, name) => {
-              setMeta({ accountId, name });
-              onSavedToAccount?.();
-            }}
-            fallbackName={place}
-            draft={{
-              request: {
-                location: point,
-                current_rotation: rotation as FieldRequest["current_rotation"],
-                priorities: weightsFrom(levels),
-                irrigated,
-              },
-              boundary,
-              near: place,
-            }}
-          />
-        ) : null}
-        {step === 2 ? (
-          <PrioritiesStep levels={levels} onLevels={setLevels} irrigated={irrigated} onIrrigated={setIrrigated} />
-        ) : null}
-
-        {step > 0 && canAddAnother ? (
-          <div className="flex flex-col items-start gap-1 border-t border-line pt-5">
-            <Button variant="secondary" onClick={addAnother}>
-              <PlusIcon size={18} />
-              {t("multi.addAnother")}
-            </Button>
-            <p className="text-sm text-ink-muted">{t("multi.addAnotherHint")}</p>
+        {mapFailed ? (
+          <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
+            <p className="max-w-xs text-ink-muted">{t("mapUnavailable")}</p>
           </div>
-        ) : null}
+        ) : (
+          <>
+            {/* Top: back, search, locate. */}
+            <div className="pointer-events-none absolute inset-x-3 top-[max(0.75rem,env(safe-area-inset-top))] z-[2] flex items-start gap-2 [&>*]:pointer-events-auto">
+              {onBack ? (
+                <IconButton label={t("toFields")} variant="float" onClick={onBack}>
+                  <ArrowLeftIcon size={20} />
+                </IconButton>
+              ) : null}
+              {drawing ? (
+                <PlaceSearch
+                  communes={communes}
+                  onPick={(c) => {
+                    setFocus((prev) => ({ point: c.point, zoom: COMMUNE_ZOOM, seq: (prev?.seq ?? 0) + 1 }));
+                    setPlace(c.name);
+                  }}
+                />
+              ) : (
+                <div className="flex-1" />
+              )}
+              {drawing ? (
+                <LocateButton
+                  onFound={(p) => setFocus((prev) => ({ point: p, zoom: LOCATION_ZOOM, seq: (prev?.seq ?? 0) + 1 }))}
+                  onFailed={setLocateFailed}
+                />
+              ) : null}
+            </div>
 
-        {/* Always in view: above the phone bottom navigation, at the viewport bottom from 640 px. */}
-        <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 -mx-4 border-t border-line bg-surface px-4 py-3 shadow-3 sm:bottom-0 lg:mx-0 lg:px-0 lg:shadow-none">
-          {!boundary && !onlyAdded ? (
-            <p className="mb-2 text-center text-sm font-medium text-ink-muted" aria-live="polite">
-              {t("needField")}
-            </p>
-          ) : null}
-          <div className="flex gap-2">
-            {step > 0 ? (
-              <Button variant="secondary" size="lg" onClick={() => go((step - 1) as FormStep)}>
-                <ArrowLeftIcon />
-                <span className="max-sm:sr-only">{t("back")}</span>
-              </Button>
+            {/* Right: basemap and drag-to-select. */}
+            <div className="absolute right-3 top-[4.25rem] z-[1] flex flex-col gap-2">
+              <IconButton
+                label={basemap === "satellite" ? t("basemap.map") : t("basemap.satellite")}
+                variant="float"
+                onClick={() => setBasemap((b) => (b === "satellite" ? "map" : "satellite"))}
+              >
+                {basemap === "satellite" ? <LayersIcon size={20} /> : <SatelliteIcon size={20} />}
+              </IconButton>
+              {drawing && parcelsShown ? (
+                <IconButton
+                  label={t("parcel.brush")}
+                  variant={brush ? "active" : "float"}
+                  aria-pressed={brush}
+                  onClick={() => setBrush((on) => !on)}
+                >
+                  <SelectDragIcon size={20} />
+                </IconButton>
+              ) : null}
+            </div>
+
+            {/* Bottom: what to do now, or what is selected. */}
+            <div className="pointer-events-none absolute inset-x-3 bottom-8 z-[1] flex flex-col items-start gap-2">
+              {notice}
+              {locateFailed ? <MapChip tone="watch">{t("locate.failed")}</MapChip> : null}
+              {pickNote ? (
+                <MapChip tone="watch">
+                  <AlertIcon size={16} className="shrink-0 text-status-watch" />
+                  <span aria-live="polite">{pickNote}</span>
+                </MapChip>
+              ) : null}
+              {added.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => setListOpen(true)}
+                  className="press pointer-events-auto inline-flex min-h-tap items-center gap-2 rounded-pill bg-glass px-4 text-sm font-semibold shadow-float backdrop-blur-md"
+                >
+                  <span className="flex size-6 items-center justify-center rounded-full bg-field text-xs text-on-field tabular-nums">{total}</span>
+                  {t("multi.count", { count: total })}
+                </button>
+              ) : null}
+              {drawing && selected.length > 0 ? (
+                <div className="pointer-events-auto flex w-full max-w-md flex-col gap-2 rounded-[var(--radius-lg)] bg-glass p-2 shadow-float backdrop-blur-md">
+                  <p className="px-2 pt-1 font-semibold tabular-nums" aria-live="polite">
+                    {t("parcel.selected", { count: selected.length, ha: formatNumber(selectedHa, locale, 1) })}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {selected.length > 1 && total < MAX_FIELDS ? (
+                      <Button variant="secondary" onClick={addSeparate} disabled={joining}>
+                        {t("parcel.separate")}
+                      </Button>
+                    ) : null}
+                    <Button
+                      variant="quiet"
+                      onClick={() => {
+                        setSelected([]);
+                        setPickNote(null);
+                      }}
+                      disabled={joining}
+                    >
+                      {t("parcel.clear")}
+                    </Button>
+                  </div>
+                </div>
+              ) : drawing ? (
+                <MapChip>
+                  <span aria-live="polite">{hint}</span>
+                </MapChip>
+              ) : boundary ? (
+                <div className="pointer-events-auto flex flex-wrap items-center gap-2">
+                  <MapChip>
+                    <span className="font-display text-lg tabular-nums" aria-live="polite">
+                      {t("area", { ha: formatNumber(areaHa, locale, 1) })}
+                    </span>
+                    <span className="max-w-40 truncate font-normal text-ink-muted">{editingName}</span>
+                  </MapChip>
+                  <Button variant="secondary" onClick={restart}>
+                    {t("parcel.restart")}
+                  </Button>
+                  {canAddAnother ? (
+                    <IconButton label={t("multi.addAnother")} variant="float" onClick={addAnother}>
+                      <PlusIcon size={20} />
+                    </IconButton>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+
+            {basemap === "satellite" ? (
+              // Licence: the credit stays visible, on one small line.
+              <p className="absolute bottom-1.5 left-3 right-12 z-[1] flex">
+                <a
+                  href={SATELLITE_ATTRIBUTION.href}
+                  target="_blank"
+                  rel="noopener"
+                  title={SATELLITE_ATTRIBUTION.text}
+                  className="truncate rounded-xs bg-glass px-1.5 text-[11px] leading-4 text-ink underline-offset-2 hover:underline"
+                >
+                  {SATELLITE_ATTRIBUTION.text}
+                </a>
+              </p>
             ) : null}
-            <Button type="submit" size="lg" disabled={!boundary && !onlyAdded} className="flex-1">
-              {step === 2
-                ? total > 1
-                  ? t("multi.analyze", { count: total })
-                  : t("analyze")
-                : onlyAdded
-                  ? t("multi.continueWith", { count: added.length })
-                  : t("continue")}
+          </>
+        )}
+      </div>
+
+      <ActionBar note={ready || selected.length > 0 ? undefined : t("needField")}>
+        <Button type="submit" size="lg" disabled={(!ready && selected.length === 0) || joining} className="flex-1">
+          {joining
+            ? t("parcel.joining")
+            : selected.length > 0 && drawing
+              ? t("parcel.use")
+              : onlyAdded
+                ? t("multi.continueWith", { count: added.length })
+                : t("continue")}
+        </Button>
+      </ActionBar>
+
+      <Sheet
+        open={setupOpen}
+        onClose={() => setSetupOpen(false)}
+        title={total > 1 ? t("setup.titleMany", { count: total }) : boundary ? editingName : t("setup.title")}
+        subtitle={boundary ? t("area", { ha: formatNumber(areaHa, locale, 1) }) : undefined}
+        snap
+        footer={
+          <div className="flex gap-2">
+            {canAddAnother ? (
+              <IconButton label={t("multi.addAnother")} variant="filled" onClick={addAnother} className="size-14">
+                <PlusIcon size={20} />
+              </IconButton>
+            ) : null}
+            <Button type="submit" size="lg" className="flex-1">
+              {total > 1 ? t("multi.analyze", { count: total }) : t("analyze")}
             </Button>
           </div>
+        }
+      >
+        <div className="flex flex-col gap-6 pb-2">
+          {boundary ? (
+            <section className="flex flex-col gap-2">
+              <h3 className="text-sm font-semibold text-ink-muted">{t("setup.rotation")}</h3>
+              <RotationEditor rotation={rotation} onChange={setRotation} />
+            </section>
+          ) : null}
+          <section className="flex flex-col gap-1">
+            <h3 className="text-sm font-semibold text-ink-muted">{t("setup.priorities")}</h3>
+            <PrioritiesStep levels={levels} onLevels={setLevels} irrigated={irrigated} onIrrigated={setIrrigated} />
+          </section>
+          {boundary ? (
+            <SaveToAccount
+              name={meta.name ?? ""}
+              onName={(name) => setMeta((m) => ({ ...m, name: name || null }))}
+              accountId={meta.accountId}
+              onSaved={(accountId, name) => {
+                setMeta({ accountId, name });
+                onSavedToAccount?.();
+              }}
+              fallbackName={place}
+              draft={{
+                request: {
+                  location: point,
+                  current_rotation: rotation as FieldRequest["current_rotation"],
+                  priorities: weightsFrom(levels),
+                  irrigated,
+                },
+                boundary,
+                near: place,
+              }}
+            />
+          ) : null}
         </div>
-      </div>
+      </Sheet>
+
+      <Sheet open={listOpen} onClose={() => setListOpen(false)} title={t("multi.listTitle")}>
+        <FieldList fields={added} onEdit={editAdded} onRemove={removeAdded} />
+      </Sheet>
     </form>
   );
 }

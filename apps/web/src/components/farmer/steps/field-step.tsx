@@ -1,32 +1,21 @@
 "use client";
 
-import { useId, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useId, useState, type KeyboardEvent } from "react";
 import { useTranslations } from "next-intl";
 import type { LatLon } from "@/lib/contracts";
-import { formatNumber } from "@/lib/format";
-import { useAppLocale } from "@/lib/localized";
-import { Button } from "@/components/ui/button";
-import { AlertIcon, PinIcon } from "@/components/ui/icons";
-import type { MapMode } from "../field-map";
+import { IconButton } from "@/components/ui/button";
+import { LocateIcon, PinIcon, SearchIcon } from "@/components/ui/icons";
 import { searchCommunes, type Commune } from "./communes";
 
 export const MIN_FIELD_HA = 1;
 export const MAX_FIELD_HA = 1200;
 /** Zoom for a commune picked in the search: the village and its fields around it. */
-const COMMUNE_ZOOM = 13.5;
+export const COMMUNE_ZOOM = 13.5;
 /** Zoom for the farmer's own location: close enough to see parcels. */
-const LOCATION_ZOOM = 15;
+export const LOCATION_ZOOM = 15;
 
-function PlaceSearch({
-  communes,
-  onPick,
-  action,
-}: {
-  communes: Commune[];
-  onPick: (commune: Commune) => void;
-  /** Shown beside the search box, wrapping under it on narrow screens. */
-  action?: ReactNode;
-}) {
+/** The search pill floating on the map; matches drop down under it. */
+export function PlaceSearch({ communes, onPick }: { communes: Commune[]; onPick: (commune: Commune) => void }) {
   const t = useTranslations("Field.search");
   const id = useId();
   const [query, setQuery] = useState("");
@@ -39,76 +28,67 @@ function PlaceSearch({
 
   function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     // Enter picks the first match instead of submitting the form.
+    if (event.key === "Escape") setQuery("");
     if (event.key !== "Enter") return;
     event.preventDefault();
     if (results[0]) pick(results[0]);
   }
 
-  const showResults =
-    query.trim() !== "" && !(results.length === 1 && results[0].name === query);
+  const showResults = query.trim() !== "" && !(results.length === 1 && results[0].name === query);
 
   return (
-    <div className="flex flex-col gap-2">
-      <label htmlFor={`${id}-q`} className="font-medium">
+    <div className="relative min-w-0 flex-1">
+      <label htmlFor={`${id}-q`} className="sr-only">
         {t("label")}
       </label>
-      <div className="flex flex-wrap gap-2">
-        <input
-          id={`${id}-q`}
-          type="search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          onKeyDown={onKeyDown}
-          placeholder={t("placeholder")}
-          autoComplete="off"
-          aria-describedby={`${id}-status`}
-          className="min-h-11 min-w-48 flex-1 rounded-xl border border-line bg-surface px-3 text-base outline-offset-2 placeholder:text-ink-muted focus-visible:outline-3 focus-visible:outline-[var(--focus)]"
-        />
-        {action}
-      </div>
-      <p
-        id={`${id}-status`}
-        aria-live="polite"
-        className={
-          showResults && results.length === 0
-            ? "text-sm text-ink-muted"
-            : "sr-only"
-        }
-      >
-        {showResults
-          ? results.length === 0
-            ? t("none")
-            : t("results", { count: results.length })
-          : ""}
+      <SearchIcon size={18} className="pointer-events-none absolute left-4 top-[1.375rem] z-[1] -translate-y-1/2 text-ink-muted" />
+      <input
+        id={`${id}-q`}
+        type="search"
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        onKeyDown={onKeyDown}
+        placeholder={t("placeholder")}
+        autoComplete="off"
+        role="combobox"
+        aria-expanded={showResults && results.length > 0}
+        aria-controls={`${id}-list`}
+        aria-describedby={`${id}-status`}
+        className="min-h-tap w-full rounded-pill bg-glass pl-11 pr-4 text-base shadow-float outline-offset-2 backdrop-blur-md placeholder:text-ink-muted focus-visible:outline-3 focus-visible:outline-[var(--focus)]"
+      />
+      <p id={`${id}-status`} aria-live="polite" className="sr-only">
+        {showResults ? (results.length === 0 ? t("none") : t("results", { count: results.length })) : ""}
       </p>
-      {showResults && results.length > 0 ? (
-        <ul className="flex flex-col divide-y divide-line rounded-xl border border-line">
-          {results.map((commune) => (
-            <li key={`${commune.name}-${commune.point.lat}`}>
-              <button
-                type="button"
-                onClick={() => pick(commune)}
-                className="press flex min-h-11 w-full items-center gap-2 rounded-xl px-3 text-left hover:bg-surface-sunken"
-              >
-                <PinIcon size={18} className="shrink-0 text-ink-muted" />
-                <span className="font-medium">{commune.name}</span>
-                <span className="text-ink-muted">{commune.county}</span>
-              </button>
-            </li>
-          ))}
+      {showResults ? (
+        <ul
+          id={`${id}-list`}
+          className="absolute inset-x-0 top-full z-10 mt-2 max-h-72 overflow-y-auto rounded-[var(--radius-lg)] bg-surface-raised p-1.5 shadow-float"
+        >
+          {results.length === 0 ? (
+            <li className="px-3 py-2.5 text-sm text-ink-muted">{t("none")}</li>
+          ) : (
+            results.map((commune) => (
+              <li key={`${commune.name}-${commune.point.lat}`}>
+                <button
+                  type="button"
+                  onClick={() => pick(commune)}
+                  className="press flex min-h-tap w-full items-center gap-2 rounded-[var(--radius-md)] px-3 text-left hover:bg-surface-sunken"
+                >
+                  <PinIcon size={18} className="shrink-0 text-ink-muted" />
+                  <span className="font-semibold">{commune.name}</span>
+                  <span className="text-sm text-ink-muted">{commune.county}</span>
+                </button>
+              </li>
+            ))
+          )}
         </ul>
       ) : null}
     </div>
   );
 }
 
-function LocateButton({
-  onFound,
-  onFailed,
-}: {
-  onFound: (point: LatLon) => void;
-  onFailed: (failed: boolean) => void;
-}) {
+/** Round "use my location" button; says once, quietly, when the location is not available. */
+export function LocateButton({ onFound, onFailed }: { onFound: (point: LatLon) => void; onFailed: (failed: boolean) => void }) {
   const t = useTranslations("Field.locate");
   const [busy, setBusy] = useState(false);
 
@@ -122,12 +102,8 @@ function LocateButton({
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setBusy(false);
-        onFound({
-          lat: position.coords.latitude,
-          lon: position.coords.longitude,
-        });
+        onFound({ lat: position.coords.latitude, lon: position.coords.longitude });
       },
-      // Refused, unavailable or too slow: say so once, quietly, and let them search instead.
       () => {
         setBusy(false);
         onFailed(true);
@@ -137,124 +113,8 @@ function LocateButton({
   }
 
   return (
-    <Button variant="secondary" onClick={locate} disabled={busy}>
-      <PinIcon size={18} />
-      {busy ? t("busy") : t("button")}
-    </Button>
-  );
-}
-
-export function FieldStep({
-  communes,
-  onFocus,
-  mode,
-  areaHa,
-  parcelsShown = false,
-  brush = false,
-  pickNote = null,
-  selectedCount = 0,
-  selectedHa = 0,
-  joining = false,
-  onUseSelected,
-  onAddSeparate,
-  onClearSelected,
-  onRestart,
-}: {
-  communes: Commune[];
-  /** `place` is the commune picked in the search; null for the farmer's own location. */
-  onFocus: (point: LatLon, zoom: number, place: string | null) => void;
-  mode: MapMode;
-  areaHa: number;
-  /** APIA parcel outlines are on the map and can be tapped. */
-  parcelsShown?: boolean;
-  /** Drag-to-select is on. */
-  brush?: boolean;
-  /** Why the last tapped parcel could not be used. */
-  pickNote?: string | null;
-  selectedCount?: number;
-  /** Area declared to APIA for the selected parcels. */
-  selectedHa?: number;
-  joining?: boolean;
-  onUseSelected?: () => void;
-  /** Make each selected parcel its own field (offered when several are selected). */
-  onAddSeparate?: () => void;
-  onClearSelected?: () => void;
-  onRestart: () => void;
-}) {
-  const t = useTranslations("Field");
-  const locale = useAppLocale();
-  const [locateFailed, setLocateFailed] = useState(false);
-
-  return (
-    <div className="flex flex-col gap-4">
-      <header>
-        <h1 className="text-3xl font-semibold tracking-tight">
-          {t("field.title")}
-        </h1>
-        <p className="mt-1 text-ink-muted">{t("field.hint")}</p>
-      </header>
-
-      {mode === "draw" ? (
-        <div className="flex flex-col gap-1">
-          <PlaceSearch
-            communes={communes}
-            onPick={(c) => onFocus(c.point, COMMUNE_ZOOM, c.name)}
-            action={
-              <LocateButton
-                onFound={(point) => onFocus(point, LOCATION_ZOOM, null)}
-                onFailed={setLocateFailed}
-              />
-            }
-          />
-          <p aria-live="polite" className="text-sm text-ink-muted">
-            {locateFailed ? t("locate.failed") : ""}
-          </p>
-        </div>
-      ) : null}
-
-      <div className="flex flex-col gap-2 border-t border-line pt-4">
-        <p className="text-sm text-ink-muted">
-          {mode !== "draw" ? t("draw.yourField") : parcelsShown ? t(brush ? "parcel.brushHelp" : "parcel.hint") : t("parcel.zoomHelp")}
-        </p>
-        {selectedCount > 0 && mode === "draw" ? (
-          <div className="flex flex-col gap-3 rounded-2xl bg-field-tint p-4">
-            <p className="font-semibold text-field-strong" aria-live="polite">
-              {t("parcel.selected", { count: selectedCount, ha: formatNumber(selectedHa, locale, 1) })}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <Button onClick={onUseSelected} disabled={joining}>
-                {joining ? t("parcel.joining") : t("parcel.use")}
-              </Button>
-              {onAddSeparate ? (
-                <Button variant="secondary" onClick={onAddSeparate} disabled={joining}>
-                  {t("parcel.separate")}
-                </Button>
-              ) : null}
-              <Button variant="secondary" onClick={onClearSelected} disabled={joining}>
-                {t("parcel.clear")}
-              </Button>
-            </div>
-          </div>
-        ) : null}
-        {pickNote && mode === "draw" ? (
-          <p className="flex items-start gap-2 font-medium text-status-watch" aria-live="polite">
-            <AlertIcon size={18} className="mt-0.5 shrink-0" />
-            {pickNote}
-          </p>
-        ) : null}
-        {mode !== "draw" ? (
-          <>
-            <p aria-live="polite" className="font-display text-4xl font-semibold tabular-nums tracking-tight">
-              {t("draw.area", { ha: formatNumber(areaHa, locale, 1) })}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="secondary" onClick={onRestart}>
-                {t("parcel.restart")}
-              </Button>
-            </div>
-          </>
-        ) : null}
-      </div>
-    </div>
+    <IconButton label={busy ? t("busy") : t("button")} variant="float" onClick={locate} disabled={busy} aria-busy={busy}>
+      <LocateIcon size={20} className={busy ? "animate-pulse motion-reduce:animate-none" : ""} />
+    </IconButton>
   );
 }

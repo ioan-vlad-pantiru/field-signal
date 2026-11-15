@@ -1,3 +1,3 @@
 export function Skeleton({ className = "" }: { className?: string }) {
-  return <div className={`skeleton rounded-[20px] ${className}`} />;
+  return <div aria-hidden="true" className={`skeleton rounded-[var(--radius-lg)] ${className}`} />;
 }

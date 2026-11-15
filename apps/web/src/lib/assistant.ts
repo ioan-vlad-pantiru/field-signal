@@ -155,3 +155,10 @@ export function dropLastQuestion() {
   const last = state.messages.at(-1);
   if (last?.role === "user") set({ messages: state.messages.slice(0, -1) });
 }
+
+/** Window event that opens the assistant panel. */
+export const OPEN_ASSISTANT_EVENT = "field-signal:open-assistant";
+
+export function openAssistant() {
+  window.dispatchEvent(new Event(OPEN_ASSISTANT_EVENT));
+}

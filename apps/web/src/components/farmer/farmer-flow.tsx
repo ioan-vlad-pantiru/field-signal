@@ -1,30 +1,32 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { startTransition, Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { analyzeField, ApiRequestError, optimizeFarm, type Loaded } from "@/lib/api";
 import { fieldInput, updateField, useAccount } from "@/lib/account";
 import { setAssistantFields } from "@/lib/assistant";
 import type { FieldAnalysis, LatLon, SavedField as AccountField } from "@/lib/contracts";
-import { Link } from "@/i18n/navigation";
 import { formatNumber } from "@/lib/format";
 import { useAppLocale } from "@/lib/localized";
 import { fieldAreaHa } from "@/lib/geo";
-import { Button } from "@/components/ui/button";
-import { NoticeBar } from "@/components/ui/notice-bar";
+import { PinIcon } from "@/components/ui/icons";
 import { ErrorState } from "@/components/ui/states";
+import { LOCAL_FIELD } from "@/lib/last-verdict";
+import { verdict } from "@/lib/results";
+import { rememberVerdict } from "@/lib/use-last-verdicts";
+import { StartScreen } from "@/components/fields/start-screen";
+import { FarmView } from "@/components/farm/farm-view";
 import { FieldForm, type FormStep } from "./field-form";
 import { ResultsSkeleton, ResultsView } from "./results-view";
 import { SaveField } from "./save-field";
 import { farmRequest, MAX_FIELDS, toDraft, type SubmittedField } from "./draft-field";
-import { OptimizerSection, type OptimizerState } from "./results/optimizer-plan";
+import { OptimizerCard, type OptimizerState } from "./results/optimizer-plan";
 import { ALL_FIELDS, FieldSwitcher } from "./results/field-switcher";
 import { ResultsOverview } from "./results/results-overview";
 import { useFieldLabel } from "./steps/field-list";
-import { CheckIcon } from "@/components/ui/icons";
 import { nearestCommune, useCommunes } from "./steps/communes";
-import { forgetField, saveField, useSavedField, type SavedField } from "./steps/saved-field";
+import { saveField, useSavedField, type SavedField } from "./steps/saved-field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supportedRotation } from "@/lib/crops";
 
@@ -60,6 +62,7 @@ function UrlPinnedFlow() {
   const lon = parseCoordinate(params.get("lon"), 180);
   const place = params.get("place")?.trim() || null;
   const pin = lat != null && lon != null ? { point: { lat, lon }, place } : null;
+  if (params.get("import") === "1") return <FarmView />;
   const saved = params.get("saved");
   if (saved) {
     const ids = saved.split(",").filter(Boolean).slice(0, MAX_FIELDS);
@@ -105,90 +108,15 @@ export function FarmerFlow() {
   );
 }
 
-/** A signed-in farmer's fields, most recently used first: tick one or several and open them together. */
-function AccountFieldsBar({ fields, onOpen }: { fields: AccountField[]; onOpen: (fields: AccountField[]) => void }) {
-  const t = useTranslations("Account.picker");
-  const area = useTranslations("Account.fields");
-  const locale = useAppLocale();
-  const [chosen, setChosen] = useState<ReadonlySet<string>>(new Set());
-  const shown = fields.slice(0, MAX_FIELDS);
-  const picked = shown.filter((f) => chosen.has(f.id));
-
-  function toggle(id: string) {
-    setChosen((prev) => {
-      const next = new Set(prev);
-      if (!next.delete(id)) next.add(id);
-      return next;
-    });
-  }
-
+/** My fields' own shape while the account loads. */
+function StartSkeleton() {
   return (
-    <div className="mb-5 border-b border-line pb-4">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <div>
-          <p className="text-lg font-semibold">{t("title")}</p>
-          <p className="text-sm text-ink-muted">{t("pickHint")}</p>
-        </div>
-        {fields.length > shown.length ? (
-          <Link href="/account" className="press min-h-11 rounded-lg font-medium text-field">
-            {t("all", { count: fields.length })}
-          </Link>
-        ) : null}
-      </div>
-      <ul className="mt-3 flex flex-wrap gap-2">
-        {shown.map((field) => {
-          const on = chosen.has(field.id);
-          return (
-            <li key={field.id} className="max-w-full">
-              <button
-                type="button"
-                aria-pressed={on}
-                onClick={() => toggle(field.id)}
-                className={`press inline-flex min-h-11 max-w-full items-center gap-2 rounded-xl border px-3 font-medium ${
-                  on ? "border-field bg-field-tint text-ink" : "border-line bg-surface hover:border-ink"
-                }`}
-              >
-                <span
-                  aria-hidden="true"
-                  className={`grid size-5 shrink-0 place-items-center rounded-md border ${
-                    on ? "border-field bg-field text-on-field" : "border-line"
-                  }`}
-                >
-                  {on ? <CheckIcon size={14} /> : null}
-                </span>
-                <span className="truncate">{field.name}</span>
-                <span className="shrink-0 tabular-nums text-ink-muted">
-                  {area("area", { ha: formatNumber(fieldAreaHa(field), locale, 0) })}
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <Button disabled={picked.length === 0} onClick={() => onOpen(picked)}>
-          {picked.length > 1 ? t("openMany", { count: picked.length }) : t("openOne")}
-        </Button>
-        <p className="text-ink-muted">{t("new")}</p>
-      </div>
-    </div>
-  );
-}
-
-/** "Continue with your field near Aiud, 42 ha", for a farmer who has been here before. */
-function SavedFieldBar({ saved, onResume }: { saved: SavedField; onResume: () => void }) {
-  const t = useTranslations("Field.saved");
-  const locale = useAppLocale();
-  const ha = formatNumber(fieldAreaHa(saved), locale, 0);
-  return (
-    <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
-      <p className="text-lg">{saved.near ? t("near", { place: saved.near, ha }) : t("noPlace", { ha })}</p>
-      <div className="flex gap-2">
-        <Button onClick={onResume}>{t("resume")}</Button>
-        <Button variant="quiet" onClick={forgetField}>
-          {t("forget")}
-        </Button>
-      </div>
+    <div className="flex flex-col gap-5" aria-busy="true">
+      <Skeleton className="h-9 w-1/2" />
+      <Skeleton className="h-14 w-full rounded-pill" />
+      {[0, 1, 2].map((i) => (
+        <Skeleton key={i} className="h-20 w-full" />
+      ))}
     </div>
   );
 }
@@ -220,8 +148,8 @@ function Flow({
   const [formKey, setFormKey] = useState(0);
   /** Which field's results are shown. */
   const [selected, setSelected] = useState(opened.length > 1 ? ALL_FIELDS : 0);
-  /** A field was saved from the form: keep the "Your fields" picker from appearing mid-edit. */
-  const [savedInForm, setSavedInForm] = useState(false);
+  /** The farmer chose to add a field (or came with a pin or fields): the map, not My fields. */
+  const [adding, setAdding] = useState(pin !== null || opened.length > 0);
   /** My fields entries updated by the last run. */
   const [updated, setUpdated] = useState<ReadonlySet<string>>(new Set());
   /** The farm plan of the last run; a newer run makes older answers stale. */
@@ -229,7 +157,14 @@ function Flow({
   const farmRun = useRef(0);
   const farmAbort = useRef<AbortController | null>(null);
   // Stop polling a farm plan job when the farmer leaves the page.
-  useEffect(() => () => farmAbort.current?.abort(), []);
+  useEffect(() => {
+    // A run aborted by an unmount that was not final (React's dev double mount, a remount) would
+    // stay "loading" for good: start it again for the same fields.
+    if (farmAbort.current?.signal.aborted && fields.length > 0) startOptimizer(fields);
+    return () => farmAbort.current?.abort();
+    // Only on mount and unmount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /**
    * Not part of the per-field Promise.all: the farm plan runs as a background job on the API, so a
@@ -285,7 +220,8 @@ function Flow({
     startOptimizer(list);
     try {
       const results = await Promise.all(list.map((f) => analyzeField(f.request)));
-      setState({ step: "results", results });
+      // A transition, so the skeleton hands over to the results with the page fade.
+      startTransition(() => setState({ step: "results", results }));
     } catch {
       setState({ step: "error" });
     }
@@ -307,6 +243,15 @@ function Flow({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.step, fields]);
 
+  // Each field's answer is kept on this device, for its card in My fields.
+  useEffect(() => {
+    if (state.step !== "results") return;
+    fields.forEach((f, i) => {
+      const id = f.accountId ?? (!signedIn && i === fields.length - 1 ? LOCAL_FIELD : null);
+      if (id) rememberVerdict(id, verdict(state.results[i].data.strategies));
+    });
+  }, [state, fields, signedIn]);
+
   // Opened from My fields with "Analyse": analyse once, straight away (state starts at loading).
   const autoStarted = useRef(!autoRun);
   useEffect(() => {
@@ -314,7 +259,7 @@ function Flow({
     autoStarted.current = true;
     startOptimizer(fields);
     Promise.all(opened.map((f) => analyzeField(f.request)))
-      .then((results) => setState({ step: "results", results }))
+      .then((results) => startTransition(() => setState({ step: "results", results })))
       .catch(() => setState({ step: "error" }));
     // Runs once on mount, for the fields the page was opened with.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -327,7 +272,16 @@ function Flow({
     setState({ step: "form" });
   }
 
-  /** "Change field or rotation": back to the rotation step, every field kept. */
+  /** Back to My fields from the map. */
+  function toStart() {
+    setFields([]);
+    setResumed(null);
+    setFormKey((k) => k + 1);
+    startTransition(() => setAdding(false));
+    window.scrollTo({ top: 0 });
+  }
+
+  /** "Change field": back to the setup sheet over the map, every field kept. */
   function back() {
     reopen(fields, 1);
     window.scrollTo({ top: 0 });
@@ -344,17 +298,21 @@ function Flow({
       const field = fields[index];
       const result = state.results[index];
       const name = fields.length > 1 ? fieldLabel(field, index) : (field.name ?? field.place);
+      const optimizer = <OptimizerCard state={farm} names={fields.map(fieldLabel)} onRetry={() => startOptimizer(fields)} />;
       const pick = (i: number) => {
         setSelected(i);
         window.scrollTo({ top: 0 });
       };
       return (
-        <div>
+        <div className="flex flex-col gap-4">
           {fields.length > 1 ? (
             <FieldSwitcher fields={fields} results={state.results} selected={showAll ? ALL_FIELDS : index} onSelect={pick} />
           ) : null}
           {showAll ? (
-            <ResultsOverview fields={fields} results={state.results} onOpen={pick} />
+            <>
+              <ResultsOverview fields={fields} results={state.results} onOpen={pick} />
+              {optimizer}
+            </>
           ) : (
           <ResultsView
             key={index}
@@ -376,52 +334,60 @@ function Flow({
                 onSaved={(id) => setFields((prev) => prev.map((f, i) => (i === index ? { ...f, accountId: id } : f)))}
               />
             }
+            after={optimizer}
           />
           )}
-          <OptimizerSection state={farm} names={fields.map(fieldLabel)} onRetry={() => startOptimizer(fields)} />
         </div>
       );
     }
     case "form": {
-      // A pin from the feed screen is a new place: it wins over the saved field.
+      // A pin from the buyer map is a new place: it wins over My fields.
       const fresh = !pin && resumed === null && fields.length === 0;
-      const accountFields = fresh && !savedInForm && signedIn && account.fields.length > 0 ? account.fields : null;
-      const offerSaved = fresh && saved && !signedIn ? saved : null;
+      const local = saved;
+      const hasFields = (signedIn && account.fields.length > 0) || local !== null;
+      if (fresh && !adding) {
+        if (account.status === "loading" && !local) return <StartSkeleton />;
+        if (hasFields) {
+          return (
+            <StartScreen
+              local={local}
+              onAnalyze={(list) => run(list.map(fromAccount))}
+              onAnalyzeLocal={(field) => run([fromLocal(field)])}
+              onEdit={(field) => {
+                setAdding(true);
+                reopen([fromAccount(field)], 0);
+              }}
+              onAdd={() => startTransition(() => setAdding(true))}
+            />
+          );
+        }
+      }
+      const where =
+        pin?.place ??
+        (pin
+          ? t("coordinates", { lat: formatNumber(pin.point.lat, locale, 3), lon: formatNumber(pin.point.lon, locale, 3) })
+          : null);
       return (
-        <div>
-          {accountFields ? (
-            <AccountFieldsBar fields={accountFields} onOpen={(list) => reopen(list.map(fromAccount), 2)} />
-          ) : null}
-          {offerSaved ? <SavedFieldBar saved={offerSaved} onResume={() => reopen([fromLocal(offerSaved)], 2)} /> : null}
-          <FieldForm
-            key={formKey}
-            initialFields={fields.map(toDraft)}
-            initialPriorities={fields[0]?.request.priorities}
-            initialIrrigated={fields[0]?.request.irrigated ?? false}
-            initialStep={resumed ?? 0}
-            startPoint={pin?.point}
-            initialPlace={pin?.place ?? null}
-            communes={communes}
-            notice={
-              pin ? (
-                <NoticeBar tone="info">
-                  {t("pinnedFromFeed", {
-                    place:
-                      pin.place ??
-                      t("coordinates", {
-                        lat: formatNumber(pin.point.lat, locale, 3),
-                        lon: formatNumber(pin.point.lon, locale, 3),
-                      }),
-                  })}
-                </NoticeBar>
-              ) : null
-            }
-            onSavedToAccount={() => {
-              if (!accountFields) setSavedInForm(true);
-            }}
-            onSubmit={run}
-          />
-        </div>
+        <FieldForm
+          key={formKey}
+          initialFields={fields.map(toDraft)}
+          initialPriorities={fields[0]?.request.priorities}
+          initialIrrigated={fields[0]?.request.irrigated ?? false}
+          initialStep={resumed ?? 0}
+          startPoint={pin?.point}
+          initialPlace={pin?.place ?? null}
+          communes={communes}
+          onBack={hasFields && !pin ? toStart : undefined}
+          notice={
+            where ? (
+              <p className="pointer-events-auto flex min-h-tap w-fit max-w-full items-center gap-2 rounded-pill bg-signal-tint px-4 text-sm font-semibold shadow-float">
+                <PinIcon size={16} className="shrink-0 text-signal" />
+                <span className="truncate">{t("pinned", { place: where })}</span>
+              </p>
+            ) : null
+          }
+          onSubmit={run}
+        />
       );
     }
   }

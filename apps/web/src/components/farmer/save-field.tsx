@@ -5,14 +5,15 @@ import { useTranslations } from "next-intl";
 import { AccountError, createField, useAccount } from "@/lib/account";
 import type { FieldRequest, LatLon } from "@/lib/contracts";
 import { Link } from "@/i18n/navigation";
-import { Button, buttonClass } from "@/components/ui/button";
-import { CheckIcon } from "@/components/ui/icons";
-import { INPUT } from "@/components/account/account-view";
+import { Button, IconButton } from "@/components/ui/button";
+import { BookmarkIcon } from "@/components/ui/icons";
+import { INPUT_CLASS } from "@/components/ui/input";
+import { Sheet } from "@/components/ui/sheet";
 
 /**
- * "Save field" on the results page. Signed in: name it and keep it in My fields; a field opened
- * from My fields is already saved (the flow updates it on every run). Signed out: a link to sign in,
- * where the field drawn on this device is offered for the account.
+ * "Save" in the results header: a bookmark that opens a short sheet to name the field and keep it
+ * in My fields. Filled once saved (a field opened from My fields is saved already, and the flow
+ * updates it on every run). Signed out, the sheet offers to sign in.
  */
 export function SaveField({
   request,
@@ -35,7 +36,7 @@ export function SaveField({
   justUpdated: boolean;
   onSaved: (id: string) => void;
 }) {
-  const t = useTranslations("Account.save");
+  const t = useTranslations("Results.save");
   const errors = useTranslations("Account.errors");
   const account = useAccount();
   const id = useId();
@@ -44,33 +45,7 @@ export function SaveField({
   const [error, setError] = useState<string | null>(null);
 
   if (account.status === "loading" || account.status === "offline") return null;
-  if (account.status === "signed-out") {
-    return (
-      <Link href="/account" className={buttonClass("quiet")}>
-        {t("signInToSave")}
-      </Link>
-    );
-  }
-  const saved = savedId ? account.fields.find((field) => field.id === savedId) : undefined;
-  if (saved) {
-    return (
-      <Link
-        href="/account"
-        role="status"
-        className="press inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 font-medium text-field hover:bg-surface-sunken"
-      >
-        <CheckIcon size={18} />
-        {justUpdated ? t("updated", { name: saved.name }) : t("saved", { name: saved.name })}
-      </Link>
-    );
-  }
-  if (!open) {
-    return (
-      <Button variant="quiet" onClick={() => setOpen(true)}>
-        {t("save")}
-      </Button>
-    );
-  }
+  const saved = account.status === "signed-in" && savedId ? account.fields.find((f) => f.id === savedId) : undefined;
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -81,6 +56,7 @@ export function SaveField({
     try {
       const field = await createField({ name, request, boundary, parts, near: placeName });
       onSaved(field.id);
+      setOpen(false);
     } catch (caught) {
       const code = caught instanceof AccountError ? caught.code : "server";
       setError(errors.has(code) ? errors(code) : t("failed"));
@@ -90,32 +66,46 @@ export function SaveField({
   }
 
   return (
-    <form onSubmit={save} className="flex w-full flex-wrap items-end gap-2 py-1 pl-3">
-      <div className="flex min-w-48 flex-1 flex-col gap-1.5 sm:max-w-80">
-        <label htmlFor={`${id}-name`} className="text-sm font-medium">
-          {t("nameLabel")}
-        </label>
-        <input
-          id={`${id}-name`}
-          name="name"
-          defaultValue={defaultName ?? placeName ?? ""}
-          maxLength={80}
-          required
-          autoFocus
-          className={INPUT}
-        />
-      </div>
-      <Button type="submit" disabled={busy}>
-        {busy ? t("saving") : t("confirm")}
-      </Button>
-      <Button variant="quiet" onClick={() => setOpen(false)}>
-        {t("cancel")}
-      </Button>
-      {error ? (
-        <p role="alert" className="w-full text-sm text-status-bad">
-          {error}
-        </p>
-      ) : null}
-    </form>
+    <>
+      <IconButton
+        label={saved ? (justUpdated ? t("updated", { name: saved.name }) : t("saved", { name: saved.name })) : t("save")}
+        variant={saved ? "active" : "plain"}
+        onClick={() => setOpen(true)}
+      >
+        <BookmarkIcon size={20} fill={saved ? "currentColor" : "none"} />
+      </IconButton>
+      <Sheet open={open} onClose={() => setOpen(false)} title={saved ? saved.name : t("title")}>
+        {saved ? (
+          <div className="flex flex-col gap-3 pb-2">
+            <p>{justUpdated ? t("updated", { name: saved.name }) : t("saved", { name: saved.name })}</p>
+            <Link href="/field" className="font-semibold text-field underline-offset-4 hover:underline">
+              {t("toFields")}
+            </Link>
+          </div>
+        ) : account.status === "signed-out" ? (
+          <div className="flex flex-col gap-3 pb-2">
+            <p>{t("signInWhy")}</p>
+            <Link href="/more/account" className="press inline-flex min-h-tap items-center justify-center rounded-pill bg-field px-4 font-semibold text-on-field">
+              {t("signIn")}
+            </Link>
+          </div>
+        ) : (
+          <form onSubmit={save} className="flex flex-col gap-3 pb-2">
+            <label htmlFor={`${id}-name`} className="text-sm font-semibold text-ink-muted">
+              {t("nameLabel")}
+            </label>
+            <input id={`${id}-name`} name="name" defaultValue={defaultName ?? placeName ?? ""} maxLength={80} required className={INPUT_CLASS} />
+            <Button type="submit" size="lg" disabled={busy}>
+              {busy ? t("saving") : t("confirm")}
+            </Button>
+            {error ? (
+              <p role="alert" className="text-sm text-status-bad">
+                {error}
+              </p>
+            ) : null}
+          </form>
+        )}
+      </Sheet>
+    </>
   );
 }

@@ -27,17 +27,6 @@ interface Row {
   winner: Side | null;
 }
 
-/** Defaults to the riskiest and the safest zone for the crop: the comparison a buyer starts from. */
-export function defaultPair(zones: Zone[], crop: Crop): [string, string] {
-  const scored = zones
-    .map((z) => ({ id: z.id, score: z.crops.find((c) => c.crop === crop)?.availability.score }))
-    .filter((z): z is { id: string; score: number } => z.score != null)
-    .sort((x, y) => y.score - x.score);
-  const first = scored[0]?.id ?? zones[0]?.id ?? "";
-  const last = scored.at(-1)?.id ?? zones[1]?.id ?? first;
-  return [first, last === first ? (zones.find((z) => z.id !== first)?.id ?? first) : last];
-}
-
 /**
  * SPACE2FEED question 3: how do two supply zones compare on availability, quality and water?
  * Every row marks the better zone with an icon and a word, never colour alone.
@@ -69,7 +58,7 @@ export function ZoneCompare({ zones, crop, ids }: { zones: Zone[]; crop: Crop; i
         <RiskBadge level={o.quality.level} />
         {o.quality.flags.map((f) => (
           <span key={f.code} className="text-xs text-ink-muted">
-            <span className="font-medium text-ink">{l(f.label)}:</span>{" "}
+            <span className="font-semibold text-ink">{l(f.label)}:</span>{" "}
             {t("flagDays", { observed: f.days_observed, normal: n(f.days_normal, 1) })}
           </span>
         ))}
@@ -145,7 +134,7 @@ export function ZoneCompare({ zones, crop, ids }: { zones: Zone[]; crop: Crop; i
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="max-w-[65ch] font-medium" aria-live="polite">
+      <p className="font-semibold" aria-live="polite">
         {t("summary", {
           crop: tc(crop).toLocaleLowerCase(locale),
           a: zoneA.name,
@@ -157,7 +146,7 @@ export function ZoneCompare({ zones, crop, ids }: { zones: Zone[]; crop: Crop; i
       </p>
 
       {/* One measure per row: its name on top, the two communes side by side (fits 390 px). */}
-      <div className="border-y border-line">
+      <div className="overflow-hidden rounded-[var(--radius-lg)] ring-1 ring-line">
         <div className="grid grid-cols-2" aria-hidden="true">
           <p className="min-w-0 break-words px-3 py-2 font-semibold">{zoneA.name}</p>
           <p className="min-w-0 break-words border-l border-line px-3 py-2 font-semibold">{zoneB.name}</p>
@@ -189,7 +178,7 @@ export function ZoneCompare({ zones, crop, ids }: { zones: Zone[]; crop: Crop; i
           </li>
         </ul>
       </div>
-      <p className="max-w-[65ch] text-sm text-ink-muted">{t("note")}</p>
+      <p className="text-sm text-ink-muted">{t("note")}</p>
     </div>
   );
 }

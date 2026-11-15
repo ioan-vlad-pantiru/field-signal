@@ -69,7 +69,7 @@ export function SeasonStrip({
         const tone = (outcome?.evidence_level === "low" && FAINT[status]) || cell.className;
         const selected = selectedYear === year;
         const dimmed = selectedYear != null && !selected;
-        const classes = `flex items-center justify-center rounded-[3px] font-bold leading-none ${HEIGHT[size]} ${tone} ${selected ? "outline outline-2 outline-offset-1 outline-ink" : ""} ${dimmed ? "opacity-45" : ""} ${animate ? "season-in" : ""}`;
+        const classes = `flex items-center justify-center rounded-[3px] font-semibold leading-none ${HEIGHT[size]} ${tone} ${selected ? "outline outline-2 outline-offset-1 outline-ink" : ""} ${dimmed ? "opacity-45" : ""} ${animate ? "season-in" : ""}`;
         const style = animate ? ({ "--col": col } as CSSProperties) : undefined;
         if (interactive && outcome) {
           return (
@@ -109,7 +109,11 @@ export function SeasonAxis({
   return (
     <div aria-hidden="true" style={columns(years.length)} className={`grid gap-[3px] text-xs tabular-nums text-ink-muted ${className}`}>
       {years.map((year, index) => (
-        <span key={year} className={`overflow-visible whitespace-nowrap ${selectedYear === year ? "font-semibold text-ink" : ""}`}>
+        // The last label ends at the strip's right edge instead of running past it.
+        <span
+          key={year}
+          className={`overflow-visible whitespace-nowrap ${index === years.length - 1 ? "flex justify-end" : ""} ${selectedYear === year ? "font-semibold text-ink" : ""}`}
+        >
           {index === 0 || year % 5 === 0 || selectedYear === year ? year : ""}
         </span>
       ))}
@@ -135,7 +139,7 @@ export function SeasonLegend({
         <li key={item.key} className="flex items-center gap-1.5">
           <span
             aria-hidden="true"
-            className={`flex h-4 w-4 items-center justify-center rounded-[3px] text-[10px] font-bold leading-none ${item.swatch}`}
+            className={`flex h-4 w-4 items-center justify-center rounded-[3px] text-[10px] font-semibold leading-none ${item.swatch}`}
           >
             {item.mark}
           </span>

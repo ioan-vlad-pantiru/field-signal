@@ -15,7 +15,7 @@ export function NoticeBar({
   return (
     <p
       role="status"
-      className={`flex items-start gap-2 rounded-lg px-3 py-2 text-sm ${
+      className={`flex items-start gap-2 rounded-[var(--radius-md)] px-3 py-2 text-sm ${
         tone === "watch" ? "bg-status-watch-tint" : "bg-surface-sunken"
       } ${className}`}
     >

@@ -3,11 +3,13 @@
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
-import { Link, useRouter, usePathname } from "@/i18n/navigation";
-import { buttonClass } from "@/components/ui/button";
-import { ArrowLeftIcon, CheckIcon } from "@/components/ui/icons";
-import { Segmented } from "@/components/ui/segmented";
-import { CropSequence } from "@/components/ui/crop-chip";
+import { useRouter, usePathname } from "@/i18n/navigation";
+import { Chip, ChipRow } from "@/components/ui/chip";
+import { CropDot } from "@/components/ui/crop-chip";
+import { FieldIcon } from "@/components/ui/icons";
+import { InfoTip } from "@/components/ui/info-tip";
+import { ScreenHeader } from "@/components/ui/screen-header";
+import { BackLink } from "@/components/more/back-link";
 import type { Crop, Strategy } from "@/lib/contracts";
 import { ROTATION_CROPS } from "@/lib/crops";
 import { mockFieldAnalysis } from "@/lib/mocks";
@@ -66,52 +68,36 @@ export function SimulatorView() {
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  const chip = (active: boolean) =>
-    `press min-h-11 rounded-xl border px-3 py-2 text-left ${active ? "border-field ring-1 ring-field" : "border-line hover:border-ink"}`;
-
   return (
     <div className="flex flex-col gap-5">
-      {seqRaw ? (
-        // Opened from a rotation's explanation on the results page.
-        <Link href="/field" className={buttonClass("quiet", "md", "-ml-2 self-start")}>
-          <ArrowLeftIcon /> {t("backToField")}
-        </Link>
-      ) : null}
-      <header>
-        <h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="mt-2 max-w-2xl text-ink-muted">{t("intro")}</p>
-      </header>
+      <ScreenHeader
+        back={seqRaw ? <BackLink href="/field" label={t("backToField")} /> : undefined}
+        title={t("title")}
+        meta={t("intro")}
+        actions={<InfoTip label={t("aboutDemo")}>{t("demoNote")}</InfoTip>}
+      />
 
-      <fieldset className="min-w-0">
-        <legend className="mb-2 font-medium">{t("strategyLabel")}</legend>
-        <div className="flex gap-2 overflow-x-auto pb-1">
+      <div className="flex flex-col gap-1">
+        <ChipRow label={t("strategyLabel")}>
           {strategies.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              aria-pressed={s.id === strategy.id}
-              onClick={() => go({ strategy: s.id })}
-              className={`${chip(s.id === strategy.id)} flex shrink-0 flex-col gap-1.5`}
-            >
-              <span className="flex items-center gap-1.5 font-semibold">
-                {s.id === strategy.id ? <CheckIcon size={16} className="text-field" /> : null}
-                {l(s.name)}
+            <Chip key={s.id} selected={s.id === strategy.id} onClick={() => go({ strategy: s.id })}>
+              <span className="flex gap-0.5" aria-hidden="true">
+                {s.sequence.map((crop, i) => (
+                  <CropDot key={i} crop={crop} />
+                ))}
               </span>
-              <CropSequence sequence={s.sequence} />
-            </button>
+              {l(s.name)}
+            </Chip>
           ))}
-        </div>
-      </fieldset>
-
-      <div className="flex flex-col gap-2">
-        <p className="font-medium">{t("shapeLabel")}</p>
-        <Segmented
-          label={t("shapeLabel")}
-          options={(["rect", "irregular"] as const).map((f) => ({ value: f, label: t(`shape.${f}`) }))}
-          value={shape}
-          onChange={(f) => go({ field: f })}
-          className="self-start"
-        />
+        </ChipRow>
+        <ChipRow label={t("shapeLabel")}>
+          {(["rect", "irregular"] as const).map((f) => (
+            <Chip key={f} selected={shape === f} onClick={() => go({ field: f })}>
+              <FieldIcon size={16} />
+              {t(`shape.${f}`)}
+            </Chip>
+          ))}
+        </ChipRow>
       </div>
 
       <FieldSimulator
@@ -119,8 +105,6 @@ export function SimulatorView() {
         strategy={strategy}
         outlineMetres={shape === "irregular" ? DEMO_FIELD_IRREGULAR : DEMO_FIELD_RECT}
       />
-
-      <p className="text-sm text-ink-muted">{t("demoNote")}</p>
     </div>
   );
 }

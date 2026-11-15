@@ -5,16 +5,25 @@
  * (tokens.json); change them there and here together.
  * Status colours are always paired with an icon and a word in the UI.
  */
+/*
+ * Field Signal design tokens. Names and values mirror the Field Signal design system
+ * (tokens.json in the design-system artifact, see docs/design.md); change them together.
+ * Status colours are always paired with an icon and a word in the UI.
+ * Every colour, radius, shadow and duration in components comes from here.
+ */
 :root {
-  --ground: #ffffff;
+  /* Colour: a warm off-white canvas, white cards that lift off it. */
+  --ground: #f4f6f1;
   --surface: #ffffff;
-  --surface-sunken: #f3f5f1;
-  --line: #e2e6e0;
+  --surface-raised: #ffffff;
+  --surface-sunken: #ecefe8;
+  --line: #e0e5dd;
   --ink: #111512;
-  --ink-muted: #5f675f;
+  --ink-muted: #586158;
   --field: #1f6b45;
   --field-strong: #165335;
   --field-tint: #dcefe2;
+  --field-soft: #e9f4ec;
   --on-field: #ffffff;
   --wheat: #d99a2b;
   --wheat-ink: #8a5600;
@@ -28,36 +37,69 @@
   --status-watch-tint: #f6e4c4;
   --status-bad: #b23a2e;
   --status-bad-tint: #f5d9d4;
-  --status-nodata: #737b72;
+  --status-nodata: #6b736a;
   --status-nodata-tint: #e3e6df;
   --on-status: #ffffff;
   --focus: #1d6fb8;
-  --shadow-1: 0 1px 2px rgb(20 32 26 / 0.06), 0 1px 1px rgb(20 32 26 / 0.04);
-  --shadow-2: 0 8px 24px rgb(20 32 26 / 0.1), 0 2px 6px rgb(20 32 26 / 0.06);
-  --shadow-3: 0 -12px 40px rgb(20 32 26 / 0.18);
+  --scrim: rgb(8 14 10 / 0.42);
+  --glass: rgb(255 255 255 / 0.82);
+
+  /* Elevation: soft, layered; cards rest on shadow, not borders. */
+  --shadow-1: 0 1px 2px rgb(20 32 26 / 0.05), 0 2px 10px rgb(20 32 26 / 0.05);
+  --shadow-2: 0 2px 4px rgb(20 32 26 / 0.05), 0 10px 28px rgb(20 32 26 / 0.1);
+  --shadow-3: 0 -10px 44px rgb(20 32 26 / 0.16);
+  --shadow-float: 0 1px 3px rgb(20 32 26 / 0.08), 0 10px 30px rgb(20 32 26 / 0.16);
+
+  /* Shape */
+  --radius-xs: 0.5rem;
+  --radius-sm: 0.75rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.75rem;
+  --radius-pill: 999px;
+
+  /* Layout */
+  --tap: 2.75rem;
+  --gutter: 1rem;
+  --bar-h: 4rem;
+  --bar-gap: 0.75rem;
+  /* Space the floating bar takes at the bottom of a phone screen. */
+  --bar-space: calc(var(--bar-h) + var(--bar-gap) * 2 + env(safe-area-inset-bottom));
 
   /* Motion: one vocabulary for the app, slides and the site. */
   --duration-fast: 120ms;
   --duration-base: 220ms;
   --duration-slow: 420ms;
+  --duration-sheet: 480ms;
   --duration-hero: 900ms;
   --ease-settle: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-standard: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* A gentle spring (about 1% overshoot), for sheets and the nav indicator. */
+  --ease-spring: linear(0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.723 12.9%, 0.938 16.7%, 1.017 20.4%, 1.051 24%, 1.059 27.1%, 1.044 32.5%, 1.012 41.4%, 0.998 52.6%, 1);
+  --press-scale: 0.97;
   --stagger: 40ms;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --gutter: 1.5rem;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --ground: #0f1411;
-    --surface: #141a16;
-    --surface-sunken: #1c2620;
-    --line: #2c3a31;
+    --ground: #0c110e;
+    --surface: #151c17;
+    --surface-raised: #1c241e;
+    --surface-sunken: #1f2922;
+    --line: #2a372e;
     --ink: #e9efe7;
     --ink-muted: #a2b0a6;
     --field: #5fcf8f;
     --field-strong: #86e0aa;
     --field-tint: #173223;
+    --field-soft: #142a1d;
     --on-field: #06140c;
     --wheat: #e9b456;
     --wheat-ink: #efc277;
@@ -74,15 +116,20 @@
     --status-nodata-tint: #273029;
     --on-status: #0d1310;
     --focus: #8cc4f5;
-    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
-    --shadow-2: 0 8px 28px rgb(0 0 0 / 0.55);
-    --shadow-3: 0 -12px 40px rgb(0 0 0 / 0.6);
+    --scrim: rgb(0 0 0 / 0.6);
+    --glass: rgb(28 36 30 / 0.84);
+    /* Dark elevation reads through lighter surfaces; shadows only separate. */
+    --shadow-1: 0 0 0 1px rgb(255 255 255 / 0.04), 0 2px 8px rgb(0 0 0 / 0.35);
+    --shadow-2: 0 0 0 1px rgb(255 255 255 / 0.05), 0 10px 28px rgb(0 0 0 / 0.5);
+    --shadow-3: 0 -10px 44px rgb(0 0 0 / 0.6);
+    --shadow-float: 0 0 0 1px rgb(255 255 255 / 0.06), 0 10px 30px rgb(0 0 0 / 0.55);
   }
 }
 
 @theme inline {
   --color-ground: var(--ground);
   --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
   --color-surface-sunken: var(--surface-sunken);
   --color-line: var(--line);
   --color-ink: var(--ink);
@@ -90,6 +137,7 @@
   --color-field: var(--field);
   --color-field-strong: var(--field-strong);
   --color-field-tint: var(--field-tint);
+  --color-field-soft: var(--field-soft);
   --color-on-field: var(--on-field);
   --color-wheat: var(--wheat);
   --color-wheat-ink: var(--wheat-ink);
@@ -106,14 +154,34 @@
   --color-status-nodata: var(--status-nodata);
   --color-status-nodata-tint: var(--status-nodata-tint);
   --color-on-status: var(--on-status);
+  --color-scrim: var(--scrim);
+  --color-glass: var(--glass);
   --shadow-1: var(--shadow-1);
   --shadow-2: var(--shadow-2);
   --shadow-3: var(--shadow-3);
+  --shadow-float: var(--shadow-float);
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-pill: var(--radius-pill);
+  --spacing-tap: var(--tap);
+  --spacing-gutter: var(--gutter);
+  --spacing-bar: var(--bar-space);
   --font-sans: var(--font-geist), system-ui, sans-serif;
   --font-display: var(--font-bricolage), var(--font-geist), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1.0625rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+  --text-3xl: 2.5rem;
   --ease-settle: var(--ease-settle);
   --ease-pop: var(--ease-pop);
+  --ease-spring: var(--ease-spring);
 }
 
 html {
@@ -220,56 +288,159 @@ h3 {
     box-shadow var(--duration-base) var(--ease-settle);
 }
 .press:active:not(:disabled) {
-  transform: scale(0.97);
+  transform: scale(var(--press-scale));
 }
 
-/* Bottom sheet: slides up, backdrop fades; reverses on close. */
+/* Bottom sheet: springs up, scrim fades; reverses on close. While dragged, the inline transform wins
+   and transitions are off (data-dragging). */
 dialog.sheet {
   transform: translateY(100%);
-  opacity: 0;
   transition:
-    transform var(--duration-slow) var(--ease-settle),
-    opacity var(--duration-base) var(--ease-settle),
-    overlay var(--duration-slow) allow-discrete,
-    display var(--duration-slow) allow-discrete;
+    transform var(--duration-sheet) var(--ease-spring),
+    max-height var(--duration-slow) var(--ease-settle),
+    overlay var(--duration-sheet) allow-discrete,
+    display var(--duration-sheet) allow-discrete;
 }
 dialog.sheet[open] {
   transform: translateY(0);
-  opacity: 1;
+}
+dialog.sheet[data-dragging] {
+  transition: none;
 }
 @starting-style {
   dialog.sheet[open] {
     transform: translateY(100%);
-    opacity: 0;
   }
 }
 @media (min-width: 640px) {
   dialog.sheet {
     transform: translateY(24px) scale(0.98);
+    opacity: 0;
+    transition:
+      transform var(--duration-slow) var(--ease-settle),
+      opacity var(--duration-base) var(--ease-settle),
+      overlay var(--duration-slow) allow-discrete,
+      display var(--duration-slow) allow-discrete;
+  }
+  dialog.sheet[open] {
+    opacity: 1;
   }
   @starting-style {
     dialog.sheet[open] {
       transform: translateY(24px) scale(0.98);
+      opacity: 0;
     }
   }
 }
 dialog.sheet::backdrop {
-  background: rgb(5 12 8 / 0);
+  background: transparent;
   transition:
     background-color var(--duration-slow) var(--ease-settle),
     overlay var(--duration-slow) allow-discrete,
     display var(--duration-slow) allow-discrete;
 }
 dialog.sheet[open]::backdrop {
-  background: rgb(5 12 8 / 0.5);
+  background: var(--scrim);
 }
 @starting-style {
   dialog.sheet[open]::backdrop {
-    background: rgb(5 12 8 / 0);
+    background: transparent;
   }
 }
 
+/* Route and step changes (React <ViewTransition default="page">, View Transitions API): the old
+   page fades out fast, the new one fades in with a small lift. The chrome (root) does not animate.
+   Browsers without the API just swap the page. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+::view-transition-old(.page) {
+  animation: vt-out var(--duration-fast) var(--ease-standard) both;
+}
+::view-transition-new(.page) {
+  animation: vt-in var(--duration-slow) var(--ease-settle) both;
+}
+@keyframes vt-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+::view-transition-group(.page) {
+  animation-duration: var(--duration-slow);
+  animation-timing-function: var(--ease-settle);
+}
+
+/* The floating nav's active pill slides between items. */
+.nav-pill {
+  transition:
+    transform var(--duration-slow) var(--ease-spring),
+    width var(--duration-slow) var(--ease-spring);
+}
+
+/* InfoTip / Term: a small floating card above the nav (native popover). */
+.tip {
+  position: fixed;
+  inset: auto var(--gutter) calc(var(--bar-space) + 0.5rem) var(--gutter);
+  margin: 0 auto;
+  max-width: 26rem;
+  padding: 0.875rem 1rem;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--surface-raised);
+  color: var(--ink);
+  box-shadow: var(--shadow-float);
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
+  transition:
+    opacity var(--duration-base) var(--ease-settle),
+    transform var(--duration-slow) var(--ease-spring),
+    overlay var(--duration-base) allow-discrete,
+    display var(--duration-base) allow-discrete;
+}
+.tip:popover-open {
+  opacity: 1;
+  transform: none;
+}
+@starting-style {
+  .tip:popover-open {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+@media (min-width: 640px) {
+  .tip {
+    bottom: 1.5rem;
+  }
+}
+
+/* A horizontal deck of cards that snaps one card at a time. */
+.snap-deck {
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--gutter);
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.snap-deck::-webkit-scrollbar {
+  display: none;
+}
+.snap-deck > * {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
   *,
   *::before,
   *::after,
@@ -349,6 +520,21 @@ input[type="range"].slider::-moz-range-thumb {
 .maplibregl-ctrl-attrib {
   font-size: 11px;
 }
+/* MapLibre's zoom and compass, rounded like the rest of the floating controls. */
+.maplibregl-ctrl-group {
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-float) !important;
+  overflow: hidden;
+}
+/* On the field picker they sit under the round basemap and drag-to-select buttons. */
+.field-map-frame .maplibregl-ctrl-top-right {
+  top: 10.5rem;
+  right: 0.5rem;
+}
+/* On the results map they sit under the floating season pill. */
+.plan-map-frame .maplibregl-ctrl-top-right {
+  top: 4.25rem;
+}
 
 
 /* Zone markers on the buyer map (DOM markers so they are real, focusable buttons). */
@@ -359,7 +545,7 @@ input[type="range"].slider::-moz-range-thumb {
   border: 3px solid var(--surface);
   box-shadow: var(--shadow-2);
   color: var(--on-status);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 14px;
   line-height: 1;
   cursor: pointer;
