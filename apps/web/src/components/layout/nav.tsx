@@ -9,7 +9,7 @@ import { BarnIcon, FieldIcon, MoreIcon } from "@/components/ui/icons";
 
 /** The three places in the app. `match` lists the old routes that still belong to each. */
 export const NAV_ITEMS = [
-  { href: "/field", key: "fields", Icon: FieldIcon, match: ["/field", "/farm", "/simulator"] },
+  { href: "/field", key: "fields", Icon: FieldIcon, match: ["/field", "/simulator"] },
   { href: "/buyers", key: "buyers", Icon: BarnIcon, match: ["/buyers", "/feed", "/stocks"] },
   { href: "/more", key: "more", Icon: MoreIcon, match: ["/more", "/account", "/about"] },
 ] as const;

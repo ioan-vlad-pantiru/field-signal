@@ -27,6 +27,14 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
  * as used (and must exist); without it, every key under the prefix does.
  */
 export const DYNAMIC = [
+  // Farm import: API codes and ids mapped to labels (components/farm/*).
+  { prefix: "Farm.soil." }, // soil flag ids, fields-panel.tsx
+  { prefix: "Farm.import.error." }, // FarmImportError.code, import-sheet.tsx
+  { prefix: "Farm.import.sample.", keys: ["big", "small"] }, // the two demo exports, import-sheet.tsx
+  { prefix: "Farm.parcel.crops." }, // APIA/EUCROPMAP crop ids, parcel-details.tsx
+  { prefix: "Farm.parcel.landUses." }, // APIA land-use codes, parcel-details.tsx
+  { prefix: "Farm.parcel.flags." }, // soil flag ids, parcel-details.tsx
+  { prefix: "Farm.stepName.", keys: ["1", "2", "3"] }, // step-count.tsx
   // Crop names from crop ids: tc(crop), tCrops(c) on results, simulator, farm, buyers, landing.
   { prefix: "Crops." },
   { prefix: "CropsShort." },
@@ -87,10 +95,9 @@ export const INDIRECT = {
 };
 
 /**
- * Namespaces left out of the unused-key and missing-key checks.
- * TODO(redesign): the farm import is being rewritten in another branch; check these again after it lands.
+ * Namespaces left out of the unused-key and missing-key checks (none: the farm import has landed).
  */
-export const SKIP_NAMESPACES = ["Farm", "FarmPlan"];
+export const SKIP_NAMESPACES = [];
 
 // ------------------------------------------------------------------------------------------- helpers
 
