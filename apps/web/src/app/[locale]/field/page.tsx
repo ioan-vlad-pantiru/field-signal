@@ -5,7 +5,7 @@ import { FarmerFlow } from "@/components/farmer/farmer-flow";
 export async function generateMetadata({ params }: PageProps<"/[locale]/field">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Nav" });
-  return { title: t("field") };
+  return { title: t("fields") };
 }
 
 export default async function FieldPage({ params }: PageProps<"/[locale]/field">) {
