@@ -714,9 +714,17 @@
   },
   "Farm": {
     "title": "Ferma mea",
-    "lead": "Aduceți toate parcelele, grupați-le în sole și primiți un singur plan pentru toată ferma: ce cultivați și unde, an de an.",
-    "nameLabel": "Numele fermei",
     "defaultName": "Ferma mea",
+    "nameLabel": "Numele fermei",
+    "backToFields": "Înapoi la câmpurile mele",
+    "backToParcels": "Înapoi la parcele",
+    "backToGroups": "Înapoi la sole",
+    "step": "Pasul {step} din {total}: {name}",
+    "stepName": {
+      "1": "Parcele",
+      "2": "Sole",
+      "3": "Plan"
+    },
     "save": {
       "button": "Salvați ferma",
       "busy": "Se salvează…",
@@ -727,7 +735,6 @@
     "mapLabel": "Harta parcelelor fermei",
     "mapUnavailable": "Harta nu poate fi afișată în acest browser. Puteți totuși importa un fișier și face planul.",
     "basemap": {
-      "label": "Tipul hărții",
       "satellite": "Satelit",
       "map": "Hartă"
     },
@@ -735,21 +742,23 @@
     "summary": "{count, plural, =0 {Nicio parcelă încă} one {# parcelă} few {# parcele} other {# de parcele}} · {ha} ha",
     "selected": "{count, plural, one {# parcelă selectată} few {# parcele selectate} other {# de parcele selectate}}",
     "fieldsCount": "{count, plural, =0 {Nicio solă încă} one {# solă} few {# sole} other {# de sole}}",
-    "steps": {
-      "label": "Pașii fermei",
-      "parcels": "Parcele",
-      "fields": "Sole",
-      "plan": "Plan"
+    "hint": {
+      "pick": "Măriți harta, apoi atingeți parcelele ca să le adăugați",
+      "brushPick": "Trageți peste parcele ca să le adăugați",
+      "select": "Atingeți parcelele ca să le mutați",
+      "brushSelect": "Trageți peste parcele ca să le selectați"
     },
+    "needParcels": "Importați un fișier sau atingeți parcele pe hartă.",
     "import": {
-      "title": "Import din AGI Online",
-      "hint": "Încărcați fișierul cu parcele exportat din contul dumneavoastră APIA (un shapefile .zip) sau un fișier GeoJSON ori KML. Găsim parcelele APIA potrivite.",
+      "open": "Import",
+      "title": "Importați parcelele",
+      "formats": "Export AGI Online (.zip), GeoJSON sau KML",
       "button": "Alegeți un fișier",
       "busy": "Citim fișierul…",
-      "samples": "Nu aveți fișierul la îndemână? Încercați un export demonstrativ:",
+      "samples": "Sau încercați un exemplu:",
       "sample": {
-        "big": "fermă mare (circa 150 de parcele)",
-        "small": "fermă mică (6 parcele)"
+        "big": "Fermă mare",
+        "small": "Fermă mică"
       },
       "done": "Am adăugat {count, plural, =0 {nicio parcelă nouă} one {# parcelă} few {# parcele} other {# de parcele}} ({ha} ha).",
       "unmatched": "{count, plural, one {Un contur} few {# contururi} other {# de contururi}} din fișier nu {count, plural, one {are} other {au}} nicio parcelă APIA dedesubt.",
@@ -762,35 +771,36 @@
         "server": "Ceva nu a mers. Încercați din nou."
       }
     },
-    "pick": {
-      "title": "Sau alegeți parcelele pe hartă",
-      "hint": "Măriți harta pe satul dumneavoastră: apar parcelele declarate la APIA. Atingeți o parcelă ca să o adăugați, atingeți-o din nou ca să o scoateți.",
-      "how": "Multe parcele? Porniți „Selectați trăgând” și trageți peste ele. Dacă începeți pe o parcelă verde, le scoateți."
+    "rematch": {
+      "button": "Actualizați la cele mai noi parcele APIA",
+      "busy": "Potrivim…",
+      "same": "Parcelele dumneavoastră se potrivesc deja cu cele mai noi parcele APIA (2025).",
+      "done": "{changed, plural, =0 {Nicio parcelă nu s-a schimbat} one {O parcelă s-a schimbat} few {# parcele s-au schimbat} other {# de parcele s-au schimbat}}. {missing, plural, =0 {} one {O parcelă nu mai are nicio parcelă APIA dedesubt și a rămas cum era.} few {# parcele nu mai au nicio parcelă APIA dedesubt și au rămas cum erau.} other {# de parcele nu mai au nicio parcelă APIA dedesubt și au rămas cum erau.}}",
+      "error": "Nu am putut potrivi parcelele. Încercați din nou."
     },
-    "toFields": "Grupați în sole",
     "clear": "Începeți din nou",
+    "toFields": "Grupați în sole",
+    "toPlan": "Planificați ferma",
     "fieldN": "Sola {n}",
     "fields": {
       "title": "Solele dumneavoastră",
-      "hint": "O solă înseamnă parcelele lucrate la fel, cu aceleași culturi. Nu trebuie să fie lipite. Le-am grupat după culturile văzute din satelit și după distanță; schimbați ce nu este corect.",
       "busy": "Grupăm parcelele…",
       "error": "Nu am putut grupa parcelele.",
-      "retry": "Încercați din nou",
-      "again": "Grupați din nou de la zero",
-      "howToMove": "Ca să mutați parcele în altă solă, atingeți-le pe hartă (sau trageți peste ele), apoi alegeți unde merg.",
+      "again": "Grupați din nou",
       "nameLabel": "Numele solei",
       "size": "{ha} ha · {count, plural, one {# parcelă} few {# parcele} other {# de parcele}}",
       "select": "Arătați pe hartă"
     },
     "move": {
-      "label": "Mutați în",
-      "new": "O solă nouă",
-      "button": "Mutați",
-      "clear": "Anulați selecția"
+      "open": "Mutați în…",
+      "title": "Mutați {count, plural, one {# parcelă} few {# parcele} other {# de parcele}} în",
+      "new": "Solă nouă",
+      "clear": "Anulați"
     },
     "soil": {
+      "row": "{count, plural, one {O parcelă diferă} few {# parcele diferă} other {# de parcele diferă}} ca sol",
       "title": "Parcele care diferă",
-      "hint": "Din hărți de sol (250 m), nu dintr-o analiză de sol. Merită o privire înainte să le planificați la fel ca pe restul.",
+      "note": "Din hărți de sol (250 m), nu dintr-o analiză de sol.",
       "show": "Arătați",
       "clay_high": "{count, plural, one {O parcelă are} few {# parcele au} other {# de parcele au}} mult mai multă argilă decât restul fermei: se lucrează mai greu și ține apa mai mult.",
       "clay_low": "{count, plural, one {O parcelă are} few {# parcele au} other {# de parcele au}} mult mai puțină argilă: sol ușor, care se usucă mai repede.",
@@ -798,8 +808,6 @@
       "ph_low": "{count, plural, one {O parcelă este acidă} few {# parcele sunt acide} other {# de parcele sunt acide}} (pH sub 5,5).",
       "ph_high": "{count, plural, one {O parcelă este alcalină} few {# parcele sunt alcaline} other {# de parcele sunt alcaline}} (pH peste 8)."
     },
-    "back": "Înapoi",
-    "toPlan": "Faceți planul fermei",
     "parcel": {
       "title": "Parcela APIA {id}",
       "area": "{ha} ha",
@@ -818,10 +826,7 @@
       "soilNote": "Din hărți de sol (SoilGrids, 250 m): o estimare, nu o analiză de sol.",
       "unknown": "Necunoscut",
       "moveLabel": "Mutați în",
-      "moveNew": "O solă nouă",
-      "move": "Mutați",
       "remove": "Scoateți din fermă",
-      "close": "Închideți",
       "sources": "APIA LPIS 2025 (data.gov.ro) · JRC EUCROPMAP · ISRIC SoilGrids.",
       "landUses": {
         "TA": "Teren arabil",
@@ -864,35 +869,27 @@
         "wetlands": "Zonă umedă",
         "bare_land": "Teren gol"
       }
-    },
-    "rematch": {
-      "title": "Parcele dintr-un an anterior?",
-      "hint": "APIA redesenează parcelele în fiecare an și numerele lor se pot schimba. Potriviți ferma cu cele mai noi parcele APIA; solele rămân cum sunt.",
-      "button": "Actualizați la cele mai noi parcele APIA",
-      "busy": "Potrivim…",
-      "same": "Parcelele dumneavoastră se potrivesc deja cu cele mai noi parcele APIA (2025).",
-      "done": "{changed, plural, =0 {Nicio parcelă nu s-a schimbat} one {O parcelă s-a schimbat} few {# parcele s-au schimbat} other {# de parcele s-au schimbat}}. {missing, plural, =0 {} one {O parcelă nu mai are nicio parcelă APIA dedesubt și a rămas cum era.} few {# parcele nu mai au nicio parcelă APIA dedesubt și au rămas cum erau.} other {# de parcele nu mai au nicio parcelă APIA dedesubt și au rămas cum erau.}}",
-      "error": "Nu am putut potrivi parcelele. Încercați din nou."
     }
   },
   "FarmPlan": {
+    "title": "Planul întregii ferme",
+    "priorities": "Ce contează cel mai mult",
     "empty": "Adăugați mai întâi cel puțin o solă cu parcele. Apoi putem planifica culturile pentru toată ferma.",
     "summary": "{count, plural, one {1 solă} few {# sole} other {# de sole}}, sezoanele {from}–{to}.",
     "make": "Faceți planul",
     "remake": "Refaceți planul",
-    "loading": "Facem planul. Cu multe sole poate dura câteva secunde.",
-    "tableTitle": "Culturile pe fiecare solă, an de an",
-    "tableHint": "Fiecare solă își păstrează rotația. Solele pornesc din puncte diferite, astfel încât ferma are în fiecare an un amestec echilibrat de culturi.",
+    "loading": "Facem planul…",
+    "error": "Nu am putut face planul.",
+    "tableTitle": "Culturi pe sole",
     "field": "Sola",
     "totalsTitle": "Toată ferma, pe ani",
-    "totalsHint": "Hectarele fiecărei culturi, pe toate solele dumneavoastră.",
     "legend": "Culturi",
     "checksTitle": "Ce să verificați",
     "checkOk": "În regulă",
     "checkNotOk": "De verificat",
     "caveatsTitle": "Bine de știut",
-    "downloadTitle": "Lista pentru declarația APIA",
-    "downloadHint": "O listă de verificare pe care o copiați de mână în AGI Online, parcelă cu parcelă. Nu este un fișier oficial de import.",
+    "downloadTitle": "Lista APIA",
+    "downloadNote": "O listă de copiat de mână în AGI Online, nu un fișier de import.",
     "downloadYear": "Anul listei",
     "download": "Descărcați lista APIA pentru {year}"
   },

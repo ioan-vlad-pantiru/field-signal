@@ -16,6 +16,8 @@ const nextConfig: NextConfig = {
       ["/stocks", "/buyers?view=stocks"],
       ["/account", "/more/account"],
       ["/about", "/more/about"],
+      // The farm import is a path inside My fields now.
+      ["/farm", "/field?import=1"],
     ];
     return moved.flatMap(([from, to]) => [
       { source: `/:locale(en|ro)${from}`, destination: `/:locale${to}`, permanent: false },

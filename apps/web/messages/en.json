@@ -714,9 +714,17 @@
   },
   "Farm": {
     "title": "My farm",
-    "lead": "Bring in all your parcels, group them into fields, and get one plan for the whole farm: what to grow where, year by year.",
-    "nameLabel": "Farm name",
     "defaultName": "My farm",
+    "nameLabel": "Farm name",
+    "backToFields": "Back to My fields",
+    "backToParcels": "Back to parcels",
+    "backToGroups": "Back to fields",
+    "step": "Step {step} of {total}: {name}",
+    "stepName": {
+      "1": "Parcels",
+      "2": "Fields",
+      "3": "Plan"
+    },
     "save": {
       "button": "Save farm",
       "busy": "Saving…",
@@ -727,7 +735,6 @@
     "mapLabel": "Map of your farm's parcels",
     "mapUnavailable": "The map cannot be shown in this browser. You can still import a file and plan.",
     "basemap": {
-      "label": "Map view",
       "satellite": "Satellite",
       "map": "Map"
     },
@@ -735,21 +742,23 @@
     "summary": "{count, plural, =0 {No parcels yet} one {# parcel} other {# parcels}} · {ha} ha",
     "selected": "{count, plural, one {# parcel selected} other {# parcels selected}}",
     "fieldsCount": "{count, plural, =0 {No fields yet} one {# field} other {# fields}}",
-    "steps": {
-      "label": "Farm steps",
-      "parcels": "Parcels",
-      "fields": "Fields",
-      "plan": "Plan"
+    "hint": {
+      "pick": "Zoom in, then tap parcels to add them",
+      "brushPick": "Drag over parcels to add them",
+      "select": "Tap parcels to move them",
+      "brushSelect": "Drag over parcels to select them"
     },
+    "needParcels": "Import a file or tap parcels on the map.",
     "import": {
-      "title": "Import from AGI Online",
-      "hint": "Upload the parcel file you export from your APIA account (a .zip shapefile), or a GeoJSON or KML file. We find the matching APIA parcels.",
+      "open": "Import",
+      "title": "Import parcels",
+      "formats": "AGI Online export (.zip), GeoJSON or KML",
       "button": "Choose a file",
       "busy": "Reading the file…",
-      "samples": "No file at hand? Try a demo export:",
+      "samples": "Or try a demo:",
       "sample": {
-        "big": "large farm (about 150 parcels)",
-        "small": "small farm (6 parcels)"
+        "big": "Large farm",
+        "small": "Small farm"
       },
       "done": "Added {count, plural, =0 {no new parcels} one {# parcel} other {# parcels}} ({ha} ha).",
       "unmatched": "{count, plural, one {# outline} other {# outlines}} in the file had no APIA parcel under {count, plural, one {it} other {them}}.",
@@ -762,35 +771,36 @@
         "server": "Something went wrong. Try again."
       }
     },
-    "pick": {
-      "title": "Or pick parcels on the map",
-      "hint": "Zoom in to your village: the parcels declared to APIA appear. Tap a parcel to add it, tap it again to remove it.",
-      "how": "Many parcels? Switch on “Drag to select” and drag over them. A drag that starts on a green parcel removes instead."
+    "rematch": {
+      "button": "Update to the latest APIA parcels",
+      "busy": "Matching…",
+      "same": "Your parcels already match the latest APIA parcels (2025).",
+      "done": "{changed, plural, =0 {No parcels changed} one {# parcel changed} other {# parcels changed}}. {missing, plural, =0 {} one {# parcel has no APIA parcel under it now and was kept as it was.} other {# parcels have no APIA parcel under them now and were kept as they were.}}",
+      "error": "Could not match the parcels. Try again."
     },
-    "toFields": "Group into fields",
     "clear": "Start again",
+    "toFields": "Group into fields",
+    "toPlan": "Plan the farm",
     "fieldN": "Field {n}",
     "fields": {
       "title": "Your fields",
-      "hint": "A field is the parcels you farm the same way, with the same crops. They do not have to touch. We grouped them by the crops seen from satellite and by distance; change anything that is not right.",
       "busy": "Grouping your parcels…",
       "error": "Could not group the parcels.",
-      "retry": "Try again",
-      "again": "Group again from scratch",
-      "howToMove": "To move parcels to another field, tap them on the map (or drag over them), then choose where they go.",
+      "again": "Group again",
       "nameLabel": "Field name",
       "size": "{ha} ha · {count, plural, one {# parcel} other {# parcels}}",
       "select": "Show on the map"
     },
     "move": {
-      "label": "Move to",
-      "new": "A new field",
-      "button": "Move",
-      "clear": "Clear selection"
+      "open": "Move to…",
+      "title": "Move {count, plural, one {# parcel} other {# parcels}} to",
+      "new": "New field",
+      "clear": "Clear"
     },
     "soil": {
+      "row": "{count, plural, one {# parcel differs} other {# parcels differ}} in soil",
       "title": "Parcels that differ",
-      "hint": "From soil maps (250 m), not a soil test. Worth a look before you plan them like the rest.",
+      "note": "From soil maps (250 m), not a soil test.",
       "show": "Show",
       "clay_high": "{count, plural, one {# parcel has} other {# parcels have}} much more clay than the rest of your farm: heavier to work, holds water longer.",
       "clay_low": "{count, plural, one {# parcel has} other {# parcels have}} much less clay: lighter soil that dries out sooner.",
@@ -798,8 +808,6 @@
       "ph_low": "{count, plural, one {# parcel is} other {# parcels are}} acidic (pH under 5.5).",
       "ph_high": "{count, plural, one {# parcel is} other {# parcels are}} alkaline (pH over 8)."
     },
-    "back": "Back",
-    "toPlan": "Make the farm plan",
     "parcel": {
       "title": "APIA parcel {id}",
       "area": "{ha} ha",
@@ -818,10 +826,7 @@
       "soilNote": "From soil maps (SoilGrids, 250 m): an estimate, not a soil test.",
       "unknown": "Not known",
       "moveLabel": "Move to",
-      "moveNew": "A new field",
-      "move": "Move",
       "remove": "Remove from farm",
-      "close": "Close",
       "sources": "APIA LPIS 2025 (data.gov.ro) · JRC EUCROPMAP · ISRIC SoilGrids.",
       "landUses": {
         "TA": "Arable land",
@@ -864,35 +869,27 @@
         "wetlands": "Wetland",
         "bare_land": "Bare land"
       }
-    },
-    "rematch": {
-      "title": "Parcels from an earlier year?",
-      "hint": "APIA redraws parcels every year and their numbers can change. Match your farm to the latest APIA parcels; your fields stay as they are.",
-      "button": "Update to the latest APIA parcels",
-      "busy": "Matching…",
-      "same": "Your parcels already match the latest APIA parcels (2025).",
-      "done": "{changed, plural, =0 {No parcels changed} one {# parcel changed} other {# parcels changed}}. {missing, plural, =0 {} one {# parcel has no APIA parcel under it now and was kept as it was.} other {# parcels have no APIA parcel under them now and were kept as they were.}}",
-      "error": "Could not match the parcels. Try again."
     }
   },
   "FarmPlan": {
+    "title": "Whole-farm plan",
+    "priorities": "What matters most",
     "empty": "Add at least one field with parcels first. Then we can plan the crops for the whole farm.",
     "summary": "{count, plural, one {1 field} other {# fields}}, seasons {from} to {to}.",
     "make": "Make the plan",
     "remake": "Make the plan again",
-    "loading": "Making the plan. With many fields this can take a few seconds.",
-    "tableTitle": "Crops per field, year by year",
-    "tableHint": "Each field keeps its own rotation. The fields start at different points, so the farm grows a steady mix every year.",
+    "loading": "Making the plan…",
+    "error": "We couldn't make the plan.",
+    "tableTitle": "Crops per field",
     "field": "Field",
-    "totalsTitle": "The whole farm, per year",
-    "totalsHint": "Hectares of each crop across all your fields.",
+    "totalsTitle": "Whole farm, per year",
     "legend": "Crops",
     "checksTitle": "What to check",
     "checkOk": "Fine",
     "checkNotOk": "Needs a look",
     "caveatsTitle": "Good to know",
-    "downloadTitle": "List for your APIA declaration",
-    "downloadHint": "A checklist to copy by hand into AGI Online, parcel by parcel. It is not an official import file.",
+    "downloadTitle": "APIA list",
+    "downloadNote": "A checklist to copy into AGI Online by hand, not an import file.",
     "downloadYear": "Year of the list",
     "download": "Download the APIA list for {year}"
   },
