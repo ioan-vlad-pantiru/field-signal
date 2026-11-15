@@ -888,34 +888,15 @@
     "download": "Descărcați lista APIA pentru {year}"
   },
   "Stocks": {
-    "title": "Stocuri și furnizori",
-    "meta": "Situația la {date}",
+    "title": "Stocuri",
     "report": "Raport",
     "reportLabel": "Raport în română (PDF)",
     "empty": "Nu există încă materii prime pe această linie.",
-    "about": "Despre date",
-    "headline": {
-      "label": "Cel mai mare deficit",
-      "daysLeft": "{days, plural, one {zi rămasă} few {zile rămase} other {de zile rămase}}",
-      "line": "lipsesc {tonnes} · cea mai bună sursă: {country}",
-      "short": "lipsesc {tonnes}",
-      "none": "Toate materiile prime acoperă {target} de zile."
-    },
-    "legendLabel": "Niveluri de stare",
-    "share": "({share}%)",
+    "share": "{share}%",
     "more": "Vedeți încă {count, plural, one {# țară} few {# țări} other {# de țări}}",
     "fewer": "Vedeți mai puține",
     "pathLabel": "Direcția de producție",
-    "inventoryTitle": "Stocul pe materii prime",
-    "inventoryCaption": "Stocuri, consum și zile de acoperire, de la cea mai expusă materie primă",
-    "col": {
-      "ingredient": "Materie primă",
-      "stock": "Stoc",
-      "use": "Consum lunar",
-      "incoming": "În drum",
-      "cover": "Acoperire",
-      "status": "Stare"
-    },
+    "inventoryTitle": "Materii prime",
     "tonnes": "{value} t",
     "days": "{days, plural, one {# zi} few {# zile} other {# de zile}}",
     "status": {
@@ -923,8 +904,6 @@
       "amber": "Atenție",
       "ok": "Acoperit"
     },
-    "legend": "Critic: sub {red} de zile. Atenție: sub {amber} de zile. Acoperit: {amber} de zile sau mai mult. Ținta: {target} de zile de acoperire.",
-    "supplyTitle": "Furnizori pentru {name}",
     "shortfall": "Lipsesc {tonnes} până la {target} de zile de acoperire.",
     "noShortfall": "Stocul acoperă deja {target} de zile. Nu e nevoie să cumpărați nimic acum.",
     "noCandidates": "Nu avem prognoze de furnizori pentru această materie primă.",
@@ -934,37 +913,40 @@
     "concentrated": "Peste jumătate din cantitate vine dintr-o singură țară: risc de concentrare.",
     "alternatives": "Alternative din aceeași grupă, cu stoc suficient: {list}.",
     "rankingTitle": "Clasamentul țărilor",
-    "rank": "Locul {rank}",
-    "score": "Scor",
-    "scoreOutOf": "{score} din 100",
+    "scoreOutOf": "<b>{score}</b> din 100",
     "scores": {
       "coverage": "Acoperire",
       "reliability": "Fiabilitate",
       "logistics": "Logistică",
       "friction": "Ușurință comercială"
     },
-    "scoreLine": "{label} · pondere {weight}%",
     "volume": "Volum disponibil estimat",
     "volumeText": "{low} – {mid} – {high} t (minim – median – maxim)",
     "volumeLabel": "Volum estimat între {low} și {high} t, valoare centrală {mid} t",
     "history": "Volum în anii de comercializare {first}–{last} (linia punctată: media)",
     "historyLabel": "Volum pe ani: {list}",
-    "route": "Rută: {route} · aprox. {days}",
+    "route": "{route} · aprox. {days}",
     "pros": "Avantaje",
     "cons": "Dezavantaje",
-    "context": "Situația la {date} · anul de comercializare {year} · fereastra de aprovizionare {window}",
-    "methodTitle": "Cum calculăm",
-    "method": {
-      "cover": "Zile de acoperire = (stoc + cantitatea în drum) ÷ consumul zilnic, unde consumul zilnic = consumul lunar ÷ 30. Sub {red} de zile starea este critică, sub {amber} de zile cere atenție.",
-      "shortfall": "Deficitul = cantitatea care lipsește până la {target} de zile de acoperire.",
-      "score": "Scorul unei țări (0–100) = {coverage}% acoperire + {reliability}% fiabilitate + {logistics}% logistică + {friction}% ușurință comercială.",
-      "coverage": "Acoperire: cât din deficit acoperă singur volumul median estimat al țării.",
-      "reliability": "Fiabilitate: jumătate din încrederea prognozei, jumătate din cât de îngust este intervalul de volum.",
-      "logistics": "Logistică: 100 de puncte la 2 zile de livrare, apoi scade liniar până la 0 la 50 de zile.",
-      "friction": "Ușurință comercială: pornește de la 100. Scădem 30 în afara UE, 30 pentru risc de război, 10 pentru ecartament feroviar de 1520 mm, 15 pentru restricții la export în 2022 și 20 pentru șrot de soia din țări unde soia modificată genetic este frecventă.",
-      "allocation": "Împărțirea: luăm cel mult 4 țări, în ordinea scorului. La prima trecere fiecare dă cel mult volumul ei minim estimat și cel mult jumătate din deficit; la a doua trecere completăm până la volumul minim, fără plafon.",
-      "assumptions": "Ipoteze: stocurile, consumul și volumele furnizorilor sunt inventate. Regulile UE și Schengen, ecartamentul și restricțiile la export din 2022 sunt fapte publice. Timpii de livrare sunt estimări. Prețurile nu intră în calcul."
-    }
+    "hero": {
+      "label": "Se epuizează cel mai repede",
+      "daysLeft": "{days, plural, one {zi rămasă} few {zile rămase} other {de zile rămase}}",
+      "split": "Împărțirea recomandată: {list}.",
+      "gap": "Prima livrare ajunge <b>la {days} după epuizarea stocului</b>.",
+      "bridge": "Acoperiți golul cu o achiziție rapidă din {list}: livrare în cel mult {days}.",
+      "cta": "Vedeți opțiunile de cumpărare",
+      "none": "Toate materiile prime acoperă {target} de zile."
+    },
+    "runway": {
+      "today": "Azi",
+      "stockOut": "Stoc epuizat",
+      "firstDelivery": "Prima livrare",
+      "target": "Ținta de {target} de zile · {date}"
+    },
+    "rowMeta": "{stock} în stoc · {use} pe lună",
+    "listCaption": "Zile de acoperire · linia marchează {target}",
+    "details": "Detalii",
+    "uncoveredShort": "Neacoperit de niciun furnizor"
   },
   "Buyers": {
     "title": "Cumpărători",

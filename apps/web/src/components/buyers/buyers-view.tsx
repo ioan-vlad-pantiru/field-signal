@@ -41,7 +41,7 @@ export function BuyersView() {
       {view === "region" ? (
         <FeedView />
       ) : (
-        <StocksView key={path} initialPath={path} onPath={(next) => update({ path: next })} />
+        <StocksView path={path} onPath={(next) => update({ path: next })} />
       )}
     </div>
   );
