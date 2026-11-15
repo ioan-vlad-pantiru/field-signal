@@ -397,15 +397,14 @@ The rule for parallel work: after Phase 3 lands the shared base (tokens, compone
 Phase 4 (My fields) and Phase 5 (Buyers) touch separate folders and separate message namespaces.
 They can run in two worktrees in parallel and merge back here. Phases 6–9 run on this branch.
 
-## 8. Questions for you
+## 8. Decisions (15 Nov 2026)
 
-- **Q1 Assistant**: contextual Ask action (recommended) or keep a floating button above the bar?
-- **Q2 Whole-farm plan**: after Import and grouping, keep the separate farm plan
-  (`/v1/farm/plan`, any number of fields, CSV for APIA) as "Whole-farm plan" (recommended). The
-  alternative is to send imported fields into the regular results (capped at 10 fields, with the
-  optimizer).
-- **Q3 Priorities**: 4 on/off toggles with the three-level control behind "Adjust" (recommended),
-  or keep three levels visible?
-- **Q4 Ground colour**: the off-white `--ground` (#f4f6f1) so cards float (recommended), or keep pure white?
-- **Q5 Locale detection**: keep browser-language detection with English as the fallback
-  (recommended), or always English unless the URL says `/ro`?
+- **Assistant**: keeps a floating button. On phones it docks beside the pill bar, at the same
+  height, so the two never overlap. It hides while a bottom sheet is open and rises above the
+  ActionBar on input screens. The results-page context (`setAssistantFields`) is unchanged.
+- **Whole-farm plan**: kept as its own sheet after Import and grouping (`/v1/farm/plan`, any
+  number of fields, CSV export).
+- **Priorities**: four "Matters most" toggles. The three-level control stays behind "Adjust".
+- **Ground**: off-white `#f4f6f1` in light mode and `#0c110e` in dark mode; cards lift in both.
+- **Language**: follows the phone's language, with English as the fallback. An EN/RO picker is
+  always available and keeps the page and its query.
