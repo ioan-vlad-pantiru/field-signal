@@ -66,7 +66,7 @@ export function Segmented<T extends string>({
             tabIndex={checked ? 0 : -1}
             data-value={option.value}
             onClick={() => onChange(option.value)}
-            className={`press inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-pill px-4 text-sm font-semibold ${
+            className={`press inline-flex min-h-tap items-center justify-center gap-2 whitespace-nowrap rounded-pill px-4 text-sm font-semibold ${
               checked ? "text-ink" : "text-ink-muted hover:text-ink"
             }`}
           >

@@ -94,7 +94,7 @@ export function SwipeDeck({
         ))}
       </div>
       {items.length > 1 ? (
-        <div className="flex justify-center gap-1 lg:hidden">
+        <div className="flex justify-center lg:hidden">
           {items.map((_, i) => (
             <button
               key={i}
@@ -102,7 +102,7 @@ export function SwipeDeck({
               aria-label={dotLabel(i)}
               aria-current={i === shown ? "true" : undefined}
               onClick={() => go(i)}
-              className="flex size-6 items-center justify-center"
+              className="-my-2.5 flex size-tap items-center justify-center"
             >
               <span
                 className={`h-1.5 rounded-pill transition-all duration-[var(--duration-slow)] ease-[var(--ease-spring)] ${

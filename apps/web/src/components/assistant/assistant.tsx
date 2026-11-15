@@ -155,13 +155,12 @@ export function Assistant() {
         type="button"
         onClick={() => setOpen(true)}
         aria-label={t("launcher")}
-        className="no-print press fixed bottom-[calc(var(--bar-gap)+env(safe-area-inset-bottom))] right-4 z-30 inline-flex size-[var(--bar-h)] items-center justify-center gap-2 rounded-pill bg-field font-semibold text-on-field shadow-float hover:bg-field-strong sm:bottom-6 sm:right-6 sm:size-auto sm:min-h-14 sm:px-5 [html[data-sheets]_&]:hidden"
+        className="no-print press fixed bottom-[calc(var(--bar-gap)+env(safe-area-inset-bottom))] right-4 z-30 inline-flex size-[var(--bar-h)] items-center justify-center gap-2 rounded-pill bg-field font-semibold text-on-field shadow-float hover:bg-field-strong sm:bottom-6 sm:right-6 sm:size-14 [html[data-sheets]_&]:hidden"
       >
-        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-6 sm:size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M4 5h16v11H9l-5 4z" />
           <path d="M8.5 10h.01M12 10h.01M15.5 10h.01" />
         </svg>
-        <span className="hidden sm:inline">{t("launcher")}</span>
       </button>
     );
   }

@@ -75,7 +75,7 @@ export function TopNav() {
               <Link
                 href={href}
                 aria-current={on ? "page" : undefined}
-                className={`press flex min-h-10 items-center gap-2 whitespace-nowrap rounded-pill px-4 text-sm font-semibold ${
+                className={`press flex min-h-tap items-center gap-2 whitespace-nowrap rounded-pill px-4 text-sm font-semibold ${
                   on ? "bg-surface text-field-strong shadow-1" : "text-ink-muted hover:text-ink"
                 }`}
               >

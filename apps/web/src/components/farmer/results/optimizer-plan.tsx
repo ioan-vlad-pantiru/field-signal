@@ -242,7 +242,7 @@ function PlanView({
           {byField(plan.allocations).map((a, i) => (
             <li key={`${a.field_id}:${i}`} className="flex flex-col gap-1.5 py-2">
               <p>
-                <span className="font-medium">{fieldName(a.field_id)}</span>{" "}
+                <span className="font-semibold">{fieldName(a.field_id)}</span>{" "}
                 <span className="tabular-nums text-ink-muted">· {t("ha", { ha: formatNumber(a.area_ha, locale, 1) })}</span>
               </p>
               <CropSequence sequence={a.sequence} />

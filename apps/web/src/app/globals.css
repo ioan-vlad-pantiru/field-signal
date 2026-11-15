@@ -531,6 +531,10 @@ input[type="range"].slider::-moz-range-thumb {
   top: 10.5rem;
   right: 0.5rem;
 }
+/* On the results map they sit under the floating season pill. */
+.plan-map-frame .maplibregl-ctrl-top-right {
+  top: 4.25rem;
+}
 
 
 /* Zone markers on the buyer map (DOM markers so they are real, focusable buttons). */
@@ -541,7 +545,7 @@ input[type="range"].slider::-moz-range-thumb {
   border: 3px solid var(--surface);
   box-shadow: var(--shadow-2);
   color: var(--on-status);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 14px;
   line-height: 1;
   cursor: pointer;

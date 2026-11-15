@@ -39,7 +39,7 @@ export function FieldList({
         {fields.map((field, i) => (
           <li key={i} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-2 pl-1">
             <div className="min-w-0">
-              <p className="break-words font-medium">
+              <p className="break-words font-semibold">
                 {label(field, i)} <span className="font-normal tabular-nums text-ink-muted">· {t("area", { ha: formatNumber(fieldAreaHa(field), locale, 1) })}</span>
               </p>
               <p className="flex items-center gap-1.5 text-sm text-ink-muted">
@@ -55,7 +55,7 @@ export function FieldList({
               <button
                 type="button"
                 onClick={() => onEdit(i)}
-                className="press min-h-11 rounded-lg px-3 font-medium text-field hover:bg-surface"
+                className="press min-h-tap rounded-pill px-3 font-semibold text-field hover:bg-surface"
                 aria-label={t("editLabel", { field: label(field, i) })}
               >
                 {t("edit")}
@@ -63,7 +63,7 @@ export function FieldList({
               <button
                 type="button"
                 onClick={() => onRemove(i)}
-                className="press min-h-11 rounded-lg px-3 font-medium text-ink-muted hover:bg-surface hover:text-ink"
+                className="press min-h-tap rounded-pill px-3 font-semibold text-ink-muted hover:bg-surface hover:text-ink"
                 aria-label={t("removeLabel", { field: label(field, i) })}
               >
                 {t("remove")}

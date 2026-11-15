@@ -157,7 +157,14 @@ function Flow({
   const farmRun = useRef(0);
   const farmAbort = useRef<AbortController | null>(null);
   // Stop polling a farm plan job when the farmer leaves the page.
-  useEffect(() => () => farmAbort.current?.abort(), []);
+  useEffect(() => {
+    // A run aborted by an unmount that was not final (React's dev double mount, a remount) would
+    // stay "loading" for good: start it again for the same fields.
+    if (farmAbort.current?.signal.aborted && fields.length > 0) startOptimizer(fields);
+    return () => farmAbort.current?.abort();
+    // Only on mount and unmount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /**
    * Not part of the per-field Promise.all: the farm plan runs as a background job on the API, so a

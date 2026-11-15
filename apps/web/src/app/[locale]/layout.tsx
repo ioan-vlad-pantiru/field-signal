@@ -56,7 +56,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>
           <SiteHeader />
-          <main className="mx-auto w-full max-w-[1200px] flex-1 px-gutter pb-[calc(var(--bar-space)+1.5rem)] pt-[max(1rem,env(safe-area-inset-top))] sm:pb-12 sm:pt-6">
+          <main className="mx-auto w-full max-w-[1200px] flex-1 px-gutter pb-[calc(var(--bar-space)+1.5rem)] pt-[max(1rem,env(safe-area-inset-top))] sm:pb-28 sm:pt-6">
             {/* Route changes cross-fade with a small lift; the bars stay put. */}
             <ViewTransition default="page">{children}</ViewTransition>
           </main>

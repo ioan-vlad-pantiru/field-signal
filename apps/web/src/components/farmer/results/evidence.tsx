@@ -94,7 +94,7 @@ function IndicatorItem({ indicator }: { indicator: Indicator }) {
           </div>
         </dl>
       ) : null}
-      <p className="inline-flex items-center gap-1.5 text-sm font-medium">
+      <p className="inline-flex items-center gap-1.5 text-sm font-semibold">
         <span className={TONE_CLASSES[tone].text}>
           <ToneIcon size={16} />
         </span>

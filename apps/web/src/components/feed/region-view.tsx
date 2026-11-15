@@ -90,7 +90,7 @@ export function RegionView({ result }: { result: Loaded<SourcingRegion> }) {
       <div className="flex flex-col gap-5 lg:col-start-2 lg:row-start-1">
         <ScreenHeader
           title={t("title")}
-          meta={t("meta", { region: region.region_name, season: region.season, count: zones.length })}
+          meta={t("meta", { region: region.region_name.replace(/\s*\(mock\)/i, ""), season: region.season, count: zones.length })}
         />
         {region.mock ? <DemoBanner origin={result.origin} /> : null}
         <RecommendationCard recommendation={region.recommendation} />

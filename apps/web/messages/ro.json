@@ -80,7 +80,7 @@
     "area": "{ha} ha",
     "needField": "Atingeți parcelele câmpului",
     "continue": "Continuați",
-    "analyze": "Vedeți cele 25 de sezoane",
+    "analyze": "Vedeți 25 de sezoane",
     "assistantField": "Câmpul meu",
     "parcel": {
       "mapHint": "Atingeți parcelele dvs.",
@@ -272,7 +272,7 @@
       "fewerNone": "Treceți la {name}: <b>niciun sezon slab</b> în loc de {current} din {start}.",
       "same": "<b>{name}</b> se potrivește cel mai bine priorităților dvs., cu tot atâtea sezoane slabe.",
       "more": "<b>{name}</b> se potrivește cel mai bine priorităților, dar a avut {best, plural, one {# sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}, nu {current}, din {start}.",
-      "risk": "Riscul principal: {risk}, în {count, plural, one {# sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}.",
+      "risk": "Riscul principal acum: {risk}. A lovit {count, plural, one {un sezon} few {# sezoane} other {# de sezoane}} din rotația actuală.",
       "noRisk": "Niciun risc meteo nu iese în evidență.",
       "data": "Datele din spate"
     },

@@ -36,7 +36,7 @@ export function ConfidenceBadge({ confidence }: { confidence: Confidence }) {
   const t = useTranslations("Confidence");
   const filled = CONFIDENCE_DOTS[confidence];
   return (
-    <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-line px-2.5 py-1 text-sm">
+    <span className="inline-flex w-fit items-center gap-1.5 whitespace-nowrap rounded-full border border-line px-2.5 py-1 text-sm">
       <span className="flex gap-0.5" aria-hidden="true">
         {[1, 2, 3].map((dot) => (
           <span

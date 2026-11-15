@@ -51,7 +51,7 @@ export function FieldPlan({
   const year = firstSeason + season;
 
   return (
-    <div className="relative">
+    <div className="plan-map-frame relative">
       <FieldPlanMap
         center={center}
         boundary={boundary}

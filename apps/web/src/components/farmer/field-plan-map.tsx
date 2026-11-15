@@ -255,8 +255,15 @@ export function FieldPlanMap({
         <img src={snapshot} alt={label} className="hidden h-[5.5cm] w-full rounded-[var(--radius-lg)] object-cover print:block" />
       ) : null}
       {/* The imagery licence asks for a clearly visible credit, not one behind the (i) button. */}
-      <p className="absolute bottom-2 left-2 z-[1] print:static print:mt-1 print:bg-transparent print:px-0 max-w-[calc(100%-3.5rem)] rounded-md bg-surface/90 px-2 py-0.5 text-xs leading-snug text-ink">
-        <a href={SATELLITE_ATTRIBUTION.href} target="_blank" rel="noopener" className="underline-offset-2 hover:underline">
+      <p className="absolute bottom-2 left-2 z-[1] flex max-w-[calc(100%-3.5rem)] print:static print:mt-1 print:max-w-none print:bg-transparent print:px-0">
+        {/* One line on screen (full text on hover and in print), so it never covers the field. */}
+        <a
+          href={SATELLITE_ATTRIBUTION.href}
+          target="_blank"
+          rel="noopener"
+          title={SATELLITE_ATTRIBUTION.text}
+          className="truncate rounded-xs bg-glass px-1.5 text-[11px] leading-4 text-ink underline-offset-2 hover:underline print:whitespace-normal"
+        >
           {SATELLITE_ATTRIBUTION.text}
         </a>
       </p>

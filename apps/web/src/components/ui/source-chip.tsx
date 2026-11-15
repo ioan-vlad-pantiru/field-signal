@@ -5,7 +5,7 @@ import { SatelliteIcon } from "./icons";
 export function SourceChip({ source }: { source: DataSource }) {
   const text = `${source.dataset} · ${source.resolution} · ${source.period}`;
   const className =
-    "inline-flex min-h-8 w-fit max-w-full items-center gap-1.5 rounded-lg bg-signal-tint px-2.5 py-1 text-sm tabular-nums text-ink";
+    "inline-flex min-h-tap w-fit max-w-full items-center gap-1.5 rounded-lg bg-signal-tint px-2.5 py-1 text-sm tabular-nums text-ink";
   const icon = <SatelliteIcon size={14} className="shrink-0 text-signal" />;
   if (!source.url)
     return (
