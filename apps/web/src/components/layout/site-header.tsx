@@ -2,12 +2,14 @@
 
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
-import { LogoMark } from "@/components/ui/icons";
+import { REPO_URL } from "@/lib/site";
+import { GitHubIcon, LogoMark } from "@/components/ui/icons";
 import { LanguageSwitch, TopNav } from "./nav";
 
 /**
- * Desktop: logo, the three places and the language switch. Phones: only on the start page (app
- * screens carry their own title, and the language switch lives in More).
+ * Desktop: logo, the three places, the link to the source code and the language switch. Phones: only
+ * on the start page (app screens carry their own title; the language switch and the code link live
+ * in More).
  */
 export function SiteHeader() {
   const t = useTranslations("Nav");
@@ -20,7 +22,19 @@ export function SiteHeader() {
           <span className="whitespace-nowrap text-lg font-semibold tracking-tight">Field Signal</span>
         </Link>
         <TopNav />
-        <LanguageSwitch />
+        <div className="flex items-center gap-1">
+          <a
+            href={REPO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={t("code")}
+            title={t("code")}
+            className="press flex size-tap items-center justify-center rounded-pill text-ink-muted hover:text-ink"
+          >
+            <GitHubIcon size={22} />
+          </a>
+          <LanguageSwitch />
+        </div>
       </div>
     </header>
   );

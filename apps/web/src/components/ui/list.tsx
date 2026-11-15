@@ -14,7 +14,7 @@ export function ListGroup({ title, children, className = "" }: { title?: ReactNo
 
 const ROW = "press flex min-h-14 w-full items-center gap-3 px-4 py-2 text-left hover:bg-surface-sunken";
 
-/** One row: icon, label, optional value on the right, and a chevron when it leads somewhere. */
+/** One row: icon, label, optional value on the right, and a chevron when it leads somewhere. A full URL opens in a new tab. */
 export function ListRow({
   icon,
   label,
@@ -45,7 +45,11 @@ export function ListRow({
   );
   return (
     <li>
-      {href ? (
+      {href && /^https?:\/\//.test(href) ? (
+        <a href={href} target="_blank" rel="noopener noreferrer" className={ROW}>
+          {body}
+        </a>
+      ) : href ? (
         <Link href={href} locale={locale} className={ROW}>
           {body}
         </Link>

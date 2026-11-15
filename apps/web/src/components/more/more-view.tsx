@@ -3,12 +3,13 @@
 import { useTranslations } from "next-intl";
 import { useAccount } from "@/lib/account";
 import { openAssistant } from "@/lib/assistant";
-import { BookIcon, ChatIcon, GlobeIcon, UserIcon } from "@/components/ui/icons";
+import { REPO_URL } from "@/lib/site";
+import { BookIcon, ChatIcon, GitHubIcon, GlobeIcon, UserIcon } from "@/components/ui/icons";
 import { ListGroup, ListRow } from "@/components/ui/list";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { LanguageSwitch } from "@/components/layout/nav";
 
-/** Account, about and data, language, and the assistant: what is used now and then. */
+/** Account, about and data, the source code, language, and the assistant: what is used now and then. */
 export function MoreView() {
   const t = useTranslations("More");
   const account = useAccount();
@@ -27,6 +28,7 @@ export function MoreView() {
       <ListGroup>
         <ListRow icon={<BookIcon size={18} />} label={t("about")} detail={t("aboutDetail")} href="/more/about" />
         <ListRow icon={<ChatIcon size={18} />} label={t("ask")} detail={t("askDetail")} onClick={openAssistant} />
+        <ListRow icon={<GitHubIcon size={18} />} label={t("code")} detail={t("codeDetail")} href={REPO_URL} />
         <li className="flex min-h-14 items-center gap-3 px-4 py-2">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-field-soft text-field-strong">
             <GlobeIcon size={18} />

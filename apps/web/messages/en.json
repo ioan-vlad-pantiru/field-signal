@@ -9,7 +9,8 @@
     "fields": "My fields",
     "buyers": "Buyers",
     "more": "More",
-    "home": "Field Signal home"
+    "home": "Field Signal home",
+    "code": "Source code on GitHub"
   },
   "Banner": {
     "title": "Demo data",
@@ -956,6 +957,8 @@
     "signInDetail": "Keep your fields on every device",
     "about": "About and data",
     "aboutDetail": "How it works, NASA sources, limits",
+    "code": "Source code",
+    "codeDetail": "The whole project, open on GitHub",
     "language": "Language",
     "ask": "Ask Field Signal",
     "askDetail": "Questions about crops, data or this app",

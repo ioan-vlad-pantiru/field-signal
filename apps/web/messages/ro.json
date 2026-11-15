@@ -9,7 +9,8 @@
     "fields": "Câmpuri",
     "buyers": "Cumpărători",
     "more": "Mai mult",
-    "home": "Field Signal, prima pagină"
+    "home": "Field Signal, prima pagină",
+    "code": "Codul sursă pe GitHub"
   },
   "Banner": {
     "title": "Date demonstrative",
@@ -956,6 +957,8 @@
     "signInDetail": "Câmpurile dumneavoastră, pe orice dispozitiv",
     "about": "Despre și date",
     "aboutDetail": "Cum funcționează, surse NASA, limite",
+    "code": "Codul sursă",
+    "codeDetail": "Tot proiectul, deschis pe GitHub",
     "language": "Limba",
     "ask": "Întrebați Field Signal",
     "askDetail": "Despre culturi, date sau aplicație",
