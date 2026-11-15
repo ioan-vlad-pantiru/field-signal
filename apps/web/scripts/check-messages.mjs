@@ -62,7 +62,7 @@ export const DYNAMIC = [
   // Results: verdict kinds (verdict.tsx), soil rows (evidence.tsx), shift direction (shift.tsx),
   // score breakdown (strategy-sheet.tsx, optimizer-plan.tsx), explanation source (strategy-sheet.tsx),
   // non-farmland reasons on the hero's example plan (home/hero-scene.tsx, lib/land-cover.ts).
-  { prefix: "Results.verdict.", keys: ["fewer", "more"] },
+  { prefix: "Results.verdict.", keys: ["fewer", "best"] },
   { prefix: "Results.soil.", keys: ["carbon.label", "carbon.help", "ph.label", "ph.help", "texture.label", "texture.help"] },
   { prefix: "Results.shift.", keys: ["up", "down", "steady"] },
   { prefix: "Results.rotations.breakdown." },

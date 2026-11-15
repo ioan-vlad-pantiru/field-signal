@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useSyncExternalStore } from "react";
-import { LAST_VERDICT_KEY, parseVerdicts, withVerdict, type LastVerdict } from "./last-verdict";
-import { poorSeasons, type Verdict } from "./results";
+import { LAST_VERDICT_KEY, lastVerdictOf, parseVerdicts, withVerdict, type LastVerdict } from "./last-verdict";
+import type { Verdict } from "./results";
 
 const listeners = new Set<() => void>();
 
@@ -31,13 +31,7 @@ export function useLastVerdicts(): Record<string, LastVerdict> {
 
 /** Remember the answer just shown for a field. Storage failures are ignored: it is a convenience. */
 export function rememberVerdict(id: string, v: Verdict) {
-  const entry: LastVerdict = {
-    kind: v.kind,
-    best: [...v.best.sequence],
-    bestPoor: poorSeasons(v.best),
-    currentPoor: poorSeasons(v.current),
-    at: new Date().toISOString().slice(0, 10),
-  };
+  const entry = lastVerdictOf(v, new Date().toISOString().slice(0, 10));
   try {
     window.localStorage.setItem(LAST_VERDICT_KEY, JSON.stringify(withVerdict(parseVerdicts(read()), id, entry)));
   } catch {

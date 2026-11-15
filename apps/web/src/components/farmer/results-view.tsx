@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import type { FieldAnalysis, LatLon } from "@/lib/contracts";
 import type { DataOrigin } from "@/lib/api";
 import { mainRisk, placeShifts, rankStrategies, replayYears, verdict as buildVerdict } from "@/lib/results";
+import { RefreshIcon } from "@/components/ui/icons";
 import { InfoTip } from "@/components/ui/info-tip";
 import { SeasonLegend } from "@/components/ui/season-strip";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -44,6 +45,8 @@ export function ResultsView({
   placeName = null,
   save,
   after,
+  savedAt = null,
+  onRerun,
 }: {
   analysis: FieldAnalysis;
   origin: DataOrigin;
@@ -58,10 +61,15 @@ export function ResultsView({
   save?: ReactNode;
   /** Shown after the rotations, such as the optimized plan card. */
   after?: ReactNode;
+  /** When these results were saved in the account; null for a fresh run. */
+  savedAt?: string | null;
+  /** Run the analysis again (offered with saved results). */
+  onRerun?: () => void;
 }) {
   const t = useTranslations("Results");
   const ts = useTranslations("Status");
   const nameOf = useRotationName();
+  const format = useFormatter();
 
   const ranked = useMemo(() => rankStrategies(analysis.strategies), [analysis.strategies]);
   const verdict = useMemo(() => buildVerdict(analysis.strategies), [analysis.strategies]);
@@ -81,6 +89,21 @@ export function ResultsView({
       <style>{PRINT_CSS}</style>
       <ResultsHeader analysis={analysis} boundary={boundary} parts={parts} placeName={placeName} onBack={onBack} save={save} />
       {analysis.mock ? <DemoBanner origin={origin} /> : null}
+      {savedAt ? (
+        <p className="no-print -mt-2 flex flex-wrap items-center gap-x-3 text-sm text-ink-muted">
+          <span>{t("saved", { date: format.dateTime(new Date(savedAt), { dateStyle: "medium" }) })}</span>
+          {onRerun ? (
+            <button
+              type="button"
+              onClick={onRerun}
+              className="press -mx-2 inline-flex min-h-tap items-center gap-1.5 rounded-pill px-2 font-semibold text-field hover:bg-surface-sunken"
+            >
+              <RefreshIcon size={16} />
+              {t("rerun")}
+            </button>
+          ) : null}
+        </p>
+      ) : null}
 
       <section aria-label={t("planTitle")} className="-mx-gutter sm:mx-0">
         <p className="hidden font-semibold print:block">{nameOf(selected)}</p>

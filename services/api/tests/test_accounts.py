@@ -1,6 +1,8 @@
+import json
 import os
 from collections.abc import Iterator
 from pathlib import Path
+from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
@@ -10,7 +12,7 @@ from api import accounts
 from api.main import app
 from api.settings import get_settings
 
-FIELD = {
+FIELD: dict[str, Any] = {
     "name": "Behind the barn",
     "request": {
         "location": {"lat": 46.3, "lon": 23.72},
@@ -41,7 +43,7 @@ def client(
 
         url = os.environ["TEST_POSTGRES_URL"]
         with psycopg.connect(url, autocommit=True) as conn:
-            conn.execute("DROP TABLE IF EXISTS fields, sessions, accounts")
+            conn.execute("DROP TABLE IF EXISTS field_analyses, farms, fields, sessions, accounts")
         accounts._pools.clear()
         monkeypatch.setattr(settings, "database_url", SecretStr(url))
     else:
@@ -179,3 +181,57 @@ def test_farm_is_saved_per_account(client: TestClient) -> None:
     assert client.get("/v1/me/farm").json() is None
     client.post("/v1/auth/logout")
     assert client.get("/v1/me/farm").status_code == 401
+
+
+def _analysis_body(request: Any) -> dict[str, Any]:
+    mock = Path(__file__).resolve().parents[3] / "contracts/examples/field_analysis.mock.json"
+    return {
+        "request": request,
+        "analysis": json.loads(mock.read_text(encoding="utf-8")),
+        "summary": {
+            "kind": "fewer",
+            "best": ["maize", "soybean"],
+            "best_poor": 1,
+            "current_poor": 3,
+        },
+    }
+
+
+def test_field_keeps_its_last_analysis(client: TestClient) -> None:
+    sign_up(client)
+    field_id = client.post("/v1/me/fields", json=FIELD).json()["id"]
+    assert client.get(f"/v1/me/fields/{field_id}/analysis").status_code == 404
+    assert client.get("/v1/me/fields").json()[0]["last_analysis"] is None
+
+    saved = client.put(f"/v1/me/fields/{field_id}/analysis", json=_analysis_body(FIELD["request"]))
+    assert saved.status_code == 200, saved.text
+    last = saved.json()["last_analysis"]
+    assert last["current"] is True
+    assert last["summary"]["best"] == ["maize", "soybean"]
+
+    listed = client.get("/v1/me/fields").json()[0]
+    assert listed["last_analysis"] == last
+    assert "analysis" not in listed["last_analysis"]
+    full = client.get(f"/v1/me/fields/{field_id}/analysis").json()
+    assert full["analysis"]["strategies"]
+    assert full["analyzed_at"] == last["analyzed_at"]
+
+    # Changing the crops makes the saved analysis out of date, but keeps it.
+    changed = {**FIELD, "request": {**FIELD["request"], "current_rotation": ["wheat", "pea"]}}
+    updated = client.put(f"/v1/me/fields/{field_id}", json=changed).json()
+    assert updated["last_analysis"]["current"] is False
+
+    # Another account cannot read or overwrite it.
+    client.post("/v1/auth/logout")
+    sign_up(client, "other@example.ro")
+    assert client.get(f"/v1/me/fields/{field_id}/analysis").status_code == 404
+    body = _analysis_body(FIELD["request"])
+    assert client.put(f"/v1/me/fields/{field_id}/analysis", json=body).status_code == 404
+
+
+def test_deleting_a_field_deletes_its_analysis(client: TestClient) -> None:
+    sign_up(client)
+    field_id = client.post("/v1/me/fields", json=FIELD).json()["id"]
+    client.put(f"/v1/me/fields/{field_id}/analysis", json=_analysis_body(FIELD["request"]))
+    assert client.delete(f"/v1/me/fields/{field_id}").status_code == 204
+    assert client.get(f"/v1/me/fields/{field_id}/analysis").status_code == 404

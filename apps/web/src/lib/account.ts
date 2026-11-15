@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useSyncExternalStore } from "react";
-import type { Account, LatLon, SavedField, SavedFieldInput, SignIn, SignUp } from "@/lib/contracts";
+import type { Account, LatLon, SavedAnalysis, SavedAnalysisInput, SavedField, SavedFieldInput, SignIn, SignUp } from "@/lib/contracts";
 
 /** A field to save; the API rejects a boundary of fewer than 3 corners. */
 export type FieldDraft = Omit<SavedFieldInput, "boundary" | "parts"> & { boundary: LatLon[]; parts?: LatLon[][] };
@@ -27,7 +27,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
       // The session is an httpOnly cookie set by the API.
       credentials: "include",
       headers: { "Content-Type": "application/json", ...init?.headers },
-      signal: AbortSignal.timeout(TIMEOUT_MS),
+      signal: init?.signal ?? AbortSignal.timeout(TIMEOUT_MS),
     });
   } catch {
     throw new AccountError("offline", 0);
@@ -133,6 +133,23 @@ export async function updateField(id: string, body: FieldDraft): Promise<SavedFi
   const field = await call<SavedField>(`/v1/me/fields/${id}`, { method: "PUT", body: JSON.stringify(body) });
   withFields([field, ...fieldsOf().filter((f) => f.id !== id)]);
   return field;
+}
+
+/** Keeps a field's latest analysis in the account; the field's card then shows it on every device. */
+export async function saveAnalysis(id: string, body: SavedAnalysisInput): Promise<SavedField> {
+  const field = await call<SavedField>(`/v1/me/fields/${id}/analysis`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+    // An analysis is tens of kilobytes; give a slow phone connection more time than the default.
+    signal: AbortSignal.timeout(TIMEOUT_MS * 3),
+  });
+  withFields(fieldsOf().map((f) => (f.id === id ? field : f)));
+  return field;
+}
+
+/** The field's saved analysis, in full. */
+export function loadAnalysis(id: string): Promise<SavedAnalysis> {
+  return call<SavedAnalysis>(`/v1/me/fields/${id}/analysis`, { signal: AbortSignal.timeout(TIMEOUT_MS * 3) });
 }
 
 export async function deleteField(id: string) {

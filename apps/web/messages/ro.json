@@ -21,7 +21,10 @@
     "close": "Închideți",
     "sequence": "Ordinea culturilor",
     "errorTitle": "Nu am putut încărca rezultatele",
-    "retry": "Încercați din nou"
+    "retry": "Încercați din nou",
+    "wheel": "Rotație pe {count, plural, one {un an} few {# ani} other {# de ani}}: {crops}, apoi se reia",
+    "wheelYear": "anul {n}: {crop}",
+    "repeats": "Se reia la fiecare {count, plural, one {an} few {# ani} other {# de ani}}"
   },
   "Status": {
     "good": "Bun",
@@ -268,14 +271,15 @@
     "verdict": {
       "label": "Cel mai potrivit pentru acest câmp",
       "keep": "<b>Păstrați rotația.</b> Se potrivește cel mai bine acestui câmp.",
-      "fewer": "Treceți la {name}: <b>{best, plural, one {# sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}</b> în loc de {current} din {start}.",
-      "fewerNone": "Treceți la {name}: <b>niciun sezon slab</b> în loc de {current} din {start}.",
-      "same": "<b>{name}</b> se potrivește cel mai bine priorităților dvs., cu tot atâtea sezoane slabe.",
-      "more": "<b>{name}</b> se potrivește cel mai bine priorităților, deși a avut {best, plural, one {# sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} din {start} (rotația actuală: {current}).",
-      "risk": "Riscul principal acum: {risk}. A lovit {count, plural, one {un sezon} few {# sezoane} other {# de sezoane}} din rotația actuală.",
-      "riskYield": "Riscul principal acum: recolte slabe, în {count, plural, one {un sezon} few {# sezoane} other {# de sezoane}} din rotația actuală.",
+      "fewer": "Treceți la <b>{name}</b>.",
+      "risk": "Riscul principal: {risk}",
+      "riskYield": "Riscul principal: recolte slabe",
       "noRisk": "Niciun risc meteo nu iese în evidență.",
-      "data": "Datele din spate"
+      "data": "Datele din spate",
+      "best": "<b>{name}</b> se potrivește cel mai bine priorităților dvs.",
+      "poor": "{count, plural, =0 {Niciun sezon slab} one {Un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} din {start}",
+      "yours": "Rotația actuală: {count, plural, =0 {niciun sezon slab} one {un sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}",
+      "riskHit": "A lovit {count, plural, one {un sezon} few {# sezoane} other {# de sezoane}} din rotația actuală."
     },
     "evidence": {
       "title": "Datele din spate",
@@ -303,7 +307,9 @@
       "signIn": "Intrați în cont",
       "signInWhy": "Intrați în cont ca să păstrați câmpul și răspunsul pe orice dispozitiv.",
       "failed": "Nu s-a putut salva. Încercați din nou."
-    }
+    },
+    "saved": "Rezultate salvate pe {date}.",
+    "rerun": "Analizați din nou"
   },
   "Optimizer": {
     "meta": "Plan pe {years} ani · {ha} ha · {count, plural, one {o fereastră meteo din trecut} few {# ferestre meteo din trecut} other {# de ferestre meteo din trecut}}, sezoanele {first}–{last} · {model}",
@@ -1012,7 +1018,9 @@
     "delete": "Ștergeți",
     "deleteConfirm": "Ștergeți „{name}”? Nu se poate anula.",
     "cancel": "Anulați",
-    "failed": "Nu a mers. Încercați din nou."
+    "failed": "Nu a mers. Încercați din nou.",
+    "open": "Vedeți rezultatele",
+    "changed": "Modificat după ultima analiză"
   },
   "Glossary": {
     "et": {

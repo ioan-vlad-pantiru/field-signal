@@ -32,8 +32,13 @@ from api.contracts import (
     Account,
     AccountDeletion,
     AccountUpdate,
+    AnalysisSummary,
     Farm,
+    FieldRequest,
+    LastAnalysis,
     PasswordChange,
+    SavedAnalysis,
+    SavedAnalysisInput,
     SavedField,
     SavedFieldInput,
     SignIn,
@@ -66,6 +71,14 @@ CREATE TABLE IF NOT EXISTS fields (
     updated_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS fields_by_account ON fields(account_id, updated_at);
+CREATE TABLE IF NOT EXISTS field_analyses (
+    field_id TEXT PRIMARY KEY REFERENCES fields(id) ON DELETE CASCADE,
+    account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+    request TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    body TEXT NOT NULL,
+    analyzed_at TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS farms (
     account_id TEXT PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
     body TEXT NOT NULL,
@@ -327,6 +340,7 @@ def delete_me(body: AccountDeletion, account: CurrentAccount, response: Response
     """Deletes the account, its fields and its sessions."""
     _check_password(account.id, body.password)
     with connect() as db:
+        db.execute("DELETE FROM field_analyses WHERE account_id = ?", (account.id,))
         db.execute("DELETE FROM fields WHERE account_id = ?", (account.id,))
         db.execute("DELETE FROM sessions WHERE account_id = ?", (account.id,))
         db.execute("DELETE FROM accounts WHERE id = ?", (account.id,))
@@ -336,20 +350,45 @@ def delete_me(body: AccountDeletion, account: CurrentAccount, response: Response
 # --------------------------------------------------------------------------- saved fields
 
 
+# A field with its last analysis in brief (never the full analysis: that is fetched on its own).
+FIELD_SELECT = """SELECT f.*, a.request AS analysis_request, a.summary AS analysis_summary,
+       a.analyzed_at AS analyzed_at
+  FROM fields f LEFT JOIN field_analyses a ON a.field_id = f.id"""
+
+
 def _field(row: Row) -> SavedField:
     body = json.loads(row["body"])
+    last = None
+    if row["analyzed_at"] is not None:
+        ran_with = FieldRequest.model_validate_json(row["analysis_request"])
+        last = LastAnalysis(
+            analyzed_at=row["analyzed_at"],
+            summary=AnalysisSummary.model_validate_json(row["analysis_summary"]),
+            current=ran_with == FieldRequest.model_validate(body["request"]),
+        )
     return SavedField(
-        id=row["id"], created_at=row["created_at"], updated_at=row["updated_at"], **body
+        id=row["id"],
+        created_at=row["created_at"],
+        updated_at=row["updated_at"],
+        last_analysis=last,
+        **body,
     )
+
+
+def _owned_field(db: Db, field_id: str, account_id: str) -> SavedField:
+    row = db.one(f"{FIELD_SELECT} WHERE f.id = ? AND f.account_id = ?", (field_id, account_id))
+    if row is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "field_not_found")
+    return _field(row)
 
 
 @router.get("/me/fields")
 def list_fields(account: CurrentAccount) -> list[SavedField]:
     with connect() as db:
-        rows = db.execute(
-            "SELECT * FROM fields WHERE account_id = ? ORDER BY updated_at DESC, created_at DESC",
+        rows = db.all(
+            f"{FIELD_SELECT} WHERE f.account_id = ? ORDER BY f.updated_at DESC, f.created_at DESC",
             (account.id,),
-        ).fetchall()
+        )
     return [_field(row) for row in rows]
 
 
@@ -372,12 +411,7 @@ def create_field(body: SavedFieldInput, account: CurrentAccount) -> SavedField:
 @router.get("/me/fields/{field_id}")
 def get_field(field_id: str, account: CurrentAccount) -> SavedField:
     with connect() as db:
-        row = db.execute(
-            "SELECT * FROM fields WHERE id = ? AND account_id = ?", (field_id, account.id)
-        ).fetchone()
-    if row is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "field_not_found")
-    return _field(row)
+        return _owned_field(db, field_id, account.id)
 
 
 @router.put("/me/fields/{field_id}")
@@ -390,18 +424,63 @@ def update_field(field_id: str, body: SavedFieldInput, account: CurrentAccount) 
         )
         if updated.rowcount == 0:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "field_not_found")
-        row = db.execute("SELECT * FROM fields WHERE id = ?", (field_id,)).fetchone()
-    return _field(row)
+        return _owned_field(db, field_id, account.id)
 
 
 @router.delete("/me/fields/{field_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_field(field_id: str, account: CurrentAccount) -> None:
     with connect() as db:
+        db.execute(
+            "DELETE FROM field_analyses WHERE field_id = ? AND account_id = ?",
+            (field_id, account.id),
+        )
         deleted = db.execute(
             "DELETE FROM fields WHERE id = ? AND account_id = ?", (field_id, account.id)
         )
     if deleted.rowcount == 0:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "field_not_found")
+
+
+@router.put("/me/fields/{field_id}/analysis")
+def put_analysis(field_id: str, body: SavedAnalysisInput, account: CurrentAccount) -> SavedField:
+    """Keeps the field's latest analysis, replacing the one before. Returns the field."""
+    now = _iso(_now())
+    with connect() as db:
+        _owned_field(db, field_id, account.id)
+        db.execute("DELETE FROM field_analyses WHERE field_id = ?", (field_id,))
+        db.execute(
+            """INSERT INTO field_analyses
+               (field_id, account_id, request, summary, body, analyzed_at)
+               VALUES (?, ?, ?, ?, ?, ?)""",
+            (
+                field_id,
+                account.id,
+                body.request.model_dump_json(),
+                body.summary.model_dump_json(),
+                body.analysis.model_dump_json(),
+                now,
+            ),
+        )
+        return _owned_field(db, field_id, account.id)
+
+
+@router.get("/me/fields/{field_id}/analysis")
+def get_analysis(field_id: str, account: CurrentAccount) -> SavedAnalysis:
+    with connect() as db:
+        row = db.one(
+            "SELECT * FROM field_analyses WHERE field_id = ? AND account_id = ?",
+            (field_id, account.id),
+        )
+    if row is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "analysis_not_found")
+    return SavedAnalysis.model_validate(
+        {
+            "request": json.loads(row["request"]),
+            "analysis": json.loads(row["body"]),
+            "summary": json.loads(row["summary"]),
+            "analyzed_at": row["analyzed_at"],
+        }
+    )
 
 
 # --------------------------------------------------------------------------- farm

@@ -1,4 +1,5 @@
-import type { VerdictKind } from "./results.ts";
+import type { AnalysisSummary } from "./contracts.ts";
+import { poorSeasons, type Verdict, type VerdictKind } from "./results.ts";
 
 /**
  * The last answer for each field, kept on this device so field cards can show it before the
@@ -56,4 +57,24 @@ export function withVerdict(
   const entries = Object.entries(all).filter(([key]) => key !== id);
   entries.push([id, verdict]);
   return Object.fromEntries(entries.slice(-MAX_REMEMBERED));
+}
+
+/** The answer in brief, as a field card shows it. */
+export function lastVerdictOf(v: Verdict, at: string): LastVerdict {
+  return { kind: v.kind, best: [...v.best.sequence], bestPoor: poorSeasons(v.best), currentPoor: poorSeasons(v.current), at };
+}
+
+/** The same brief in the account's shape. */
+export function toSummary(v: Verdict): AnalysisSummary {
+  return {
+    kind: v.kind,
+    best: [...v.best.sequence] as AnalysisSummary["best"],
+    best_poor: poorSeasons(v.best),
+    current_poor: poorSeasons(v.current),
+  };
+}
+
+/** A field card's brief from the account's saved analysis. */
+export function fromSummary(s: AnalysisSummary, analyzedAt: string): LastVerdict {
+  return { kind: s.kind, best: [...s.best], bestPoor: s.best_poor, currentPoor: s.current_poor, at: analyzedAt.slice(0, 10) };
 }
