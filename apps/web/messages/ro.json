@@ -422,17 +422,42 @@
     "modelName": "modelul de culturi Field Signal{runs, plural, one {} other {, # rulări}}"
   },
   "Feed": {
-    "title": "De unde cumpărați furaje anul acesta",
-    "intro": "Vedeți ce comune vor avea probabil destul porumb, grâu sau orz anul acesta și unde calitatea ar putea fi o problemă.",
-    "loading": "Încărcăm zonele…",
-    "regionLine": "{region} · sezonul {season} · {count} comune",
-    "cropToggle": "Alegeți cultura",
+    "title": "De unde cumpărați furaje",
+    "meta": "{region} · {season} · {count, plural, one {# comună} few {# comune} other {# de comune}}",
+    "loading": "Încărcăm comunele…",
+    "loaded": "{count, plural, one {# comună încărcată} few {# comune încărcate} other {# de comune încărcate}}",
+    "error": "Nu am putut încărca comunele.",
+    "cropToggle": "Cultura",
+    "counts": {
+      "low": "destul",
+      "medium": "la limită",
+      "high": "lipsă"
+    },
+    "summary": {
+      "good": "{count, plural, one {comună ar trebui să aibă} few {comune ar trebui să aibă} other {de comune ar trebui să aibă}} destul {crop}",
+      "watch": "{count, plural, one {comună ar putea avea} few {comune ar putea avea} other {de comune ar putea avea}} mai puțin {crop} decât de obicei",
+      "bad": "{count, plural, one {comună e probabil să nu aibă} few {comune e probabil să nu aibă} other {de comune e probabil să nu aibă}} destul {crop}"
+    },
+    "advice": {
+      "open": "Ce e de făcut",
+      "actions": "Ce e de făcut",
+      "assumptions": "Presupuneri"
+    },
+    "map": {
+      "open": "Hartă",
+      "count": "{count, plural, one {# comună} few {# comune} other {# de comune}}",
+      "close": "Închideți harta"
+    },
+    "mapTitle": "Risc de aprovizionare · {crop}",
     "mapLabel": "Hartă cu riscul de aprovizionare pentru {crop}",
-    "mapUnavailable": "Harta nu poate fi afișată în acest browser. Tabelul comunelor conține aceleași comune și riscuri.",
+    "mapUnavailable": "Harta nu poate fi afișată în acest browser. Lista are aceleași comune.",
     "markerLabel": "{zone}: {risk}",
+    "communes": "Comunele, cele mai sigure întâi",
     "noCropData": "Fără date pentru această cultură",
-    "noZones": "Nu avem încă zone pentru această regiune.",
+    "noZones": "Nu avem încă comune pentru această regiune.",
     "sheetTitle": "{zone} · {crop}",
+    "detailEmpty": "Alegeți o comună ca să vedeți ce o așteaptă.",
+    "closeDetail": "Închideți detaliile",
     "zone": {
       "area": "{ha} ha cultivate",
       "availability": "Cantitate",
@@ -454,33 +479,6 @@
       "lowerRiskOther": "Dacă nu cultivați aceeași plantă doi ani la rând, riscul scade de obicei în 3 ani. Comparați rotațiile pentru un câmp din această comună.",
       "compareHere": "Comparați rotațiile aici"
     },
-    "compareTitle": "Comparați două comune",
-    "compareHint": "Care dintre cele două comune bifate e mai sigură pentru cumpărare.",
-    "compare": {
-      "summary": "La {crop}, {a} e mai bună la {winsA} din {total} indicatori, {b} la {winsB}.",
-      "caption": "{a} comparată cu {b}, pentru {crop}",
-      "supplyRisk": "Risc de aprovizionare",
-      "riskScore": "Scor de risc (mai mic e mai bine)",
-      "anomaly": "{mid}% (între {low}% și {high}%)",
-      "area": "Suprafață cultivată",
-      "flagDays": "{observed} zile cu risc, față de {normal} de obicei",
-      "confidence": "Încredere",
-      "better": "mai bine",
-      "note": "„Mai bine” compară doar cele două zone, indicator cu indicator. Toate cifrele sunt estimări cu interval; verificați încrederea fiecărei zone.",
-      "pickTwo": "Bifați două comune în tabel pentru a le compara.",
-      "pickOne": "Bifați încă o comună pentru a o compara cu {zone}.",
-      "measure": "Indicator"
-    },
-    "recommendationTitle": "Recomandare",
-    "assumptions": "Presupuneri",
-    "caveatsTitle": "De reținut",
-    "metaTitle": "Cumpărători de furaje",
-    "actionsTitle": "Ce puteți face",
-    "view": {
-      "label": "Afișați comunele ca",
-      "list": "Listă",
-      "map": "Hartă"
-    },
     "table": {
       "caption": "Comunele pentru {crop}. Întâi cele cu riscul de aprovizionare cel mai mic, dacă nu sortați după altă coloană.",
       "name": "Comuna",
@@ -495,18 +493,38 @@
       "warnings": "{count, plural, one {# semnal} few {# semnale} other {# de semnale}}",
       "open": "Detalii pentru {zone}"
     },
-    "detailEmpty": "Selectați o comună din tabel sau de pe hartă pentru a vedea recolta, calitatea și apa.",
-    "closeDetail": "Închideți detaliile",
-    "sourcesTitle": "Surse",
-    "adviceLabel": "Recomandarea noastră",
-    "cropQuestion": "Ce cultură cumpărați?",
-    "summary": {
-      "good": "{count, plural, one {comună ar trebui să aibă} few {comune ar trebui să aibă} other {de comune ar trebui să aibă}} destul {crop}",
-      "watch": "{count, plural, one {comună ar putea avea} few {comune ar putea avea} other {de comune ar putea avea}} mai puțin {crop} decât de obicei",
-      "bad": "{count, plural, one {comună e probabil să nu aibă} few {comune e probabil să nu aibă} other {de comune e probabil să nu aibă}} destul {crop}"
+    "compare": {
+      "pill": "Comparați {count}",
+      "pickOne": "Mai bifați una",
+      "clear": "Ștergeți bifele",
+      "title": "Comparație",
+      "subtitle": "{a} și {b} · {crop}",
+      "summary": "La {crop}, {a} e mai bună la {winsA} din {total} indicatori, {b} la {winsB}.",
+      "caption": "{a} comparată cu {b}, pentru {crop}",
+      "supplyRisk": "Risc de aprovizionare",
+      "riskScore": "Scor de risc (mai mic e mai bine)",
+      "anomaly": "{mid}% (între {low}% și {high}%)",
+      "area": "Suprafață cultivată",
+      "flagDays": "{observed} zile cu risc, față de {normal} de obicei",
+      "confidence": "Încredere",
+      "better": "mai bine",
+      "note": "„Mai bine” compară doar aceste două comune, indicator cu indicator. Toate cifrele sunt estimări cu interval."
     },
-    "listTitle": "Toate comunele, cele mai sigure primele",
-    "listHint": "Atingeți o comună ca să vedeți de ce. Bifați două ca să le comparați."
+    "track": {
+      "row": "Cât am nimerit",
+      "value": "{hits} din {total} ani",
+      "summary": "din {total} ani trecuți estimați corect",
+      "cropSummary": "{hits} din {total} corect",
+      "hit": "Estimat corect",
+      "miss": "Ratat",
+      "seasonLabel": "{season}: {risk}, recolta {anomaly} față de tendință. {result}.",
+      "honest": "Arătăm intenționat și anii ratați: niciun scor de risc nu nimerește fiecare an."
+    },
+    "about": {
+      "row": "Despre date",
+      "caveats": "De reținut",
+      "sources": "Surse"
+    }
   },
   "About": {
     "title": "Despre Field Signal",
@@ -1070,32 +1088,26 @@
     "downloadYear": "Anul listei",
     "download": "Descărcați lista APIA pentru {year}"
   },
-  "FeedExtra": {
-    "validation": {
-      "title": "Cum s-a descurcat riscul în anii trecuți",
-      "summary": "din {total} ani trecuți estimați corect",
-      "cropSummary": "{hits} din {total} corect",
-      "hit": "Estimat corect",
-      "miss": "Ratat",
-      "seasonLabel": "{season}: {risk}, recolta {anomaly} față de tendință. {result}.",
-      "honest": "Arătăm intenționat și anii ratați. Niciun scor de risc nu nimerește fiecare an, iar dumneavoastră trebuie să vedeți unde a greșit acesta.",
-      "tableTitle": "Vedeți fiecare an",
-      "colCrop": "Cultura",
-      "colSeason": "Anul",
-      "colRisk": "Riscul pe care l-am fi dat",
-      "colYield": "Recolta față de tendință",
-      "colResult": "Rezultat"
-    }
-  },
   "Stocks": {
-    "metaTitle": "Stocuri și furnizori",
     "title": "Stocuri și furnizori",
-    "intro": "Câte zile mai ajung materiile prime din depozit și din ce țări putem completa ce lipsește până la 90 de zile.",
-    "demo": "Date demonstrative — scenariu ilustrativ. Stocurile și volumele furnizorilor sunt inventate; regulile comerciale sunt publice, iar timpii de livrare sunt estimări.",
-    "context": "Situația la {date} · anul de comercializare {year} · fereastra de aprovizionare {window}",
+    "meta": "Situația la {date}",
+    "report": "Raport",
+    "reportLabel": "Raport în română (PDF)",
+    "empty": "Nu există încă materii prime pe această linie.",
+    "about": "Despre date",
+    "headline": {
+      "label": "Cel mai mare deficit",
+      "daysLeft": "{days, plural, one {zi rămasă} few {zile rămase} other {de zile rămase}}",
+      "line": "lipsesc {tonnes} · cea mai bună sursă: {country}",
+      "short": "lipsesc {tonnes}",
+      "none": "Toate materiile prime acoperă {target} de zile."
+    },
+    "legendLabel": "Niveluri de stare",
+    "share": "({share}%)",
+    "more": "Vedeți încă {count, plural, one {# țară} few {# țări} other {# de țări}}",
+    "fewer": "Mai puține",
     "pathLabel": "Direcția de producție",
     "inventoryTitle": "Stocul pe materii prime",
-    "inventoryHint": "Atingeți o materie primă pentru a vedea furnizorii ei.",
     "inventoryCaption": "Stocuri, consum și zile de acoperire, de la cea mai expusă materie primă",
     "col": {
       "ingredient": "Materie primă",
@@ -1107,7 +1119,6 @@
     },
     "tonnes": "{value} t",
     "days": "{days, plural, one {# zi} few {# zile} other {# de zile}}",
-    "rowDetail": "Stoc {stock} · consum {use}/lună · în drum {incoming}",
     "status": {
       "red": "Critic",
       "amber": "Atenție",
@@ -1119,8 +1130,6 @@
     "noShortfall": "Stocul acoperă deja {target} de zile. Nu trebuie cumpărat nimic acum.",
     "noCandidates": "Nu avem prognoze de furnizori pentru această materie primă.",
     "allocationTitle": "Împărțire recomandată",
-    "allocationHint": "Calcul prudent: folosim volumul minim estimat al fiecărei țări și cel mult 4 țări.",
-    "allocationLine": "{country}: {tonnes} ({share}%)",
     "uncovered": "{tonnes} rămân neacoperite de furnizorii din prognoză. Căutați o materie primă alternativă sau un furnizor nou.",
     "bridge": "Unele livrări recomandate ajung după epuizarea stocului: este nevoie de o achiziție-punte de la un furnizor apropiat.",
     "concentrated": "Peste jumătate din cantitate vine dintr-o singură țară: risc de concentrare.",
@@ -1144,7 +1153,7 @@
     "route": "Rută: {route} · aprox. {days}",
     "pros": "Avantaje",
     "cons": "Dezavantaje",
-    "more": "Încă {count, plural, one {# țară} few {# țări} other {# de țări}}",
+    "context": "Situația la {date} · anul de comercializare {year} · fereastra de aprovizionare {window}",
     "methodTitle": "Cum calculăm",
     "method": {
       "cover": "Zile de acoperire = (stoc + cantitatea în drum) ÷ consumul zilnic, unde consumul zilnic = consumul lunar ÷ 30. Sub {red} de zile starea este critică, sub {amber} de zile cere atenție.",
@@ -1156,8 +1165,7 @@
       "friction": "Ușurință comercială: pornește de la 100. Scădem 30 în afara UE, 30 pentru risc de război, 10 pentru ecartament feroviar de 1520 mm, 15 pentru restricții la export în 2022 și 20 pentru șrot de soia din țări unde soia modificată genetic este frecventă.",
       "allocation": "Împărțirea: luăm cel mult 4 țări, în ordinea scorului. La prima trecere fiecare dă cel mult volumul ei minim estimat și cel mult jumătate din deficit; la a doua trecere completăm până la volumul minim, fără plafon.",
       "assumptions": "Ipoteze: stocurile, consumul și volumele furnizorilor sunt inventate. Regulile UE și Schengen, ecartamentul și restricțiile la export din 2022 sunt fapte publice. Timpii de livrare sunt estimări. Prețurile nu intră în calcul."
-    },
-    "report": "Generează raportul PDF (în română)"
+    }
   },
   "Buyers": {
     "title": "Cumpărători",

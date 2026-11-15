@@ -422,17 +422,42 @@
     "modelName": "Field Signal crop model{runs, plural, one {} other {, # runs}}"
   },
   "Feed": {
-    "title": "Where to buy feed this year",
-    "intro": "See which communes are likely to have enough maize, wheat or barley this year, and where quality could be a problem.",
-    "loading": "Loading zones…",
-    "regionLine": "{region} · season {season} · {count} communes",
-    "cropToggle": "Choose the crop",
+    "title": "Where to buy feed",
+    "meta": "{region} · {season} · {count, plural, one {# commune} other {# communes}}",
+    "loading": "Loading communes…",
+    "loaded": "{count, plural, one {# commune} other {# communes}} loaded",
+    "error": "We couldn't load the communes.",
+    "cropToggle": "Crop",
+    "counts": {
+      "low": "enough",
+      "medium": "tight",
+      "high": "short"
+    },
+    "summary": {
+      "good": "{count, plural, one {commune} other {communes}} should have enough {crop}",
+      "watch": "{count, plural, one {commune} other {communes}} may have less {crop} than usual",
+      "bad": "{count, plural, one {commune} other {communes}} will likely be short of {crop}"
+    },
+    "advice": {
+      "open": "What to do",
+      "actions": "What to do",
+      "assumptions": "Assumptions"
+    },
+    "map": {
+      "open": "Map",
+      "count": "{count, plural, one {# commune} other {# communes}}",
+      "close": "Close the map"
+    },
+    "mapTitle": "Supply risk · {crop}",
     "mapLabel": "Map of supply risk for {crop}",
-    "mapUnavailable": "The map cannot be shown in this browser. The commune table has the same communes and risks.",
+    "mapUnavailable": "This browser can't show the map. The list has the same communes.",
     "markerLabel": "{zone}: {risk}",
+    "communes": "Communes, safest first",
     "noCropData": "No data for this crop",
-    "noZones": "We have no zones for this region yet.",
+    "noZones": "No communes for this region yet.",
     "sheetTitle": "{zone} · {crop}",
+    "detailEmpty": "Pick a commune to see its outlook.",
+    "closeDetail": "Close details",
     "zone": {
       "area": "{ha} ha grown",
       "availability": "Availability",
@@ -454,33 +479,6 @@
       "lowerRiskOther": "Not growing the same crop two years in a row usually lowers this risk over 3 years. Compare rotations for a field in this commune.",
       "compareHere": "Compare rotations here"
     },
-    "compareTitle": "Compare two communes",
-    "compareHint": "Which of the two ticked communes is the safer place to buy.",
-    "compare": {
-      "summary": "For {crop}, {a} is better on {winsA} of {total} measures, {b} on {winsB}.",
-      "caption": "{a} compared with {b}, for {crop}",
-      "supplyRisk": "Supply risk",
-      "riskScore": "Risk score (lower is better)",
-      "anomaly": "{mid}% ({low}% to {high}%)",
-      "area": "Area grown",
-      "flagDays": "{observed} risky days, versus {normal} usually",
-      "confidence": "Confidence",
-      "better": "better",
-      "note": "\"Better\" only compares these two zones, measure by measure. All numbers are estimates with a range; check each zone's confidence.",
-      "pickTwo": "Tick two communes in the table to compare them.",
-      "pickOne": "Tick one more commune to compare it with {zone}.",
-      "measure": "Measure"
-    },
-    "recommendationTitle": "Recommendation",
-    "assumptions": "Assumptions",
-    "caveatsTitle": "Keep in mind",
-    "metaTitle": "Feed buyer",
-    "actionsTitle": "What to do",
-    "view": {
-      "label": "Show communes as",
-      "list": "List",
-      "map": "Map"
-    },
     "table": {
       "caption": "Communes for {crop}. Lowest supply risk first unless you sort by another column.",
       "name": "Commune",
@@ -495,18 +493,38 @@
       "warnings": "{count, plural, one {# warning} other {# warnings}}",
       "open": "Details for {zone}"
     },
-    "detailEmpty": "Select a commune in the table or on the map to see its harvest, quality and water outlook.",
-    "closeDetail": "Close details",
-    "sourcesTitle": "Sources",
-    "adviceLabel": "Our advice",
-    "cropQuestion": "Which crop are you buying?",
-    "summary": {
-      "good": "{count, plural, one {commune} other {communes}} should have enough {crop}",
-      "watch": "{count, plural, one {commune} other {communes}} may have less {crop} than usual",
-      "bad": "{count, plural, one {commune} other {communes}} will likely be short of {crop}"
+    "compare": {
+      "pill": "Compare {count}",
+      "pickOne": "Tick 1 more",
+      "clear": "Clear ticks",
+      "title": "Compare",
+      "subtitle": "{a} and {b} · {crop}",
+      "summary": "For {crop}, {a} is better on {winsA} of {total} measures, {b} on {winsB}.",
+      "caption": "{a} compared with {b}, for {crop}",
+      "supplyRisk": "Supply risk",
+      "riskScore": "Risk score (lower is better)",
+      "anomaly": "{mid}% ({low}% to {high}%)",
+      "area": "Area grown",
+      "flagDays": "{observed} risky days, versus {normal} usually",
+      "confidence": "Confidence",
+      "better": "better",
+      "note": "\"Better\" compares only these two, measure by measure. Every number is an estimate with a range."
     },
-    "listTitle": "All communes, safest first",
-    "listHint": "Tap a commune to see why. Tick two to compare them."
+    "track": {
+      "row": "Track record",
+      "value": "{hits} of {total} seasons right",
+      "summary": "of {total} past seasons called right",
+      "cropSummary": "{hits} of {total} right",
+      "hit": "Called right",
+      "miss": "Missed",
+      "seasonLabel": "{season}: {risk}, harvest {anomaly} against the trend. {result}.",
+      "honest": "We show the misses on purpose: no risk score gets every year right."
+    },
+    "about": {
+      "row": "About this data",
+      "caveats": "Keep in mind",
+      "sources": "Sources"
+    }
   },
   "About": {
     "title": "About Field Signal",
@@ -1070,32 +1088,26 @@
     "downloadYear": "Year of the list",
     "download": "Download the APIA list for {year}"
   },
-  "FeedExtra": {
-    "validation": {
-      "title": "How the risk did in past years",
-      "summary": "of {total} past seasons called right",
-      "cropSummary": "{hits} of {total} right",
-      "hit": "Called right",
-      "miss": "Missed",
-      "seasonLabel": "{season}: {risk}, harvest {anomaly} against the trend. {result}.",
-      "honest": "We show the misses on purpose. No risk score gets every year right, and you should see where this one went wrong.",
-      "tableTitle": "See every season",
-      "colCrop": "Crop",
-      "colSeason": "Season",
-      "colRisk": "Risk we would have given",
-      "colYield": "Harvest vs trend",
-      "colResult": "Result"
-    }
-  },
   "Stocks": {
-    "metaTitle": "Stocks and suppliers",
     "title": "Stocks and suppliers",
-    "intro": "How many days the ingredients in stock will last, and which countries can make up the gap to 90 days.",
-    "demo": "Demo data — illustrative scenario. Stocks and supplier volumes are invented; trade rules are public, and lead times are estimates.",
-    "context": "As of {date} · marketing year {year} · sourcing window {window}",
+    "meta": "As of {date}",
+    "report": "Report",
+    "reportLabel": "Report, in Romanian (PDF)",
+    "empty": "No ingredients on this line yet.",
+    "about": "About this data",
+    "headline": {
+      "label": "Biggest gap",
+      "daysLeft": "{days, plural, one {day left} other {days left}}",
+      "line": "{tonnes} short · best source {country}",
+      "short": "{tonnes} short",
+      "none": "Every ingredient covers {target} days."
+    },
+    "legendLabel": "Status levels",
+    "share": "({share}%)",
+    "more": "Show {count, plural, one {# more country} other {# more countries}}",
+    "fewer": "Show fewer",
     "pathLabel": "Production line",
     "inventoryTitle": "Stock by ingredient",
-    "inventoryHint": "Tap an ingredient to see its suppliers.",
     "inventoryCaption": "Stocks, use and days of cover, most exposed ingredient first",
     "col": {
       "ingredient": "Ingredient",
@@ -1107,7 +1119,6 @@
     },
     "tonnes": "{value} t",
     "days": "{days, plural, one {# day} other {# days}}",
-    "rowDetail": "Stock {stock} · use {use}/month · incoming {incoming}",
     "status": {
       "red": "Critical",
       "amber": "Watch",
@@ -1119,8 +1130,6 @@
     "noShortfall": "Stock already covers {target} days. Nothing needs buying now.",
     "noCandidates": "We have no supplier forecasts for this ingredient.",
     "allocationTitle": "Recommended split",
-    "allocationHint": "Conservative: we use each country's lowest volume estimate and at most 4 countries.",
-    "allocationLine": "{country}: {tonnes} ({share}%)",
     "uncovered": "{tonnes} stay uncovered by the forecast suppliers. Look for an alternative ingredient or a new supplier.",
     "bridge": "Some recommended deliveries arrive after the stock runs out: a bridge purchase from a nearby supplier is needed.",
     "concentrated": "Over half of the volume comes from one country: concentration risk.",
@@ -1144,7 +1153,7 @@
     "route": "Route: {route} · about {days}",
     "pros": "Pros",
     "cons": "Cons",
-    "more": "{count, plural, one {# more country} other {# more countries}}",
+    "context": "As of {date} · marketing year {year} · sourcing window {window}",
     "methodTitle": "How we calculate",
     "method": {
       "cover": "Days of cover = (stock + incoming) ÷ daily use, where daily use = monthly use ÷ 30. Under {red} days is critical; under {amber} days needs watching.",
@@ -1156,8 +1165,7 @@
       "friction": "Ease of trade: starts at 100. We subtract 30 outside the EU, 30 for war risk, 10 for 1520 mm rail gauge, 15 for 2022 export curbs, and 20 for soy meal from countries where GM soy is common.",
       "allocation": "Split: we take at most 4 countries, in score order. In the first pass each gives at most its lowest volume estimate and at most half the shortfall; the second pass tops each up to its lowest estimate, uncapped.",
       "assumptions": "Assumptions: stocks, use and supplier volumes are invented. EU and Schengen rules, rail gauge and the 2022 export curbs are public facts. Lead times are estimates. Prices are not part of the calculation."
-    },
-    "report": "Generate the PDF report (in Romanian)"
+    }
   },
   "Buyers": {
     "title": "Buyers",

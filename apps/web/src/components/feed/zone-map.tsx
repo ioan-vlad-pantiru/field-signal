@@ -95,7 +95,7 @@ export function ZoneMap({
     return (
       <div
         role="status"
-        className={`flex w-full items-center justify-center rounded-2xl border border-line bg-surface-sunken p-6 text-center text-ink-muted ${className}`}
+        className={`flex w-full items-center justify-center bg-surface-sunken p-6 text-center text-ink-muted ${className}`}
       >
         {t("mapUnavailable")}
       </div>
@@ -107,7 +107,7 @@ export function ZoneMap({
       ref={container}
       role="region"
       aria-label={label}
-      className={`w-full overflow-hidden rounded-2xl bg-surface-sunken ${className}`}
+      className={`w-full overflow-hidden bg-surface-sunken ${className}`}
     />
   );
 }

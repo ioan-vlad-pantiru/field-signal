@@ -29,11 +29,11 @@ export function CandidateCard({
   const volumes = { low: num(v.low), mid: num(v.mid), high: num(v.high) };
 
   return (
-    <li className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-4">
+    <li className="flex flex-col gap-4 rounded-[var(--radius-lg)] bg-surface p-4 ring-1 ring-line">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm text-ink-muted">{t("rank", { rank })}</p>
-          <h4 className="text-lg font-semibold">{l(c.facts.name)}</h4>
+          <h4 className="text-lg font-semibold leading-snug">{l(c.facts.name)}</h4>
           <p className="text-sm text-ink-muted">
             {t("route", { route: l(c.facts.route), days: t("days", { days: c.facts.lead_days }) })}
           </p>
@@ -52,7 +52,7 @@ export function CandidateCard({
           <li key={key}>
             <div className="flex justify-between gap-2 text-sm">
               <span>{t("scoreLine", { label: t(`scores.${key}`), weight: Math.round(WEIGHTS[key] * 100) })}</span>
-              <span className="font-medium tabular-nums">{Math.round(c.scores[key])}</span>
+              <span className="font-semibold tabular-nums">{Math.round(c.scores[key])}</span>
             </div>
             <ScoreBar value={c.scores[key]} index={i} />
           </li>
@@ -60,7 +60,7 @@ export function CandidateCard({
       </ul>
 
       <div className="flex flex-col gap-2">
-        <p className="text-sm font-medium">{t("volume")}</p>
+        <p className="text-sm font-semibold">{t("volume")}</p>
         <RangeBar range={v} domain={domain} label={t("volumeLabel", volumes)} />
         <p className="text-sm tabular-nums text-ink-muted">{t("volumeText", volumes)}</p>
         <ConfidenceBadge confidence={c.forecast.confidence} />
