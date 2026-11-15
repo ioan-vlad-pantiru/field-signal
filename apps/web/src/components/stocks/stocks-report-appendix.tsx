@@ -127,12 +127,3 @@ export function RisksSection({ data }: { data: ReportData }) {
     </ReportSection>
   );
 }
-
-/** 7. Appendix: the heading only; its content was removed. */
-export function AnnexSection() {
-  return (
-    <ReportSection newPage n={7} title="Anexă — date, ipoteze, încredere, rolul AI">
-      {null}
-    </ReportSection>
-  );
-}
