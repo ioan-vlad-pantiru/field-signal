@@ -40,8 +40,8 @@ function Row({ label, value }: { label: string; value: ReactNode }) {
 function LowerRisk({ crop, centroid, place }: { crop: CropOutlook["crop"]; centroid?: LatLon; place?: string }) {
   const t = useTranslations("Feed.zone");
   return (
-    <div className="mt-2 flex flex-col gap-2 rounded-xl bg-surface-sunken p-3">
-      <p className="font-medium">{t("lowerRiskTitle")}</p>
+    <div className="mt-2 flex flex-col gap-2 rounded-[var(--radius-md)] bg-surface-sunken p-3">
+      <p className="font-semibold">{t("lowerRiskTitle")}</p>
       <p>{crop === "maize" ? t("lowerRiskMaize") : t("lowerRiskOther")}</p>
       <AgronomistBadge />
       {centroid ? (
@@ -132,7 +132,7 @@ export function ZoneDetails({
             {quality.flags.map((flag) => (
               <li key={flag.code}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-medium">{l(flag.label)}</span>
+                  <span className="font-semibold">{l(flag.label)}</span>
                   <RiskBadge level={flag.level} />
                 </div>
                 <p className="mt-1 text-sm">
