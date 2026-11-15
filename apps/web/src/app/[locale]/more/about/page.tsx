@@ -1,19 +1,24 @@
 import type { Metadata } from "next";
+import type { ComponentType, ReactNode } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Section } from "@/components/ui/section";
-import { SatelliteIcon } from "@/components/ui/icons";
+import { BookIcon, ChatIcon, ChevronDownIcon, InfoIcon, LeafIcon, SatelliteIcon, ShieldIcon } from "@/components/ui/icons";
+import { ScreenHeader } from "@/components/ui/screen-header";
+import { BackLink } from "@/components/more/back-link";
 
 const SOURCES = [
   { key: "power", dataset: "NASA POWER", resolution: "0.5° × 0.625°", period: "2001–2025", nasa: true },
   { key: "modis", dataset: "MODIS MOD13Q1", resolution: "250 m", period: "2001–2025", nasa: true },
   { key: "smap", dataset: "SMAP L4", resolution: "9 km", period: "2015–2025", nasa: true },
-  { key: "soilgrids", dataset: "SoilGrids 2.0", resolution: "250 m", period: "—", nasa: false },
+  { key: "soilgrids", dataset: "SoilGrids 2.0", resolution: "250 m", period: null, nasa: false },
   { key: "eucropmap", dataset: "EUCROPMAP", resolution: "10 m", period: "2018", nasa: false },
-  { key: "ins", dataset: "INS AGR110A", resolution: "—", period: "2001–2025", nasa: false },
+  { key: "ins", dataset: "INS AGR110A", resolution: null, period: "2001–2025", nasa: false },
 ] as const;
 
-const WHAT = ["farmer", "buyer", "transparency"] as const;
+/** Glossary ids, shared with the `Term` popovers on other screens (`Glossary.<id>.term|text`). */
+const GLOSSARY = ["et", "ndvi", "soilMoisture", "waterBalance", "frost"] as const;
 const LIMITS = ["hail", "pests", "markets", "management", "scale"] as const;
+
+type Icon = ComponentType<{ size?: number; className?: string }>;
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/more/about">): Promise<Metadata> {
   const { locale } = await params;
@@ -21,95 +26,99 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/more/abo
   return { title: t("title") };
 }
 
+/** One collapsible card: closed by default, so the page reads as a short list of topics. */
+function Topic({ icon: Icon, title, children }: { icon: Icon; title: string; children: ReactNode }) {
+  return (
+    <details className="group rounded-lg bg-surface shadow-1">
+      <summary className="press flex min-h-14 cursor-pointer list-none items-center gap-3 rounded-lg px-4 py-2 font-semibold [&::-webkit-details-marker]:hidden">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-field-soft text-field-strong">
+          <Icon size={18} />
+        </span>
+        <span className="flex-1">{title}</span>
+        <ChevronDownIcon size={18} className="shrink-0 text-ink-muted transition-transform duration-[var(--duration-base)] group-open:rotate-180" />
+      </summary>
+      <div className="flex flex-col gap-3 px-4 pb-5 pt-1">{children}</div>
+    </details>
+  );
+}
+
 export default async function AboutPage({ params }: PageProps<"/[locale]/more/about">) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("About");
+  const tg = await getTranslations("Glossary");
+  const tMore = await getTranslations("More");
+  const terms = GLOSSARY.filter((id) => tg.has(`${id}.term`) && tg.has(`${id}.text`));
 
   return (
-    <article className="max-w-[720px]">
-      <header>
-        <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">{t("title")}</h1>
-        <p className="mt-4 text-lg">{t("intro")}</p>
-        <p className="mt-6 font-display text-xl font-semibold leading-snug">{t("judgment")}</p>
-        <p className="mt-2 text-ink-muted">{t("judgmentDetail")}</p>
-      </header>
+    <div className="mx-auto flex max-w-2xl flex-col gap-6">
+      <ScreenHeader back={<BackLink label={tMore("title")} />} title={t("title")} meta={t("lead")} />
 
-      <Section title={t("whatTitle")}>
-        <dl className="flex flex-col gap-5">
-          {WHAT.map((key) => (
-            <div key={key}>
-              <dt className="font-semibold">{t(`whatCards.${key}`)}</dt>
-              <dd className="mt-1">{t(`what.${key}`)}</dd>
-            </div>
-          ))}
-        </dl>
-      </Section>
+      <div className="flex flex-col gap-3">
+        <Topic icon={LeafIcon} title={t("how.title")}>
+          <p>{t("how.text")}</p>
+          <p className="text-ink-muted">{t("how.judgment")}</p>
+        </Topic>
 
-      <Section title={t("sourcesTitle")} hint={t("sourcesHint")}>
-        {/* Phones drop the resolution and period columns and show them under each use instead. */}
-        <table className="w-full border-collapse text-left">
-          <thead className="text-sm text-ink-muted">
-            <tr className="border-b border-line">
-              <th scope="col" className="py-2 pr-4 font-medium">{t("table.dataset")}</th>
-              <th scope="col" className="py-2 pr-4 font-medium">{t("table.use")}</th>
-              <th scope="col" className="hidden py-2 pr-4 font-medium sm:table-cell">{t("table.resolution")}</th>
-              <th scope="col" className="hidden py-2 font-medium sm:table-cell">{t("table.period")}</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Topic icon={SatelliteIcon} title={t("sources.title")}>
+          <ul className="grid gap-2 sm:grid-cols-2">
             {SOURCES.map((s) => (
-              <tr key={s.key} className="border-b border-line align-top">
-                <th scope="row" className="py-3 pr-4 font-semibold">
-                  <span className="sm:whitespace-nowrap">{s.dataset}</span>
-                  {s.nasa ? (
-                    <span className="mt-1 flex w-fit items-center gap-1 text-sm font-normal text-signal">
-                      <SatelliteIcon size={14} />
-                      {t("table.nasaData")}
-                    </span>
-                  ) : (
-                    <span className="mt-1 block text-sm font-normal text-ink-muted">{t("table.otherData")}</span>
-                  )}
-                </th>
-                <td className="py-3 pr-4">
-                  {t(`sources.${s.key}`)}
-                  <span className="mt-1 block text-sm tabular-nums text-ink-muted sm:hidden">
-                    {s.resolution} · {s.period}
+              <li key={s.key} className="rounded-md bg-surface-sunken p-3">
+                <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span className="font-semibold">{s.dataset}</span>
+                  <span
+                    className={`rounded-pill px-2 text-xs font-semibold ${s.nasa ? "bg-field-soft text-field-strong" : "bg-surface text-ink-muted"}`}
+                  >
+                    {s.nasa ? t("sources.nasa") : t("sources.other")}
                   </span>
-                </td>
-                <td className="hidden whitespace-nowrap py-3 pr-4 tabular-nums sm:table-cell">{s.resolution}</td>
-                <td className="hidden whitespace-nowrap py-3 tabular-nums sm:table-cell">{s.period}</td>
-              </tr>
+                </p>
+                <p className="mt-1 text-sm">{t(`sources.${s.key}`)}</p>
+                <p className="mt-1 text-xs tabular-nums text-ink-muted">
+                  {[s.resolution, s.period].filter(Boolean).join(" · ")}
+                </p>
+              </li>
             ))}
-          </tbody>
-        </table>
-        <p className="mt-4 text-sm text-ink-muted">{t("nasaNote")}</p>
-      </Section>
+          </ul>
+          <p className="text-sm text-ink-muted">{t("sources.note")}</p>
+        </Topic>
 
-      <Section title={t("aiTitle")} hint={t("aiHint")}>
-        <dl className="flex flex-col gap-5">
-          <div>
-            <dt className="font-semibold">{t("ai.modelTitle")}</dt>
-            <dd className="mt-1">{t("ai.model")}</dd>
-          </div>
-          <div>
-            <dt className="font-semibold">{t("ai.textTitle")}</dt>
-            <dd className="mt-1">{t("ai.text")}</dd>
-          </div>
-        </dl>
-      </Section>
+        {/* The Glossary namespace is shared with the Term popovers; skip the section until it exists. */}
+        {terms.length > 0 ? (
+          <Topic icon={BookIcon} title={t("glossaryTitle")}>
+            <dl className="flex flex-col gap-3">
+              {terms.map((id) => (
+                <div key={id} id={`term-${id}`} className="scroll-mt-24">
+                  <dt className="font-semibold">{tg(`${id}.term`)}</dt>
+                  <dd className="text-ink-muted">{tg(`${id}.text`)}</dd>
+                </div>
+              ))}
+            </dl>
+          </Topic>
+        ) : null}
 
-      <Section title={t("limitsTitle")}>
-        <ul className="list-disc space-y-2 pl-5">
-          {LIMITS.map((key) => (
-            <li key={key}>{t(`limits.${key}`)}</li>
-          ))}
-        </ul>
-      </Section>
+        <Topic icon={ChatIcon} title={t("ai.title")}>
+          <p>
+            <span className="font-semibold">{t("ai.modelTitle")}. </span>
+            {t("ai.model")}
+          </p>
+          <p>
+            <span className="font-semibold">{t("ai.textTitle")}. </span>
+            {t("ai.text")}
+          </p>
+        </Topic>
 
-      <Section title={t("demoTitle")}>
-        <p>{t("demo")}</p>
-      </Section>
-    </article>
+        <Topic icon={ShieldIcon} title={t("limits.title")}>
+          <ul className="flex list-disc flex-col gap-1.5 pl-5">
+            {LIMITS.map((key) => (
+              <li key={key}>{t(`limits.${key}`)}</li>
+            ))}
+          </ul>
+        </Topic>
+
+        <Topic icon={InfoIcon} title={t("demo.title")}>
+          <p>{t("demo.text")}</p>
+        </Topic>
+      </div>
+    </div>
   );
 }

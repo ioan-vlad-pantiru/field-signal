@@ -3,9 +3,12 @@
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Chip } from "@/components/ui/chip";
 import { CropDot } from "@/components/ui/crop-chip";
-import { NoticeBar } from "@/components/ui/notice-bar";
+import { ChevronLeftIcon, ChevronRightIcon, PauseIcon, PlayIcon } from "@/components/ui/icons";
+import { InfoTip } from "@/components/ui/info-tip";
 import { Segmented } from "@/components/ui/segmented";
 import type { LatLon, Strategy } from "@/lib/contracts";
 import { CROP_COLORS } from "@/lib/crops";
@@ -190,10 +193,9 @@ export function FieldSimulator({ strategy, outline, outlineMetres }: FieldSimula
 
   return (
     <div className="flex flex-col gap-4">
-      <NoticeBar tone="info">{t("banner")}</NoticeBar>
       {webgl === false || contextLost ? <p className="text-sm text-ink-muted">{t("noWebgl")}</p> : null}
 
-      <div className="relative overflow-hidden rounded-2xl border border-line bg-surface-sunken">
+      <div className="relative overflow-hidden rounded-xl bg-surface-sunken shadow-1">
         <div className="aspect-[4/5] w-full sm:aspect-[16/9]">
           {webgl === null ? (
             <SceneLoading />
@@ -218,14 +220,14 @@ export function FieldSimulator({ strategy, outline, outlineMetres }: FieldSimula
         </div>
 
         {/* Season overlay: the same facts as the scene, as real text. */}
-        <div className="pointer-events-none absolute left-2.5 top-2.5 max-w-[75%] rounded-xl bg-surface/90 px-3 py-1.5 shadow-2 backdrop-blur" aria-live="polite">
-          <p className="text-xs font-medium text-ink-muted">
+        <div className="pointer-events-none absolute left-3 top-3 max-w-[75%] rounded-md bg-glass px-3 py-1.5 shadow-float backdrop-blur-md" aria-live="polite">
+          <p className="text-xs text-ink-muted">
             {t("year", { n: Math.max(1, cal.year) })} · {monthName(cal.month)}
           </p>
           <p className="flex items-center gap-1.5 font-display font-semibold leading-tight">
             <CropDot crop={state.crop} />
             {tc(state.crop)}
-            <span className={`font-sans text-sm font-medium ${state.bare ? "text-wheat-ink" : "text-field"}`}>· {phaseText}</span>
+            <span className={`font-sans text-sm font-normal ${state.bare ? "text-wheat-ink" : "text-field"}`}>· {phaseText}</span>
           </p>
         </div>
       </div>
@@ -236,7 +238,7 @@ export function FieldSimulator({ strategy, outline, outlineMetres }: FieldSimula
           options={CAMERAS.map((c) => ({ value: c, label: t(`camera.${c}`) }))}
           value={camera}
           onChange={setCamera}
-          className="-mt-1 w-full"
+          className="-mt-1 w-full sm:w-auto sm:self-start"
         />
       ) : null}
 
@@ -281,7 +283,7 @@ function Legend() {
       <ul className="flex flex-wrap gap-x-4 gap-y-1 text-ink-muted">
         {items.map((item) => (
           <li key={item.key} className="flex items-center gap-2">
-            <span aria-hidden="true" className="h-3 w-5 shrink-0 rounded-sm" style={item.style} />
+            <span aria-hidden="true" className="h-3 w-5 shrink-0 rounded-[var(--radius-xs)]" style={item.style} />
             {t(item.key)}
           </li>
         ))}
@@ -310,32 +312,42 @@ function Controls({
   onRestart: () => void;
 }) {
   const t = useTranslations("Simulator");
+  const nextSpeed = SPEEDS[(SPEEDS.indexOf(clock.speed as (typeof SPEEDS)[number]) + 1) % SPEEDS.length];
   return (
-    <div className="flex flex-col gap-3 border-y border-line py-4">
-      <div className="flex flex-wrap items-center gap-2">
+    <Card className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
         {reducedMotion ? null : (
-          <Button className="min-w-24" onClick={onTogglePlay}>
-            {clock.playing ? t("controls.pause") : t("controls.play")}
-          </Button>
+          <IconButton
+            variant="active"
+            label={clock.playing ? t("controls.pause") : t("controls.play")}
+            onClick={onTogglePlay}
+          >
+            {clock.playing ? <PauseIcon size={20} /> : <PlayIcon size={20} />}
+          </IconButton>
         )}
-        <Button variant="secondary" onClick={() => onStep(-1)} aria-label={t("controls.prev")}>
-          ←<span className="sr-only sm:not-sr-only">{t("controls.prevShort")}</span>
-        </Button>
-        <Button variant="secondary" onClick={() => onStep(1)} aria-label={t("controls.next")}>
-          <span className="sr-only sm:not-sr-only">{t("controls.nextShort")}</span>→
-        </Button>
-        <Button variant="secondary" onClick={onRestart}>
-          {t("controls.restart")}
-        </Button>
-        {reducedMotion ? null : (
-          <Segmented
-            label={t("controls.speed")}
-            options={SPEEDS.map((sp) => ({ value: String(sp), label: <span className="tabular-nums">{sp}×</span> }))}
-            value={String(clock.speed)}
-            onChange={(sp) => clock.setSpeed(Number(sp))}
-            className="ml-auto"
-          />
-        )}
+        <IconButton variant="filled" label={t("controls.prev")} onClick={() => onStep(-1)}>
+          <ChevronLeftIcon size={20} />
+        </IconButton>
+        <IconButton variant="filled" label={t("controls.next")} onClick={() => onStep(1)}>
+          <ChevronRightIcon size={20} />
+        </IconButton>
+        <IconButton variant="filled" label={t("controls.restart")} onClick={onRestart}>
+          <RestartIcon />
+        </IconButton>
+        <span className="ml-auto flex items-center gap-1">
+          {reducedMotion ? null : (
+            <Chip
+              aria-label={`${t("controls.speed")}: ${clock.speed}×`}
+              onClick={() => clock.setSpeed(nextSpeed)}
+              className="tabular-nums"
+            >
+              {clock.speed}×
+            </Chip>
+          )}
+          <span className="hidden sm:inline-flex">
+            <InfoTip label={t("controls.keysLabel")}>{t("controls.keys")}</InfoTip>
+          </span>
+        </span>
       </div>
 
       <TimelineBar timeline={timeline} month={month} />
@@ -354,8 +366,16 @@ function Controls({
         }}
         style={{ "--fill": `${(clock.time / timeline.duration) * 100}%` } as React.CSSProperties}
       />
-      <p className="hidden text-xs text-ink-muted sm:block">{t("controls.keys")}</p>
-    </div>
+    </Card>
+  );
+}
+
+function RestartIcon() {
+  return (
+    <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 12a9 9 0 1 0 3-6.7" />
+      <path d="M3 4v5h5" />
+    </svg>
   );
 }
 
@@ -377,7 +397,7 @@ function TimelineBar({ timeline, month }: { timeline: Timeline; month: number })
 
   return (
     <div aria-hidden="true">
-      <div className="relative h-7 overflow-hidden rounded-lg border border-line bg-surface-sunken">
+      <div className="relative h-7 overflow-hidden rounded-[var(--radius-xs)] bg-surface-sunken">
         {segments.map((p, i) => {
           const bare = p.kind === "bare" || p.kind === "fallow";
           const months = p.monthEnd - p.monthStart;
@@ -404,7 +424,7 @@ function TimelineBar({ timeline, month }: { timeline: Timeline; month: number })
           .map((p) => (
             <span
               key={p.cropIndex}
-              className="absolute truncate font-medium"
+              className="absolute truncate font-semibold"
               style={{ left: pct(p.monthStart), width: pct(first + p.monthEnd - p.monthStart) }}
             >
               {tc(p.crop)}
@@ -413,11 +433,11 @@ function TimelineBar({ timeline, month }: { timeline: Timeline; month: number })
       </div>
       <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 whitespace-nowrap text-xs text-ink-muted">
         <span className="flex items-center gap-1">
-          <span className="h-2.5 w-4 rounded-sm" style={{ background: `repeating-linear-gradient(135deg, ${SOIL_2D} 0 3px, #92735a 3px 6px)` }} />
+          <span className="h-2.5 w-4 rounded-[3px]" style={{ background: `repeating-linear-gradient(135deg, ${SOIL_2D} 0 3px, #92735a 3px 6px)` }} />
           {t("bare")}
         </span>
         <span className="flex items-center gap-1">
-          <span className="h-2.5 w-4 rounded-sm bg-field" />
+          <span className="h-2.5 w-4 rounded-[3px] bg-field" />
           {t("covered")}
         </span>
         <span className="sm:ml-auto">{t("scale")}</span>
@@ -435,35 +455,35 @@ function Stats({ plan, timeline, monthName }: { plan: ReturnType<typeof planFiel
   const hours = estimateHours(plan, WORK_KMH, TURN_KMH);
   const bareMonths = timeline.bareGaps.reduce((s, g) => s + g.months, 0);
 
-  const rows: { label: string; value: string; hint?: string }[] = [
+  const rows: { label: string; value: string }[] = [
     { label: t("area"), value: `${n(plan.fieldAreaM2 / 10_000)} ha` },
-    {
-      label: t("passes"),
-      value: n(plan.passes.length, 0),
-      hint: t("passesHint", { width: n(plan.workingWidthM, 0), laps: plan.headlandLaps.length }),
-    },
+    { label: t("passes"), value: n(plan.passes.length, 0) },
     { label: t("distance"), value: `${n(plan.totalDistanceM / 1000)} km` },
-    { label: t("time"), value: `≈ ${n(hours)} h`, hint: t("timeHint", { work: WORK_KMH, turn: TURN_KMH }) },
+    { label: t("time"), value: `≈ ${n(hours)} h` },
     { label: t("bare"), value: n(bareMonths, 0) },
   ];
 
   return (
-    <section className="pt-2" aria-labelledby="sim-stats">
-      <h2 id="sim-stats" className="text-2xl font-semibold tracking-tight">
-        {t("title")}
-      </h2>
-      <p className="text-sm text-ink-muted">{t("illustrative")}</p>
-      <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-5">
+    <section className="flex flex-col gap-3 pt-2" aria-labelledby="sim-stats">
+      <div className="flex items-center gap-1">
+        <h2 id="sim-stats" className="font-display text-xl font-semibold tracking-tight">
+          {t("title")}
+        </h2>
+        <InfoTip label={t("title")}>
+          {t("illustrative", { width: n(plan.workingWidthM, 0), laps: plan.headlandLaps.length, work: WORK_KMH, turn: TURN_KMH })}
+        </InfoTip>
+      </div>
+      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-5">
         {rows.map((r) => (
-          <div key={r.label} className="rounded-xl bg-surface-sunken p-3">
+          <Card key={r.label} as="div" className="flex flex-col-reverse justify-end gap-1">
             <dt className="text-sm text-ink-muted">{r.label}</dt>
-            <dd className="text-xl font-semibold tabular-nums">{r.value}</dd>
-            {r.hint ? <dd className="text-xs text-ink-muted">{r.hint}</dd> : null}
-          </div>
+            <dd className="font-display text-xl font-semibold tabular-nums">{r.value}</dd>
+          </Card>
         ))}
       </dl>
 
-      <h3 className="mt-4 font-semibold">{t("seasons")}</h3>
+      <Card>
+      <h3 className="font-semibold">{t("seasons")}</h3>
       <ol className="mt-2 flex flex-col gap-1.5">
         {timeline.sequence.map((crop, i) => {
           const cal = CROP_CALENDAR[crop];
@@ -472,7 +492,7 @@ function Stats({ plan, timeline, monthName }: { plan: ReturnType<typeof planFiel
             <li key={i} className="flex flex-wrap items-center gap-x-2 text-sm">
               <span className="w-16 shrink-0 text-ink-muted">{ts("year", { n: i + 1 })}</span>
               <CropDot crop={crop} />
-              <span className="font-medium">{tc(crop)}</span>
+              <span className="font-semibold">{tc(crop)}</span>
               {cal ? (
                 <span className="text-ink-muted">
                   {ts(isCoverCrop(crop) ? "seasonRowCover" : "seasonRow", {
@@ -488,6 +508,7 @@ function Stats({ plan, timeline, monthName }: { plan: ReturnType<typeof planFiel
           );
         })}
       </ol>
+      </Card>
     </section>
   );
 }
