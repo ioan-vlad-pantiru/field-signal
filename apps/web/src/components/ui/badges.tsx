@@ -9,7 +9,7 @@ export function ToneBadge({ tone, label, prefix }: { tone: Tone; label: string; 
   const Icon = TONE_ICONS[tone];
   return (
     <span
-      className={`inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-1 text-sm font-medium ${TONE_CLASSES[tone].soft} ${TONE_CLASSES[tone].text}`}
+      className={`inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-1 text-sm font-semibold ${TONE_CLASSES[tone].soft} ${TONE_CLASSES[tone].text}`}
     >
       <Icon size={16} />
       <span className="text-ink">
@@ -53,7 +53,7 @@ export function ConfidenceBadge({ confidence }: { confidence: Confidence }) {
 export function AgronomistBadge() {
   const t = useTranslations("Common");
   return (
-    <span className="inline-flex w-fit items-center gap-1 rounded-full border border-line px-2.5 py-1 text-sm font-medium text-ink">
+    <span className="inline-flex w-fit items-center gap-1 rounded-full border border-line px-2.5 py-1 text-sm font-semibold text-ink">
       <ShieldIcon size={16} />
       {t("verifyAgronomist")}
     </span>

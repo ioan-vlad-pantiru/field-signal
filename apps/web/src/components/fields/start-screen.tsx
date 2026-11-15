@@ -379,7 +379,7 @@ function FieldOptions({ field, onClose, onEdit }: { field: AccountField | null; 
       {field && mode === "delete" ? (
         <div className="flex flex-col gap-3 pb-2">
           <p>{t("deleteConfirm", { name: field.name })}</p>
-          <Button className="bg-status-bad text-on-status hover:bg-status-bad" disabled={busy} onClick={() => void run(() => deleteField(field.id))}>
+          <Button variant="danger" disabled={busy} onClick={() => void run(() => deleteField(field.id))}>
             {t("delete")}
           </Button>
           <Button variant="quiet" onClick={() => setMode("menu")}>

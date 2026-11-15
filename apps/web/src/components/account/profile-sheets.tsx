@@ -44,7 +44,8 @@ function FormSheet({
             type="submit"
             form={formId}
             disabled={submit.busy}
-            className={`flex-1 ${danger ? "bg-status-bad text-on-status hover:bg-status-bad" : ""}`}
+            variant={danger ? "danger" : "primary"}
+            className="flex-1"
           >
             {submit.label}
           </Button>

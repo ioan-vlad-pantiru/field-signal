@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes } from "react";
 
-export type ButtonVariant = "primary" | "secondary" | "tonal" | "quiet";
+export type ButtonVariant = "primary" | "secondary" | "tonal" | "quiet" | "danger";
 export type ButtonSize = "md" | "lg";
 
 const BASE =
@@ -10,6 +10,7 @@ const VARIANTS: Record<ButtonVariant, string> = {
   secondary: "bg-surface text-ink shadow-1 ring-1 ring-line hover:ring-ink-muted",
   tonal: "bg-field-soft text-field-strong hover:bg-field-tint",
   quiet: "text-field hover:bg-surface-sunken",
+  danger: "bg-status-bad text-on-status shadow-1 hover:opacity-90",
 };
 const SIZES: Record<ButtonSize, string> = {
   md: "min-h-tap px-4",
