@@ -408,3 +408,25 @@ They can run in two worktrees in parallel and merge back here. Phases 6–9 run 
 - **Ground**: off-white `#f4f6f1` in light mode and `#0c110e` in dark mode; cards lift in both.
 - **Language**: follows the phone's language, with English as the fallback. An EN/RO picker is
   always available and keeps the page and its query.
+
+## 9. Outcome (what shipped on `redesign/mobile-first`)
+
+- **Navigation**: My fields · Buyers · More. A floating pill bar on phones, with the assistant
+  docked beside it; a compact top bar on desktop. Old routes redirect with their query
+  (`/feed`, `/stocks`, `/account`, `/about`, `/farm`).
+- **My fields**: the Start cards; a full-bleed map where Continue joins the selected parcels; the
+  Setup sheet; results with the verdict card, swipeable strategy cards that drive the 3D map, a
+  strategy sheet, a "Data behind this" sheet and the farm plan card. The farm import is reached at
+  `/field?import=1`.
+- **Buyers**: Region | Stocks with `?view=` and `?path=` in the URL; card lists on phones and
+  tables on desktop; every detail in a sheet.
+- **More**: account (sign in, profile, password and delete sheets), About and data (with a
+  glossary), and the language switch.
+- **Landing**: the hero untouched, then three short sections.
+- **Motion**: a draggable spring sheet, scroll-snap deck, React `<ViewTransition>` page and step
+  fades, stagger and count-up; no animation library.
+- **API**: unchanged. The main risk uses the same rule as the WhatsApp bot (`mainRisk`, tested).
+- **Copy**: `scripts/check-messages.mjs` (run by `pnpm test`) keeps EN and RO in step and catches
+  orphan keys.
+- **Not done**: the card-to-sheet shared-element morph (the sheet is a top-layer `<dialog>`; the
+  sheet springs up instead) and the per-account last verdict (kept per device; see §5).
