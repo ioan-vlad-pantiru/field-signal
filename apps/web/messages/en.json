@@ -68,7 +68,7 @@
     "mapLabel": "Map: tap your field's parcels",
     "mapUnavailable": "The map can't run in this browser. Try another browser or phone.",
     "coordinates": "{lat}° N · {lon}° E",
-    "pinned": "From the buyer map: {place}",
+    "pinned": "Pinned place: {place}",
     "toFields": "Back to my fields",
     "search": {
       "label": "Find a commune",

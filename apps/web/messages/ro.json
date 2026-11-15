@@ -68,7 +68,7 @@
     "mapLabel": "Hartă: atingeți parcelele câmpului",
     "mapUnavailable": "Harta nu merge în acest browser. Încercați alt browser sau alt telefon.",
     "coordinates": "{lat}° N · {lon}° E",
-    "pinned": "De pe harta cumpărătorului: {place}",
+    "pinned": "Locul marcat: {place}",
     "toFields": "Înapoi la câmpurile mele",
     "search": {
       "label": "Căutați o comună",
