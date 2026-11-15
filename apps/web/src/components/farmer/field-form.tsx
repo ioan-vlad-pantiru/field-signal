@@ -211,8 +211,8 @@ export function FieldForm({
   }
 
   /** The selected parcels become one field. Parcels that do not touch stay separate pieces of it. */
-  async function applySelected() {
-    if (selected.length === 0 || joining) return;
+  async function applySelected(): Promise<boolean> {
+    if (selected.length === 0 || joining) return false;
     let outline: LatLon[];
     let pieces: LatLon[][] = [];
     if (selected.length === 1) {
@@ -223,7 +223,7 @@ export function FieldForm({
       setJoining(false);
       if (!result.ok) {
         setPickNote(t("parcel.failed"));
-        return;
+        return false;
       }
       outline = result.data.boundary.map((c) => ({ lat: c.lat, lon: c.lon }));
       pieces = (result.data.parts ?? []).map((ring) => ring.map((c) => ({ lat: c.lat, lon: c.lon })));
@@ -236,7 +236,7 @@ export function FieldForm({
           ? t("parcel.tooSmall", { ha: size, min: MIN_FIELD_HA })
           : t("parcel.tooBig", { ha: size, max: formatNumber(MAX_FIELD_HA, locale, 0) }),
       );
-      return;
+      return false;
     }
     setPickNote(null);
     setSelected([]);
@@ -246,6 +246,7 @@ export function FieldForm({
     const c = fieldCentroid({ boundary: outline, parts: pieces });
     setPoint({ lat: Number(c.lat.toFixed(4)), lon: Number(c.lon.toFixed(4)) });
     setMode("locked");
+    return true;
   }
 
   function restart() {
@@ -255,8 +256,13 @@ export function FieldForm({
     setMeta({ accountId: null, name: null });
   }
 
-  function submit(event: FormEvent) {
+  async function submit(event: FormEvent) {
     event.preventDefault();
+    if (!setupOpen && drawing && selected.length > 0) {
+      // One primary action: Continue makes the selected parcels the field, then opens the setup.
+      if (await applySelected()) setSetupOpen(true);
+      return;
+    }
     if (!ready) return;
     if (!setupOpen) {
       setSetupOpen(true);
@@ -389,9 +395,6 @@ export function FieldForm({
                     {t("parcel.selected", { count: selected.length, ha: formatNumber(selectedHa, locale, 1) })}
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    <Button onClick={applySelected} disabled={joining} className="flex-1">
-                      {joining ? t("parcel.joining") : t("parcel.use")}
-                    </Button>
                     {selected.length > 1 && total < MAX_FIELDS ? (
                       <Button variant="secondary" onClick={addSeparate} disabled={joining}>
                         {t("parcel.separate")}
@@ -451,9 +454,15 @@ export function FieldForm({
         )}
       </div>
 
-      <ActionBar note={ready ? undefined : t("needField")}>
-        <Button type="submit" size="lg" disabled={!ready} className="flex-1">
-          {onlyAdded ? t("multi.continueWith", { count: added.length }) : t("continue")}
+      <ActionBar note={ready || selected.length > 0 ? undefined : t("needField")}>
+        <Button type="submit" size="lg" disabled={(!ready && selected.length === 0) || joining} className="flex-1">
+          {joining
+            ? t("parcel.joining")
+            : selected.length > 0 && drawing
+              ? t("parcel.use")
+              : onlyAdded
+                ? t("multi.continueWith", { count: added.length })
+                : t("continue")}
         </Button>
       </ActionBar>
 
