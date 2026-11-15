@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { ViewTransition } from "react";
 import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
@@ -56,7 +57,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
         <NextIntlClientProvider>
           <SiteHeader />
           <main className="mx-auto w-full max-w-[1200px] flex-1 px-gutter pb-[calc(var(--bar-space)+1.5rem)] pt-[max(1rem,env(safe-area-inset-top))] sm:pb-12 sm:pt-6">
-            {children}
+            {/* Route changes cross-fade with a small lift; the bars stay put. */}
+            <ViewTransition default="page">{children}</ViewTransition>
           </main>
           <BottomBar />
           <Assistant />

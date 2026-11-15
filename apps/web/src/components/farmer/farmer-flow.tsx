@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { startTransition, Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { analyzeField, ApiRequestError, optimizeFarm, type Loaded } from "@/lib/api";
@@ -213,7 +213,8 @@ function Flow({
     startOptimizer(list);
     try {
       const results = await Promise.all(list.map((f) => analyzeField(f.request)));
-      setState({ step: "results", results });
+      // A transition, so the skeleton hands over to the results with the page fade.
+      startTransition(() => setState({ step: "results", results }));
     } catch {
       setState({ step: "error" });
     }
@@ -251,7 +252,7 @@ function Flow({
     autoStarted.current = true;
     startOptimizer(fields);
     Promise.all(opened.map((f) => analyzeField(f.request)))
-      .then((results) => setState({ step: "results", results }))
+      .then((results) => startTransition(() => setState({ step: "results", results })))
       .catch(() => setState({ step: "error" }));
     // Runs once on mount, for the fields the page was opened with.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -269,7 +270,7 @@ function Flow({
     setFields([]);
     setResumed(null);
     setFormKey((k) => k + 1);
-    setAdding(false);
+    startTransition(() => setAdding(false));
     window.scrollTo({ top: 0 });
   }
 
@@ -349,7 +350,7 @@ function Flow({
                 setAdding(true);
                 reopen([fromAccount(field)], 0);
               }}
-              onAdd={() => setAdding(true)}
+              onAdd={() => startTransition(() => setAdding(true))}
             />
           );
         }

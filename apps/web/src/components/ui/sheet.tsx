@@ -139,7 +139,12 @@ export function Sheet({
             </button>
           </div>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+        {/* Focus lands here on open (not on the close button), so arrow keys scroll the sheet. */}
+        <div
+          tabIndex={-1}
+          autoFocus
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] outline-none"
+        >
           {children}
         </div>
         {footer ? (

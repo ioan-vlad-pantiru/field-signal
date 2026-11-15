@@ -348,12 +348,17 @@ dialog.sheet[open]::backdrop {
   }
 }
 
-/* Route and step changes: a short cross-fade with a small lift (View Transitions API).
-   The 3D hero and the terrain map opt out (view-transition-name: none on their frames). */
-::view-transition-old(root) {
-  animation: vt-out var(--duration-base) var(--ease-standard) both;
-}
+/* Route and step changes (React <ViewTransition default="page">, View Transitions API): the old
+   page fades out fast, the new one fades in with a small lift. The chrome (root) does not animate.
+   Browsers without the API just swap the page. */
+::view-transition-old(root),
 ::view-transition-new(root) {
+  animation: none;
+}
+::view-transition-old(.page) {
+  animation: vt-out var(--duration-fast) var(--ease-standard) both;
+}
+::view-transition-new(.page) {
   animation: vt-in var(--duration-slow) var(--ease-settle) both;
 }
 @keyframes vt-out {
@@ -364,10 +369,10 @@ dialog.sheet[open]::backdrop {
 @keyframes vt-in {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px);
   }
 }
-::view-transition-group(*) {
+::view-transition-group(.page) {
   animation-duration: var(--duration-slow);
   animation-timing-function: var(--ease-settle);
 }
@@ -431,6 +436,11 @@ dialog.sheet[open]::backdrop {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
   *,
   *::before,
   *::after,
