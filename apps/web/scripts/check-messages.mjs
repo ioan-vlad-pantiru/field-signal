@@ -35,6 +35,9 @@ export const DYNAMIC = [
   { prefix: "Farm.parcel.landUses." }, // APIA land-use codes, parcel-details.tsx
   { prefix: "Farm.parcel.flags." }, // soil flag ids, parcel-details.tsx
   { prefix: "Farm.stepName.", keys: ["1", "2", "3"] }, // step-count.tsx
+  // Region outlook: crop ids from the exported data, and the three legend tones (buyers/yield-outlook.tsx).
+  { prefix: "Outlook.crops." },
+  { prefix: "Outlook.legend.", keys: ["good", "watch", "bad"] },
   // Crop names from crop ids: tc(crop), tCrops(c) on results, simulator, farm, buyers, landing.
   { prefix: "Crops." },
   { prefix: "CropsShort." },
@@ -60,14 +63,12 @@ export const DYNAMIC = [
   { prefix: "Field.setup.priority." },
   { prefix: "Field.setup.level." },
   // Results: verdict kinds (verdict.tsx), soil rows (evidence.tsx), shift direction (shift.tsx),
-  // score breakdown (strategy-sheet.tsx, optimizer-plan.tsx), explanation source (strategy-sheet.tsx),
-  // non-farmland reasons on the hero's example plan (home/hero-scene.tsx, lib/land-cover.ts).
+  // score breakdown (strategy-sheet.tsx, optimizer-plan.tsx), explanation source (strategy-sheet.tsx).
   { prefix: "Results.verdict.", keys: ["fewer", "best"] },
   { prefix: "Results.soil.", keys: ["carbon.label", "carbon.help", "ph.label", "ph.help", "texture.label", "texture.help"] },
   { prefix: "Results.shift.", keys: ["up", "down", "steady"] },
   { prefix: "Results.rotations.breakdown." },
   { prefix: "Results.explain.generatedBy." },
-  { prefix: "Results.plan.reason." },
   // Optimizer rule ids and statuses (optimizer-plan.tsx, RuleChecks).
   {
     prefix: "Optimizer.rules.",
@@ -76,13 +77,11 @@ export const DYNAMIC = [
   // Stock cover status and supplier score names (stocks/inventory-table.tsx, stocks/candidate-card.tsx).
   { prefix: "Stocks.status." },
   { prefix: "Stocks.scores." },
-  // Fixed lists rendered in loops: About sources and limits, Glossary ids, landing steps and doors,
+  // Fixed lists rendered in loops: About sources and limits, Glossary ids,
   // simulator phases, shapes, cameras and legend items.
   { prefix: "About.sources." },
   { prefix: "About.limits." },
   { prefix: "Glossary." },
-  { prefix: "Home.steps." },
-  { prefix: "Home.doors." },
   { prefix: "Simulator.phase." },
   { prefix: "Simulator.shape." },
   { prefix: "Simulator.camera." },

@@ -246,17 +246,7 @@
       "mapLabel": "Your field in {year}: {crop}",
       "mapUnavailable": "This browser can't show the map. The seasons below hold the whole plan.",
       "play": "Play the seasons",
-      "season": "Season (harvest year)",
-      "plot": "Plot",
-      "notFarmland": "Not farmed: {ha} ha ({reasons})",
-      "hexScale": "1 hexagon = 1 ha",
-      "reason": {
-        "road": "road",
-        "building": "buildings",
-        "water": "water",
-        "woods": "woods",
-        "built_up": "built-up land"
-      }
+      "season": "Season (harvest year)"
     },
     "back": "Change field or crops",
     "share": "Share or print",
@@ -464,6 +454,38 @@
       "sources": "Sources"
     }
   },
+  "Outlook": {
+    "title": "Yield outlook for the next 2 years",
+    "yearLabel": "Year",
+    "cropLabel": "Crop",
+    "loading": "Loading the yield outlook",
+    "error": "The yield outlook could not be loaded.",
+    "mapLabel": "{crop} in {year}, by region",
+    "mapUnavailable": "The map needs WebGL. Every region's numbers are listed under the map when one is picked.",
+    "legend": {
+      "good": "Within 10% of typical",
+      "watch": "10–20% below typical",
+      "bad": "More than 20% below typical"
+    },
+    "detail": {
+      "typical": "Typical yield",
+      "range": "Weather range: {low}–{high} t/ha",
+      "empty": "Pick a region for its numbers.",
+      "none": "No forecast for this crop.",
+      "lowest": "Lowest yield",
+      "spread": "vs. typical"
+    },
+    "crops": {
+      "wheat": "Wheat",
+      "barley": "Barley",
+      "maize": "Maize",
+      "rapeseed": "Rapeseed",
+      "sunflower": "Sunflower",
+      "soybeans": "Soybeans",
+      "dry_pulses": "Dry pulses"
+    },
+    "rapeseedNote": "Rapeseed varies little from year to year."
+  },
   "About": {
     "title": "About and data",
     "lead": "25 seasons of weather, soil and satellite data, replayed on your field.",
@@ -590,37 +612,10 @@
     "aboutDemo": "About this illustration"
   },
   "Home": {
-    "title": "Which crops will do best on your field?",
-    "lead": "We replay the last 25 seasons on your own land, so you can plan the next one.",
+    "title": "Which crop rotation fits you best?",
+    "subtitle": "Smart choices based on your field's history",
     "start": "Choose your field",
-    "imageAlt": "Satellite view of Transylvania in summer: farmland in the center, ringed by the forested Carpathians.",
-    "imageCredit": "Transylvania, 2 July 2025. Image: NASA Worldview, MODIS on Terra.",
-    "sceneNote": "Illustration: an example valley, not a real field.",
-    "proof": {
-      "line": "{current, plural, =0 {No poor seasons} one {1 poor season} other {# poor seasons}} with {currentCrops}. {best, plural, =0 {None} one {1} other {#}} with {bestCrops}.",
-      "stripLabel": "{name}: {bad, plural, =0 {no poor seasons} one {1 poor season} other {# poor seasons}} and {watch, plural, =0 {no seasons to watch} one {1 season to watch} other {# seasons to watch}} out of {total}",
-      "title": "{seasons} seasons near {place}",
-      "current": "Your rotation now",
-      "legend": "× poor season · ! season to watch"
-    },
-    "steps": {
-      "title": "How it works",
-      "field": "Tap your parcels on the map.",
-      "rotation": "Say what you grow.",
-      "result": "Compare three rotations, season by season."
-    },
-    "doors": {
-      "title": "Start here",
-      "farmer": {
-        "title": "I farm",
-        "text": "Plan your next rotation"
-      },
-      "buyer": {
-        "title": "I buy feed",
-        "text": "See where the harvest will be"
-      }
-    },
-    "credit": "Made at NASA Space Apps 2026 by Farm Titans · Data: NASA POWER, MODIS, SMAP, SoilGrids"
+    "imageAlt": "Satellite view of Transylvania in summer: farmland in the center, ringed by the forested Carpathians."
   },
   "Account": {
     "title": "Account",
