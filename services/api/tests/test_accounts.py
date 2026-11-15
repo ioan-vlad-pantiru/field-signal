@@ -2,6 +2,7 @@ import json
 import os
 from collections.abc import Iterator
 from pathlib import Path
+from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
@@ -11,7 +12,7 @@ from api import accounts
 from api.main import app
 from api.settings import get_settings
 
-FIELD = {
+FIELD: dict[str, Any] = {
     "name": "Behind the barn",
     "request": {
         "location": {"lat": 46.3, "lon": 23.72},
@@ -182,7 +183,7 @@ def test_farm_is_saved_per_account(client: TestClient) -> None:
     assert client.get("/v1/me/farm").status_code == 401
 
 
-def _analysis_body(request: dict) -> dict:
+def _analysis_body(request: Any) -> dict[str, Any]:
     mock = Path(__file__).resolve().parents[3] / "contracts/examples/field_analysis.mock.json"
     return {
         "request": request,
