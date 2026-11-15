@@ -483,33 +483,53 @@
   "About": {
     "title": "About and data",
     "lead": "25 years of weather, soil and satellite data, replayed on your field.",
+    "what": {
+      "title": "What it does",
+      "farmer": "Field Signal answers one question: what should I plant next on this field? Tap your parcel on the map, say what you grow now and what matters most to you: harvest, water, soil or risk. We compare your rotation with the best alternatives, score each out of 100, and replay every season from 2001 to 2025 to show how each would have done in good years and bad ones.",
+      "farm": "For a whole farm, import your parcels from AGI Online and get a plan: which crop goes on each field each year, with simple checks against the EU crop rotation rules and a checklist for your yearly APIA declaration.",
+      "buyers": "Feed buyers get a second view: a two-year yield outlook by region and crop, and how many days of stock a feed mill has before it must buy.",
+      "coverage": "The parcel map covers Alba county for now: all 171,607 parcels declared to APIA in 2025."
+    },
     "how": {
       "title": "How it works",
-      "text": "Pick your field and say what you grow. We replay every season since 2001 on it, droughts and wet springs included, and compare your rotation with two others, at least one with peas. Feed buyers see the same signals commune by commune.",
+      "replay": "We do not try to forecast next year's weather. We replay the past: the same field, the real weather of each past year, a different crop. You remember those years, so you can check the result against your own experience.",
+      "model": "Behind it is a model we trained ourselves. It learned how a field's greenness and soil moisture change from one month to the next, given the weather, the soil and the crops: this year's and the two before it. Change the crop, keep the real weather, and the model plays the season out again.",
+      "plan": "To build a plan, we first drop rotations that break basic agronomy, such as the same crop two years running. Each remaining rotation is played out under past weather and scored on harvest, water, soil health and risk. Your priorities decide how much each score counts.",
       "judgment": "It shows what past seasons would have done. The decision stays yours; check risky calls with an agronomist."
+    },
+    "tested": {
+      "title": "How we tested it",
+      "training": "The model learned from 306,373 sample points on farmland in Romania and six nearby countries, between 2016 and 2024.",
+      "unseen": "We tested it on 39,588 points in eleven regions it had never seen, Alba among them. Running three years ahead on its own predictions, it explained 65–69% of the monthly variation in greenness and 84–88% in soil moisture.",
+      "swap": "We also checked the crop swap against fields that really grew the other crop in the same weather. The model put the peak of the season in the right month for all six crops.",
+      "yield": "For the buyers' outlook, one model per crop turns a season's greenness into tonnes per hectare. Checked against official regional yields, it works well for maize and sunflower and is rough for barley and dry pulses."
     },
     "sources": {
       "title": "Data sources",
       "nasa": "NASA",
       "other": "Other public data",
       "note": "We use free public data from NASA and other institutions. NASA is not a partner and does not endorse this tool.",
-      "power": "Temperature, rain, air humidity, soil wetness and radiation, day by day",
-      "modis": "How green and vigorous the vegetation is (NDVI), from the Terra satellite",
-      "myd13": "The same vegetation index from the Aqua satellite, filling gaps left by clouds",
-      "smap": "Water in the soil, around the roots",
-      "eucropmap": "Which crops grow where, and crop areas per commune",
-      "ins": "Official county crop areas, production and yields, to check the model",
+      "power": "Temperature, rain, air humidity, wind and sunshine, day by day, and from them the water a green field loses (ET0)",
+      "hls": "How green and vigorous the crop is (NDVI), from Landsat and Sentinel-2 images; the model learned from it",
+      "smap": "Water in the soil around the roots; the model learned from it",
+      "srtm": "Height and slope of the land, for training the model",
       "soilgrids": "Organic carbon, pH and soil texture, 0–30 cm",
-      "gisco": "Region and commune boundaries",
-      "et0": "Reference evapotranspiration: how much water a well-watered green field loses each day"
+      "dem": "Height and slope of the land under your field",
+      "croptypes": "Which crop grew where, year by year: the crop history the model learned from",
+      "apia": "The outlines of the parcels farmers declared, which you tap on the map",
+      "eucropmap": "Which crops were mapped on each parcel",
+      "eurostat": "Official regional harvests, to train and check the yield models",
+      "gisco": "Region and commune boundaries"
     },
     "glossaryTitle": "Glossary",
     "ai": {
       "title": "How we use AI",
-      "modelTitle": "The risk model",
-      "model": "A small model estimates the chance of a poor year for each zone and crop, from weather and vegetation signals in the critical periods. We test it by leaving out one year at a time and publish both hits and misses.",
-      "textTitle": "The explanations",
-      "text": "A language model turns the computed numbers into plain text. It may only use values we computed, in a fixed format."
+      "modelTitle": "The crop model",
+      "model": "A small neural network that we trained ourselves on satellite and weather data. Every score and every replayed season comes from it.",
+      "yieldTitle": "The yield models",
+      "yield": "Seven small models, one per crop, behind the buyers' yield outlook.",
+      "textTitle": "The assistant",
+      "text": "An existing open language model (Qwen) that we did not train. It explains results and may only use numbers the app has computed. It also writes the summary of the buyers' stock report."
     },
     "limits": {
       "title": "What it can't see",
@@ -517,11 +537,22 @@
       "pests": "Pests and diseases in your field.",
       "markets": "Prices and markets.",
       "management": "Your field work, hybrids and fertilizer.",
-      "scale": "Weather data describe an area tens of kilometres wide, not your exact plot."
+      "scale": "Weather data describe an area tens of kilometres wide, not your exact plot.",
+      "greenness": "Tonnes per hectare: the harvest score compares how green the crop would be with a normal year for it."
     },
     "demo": {
       "title": "Demo data",
-      "text": "Where real data is not available yet, we show demonstration numbers and always mark them “Demo data”."
+      "text": "Field results, farm plans and the yield outlook come from the model. The Stocks tab runs on a made-up scenario, and the field simulator is an illustration. If the server can't be reached, the app shows built-in demonstration numbers and marks them “Demo data”."
+    },
+    "made": {
+      "title": "Who made it",
+      "text": "Team Farm Titans, at the NASA Space Apps Challenge 2026, for the challenge “Field Shift: Adapting Farms with NASA Data”. It uses open data only, and the code is open too.",
+      "code": "Source code on GitHub",
+      "tools": "Built with",
+      "web": "Web",
+      "api": "API",
+      "models": "Models and data",
+      "hosting": "Hosting"
     }
   },
   "CropsShort": {
