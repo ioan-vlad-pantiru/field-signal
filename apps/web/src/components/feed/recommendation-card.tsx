@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import type { SourcingRecommendation } from "@/lib/contracts";
 import { useLocalized } from "@/lib/localized";
-import { ConfidenceBadge } from "@/components/ui/badges";
 import { Button } from "@/components/ui/button";
 import { ChevronRightIcon } from "@/components/ui/icons";
 import { Sheet } from "@/components/ui/sheet";
@@ -14,7 +13,7 @@ function withoutMockTag(text: string) {
   return text.replace(/^\[MOCK\]\s*/, "");
 }
 
-/** The answer first: title, one line and confidence. The actions and assumptions are one tap away. */
+/** The answer first: title and one line. The actions and assumptions are one tap away. */
 export function RecommendationCard({ recommendation }: { recommendation: SourcingRecommendation }) {
   const t = useTranslations("Feed.advice");
   const l = useLocalized();
@@ -32,15 +31,14 @@ export function RecommendationCard({ recommendation }: { recommendation: Sourcin
         {title}
       </h2>
       <p className="line-clamp-2 text-ink-muted">{text}</p>
-      <div className="flex items-center justify-between gap-2">
-        <ConfidenceBadge confidence={recommendation.confidence} />
-        {hasMore ? (
+      {hasMore ? (
+        <div className="flex justify-end">
           <Button variant="quiet" aria-haspopup="dialog" onClick={() => setOpen(true)} className="-mr-2 shrink-0 px-3">
             {t("open")}
             <ChevronRightIcon size={18} />
           </Button>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
 
       <Sheet open={open} onClose={() => setOpen(false)} title={title} snap>
         <div className="flex flex-col gap-5">
@@ -70,7 +68,6 @@ export function RecommendationCard({ recommendation }: { recommendation: Sourcin
               </ul>
             </section>
           ) : null}
-          <ConfidenceBadge confidence={recommendation.confidence} />
         </div>
       </Sheet>
     </section>

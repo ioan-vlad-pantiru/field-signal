@@ -11,7 +11,6 @@ import { useAppLocale } from "@/lib/localized";
 import { verdict, type VerdictKind } from "@/lib/results";
 import { useMap } from "@/components/map/use-map";
 import { Button } from "@/components/ui/button";
-import { cardClass } from "@/components/ui/card";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { FieldThumb } from "@/components/fields/field-thumb";
 import { DemoBanner } from "@/components/ui/states";
@@ -156,12 +155,12 @@ export function ResultsOverview({
         </div>
       )}
 
-      <ul className="flex flex-col gap-3">
+      <ul className="flex flex-col divide-y divide-line border-y border-line">
         {fields.map((field, i) => {
           const v = verdicts[i];
           return (
             <li key={i} className="rise" style={{ "--i": Math.min(i, 8) } as React.CSSProperties}>
-              <div className={cardClass(false, "flex items-center gap-3 p-3")}>
+              <div className="flex items-center gap-3 py-3">
                 <FieldThumb boundary={field.boundary} parts={field.parts} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold">{label(field, i)}</p>

@@ -38,7 +38,6 @@
     "high": "High risk"
   },
   "Confidence": {
-    "label": "Confidence: {level}",
     "low": "low",
     "medium": "medium",
     "high": "high"
@@ -83,7 +82,7 @@
     "area": "{ha} ha",
     "needField": "Tap your field's parcels",
     "continue": "Continue",
-    "analyze": "Show my 25 seasons",
+    "analyze": "See the rotations",
     "assistantField": "My field",
     "parcel": {
       "mapHint": "Tap your parcels",
@@ -114,7 +113,7 @@
       "removeLabel": "Remove {field}",
       "addAnother": "Add another field",
       "continueWith": "Continue with {count, plural, one {# field} other {# fields}}",
-      "analyze": "Show 25 seasons for {count} fields"
+      "analyze": "See the rotations for {count} fields"
     },
     "setup": {
       "title": "Your field",
@@ -205,9 +204,6 @@
       "summaryNone": "Your rotations already do as well as any we compared ({ha} ha)."
     },
     "rotations": {
-      "stripLabel": "{name}: {poor}",
-      "poor": "{count, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}} since {start}",
-      "poorShort": "{count, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}}",
       "scoreLabel": "Fit with your priorities",
       "best": "Best fit",
       "current": "Your rotation now",
@@ -217,9 +213,7 @@
         "soil_health": "Soil health",
         "low_risk": "Low risk"
       },
-      "weakEvidence": "Weak evidence (before 2015)",
       "title": "Rotations",
-      "legend": "How to read the seasons",
       "dot": "Rotation {n} of {total}",
       "of100": "of 100",
       "scoreLine": "Fit {score} of 100 · likely {low}–{high}"
@@ -230,14 +224,14 @@
         "template": "Text built from a template, using only the values computed above.",
         "llm": "Text written by an AI model, using only the values computed above."
       },
-      "why": "Why",
       "evidence": "Evidence",
-      "benefits": "Benefits",
-      "gaps": "What we don't know",
       "risks": "Risks",
-      "seasons": "Season by season",
       "data": "Data behind this",
       "simulator": "Watch it on a field"
+    },
+    "history": {
+      "title": "{count, plural, one {How your land would have done last year} other {How your land would have done over the last # years}}",
+      "lead": "Had you followed the selected rotation, in each year's weather."
     },
     "plan": {
       "previous": "Previous season",
@@ -266,7 +260,7 @@
     "copyFailed": "Couldn't copy. The link is in the address bar.",
     "print": "Print one page",
     "meta": "{area} · {period}",
-    "loading": "Reading 25 seasons for this field…",
+    "loading": "Reading 25 years of weather for this field…",
     "planTitle": "Your field, season by season",
     "verdict": {
       "label": "Best for this field",
@@ -444,7 +438,6 @@
       "anomaly": "{mid}% ({low}% to {high}%)",
       "area": "Area grown",
       "flagDays": "{observed} risky days, versus {normal} usually",
-      "confidence": "Confidence",
       "better": "better",
       "note": "“Better” compares only these two, measure by measure. Every number is an estimate with a range."
     },
@@ -466,7 +459,7 @@
   },
   "About": {
     "title": "About and data",
-    "lead": "25 seasons of weather, soil and satellite data, replayed on your field.",
+    "lead": "25 years of weather, soil and satellite data, replayed on your field.",
     "how": {
       "title": "How it works",
       "text": "Pick your field and say what you grow. We replay every season since 2001 on it, droughts and wet springs included, and compare your rotation with two others, at least one with peas. Feed buyers see the same signals commune by commune.",
@@ -477,12 +470,15 @@
       "nasa": "NASA",
       "other": "Other public data",
       "note": "We use free public data from NASA and other institutions. NASA is not a partner and does not endorse this tool.",
-      "power": "Heat, rain and air humidity, day by day",
-      "modis": "How green and vigorous the vegetation is (NDVI)",
+      "power": "Temperature, rain, air humidity, soil wetness and radiation, day by day",
+      "modis": "How green and vigorous the vegetation is (NDVI), from the Terra satellite",
+      "myd13": "The same vegetation index from the Aqua satellite, filling gaps left by clouds",
       "smap": "Water in the soil, around the roots",
-      "soilgrids": "Organic carbon, pH and soil texture",
-      "eucropmap": "Which crops grow where, for areas per commune",
-      "ins": "Official county yields, to check the model"
+      "eucropmap": "Which crops grow where, and crop areas per commune",
+      "ins": "Official county crop areas, production and yields, to check the model",
+      "soilgrids": "Organic carbon, pH and soil texture, 0–30 cm",
+      "gisco": "Region and commune boundaries",
+      "et0": "Reference evapotranspiration: how much water a well-watered green field loses each day"
     },
     "glossaryTitle": "Glossary",
     "ai": {
@@ -591,7 +587,7 @@
   },
   "Home": {
     "title": "Which crops will do best on your field?",
-    "lead": "We replay the last 25 seasons on your own land, so you can plan the next one.",
+    "lead": "We replay the past 25 years of weather on your own land, so you can plan the next one.",
     "start": "Choose your field",
     "imageAlt": "Satellite view of Transylvania in summer: farmland in the center, ringed by the forested Carpathians.",
     "imageCredit": "Transylvania, 2 July 2025. Image: NASA Worldview, MODIS on Terra.",
@@ -675,7 +671,7 @@
     "title": "Field Signal assistant",
     "model": "Answers from your fields and NASA data · Qwen",
     "intro": "Ask about crop rotations, the data, or how Field Signal works.",
-    "introFields": "I can see your {count, plural, one {field} other {# fields}} and their 25 seasons. Ask anything.",
+    "introFields": "I can see your {count, plural, one {field} other {# fields}} and check how they did over the last 25 years. Ask anything, easy or hard.",
     "placeholder": "Ask a question…",
     "send": "Send",
     "think": "Think it through",
@@ -689,7 +685,7 @@
     "demo": "Uses demo data",
     "tools": {
       "list_fields": "your fields",
-      "analyze_field": "a field's 25 seasons",
+      "analyze_field": "a field's history",
       "compare_fields": "all fields compared",
       "regional_supply": "regional feed supply"
     },

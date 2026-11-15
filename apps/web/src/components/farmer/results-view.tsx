@@ -4,16 +4,15 @@ import { useMemo, useState, type ReactNode } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import type { FieldAnalysis, LatLon } from "@/lib/contracts";
 import type { DataOrigin } from "@/lib/api";
-import { mainRisk, placeShifts, rankStrategies, replayYears, verdict as buildVerdict } from "@/lib/results";
+import { mainRisk, placeShifts, rankStrategies, verdict as buildVerdict } from "@/lib/results";
 import { RefreshIcon } from "@/components/ui/icons";
-import { InfoTip } from "@/components/ui/info-tip";
-import { SeasonLegend } from "@/components/ui/season-strip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SourceChip } from "@/components/ui/source-chip";
 import { DemoBanner } from "@/components/ui/states";
 import { SwipeDeck } from "@/components/ui/swipe-deck";
 import { FieldPlan } from "./field-plan";
 import { DataSheet } from "./results/data-sheet";
+import { SeasonTimeline } from "./results/season-timeline";
 import { ResultsHeader } from "./results/results-header";
 import { useRotationName } from "./results/rotation-name";
 import { StrategyCard } from "./results/strategy-card";
@@ -32,9 +31,9 @@ const PRINT_CSS = `@media print {
 }`;
 
 /**
- * One field's results: the field on the 3D map, the answer in one card, then the rotations as
- * cards (swipe on a phone, a row of three on a laptop). The card in view drives the map; tapping
- * one opens its full explanation. The data behind it is one tap from the verdict or any rotation.
+ * One field's results: the field on the 3D map, the answer, then the rotations (swipe on a phone, a
+ * row of three on a laptop) and its seasons since 2002 as a timeline, each section under a hairline
+ * rather than in a card. The rotation in view drives the map and the timeline; tapping one opens its full explanation. The data behind it is one tap from the verdict or any rotation.
  */
 export function ResultsView({
   analysis,
@@ -67,14 +66,12 @@ export function ResultsView({
   onRerun?: () => void;
 }) {
   const t = useTranslations("Results");
-  const ts = useTranslations("Status");
   const nameOf = useRotationName();
   const format = useFormatter();
 
   const ranked = useMemo(() => rankStrategies(analysis.strategies), [analysis.strategies]);
   const verdict = useMemo(() => buildVerdict(analysis.strategies), [analysis.strategies]);
   const risk = useMemo(() => mainRisk(analysis.strategies), [analysis.strategies]);
-  const years = useMemo(() => replayYears(analysis.strategies), [analysis.strategies]);
   const shifts = useMemo(() => placeShifts(analysis.indicators), [analysis.indicators]);
   const [selectedId, setSelectedId] = useState(ranked[0].id);
   const [sheetId, setSheetId] = useState<string | null>(null);
@@ -82,7 +79,6 @@ export function ResultsView({
   const selected = ranked.find((s) => s.id === selectedId) ?? ranked[0];
   const selectedIndex = ranked.indexOf(selected);
   const sheet = ranked.find((s) => s.id === sheetId) ?? null;
-  const weak = ranked.some((r) => r.replay.some((o) => o.evidence_level === "low"));
 
   return (
     <div className="flex flex-col gap-5 print:gap-3 print:text-[11pt]">
@@ -112,23 +108,10 @@ export function ResultsView({
 
       <VerdictCard verdict={verdict} risk={risk} start={analysis.period_start} onData={() => setDataOpen(true)} />
 
-      <section aria-labelledby="rotations-title" className="flex flex-col gap-2">
-        <div className="flex items-center gap-1">
-          <h2 id="rotations-title" className="text-lg font-semibold">
-            {t("rotations.title")}
-          </h2>
-          <InfoTip label={t("rotations.legend")}>
-            <SeasonLegend
-              labels={{
-                good: ts("good"),
-                watch: ts("watch"),
-                bad: ts("bad"),
-                no_data: ts("no_data"),
-                ...(weak ? { lowEvidence: t("rotations.weakEvidence") } : {}),
-              }}
-            />
-          </InfoTip>
-        </div>
+      <section aria-labelledby="rotations-title" className="mt-3 flex flex-col gap-2 border-t border-line pt-6">
+        <h2 id="rotations-title" className="text-lg font-semibold">
+          {t("rotations.title")}
+        </h2>
         <SwipeDeck
           label={t("rotations.title")}
           active={selectedIndex}
@@ -139,8 +122,6 @@ export function ResultsView({
             <div key={strategy.id} className="rise h-full" style={{ "--i": i + 2 } as React.CSSProperties}>
               <StrategyCard
                 strategy={strategy}
-                years={years}
-                start={analysis.period_start}
                 isBest={i === 0}
                 selected={strategy.id === selected.id}
                 onOpen={() => {
@@ -152,6 +133,8 @@ export function ResultsView({
           ))}
         </SwipeDeck>
       </section>
+
+      <SeasonTimeline strategy={selected} />
 
       {after}
 
@@ -176,7 +159,7 @@ export function ResultsView({
   );
 }
 
-/** The results' own shape while the 25 seasons load, so nothing jumps when they arrive. */
+/** The results' own shape while the rotations load, so nothing jumps when they arrive. */
 export function ResultsSkeleton() {
   const t = useTranslations("Results");
   return (

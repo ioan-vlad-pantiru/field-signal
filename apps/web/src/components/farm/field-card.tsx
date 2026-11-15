@@ -30,7 +30,7 @@ export function FieldCard({
   const largest = parcels.reduce<Parcel | null>((best, p) => (!best || p.area_ha > best.area_ha ? p : best), null);
 
   return (
-    <li className="flex gap-3 rounded-[var(--radius-lg)] bg-surface p-3 shadow-1">
+    <li className="flex gap-3 py-3">
       <span className="relative shrink-0">
         {largest ? <FieldThumb boundary={largest.boundary} /> : null}
         <span

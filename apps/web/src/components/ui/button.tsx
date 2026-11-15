@@ -4,7 +4,7 @@ export type ButtonVariant = "primary" | "secondary" | "tonal" | "quiet" | "dange
 export type ButtonSize = "md" | "lg";
 
 const BASE =
-  "press inline-flex select-none items-center justify-center gap-2 rounded-pill font-semibold disabled:pointer-events-none disabled:opacity-40";
+  "press inline-flex select-none items-center justify-center gap-2 rounded-[var(--radius-sm)] font-semibold disabled:pointer-events-none disabled:opacity-40";
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: "bg-field text-on-field shadow-1 hover:bg-field-strong",
   secondary: "bg-surface text-ink shadow-1 ring-1 ring-line hover:ring-ink-muted",
@@ -14,7 +14,7 @@ const VARIANTS: Record<ButtonVariant, string> = {
 };
 const SIZES: Record<ButtonSize, string> = {
   md: "min-h-tap px-4",
-  lg: "min-h-14 px-6 text-lg",
+  lg: "min-h-12 px-6",
 };
 
 /** Class string for anything that should look like a button, such as a `Link`. */

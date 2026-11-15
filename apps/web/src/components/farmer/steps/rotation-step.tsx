@@ -47,7 +47,7 @@ export function RotationEditor({ rotation, onChange }: { rotation: Crop[]; onCha
           <li
             key={index}
             className={`flex items-center rounded-pill text-sm font-semibold ${
-              open === index ? "bg-ink text-surface" : "bg-surface shadow-1 ring-1 ring-line"
+              open === index ? "bg-ink text-surface" : "bg-surface ring-1 ring-line"
             }`}
           >
             <button

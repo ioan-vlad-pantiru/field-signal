@@ -4,7 +4,6 @@ import { useTranslations } from "next-intl";
 import { formatNumber, mean } from "@/lib/format";
 import { useAppLocale, useLocalized } from "@/lib/localized";
 import { WEIGHTS, type Candidate } from "@/lib/stocks";
-import { ConfidenceBadge } from "@/components/ui/badges";
 import { RangeBar, ScoreBar, Sparkline } from "@/components/ui/charts";
 import { AlertIcon, CheckIcon } from "@/components/ui/icons";
 
@@ -63,7 +62,6 @@ export function CandidateCard({
         <p className="text-sm font-semibold">{t("volume")}</p>
         <RangeBar range={v} domain={domain} label={t("volumeLabel", volumes)} />
         <p className="text-sm tabular-nums text-ink-muted">{t("volumeText", volumes)}</p>
-        <ConfidenceBadge confidence={c.forecast.confidence} />
       </div>
 
       {history.length > 0 ? (

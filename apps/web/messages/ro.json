@@ -38,7 +38,6 @@
     "high": "Risc mare"
   },
   "Confidence": {
-    "label": "Încredere: {level}",
     "low": "scăzută",
     "medium": "medie",
     "high": "ridicată"
@@ -83,7 +82,7 @@
     "area": "{ha} ha",
     "needField": "Atingeți parcelele câmpului",
     "continue": "Continuați",
-    "analyze": "Vedeți 25 de sezoane",
+    "analyze": "Vezi rotațiile",
     "assistantField": "Câmpul meu",
     "parcel": {
       "mapHint": "Atingeți parcelele dvs.",
@@ -114,7 +113,7 @@
       "removeLabel": "Scoateți {field}",
       "addAnother": "Adăugați încă un câmp",
       "continueWith": "Continuați cu {count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}}",
-      "analyze": "Vedeți 25 de sezoane pentru {count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}}"
+      "analyze": "Vezi rotațiile pentru {count, plural, few {# câmpuri} other {# de câmpuri}}"
     },
     "setup": {
       "title": "Câmpul dvs.",
@@ -205,9 +204,6 @@
       "summaryNone": "Rotațiile dumneavoastră merg deja cât oricare dintre cele comparate ({ha} ha)."
     },
     "rotations": {
-      "stripLabel": "{name}: {poor}",
-      "poor": "{count, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} din {start}",
-      "poorShort": "{count, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}",
       "scoreLabel": "Potrivire cu prioritățile dumneavoastră",
       "best": "Cea mai potrivită",
       "current": "Rotația de acum",
@@ -217,9 +213,7 @@
         "soil_health": "Sănătatea solului",
         "low_risk": "Risc mic"
       },
-      "weakEvidence": "Dovezi slabe (înainte de 2015)",
       "title": "Rotații",
-      "legend": "Cum citiți sezoanele",
       "dot": "Rotația {n} din {total}",
       "of100": "din 100",
       "scoreLine": "Potrivire {score} din 100 · probabil {low}–{high}"
@@ -230,14 +224,14 @@
         "template": "Text generat după un șablon, din valorile calculate mai sus.",
         "llm": "Text scris de un model AI doar din valorile calculate mai sus."
       },
-      "why": "De ce",
       "evidence": "Dovezi",
-      "benefits": "Avantaje",
-      "gaps": "Ce nu știm",
       "risks": "Riscuri",
-      "seasons": "Sezon cu sezon",
       "data": "Datele din spate",
       "simulator": "Vedeți-o pe un câmp"
+    },
+    "history": {
+      "title": "{count, plural, one {Cum ar fi mers pământul dvs. anul trecut} few {Cum ar fi mers pământul dvs. în ultimii # ani} other {Cum ar fi mers pământul dvs. în ultimii # de ani}}",
+      "lead": "Dacă ați fi urmat rotația selectată, cu vremea din fiecare an."
     },
     "plan": {
       "previous": "Sezonul anterior",
@@ -266,7 +260,7 @@
     "copyFailed": "Nu s-a putut copia. Linkul e în bara de adrese.",
     "print": "Tipăriți o pagină",
     "meta": "{area} · {period}",
-    "loading": "Citim 25 de sezoane pentru acest câmp…",
+    "loading": "Citim 25 de ani de vreme pentru acest câmp…",
     "planTitle": "Câmpul dvs., sezon cu sezon",
     "verdict": {
       "label": "Cel mai potrivit pentru acest câmp",
@@ -444,7 +438,6 @@
       "anomaly": "{mid}% (între {low}% și {high}%)",
       "area": "Suprafață cultivată",
       "flagDays": "{observed} zile cu risc, față de {normal} de obicei",
-      "confidence": "Încredere",
       "better": "mai bine",
       "note": "„Mai bine” compară doar aceste două comune, indicator cu indicator. Toate cifrele sunt estimări cu interval."
     },
@@ -466,7 +459,7 @@
   },
   "About": {
     "title": "Despre și date",
-    "lead": "25 de sezoane de vreme, sol și imagini din satelit, refăcute pe câmpul dumneavoastră.",
+    "lead": "25 de ani de vreme, sol și date din satelit, refăcute pe câmpul dumneavoastră.",
     "how": {
       "title": "Cum funcționează",
       "text": "Alegeți câmpul și spuneți ce cultivați. Refacem pe el fiecare sezon din 2001 încoace, cu secete și primăveri ploioase cu tot, și comparăm rotația dumneavoastră cu alte două, dintre care cel puțin una cu mazăre. Cumpărătorii de furaje văd aceleași semnale, comună cu comună.",
@@ -477,12 +470,15 @@
       "nasa": "NASA",
       "other": "Altă sursă publică",
       "note": "Folosim date publice, gratuite, de la NASA și de la alte instituții. NASA nu este partener și nu susține acest instrument.",
-      "power": "Căldură, ploaie și umezeala aerului, zi de zi",
-      "modis": "Cât de verde și viguroasă este vegetația (NDVI)",
+      "power": "Temperatură, ploaie, umezeala aerului, umiditatea solului și radiația, zi de zi",
+      "modis": "Cât de verde și viguroasă este vegetația (NDVI), de la satelitul Terra",
+      "myd13": "Același indice de vegetație, de la satelitul Aqua, care umple golurile lăsate de nori",
       "smap": "Apa din sol, în zona rădăcinilor",
-      "soilgrids": "Carbon organic, pH și textura solului",
-      "eucropmap": "Ce culturi sunt unde, pentru suprafețe pe comună",
-      "ins": "Producții oficiale pe județ, pentru verificarea modelului"
+      "eucropmap": "Ce culturi sunt unde, și suprafețele pe comună",
+      "ins": "Suprafețe, producții și recolte oficiale pe județ, pentru verificarea modelului",
+      "soilgrids": "Carbon organic, pH și textura solului, 0–30 cm",
+      "gisco": "Limitele regiunilor și ale comunelor",
+      "et0": "Evapotranspirația de referință: cât de multă apă pierde zilnic un câmp verde bine udat"
     },
     "glossaryTitle": "Glosar",
     "ai": {
@@ -591,7 +587,7 @@
   },
   "Home": {
     "title": "Ce culturi merg cel mai bine pe câmpul dumneavoastră?",
-    "lead": "Refacem ultimele 25 de sezoane pe pământul dumneavoastră, ca să puteți planifica următorul.",
+    "lead": "Refacem ultimii 25 de ani de vreme pe pământul dumneavoastră, ca să puteți planifica următorul.",
     "start": "Alegeți câmpul",
     "imageAlt": "Transilvania văzută din satelit, vara: terenuri agricole în centru, înconjurate de Carpații împăduriți.",
     "imageCredit": "Transilvania, 2 iulie 2025. Imagine: NASA Worldview, MODIS pe satelitul Terra.",
@@ -675,7 +671,7 @@
     "title": "Asistentul Field Signal",
     "model": "Răspunde din câmpurile dumneavoastră și datele NASA · Qwen",
     "intro": "Întrebați despre rotații, despre date sau despre cum funcționează Field Signal.",
-    "introFields": "Văd {count, plural, one {câmpul dumneavoastră} few {cele # câmpuri} other {cele # de câmpuri}} și cele 25 de sezoane. Întrebați orice.",
+    "introFields": "Văd {count, plural, one {câmpul dumneavoastră} few {cele # câmpuri} other {cele # de câmpuri}} și pot verifica cum s-au descurcat în ultimii 25 de ani. Întrebați orice, ușor sau greu.",
     "placeholder": "Scrieți o întrebare…",
     "send": "Trimiteți",
     "think": "Gândire mai atentă",
@@ -689,7 +685,7 @@
     "demo": "Folosește date demonstrative",
     "tools": {
       "list_fields": "câmpurile dumneavoastră",
-      "analyze_field": "cele 25 de sezoane ale unui câmp",
+      "analyze_field": "istoricul unui câmp",
       "compare_fields": "toate câmpurile comparate",
       "regional_supply": "oferta regională de furaje"
     },

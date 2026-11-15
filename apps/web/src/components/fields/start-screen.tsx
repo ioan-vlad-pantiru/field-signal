@@ -13,7 +13,6 @@ import { Link } from "@/i18n/navigation";
 import { ActionBar } from "@/components/ui/action-bar";
 import { INPUT_CLASS } from "@/components/ui/input";
 import { Button, IconButton } from "@/components/ui/button";
-import { cardClass } from "@/components/ui/card";
 import { RotationWheel } from "@/components/ui/rotation-wheel";
 import { CheckIcon, EditIcon, MoreIcon, PlusIcon, SearchIcon, UploadIcon } from "@/components/ui/icons";
 import { ScreenHeader } from "@/components/ui/screen-header";
@@ -100,7 +99,7 @@ export function StartScreen({
             <PlusIcon size={20} />
             {t("add")}
           </Button>
-          <Link href="/field?import=1" aria-label={t("import")} title={t("import")} className="press inline-flex size-14 items-center justify-center rounded-pill bg-surface text-ink shadow-1 ring-1 ring-line hover:ring-ink-muted">
+          <Link href="/field?import=1" aria-label={t("import")} title={t("import")} className="press inline-flex size-12 items-center justify-center rounded-[var(--radius-sm)] bg-surface text-ink shadow-1 ring-1 ring-line hover:ring-ink-muted">
             <UploadIcon size={20} />
           </Link>
         </div>
@@ -120,7 +119,7 @@ export function StartScreen({
         </label>
       ) : null}
 
-      <ul className="flex flex-col gap-3">
+      <ul className="flex flex-col divide-y divide-line border-y border-line">
         {local ? (
           <li className="rise">
             <LocalCard field={local} verdict={verdicts[LOCAL_FIELD]} onAnalyze={() => onAnalyzeLocal(local)} />
@@ -227,7 +226,7 @@ function FieldCard({
         type="button"
         aria-pressed={selected}
         onClick={onToggle}
-        className={cardClass(true, `flex w-full items-center gap-3 p-3 ${selected ? "ring-2 ring-field" : ""}`)}
+        className="press flex w-full items-center gap-3 py-3 text-left"
       >
         {head}
         <span
@@ -241,14 +240,14 @@ function FieldCard({
   }
 
   return (
-    <div className={cardClass(false, "flex flex-col gap-2 p-3")}>
+    <div className="flex flex-col gap-2 py-3">
       <div className="flex items-center gap-3">
         {head}
         <IconButton label={t("options", { name: field.name })} onClick={onOptions} className="-mr-1">
           <MoreIcon size={20} />
         </IconButton>
       </div>
-      <div className="flex items-center gap-3 border-t border-line pt-2">
+      <div className="flex items-center gap-3">
         <span className="min-w-0 flex-1 text-sm leading-snug">
           <VerdictLine verdict={verdict} changed={changed} />
         </span>
@@ -285,7 +284,7 @@ function LocalCard({ field, verdict, onAnalyze }: { field: LocalField; verdict: 
   }
 
   return (
-    <div className={cardClass(false, "flex flex-col gap-2 p-3")}>
+    <div className="flex flex-col gap-2 py-3">
       <div className="flex items-center gap-3">
         <FieldThumb boundary={field.boundary} parts={field.parts} />
         <span className="min-w-0 flex-1">
@@ -295,7 +294,7 @@ function LocalCard({ field, verdict, onAnalyze }: { field: LocalField; verdict: 
           </span>
         </span>
       </div>
-      <div className="flex items-center gap-3 border-t border-line pt-2">
+      <div className="flex items-center gap-3">
         <span className="min-w-0 flex-1 text-sm leading-snug">
           <VerdictLine verdict={verdict} />
         </span>

@@ -129,7 +129,7 @@ export function StocksReport() {
         <CandidatesSection data={data} />
         <LogisticsSection data={data} />
         <RisksSection data={data} />
-        <AnnexSection data={data} />
+        <AnnexSection />
 
         <p className="mt-10 border-t border-neutral-300 pt-2 text-[8pt] text-neutral-500 print:hidden">{FOOTER}</p>
       </article>

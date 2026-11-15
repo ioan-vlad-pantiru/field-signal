@@ -5,13 +5,12 @@ import { useTranslations } from "next-intl";
 import type { Strategy } from "@/lib/contracts";
 import { useLocalized } from "@/lib/localized";
 import { YIELD_INDEX_CODE, type MainRisk, type Verdict as VerdictData } from "@/lib/results";
-import { ConfidenceBadge } from "@/components/ui/badges";
 import { AlertIcon, ChartIcon, ChevronRightIcon, ShieldIcon } from "@/components/ui/icons";
 import { RotationWheel } from "@/components/ui/rotation-wheel";
 
 /**
- * The answer in one card: the best rotation for this field in one short sentence, its wheel with
- * the poor seasons beside it, then the main risk, the confidence and the way into the data.
+ * The answer, straight on the page: the best rotation for this field in one short sentence, its wheel with
+ * the poor seasons beside it, then the main risk and the way into the data.
  */
 export function VerdictCard({
   verdict,
@@ -35,7 +34,7 @@ export function VerdictCard({
     kind === "keep" ? t.rich("keep", { b: strong }) : t.rich(kind === "fewer" ? "fewer" : "best", { name, b: strong });
 
   return (
-    <section aria-labelledby="verdict" className="rise flex flex-col gap-4 rounded-[var(--radius-xl)] bg-surface p-5 shadow-1 print:p-0 print:shadow-none">
+    <section aria-labelledby="verdict" className="rise flex flex-col gap-4">
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
           <p className="text-sm font-semibold text-ink-muted">{t("label")}</p>
@@ -75,7 +74,6 @@ export function VerdictCard({
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <ConfidenceBadge confidence={best.confidence} />
         <button
           type="button"
           onClick={onData}

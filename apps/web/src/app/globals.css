@@ -54,8 +54,8 @@
   --radius-xs: 0.5rem;
   --radius-sm: 0.75rem;
   --radius-md: 1rem;
-  --radius-lg: 1.25rem;
-  --radius-xl: 1.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
   --radius-pill: 999px;
 
   /* Layout */
@@ -74,10 +74,8 @@
   --duration-hero: 900ms;
   --ease-settle: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-standard: cubic-bezier(0.65, 0, 0.35, 1);
-  --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
-  /* A gentle spring (about 1% overshoot), for sheets and the nav indicator. */
-  --ease-spring: linear(0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.723 12.9%, 0.938 16.7%, 1.017 20.4%, 1.051 24%, 1.059 27.1%, 1.044 32.5%, 1.012 41.4%, 0.998 52.6%, 1);
-  --press-scale: 0.97;
+  /* Nothing overshoots: things settle into place, they do not bounce. */
+  --press-scale: 0.985;
   --stagger: 40ms;
 }
 
@@ -180,8 +178,6 @@
   --text-2xl: 2rem;
   --text-3xl: 2.5rem;
   --ease-settle: var(--ease-settle);
-  --ease-pop: var(--ease-pop);
-  --ease-spring: var(--ease-spring);
 }
 
 html {
@@ -218,13 +214,13 @@ h3 {
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(6px);
   }
 }
 @keyframes pop {
   from {
     opacity: 0;
-    transform: scale(0.4);
+    transform: scale(0.92);
   }
 }
 @keyframes grow-x {
@@ -243,14 +239,9 @@ h3 {
   }
 }
 @keyframes pin-drop {
-  0% {
-    transform: translateY(-18px);
-  }
-  60% {
-    transform: translateY(2px);
-  }
-  100% {
-    transform: translateY(0);
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
   }
 }
 
@@ -270,7 +261,7 @@ h3 {
 }
 /* Replay cells cascade across the seasons: the screen's one orchestrated moment. */
 .cell-in {
-  animation: pop var(--duration-slow) var(--ease-pop) both;
+  animation: pop var(--duration-slow) var(--ease-settle) both;
   animation-delay: calc(var(--col, 0) * 18ms + var(--row, 0) * 70ms);
 }
 .skeleton {
@@ -295,12 +286,12 @@ h3 {
   transform: scale(var(--press-scale));
 }
 
-/* Bottom sheet: springs up, scrim fades; reverses on close. While dragged, the inline transform wins
+/* Bottom sheet: slides up, scrim fades; reverses on close. While dragged, the inline transform wins
    and transitions are off (data-dragging). */
 dialog.sheet {
   transform: translateY(100%);
   transition:
-    transform var(--duration-sheet) var(--ease-spring),
+    transform var(--duration-sheet) var(--ease-settle),
     max-height var(--duration-slow) var(--ease-settle),
     overlay var(--duration-sheet) allow-discrete,
     display var(--duration-sheet) allow-discrete;
@@ -384,8 +375,8 @@ dialog.sheet[open]::backdrop {
 /* The floating nav's active pill slides between items. */
 .nav-pill {
   transition:
-    transform var(--duration-slow) var(--ease-spring),
-    width var(--duration-slow) var(--ease-spring);
+    transform var(--duration-slow) var(--ease-settle),
+    width var(--duration-slow) var(--ease-settle);
 }
 
 /* InfoTip / Term: a small floating card above the nav (native popover). */
@@ -404,7 +395,7 @@ dialog.sheet[open]::backdrop {
   transform: translateY(8px) scale(0.98);
   transition:
     opacity var(--duration-base) var(--ease-settle),
-    transform var(--duration-slow) var(--ease-spring),
+    transform var(--duration-slow) var(--ease-settle),
     overlay var(--duration-base) allow-discrete,
     display var(--duration-base) allow-discrete;
 }
@@ -501,10 +492,6 @@ input[type="range"].slider::-webkit-slider-thumb {
   background: var(--surface);
   border: 3px solid var(--field);
   box-shadow: var(--shadow-2);
-  transition: transform var(--duration-fast) var(--ease-settle);
-}
-input[type="range"].slider:active::-webkit-slider-thumb {
-  transform: scale(1.15);
 }
 input[type="range"].slider::-moz-range-thumb {
   width: 24px;
@@ -566,7 +553,7 @@ input[type="range"].slider::-moz-range-thumb {
   height: 100%;
   align-items: center;
   justify-content: center;
-  animation: pop var(--duration-slow) var(--ease-pop) both;
+  animation: pop var(--duration-slow) var(--ease-settle) both;
   animation-delay: calc(var(--i, 0) * 60ms + 300ms);
   transition: transform var(--duration-fast) var(--ease-settle);
 }
@@ -587,7 +574,7 @@ input[type="range"].slider::-moz-range-thumb {
 }
 /* Field pin: drops in each time it moves (the marker root is positioned by MapLibre). */
 .field-pin > svg {
-  animation: pin-drop var(--duration-slow) var(--ease-pop);
+  animation: pin-drop var(--duration-base) var(--ease-settle);
 }
 
 /* The season's crop, named on the field-plan map. */
@@ -626,11 +613,9 @@ input[type="range"].slider::-moz-range-thumb {
 @keyframes wheel-in {
   from {
     opacity: 0;
-    transform: scale(0.85);
   }
 }
 .wheel-in {
-  transform-origin: 0 0;
   animation: wheel-in var(--duration-base) var(--ease-settle) both;
   animation-delay: calc(var(--i, 0) * 90ms);
 }

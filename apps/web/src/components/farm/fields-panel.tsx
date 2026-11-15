@@ -52,7 +52,7 @@ export function FieldsPanel({ farm, onShow }: { farm: FarmModel; onShow: (ids: n
       ) : farm.suggesting === "error" ? (
         <ErrorState onRetry={() => void farm.suggest()}>{t("fields.error")}</ErrorState>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col divide-y divide-line border-y border-line">
           {farm.fields.map((f, i) => (
             <FieldCard
               key={f.id}

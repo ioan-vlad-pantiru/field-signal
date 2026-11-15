@@ -62,3 +62,5 @@ services/api/parcels/*
 
 # World model soil/terrain grid (87 MB, farm_data.static_grid): CI downloads it from a release.
 services/api/src/api/planner/data/static_grid.npy
+
+.superpowers/
