@@ -7,7 +7,10 @@ export interface SegmentedOption<T extends string> {
   label: ReactNode;
 }
 
-/** A small set of exclusive choices (2–4), with radio semantics and arrow-key movement. */
+/**
+ * A small set of exclusive choices (2–4), with radio semantics and arrow-key movement.
+ * Use at most one per screen; for filters, use chips.
+ */
 export function Segmented<T extends string>({
   label,
   options,
@@ -23,12 +26,12 @@ export function Segmented<T extends string>({
   className?: string;
 }) {
   const group = useRef<HTMLDivElement>(null);
+  const index = Math.max(0, options.findIndex((o) => o.value === value));
 
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const step = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 0;
     if (step === 0) return;
     event.preventDefault();
-    const index = options.findIndex((o) => o.value === value);
     const next = options[(index + step + options.length) % options.length];
     onChange(next.value);
     group.current?.querySelector<HTMLButtonElement>(`[data-value="${next.value}"]`)?.focus();
@@ -40,8 +43,18 @@ export function Segmented<T extends string>({
       role="radiogroup"
       aria-label={label}
       onKeyDown={onKeyDown}
-      className={`inline-flex gap-1 rounded-xl bg-surface-sunken p-1 ${className}`}
+      className={`relative isolate inline-grid rounded-pill bg-surface-sunken p-1 ${className}`}
+      style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
     >
+      {/* The thumb slides under the chosen option. */}
+      <span
+        aria-hidden="true"
+        className="nav-pill absolute inset-y-1 left-1 -z-10 rounded-pill bg-surface shadow-1"
+        style={{
+          width: `calc((100% - 0.5rem) / ${options.length})`,
+          transform: `translateX(${index * 100}%)`,
+        }}
+      />
       {options.map((option) => {
         const checked = option.value === value;
         return (
@@ -53,8 +66,8 @@ export function Segmented<T extends string>({
             tabIndex={checked ? 0 : -1}
             data-value={option.value}
             onClick={() => onChange(option.value)}
-            className={`press inline-flex min-h-11 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-3 font-medium ${
-              checked ? "bg-surface text-ink shadow-1" : "text-ink-muted hover:text-ink"
+            className={`press inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-pill px-4 text-sm font-semibold ${
+              checked ? "text-ink" : "text-ink-muted hover:text-ink"
             }`}
           >
             {option.label}
