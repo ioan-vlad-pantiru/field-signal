@@ -91,7 +91,13 @@ export function PlanStep({
         <>
           <Card>
             <h2 className="mb-1 text-sm font-semibold text-ink-muted">{t("priorities")}</h2>
-            <PrioritiesStep levels={levels} onLevels={setLevels} irrigated={irrigated} onIrrigated={setIrrigated} />
+            <PrioritiesStep
+              levels={levels}
+              onLevels={setLevels}
+              irrigated={irrigated}
+              onIrrigated={setIrrigated}
+              fieldCount={Math.max(1, ready.length)}
+            />
           </Card>
 
           <div ref={results} tabIndex={-1} aria-live="polite" className="flex flex-col gap-5 outline-none">

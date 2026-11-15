@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { CropOutlook, LatLon, RiskLevel } from "@/lib/contracts";
-import { formatNumber, formatQuantity } from "@/lib/format";
+import { formatNumber } from "@/lib/format";
 import { useAppLocale, useLocalized } from "@/lib/localized";
 import { useUnitLabel } from "@/lib/use-unit-label";
 import { AgronomistBadge, ConfidenceBadge, RiskBadge } from "@/components/ui/badges";
@@ -87,10 +87,6 @@ export function ZoneDetails({
 
   return (
     <div className="flex flex-col gap-5">
-      {outlook.area_ha != null ? (
-        <p className="text-ink-muted">{t("area", { ha: formatNumber(outlook.area_ha, locale, 0) })}</p>
-      ) : null}
-
       <Light title={t("availability")} level={availability.level}>
         <Row label={t("riskScore")} value={`${formatNumber(availability.score, locale, 0)}/100`} />
         <Row
@@ -109,12 +105,8 @@ export function ZoneDetails({
             <p className="text-sm text-ink-muted">{t("drivers")}</p>
             <ul className="mt-1 flex flex-col gap-1">
               {availability.drivers.map((d) => (
-                <li key={d.code} className="flex justify-between gap-3">
-                  <span>{l(d.label)}</span>
-                  {d.value != null ? (
-                    <span className="tabular-nums">{formatQuantity(d.value, d.unit, locale, unitLabel)}</span>
-                  ) : null}
-                </li>
+                // The label already states the value ("268 mm in 2025, normal 210 mm").
+                <li key={d.code}>{l(d.label)}</li>
               ))}
             </ul>
           </div>

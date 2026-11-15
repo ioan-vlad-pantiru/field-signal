@@ -42,6 +42,7 @@ export function Sheet({
   transitionName?: string;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const t = useTranslations("Common");
   const titleId = useId();
   const [expanded, setExpanded] = useState(!snap);
@@ -52,6 +53,9 @@ export function Sheet({
     if (!dialog) return;
     if (open && !dialog.open) {
       dialog.showModal();
+      // showModal focuses the first control, the close button. Start on a field marked
+      // data-autofocus, else on the body, so arrow keys scroll the sheet.
+      (dialog.querySelector<HTMLElement>("[data-autofocus]") ?? bodyRef.current)?.focus({ preventScroll: true });
       countOpenSheet(1);
     }
     if (!open && dialog.open) {
@@ -139,10 +143,10 @@ export function Sheet({
             </button>
           </div>
         </div>
-        {/* Focus lands here on open (not on the close button), so arrow keys scroll the sheet. */}
+        {/* Focus lands here on open (see above). */}
         <div
+          ref={bodyRef}
           tabIndex={-1}
-          autoFocus
           className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] outline-none"
         >
           {children}

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import type { Strategy } from "@/lib/contracts";
 import { formatNumber } from "@/lib/format";
 import { useAppLocale, useLocalized } from "@/lib/localized";
-import type { MainRisk, Verdict as VerdictData } from "@/lib/results";
+import { YIELD_INDEX_CODE, type MainRisk, type Verdict as VerdictData } from "@/lib/results";
 import { ConfidenceBadge } from "@/components/ui/badges";
 import { AlertIcon, ChartIcon, ChevronRightIcon, ShieldIcon } from "@/components/ui/icons";
 import { CropSequence } from "./crop-sequence";
@@ -54,7 +54,8 @@ export function VerdictCard({
         >
           {sentence}
         </p>
-        <CropSequence sequence={best.sequence} />
+        {/* The sentence already names the rotation, except when it says to keep the current one. */}
+        {kind === "keep" ? <CropSequence sequence={best.sequence} /> : null}
       </div>
 
       <div className="flex items-start gap-3 rounded-[var(--radius-lg)] bg-surface-sunken p-3">
@@ -63,7 +64,11 @@ export function VerdictCard({
         </span>
         <div className="min-w-0">
           <p className="font-semibold">
-            {risk ? t("risk", { risk: l(risk.label), count: risk.seasons }) : t("noRisk")}
+            {risk
+              ? risk.code === YIELD_INDEX_CODE
+                ? t("riskYield", { count: risk.seasons })
+                : t("risk", { risk: l(risk.label), count: risk.seasons })
+              : t("noRisk")}
           </p>
           {risk ? (
             <p className="mt-0.5 flex items-center gap-1 text-sm text-ink-muted">

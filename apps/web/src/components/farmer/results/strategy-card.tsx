@@ -38,6 +38,8 @@ export function StrategyCard({
   const poor = poorSeasons(strategy);
   const score = useCountUp(strategy.score.total);
   const tag = isBest ? t("best") : null;
+  // API names spell out the crops; the crop line only adds something under "Your rotation now".
+  const nameListsCrops = strategy.sequence.every((crop) => name.includes(short(crop)));
 
   return (
     <button
@@ -63,15 +65,17 @@ export function StrategyCard({
         </span>
       </span>
 
-      <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm font-semibold" aria-label={strategy.sequence.map((c) => short(c)).join(", ")}>
-        {strategy.sequence.map((crop, i) => (
-          <span key={i} aria-hidden="true" className="inline-flex items-center gap-1.5">
-            {i > 0 ? <span className="text-ink-muted">→</span> : null}
-            <span className="size-2.5 rounded-full ring-1 ring-ink/15" style={{ background: CROP_COLORS[crop] }} />
-            {short(crop)}
-          </span>
-        ))}
-      </span>
+      {nameListsCrops ? null : (
+        <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm font-semibold" aria-label={strategy.sequence.map((c) => short(c)).join(", ")}>
+          {strategy.sequence.map((crop, i) => (
+            <span key={i} aria-hidden="true" className="inline-flex items-center gap-1.5">
+              {i > 0 ? <span className="text-ink-muted">→</span> : null}
+              <span className="size-2.5 rounded-full ring-1 ring-ink/15" style={{ background: CROP_COLORS[crop] }} />
+              {short(crop)}
+            </span>
+          ))}
+        </span>
+      )}
 
       <span className="line-clamp-2 text-sm text-ink-muted">{firstSentence(l(strategy.explanation.why))}</span>
 

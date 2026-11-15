@@ -502,7 +502,7 @@ function Stats({ plan, timeline, monthName }: { plan: ReturnType<typeof planFiel
                 </span>
               ) : null}
               {gap && gap.months > 0 ? (
-                <span className="text-ink-muted">· {ts("timeline.bareGap", { months: gap.months })}</span>
+                <span className="basis-full text-ink-muted">{ts("timeline.bareGap", { months: gap.months })}</span>
               ) : null}
             </li>
           );

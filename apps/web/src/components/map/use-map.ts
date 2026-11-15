@@ -5,6 +5,7 @@ import {
   Map as MapLibreMap,
   NavigationControl,
   setWorkerUrl,
+  type LngLatBoundsLike,
   type LngLatLike,
   type RasterDEMSourceSpecification,
 } from "maplibre-gl";
@@ -154,8 +155,9 @@ export function useMap(
    * `satellite`: add the satellite layer, shown at start; switch it with `setBasemap`. Off by default.
    * `cooperativeGestures`: the page scrolls past the map; zoom needs Ctrl/⌘ + wheel, pan needs two
    * fingers. For maps that sit in a scrolling page; off where the map is the task (drawing a field).
+   * `bounds`: land on a view that shows all of it (on a narrow phone, below `zoom`), never closer than `zoom`.
    */
-  options: { satellite?: boolean; cooperativeGestures?: boolean } = {},
+  options: { satellite?: boolean; cooperativeGestures?: boolean; bounds?: LngLatBoundsLike } = {},
 ) {
   const container = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<MapLibreMap | null>(null);
@@ -166,6 +168,7 @@ export function useMap(
     zoom,
     satellite: options.satellite ?? false,
     cooperativeGestures: options.cooperativeGestures ?? false,
+    bounds: options.bounds,
   });
 
   useEffect(() => {
@@ -223,9 +226,13 @@ export function useMap(
       addThreeD(instance, dark);
       if (initial.current.satellite) addSatellite(instance, true);
       // Arrival: settle from a wider, flat view into the working view, slightly tilted.
+      const { bounds } = initial.current;
+      const fit = bounds
+        ? instance.cameraForBounds(bounds, { padding: { top: 80, bottom: 48, left: 32, right: 32 }, maxZoom: initial.current.zoom })
+        : undefined;
       instance.flyTo({
-        center: initial.current.center,
-        zoom: initial.current.zoom,
+        center: fit?.center ?? initial.current.center,
+        zoom: fit?.zoom ?? initial.current.zoom,
         pitch: Math.max(35, pitchForZoom(initial.current.zoom)),
         bearing: -12,
         duration: prefersReducedMotion() ? 0 : 1800,

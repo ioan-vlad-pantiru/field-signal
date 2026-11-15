@@ -227,3 +227,24 @@ def test_history_is_capped(env: None, monkeypatch: pytest.MonkeyPatch) -> None:
 def test_split_body() -> None:
     parts = split_body("a" * 1000 + "\n" + "b" * 1000)
     assert len(parts) == 2 and all(len(p) <= 1600 for p in parts)
+
+
+def test_main_risk_prefers_a_weather_cause() -> None:
+    from types import SimpleNamespace as NS
+
+    from api import contracts
+    from api.whatsapp.models import _main_risk
+
+    def reason(code: str) -> NS:
+        return NS(code=code, label=NS(en=code, ro=code))
+
+    def analysis(*seasons: list[str]) -> Any:
+        replay = [
+            NS(status=contracts.Status.BAD, reasons=[reason(c) for c in codes]) for codes in seasons
+        ]
+        return NS(strategies=[NS(is_current=True, replay=replay)])
+
+    assert (
+        _main_risk(analysis(["model_yield_index", "heat"], ["model_yield_index"]), "en") == "heat"
+    )
+    assert _main_risk(analysis(["model_yield_index"]), "en") == "model_yield_index"

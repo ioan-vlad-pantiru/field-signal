@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { Loaded } from "@/lib/api";
 import type { Crop, CropOutlook, SourcingRegion, Zone } from "@/lib/contracts";
+import { formatNumber } from "@/lib/format";
 import { useAppLocale } from "@/lib/localized";
 import { IconButton } from "@/components/ui/button";
 import { CrossIcon, PinIcon } from "@/components/ui/icons";
@@ -33,6 +34,7 @@ const LAPTOP = "(min-width: 1024px)";
  */
 export function RegionView({ result }: { result: Loaded<SourcingRegion> }) {
   const t = useTranslations("Feed");
+  const tz = useTranslations("Feed.zone");
   const tc = useTranslations("Crops");
   const tr = useTranslations("Risk");
   const locale = useAppLocale();
@@ -65,6 +67,8 @@ export function RegionView({ result }: { result: Loaded<SourcingRegion> }) {
   const cropName = tc(crop).toLocaleLowerCase(locale);
   const [zoneA, zoneB] = ticked.map((id) => zones.find((z) => z.id === id));
   const detailTitle = selected ? t("sheetTitle", { zone: selected.name, crop: tc(crop) }) : "";
+  const detailArea =
+    selectedOutlook?.area_ha != null ? tz("area", { ha: formatNumber(selectedOutlook.area_ha, locale, 0) }) : undefined;
   const details = selected ? (
     selectedOutlook ? (
       <ZoneDetails outlook={selectedOutlook} centroid={selected.centroid} place={selected.name} />
@@ -135,7 +139,10 @@ export function RegionView({ result }: { result: Loaded<SourcingRegion> }) {
             {selected ? (
               <>
                 <div className="flex items-start justify-between gap-3">
-                  <h2 className="text-lg font-semibold">{detailTitle}</h2>
+                  <div>
+                    <h2 className="text-lg font-semibold">{detailTitle}</h2>
+                    {detailArea ? <p className="mt-0.5 text-sm text-ink-muted">{detailArea}</p> : null}
+                  </div>
                   <IconButton label={t("closeDetail")} onClick={() => setSelectedId(null)} className="-mr-2 -mt-2">
                     <CrossIcon size={18} />
                   </IconButton>
@@ -153,7 +160,7 @@ export function RegionView({ result }: { result: Loaded<SourcingRegion> }) {
         {map("h-full")}
       </FullMap>
 
-      <Sheet open={!isLaptop && selected !== null} onClose={() => setSelectedId(null)} title={detailTitle} snap>
+      <Sheet open={!isLaptop && selected !== null} onClose={() => setSelectedId(null)} title={detailTitle} subtitle={detailArea} snap>
         {details}
       </Sheet>
 

@@ -106,7 +106,7 @@ export function NameSheet({ open, name, onClose, onDone }: { open: boolean; name
       onClose={close}
       onSubmit={(form) => action.run(() => updateProfile(value(form, "name").trim() || null), onDone)}
     >
-      <TextField label={t("name")} name="name" defaultValue={name} maxLength={80} autoComplete="name" autoFocus />
+      <TextField label={t("name")} name="name" defaultValue={name} maxLength={80} autoComplete="name" data-autofocus />
       <FormNote error={action.error} />
     </FormSheet>
   );

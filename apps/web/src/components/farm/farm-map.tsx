@@ -52,6 +52,7 @@ export function FarmMap({
   start,
   label,
   className = "",
+  onParcelsShown,
 }: {
   mode: FarmMapMode;
   /** The farm's parcels. */
@@ -70,6 +71,8 @@ export function FarmMap({
   start: [number, number];
   label: string;
   className?: string;
+  /** Whether APIA parcels are on screen to tap (only from zoom 13.5, while picking). */
+  onParcelsShown?: (shown: boolean) => void;
 }) {
   const t = useTranslations("Farm");
   const { container, map, failed } = useMap(start, 14, { satellite: true });
@@ -77,6 +80,10 @@ export function FarmMap({
   const known = useRef(new Map<number, Parcel>());
   const inFarm = useRef(new Set<number>());
   const state = useRef({ mode, selected, onTap, brush });
+  const shownRef = useRef(onParcelsShown);
+  useEffect(() => {
+    shownRef.current = onParcelsShown;
+  }, [onParcelsShown]);
   useEffect(() => {
     state.current = { mode, selected, onTap, brush };
   }, [mode, selected, onTap, brush]);
@@ -145,6 +152,7 @@ export function FarmMap({
     let controller: AbortController | null = null;
     const show = (list: Parcel[]) => {
       list.forEach((p) => known.current.set(p.id, p));
+      shownRef.current?.(list.length > 0);
       whenReady(map, APIA, () => map.getSource<GeoJSONSource>(APIA)?.setData(collection(list)));
     };
     const refresh = () => {
