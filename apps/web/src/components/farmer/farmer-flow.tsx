@@ -4,7 +4,7 @@ import { startTransition, Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { analyzeField, ApiRequestError, optimizeFarm, type Loaded } from "@/lib/api";
-import { fieldInput, updateField, useAccount } from "@/lib/account";
+import { fieldInput, loadAnalysis, saveAnalysis, updateField, useAccount } from "@/lib/account";
 import { setAssistantFields } from "@/lib/assistant";
 import type { FieldAnalysis, LatLon, SavedField as AccountField } from "@/lib/contracts";
 import { formatNumber } from "@/lib/format";
@@ -12,7 +12,7 @@ import { useAppLocale } from "@/lib/localized";
 import { fieldAreaHa } from "@/lib/geo";
 import { PinIcon } from "@/components/ui/icons";
 import { ErrorState } from "@/components/ui/states";
-import { LOCAL_FIELD } from "@/lib/last-verdict";
+import { LOCAL_FIELD, toSummary } from "@/lib/last-verdict";
 import { verdict } from "@/lib/results";
 import { rememberVerdict } from "@/lib/use-last-verdicts";
 import { StartScreen } from "@/components/fields/start-screen";
@@ -33,7 +33,8 @@ import { supportedRotation } from "@/lib/crops";
 type State =
   | { step: "form" }
   | { step: "loading" }
-  | { step: "results"; results: Loaded<FieldAnalysis>[] }
+  /** `savedAt`: per field, when the analysis shown was saved, or null for a fresh run. */
+  | { step: "results"; results: Loaded<FieldAnalysis>[]; savedAt: (string | null)[] }
   | { step: "error" };
 
 function fromAccount(field: AccountField): SubmittedField {
@@ -193,7 +194,42 @@ function Flow({
     );
   }
 
-  async function run(submitted: SubmittedField[]) {
+  /**
+   * Each field's analysis: with `reuse`, the one saved in the account when it was run with the
+   * field's present inputs, else a fresh run. Fresh results of account fields are saved, after the
+   * field itself (`before`), so the account always pairs a field with its latest answer.
+   */
+  async function analyse(list: SubmittedField[], reuse: boolean, before = new Map<string, Promise<unknown>>()) {
+    const done = await Promise.all(
+      list.map(async (f) => {
+        const saved = reuse && signedIn ? account.fields.find((a) => a.id === f.accountId)?.last_analysis : undefined;
+        if (saved?.current && f.accountId) {
+          try {
+            const kept = await loadAnalysis(f.accountId);
+            return { loaded: { data: kept.analysis, origin: "api" } as Loaded<FieldAnalysis>, savedAt: kept.analyzed_at };
+          } catch {
+            // Gone or unreachable: run it again below.
+          }
+        }
+        return { loaded: await analyzeField(f.request), savedAt: null };
+      }),
+    );
+    if (signedIn) {
+      done.forEach(({ loaded, savedAt }, i) => {
+        const id = list[i].accountId;
+        // Never keep the offline demo answer in the account.
+        if (!id || savedAt !== null || loaded.origin !== "api") return;
+        const body = { request: list[i].request, analysis: loaded.data, summary: toSummary(verdict(loaded.data.strategies)) };
+        (before.get(id) ?? Promise.resolve())
+          .catch(() => undefined)
+          .then(() => saveAnalysis(id, body))
+          .catch(() => undefined);
+      });
+    }
+    return { step: "results", results: done.map((d) => d.loaded), savedAt: done.map((d) => d.savedAt) } as const;
+  }
+
+  async function run(submitted: SubmittedField[], reuse = false) {
     const list = submitted.map((f) => ({
       ...f,
       place: f.place ?? nearestCommune(communes, f.request.location)?.name ?? null,
@@ -203,14 +239,15 @@ function Flow({
     setUpdated(new Set());
     setState({ step: "loading" });
     window.scrollTo({ top: 0 });
+    const saving = new Map<string, Promise<unknown>>();
     for (const field of list) {
-      const accountField = signedIn ? account.fields.find((f) => f.id === field.accountId) : undefined;
+      const accountField = signedIn && !reuse ? account.fields.find((f) => f.id === field.accountId) : undefined;
       if (accountField) {
         // Keep the saved field in step with what the farmer just ran; results never wait for it.
         const body = { ...fieldInput(accountField), request: field.request, boundary: field.boundary, parts: field.parts ?? [], near: field.place };
-        updateField(accountField.id, body)
-          .then(() => setUpdated((prev) => new Set(prev).add(accountField.id)))
-          .catch(() => undefined);
+        const update = updateField(accountField.id, body).then(() => setUpdated((prev) => new Set(prev).add(accountField.id)));
+        saving.set(accountField.id, update);
+        update.catch(() => undefined);
       }
     }
     const lastField = list.at(-1);
@@ -219,9 +256,9 @@ function Flow({
     }
     startOptimizer(list);
     try {
-      const results = await Promise.all(list.map((f) => analyzeField(f.request)));
+      const next = await analyse(list, reuse, saving);
       // A transition, so the skeleton hands over to the results with the page fade.
-      startTransition(() => setState({ step: "results", results }));
+      startTransition(() => setState(next));
     } catch {
       setState({ step: "error" });
     }
@@ -258,8 +295,8 @@ function Flow({
     if (autoStarted.current) return;
     autoStarted.current = true;
     startOptimizer(fields);
-    Promise.all(opened.map((f) => analyzeField(f.request)))
-      .then((results) => startTransition(() => setState({ step: "results", results })))
+    analyse(fields, false)
+      .then((next) => startTransition(() => setState(next)))
       .catch(() => setState({ step: "error" }));
     // Runs once on mount, for the fields the page was opened with.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -322,6 +359,8 @@ function Flow({
             parts={field.parts}
             placeName={name}
             onBack={back}
+            savedAt={state.savedAt[index]}
+            onRerun={() => run(fields)}
             save={
               <SaveField
                 request={field.request}
@@ -331,7 +370,13 @@ function Flow({
                 defaultName={name}
                 savedId={field.accountId}
                 justUpdated={field.accountId != null && updated.has(field.accountId)}
-                onSaved={(id) => setFields((prev) => prev.map((f, i) => (i === index ? { ...f, accountId: id } : f)))}
+                onSaved={(id) => {
+                  setFields((prev) => prev.map((f, i) => (i === index ? { ...f, accountId: id } : f)));
+                  // A field saved from its results keeps them too.
+                  if (result.origin === "api") {
+                    saveAnalysis(id, { request: field.request, analysis: result.data, summary: toSummary(verdict(result.data.strategies)) }).catch(() => undefined);
+                  }
+                }}
               />
             }
             after={optimizer}
@@ -351,7 +396,7 @@ function Flow({
           return (
             <StartScreen
               local={local}
-              onAnalyze={(list) => run(list.map(fromAccount))}
+              onAnalyze={(list) => run(list.map(fromAccount), true)}
               onAnalyzeLocal={(field) => run([fromLocal(field)])}
               onEdit={(field) => {
                 setAdding(true);

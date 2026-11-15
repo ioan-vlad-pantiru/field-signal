@@ -673,10 +673,44 @@ class SavedFieldInput(Contract):
     near: str | None = Field(default=None, max_length=120, description="nearest commune name")
 
 
+class AnalysisSummary(Contract):
+    """What a field's card in My fields says about its last analysis; worked out by the web app."""
+
+    kind: Literal["keep", "fewer", "same", "more"] = Field(
+        description="keep the current rotation, or switch: fewer, as many or more poor seasons"
+    )
+    best: list[Crop] = Field(min_length=2, max_length=4, description="the best rotation's crops")
+    best_poor: int = Field(ge=0, description="poor seasons of the best rotation")
+    current_poor: int = Field(ge=0, description="poor seasons of the current rotation")
+
+
+class SavedAnalysisInput(Contract):
+    """A field's latest analysis, kept with the field so it opens on any device without a rerun."""
+
+    request: FieldRequest = Field(description="the inputs the analysis was run with")
+    analysis: FieldAnalysis
+    summary: AnalysisSummary
+
+
+class SavedAnalysis(SavedAnalysisInput):
+    analyzed_at: str = Field(description="ISO 8601, UTC")
+
+
+class LastAnalysis(Contract):
+    """The saved analysis in brief, listed with the field (the full analysis is fetched apart)."""
+
+    analyzed_at: str = Field(description="ISO 8601, UTC")
+    summary: AnalysisSummary
+    current: bool = Field(
+        description="run with the field's present inputs; false once the field or crops changed"
+    )
+
+
 class SavedField(SavedFieldInput):
     id: str
     created_at: str = Field(description="ISO 8601, UTC")
     updated_at: str = Field(description="ISO 8601, UTC")
+    last_analysis: LastAnalysis | None = None
 
 
 # --------------------------------------------------------------------------- assistant
@@ -892,6 +926,8 @@ EXPORTED: dict[str, type[Contract]] = {
     "account_deletion": AccountDeletion,
     "saved_field_input": SavedFieldInput,
     "saved_field": SavedField,
+    "saved_analysis_input": SavedAnalysisInput,
+    "saved_analysis": SavedAnalysis,
     "assistant_request": AssistantRequest,
     "assistant_reply": AssistantReply,
     "parcel_collection": ParcelCollection,

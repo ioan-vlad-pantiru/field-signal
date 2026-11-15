@@ -1,5 +1,52 @@
 {
   "$defs": {
+    "AnalysisSummary": {
+      "additionalProperties": false,
+      "description": "What a field's card in My fields says about its last analysis; worked out by the web app.",
+      "properties": {
+        "kind": {
+          "description": "keep the current rotation, or switch to one with fewer/as many/more poor seasons",
+          "enum": [
+            "keep",
+            "fewer",
+            "same",
+            "more"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "best": {
+          "description": "the best rotation's crops",
+          "items": {
+            "$ref": "#/$defs/Crop"
+          },
+          "maxItems": 4,
+          "minItems": 2,
+          "title": "Best",
+          "type": "array"
+        },
+        "best_poor": {
+          "description": "poor seasons of the best rotation",
+          "minimum": 0,
+          "title": "Best Poor",
+          "type": "integer"
+        },
+        "current_poor": {
+          "description": "poor seasons of the current rotation",
+          "minimum": 0,
+          "title": "Current Poor",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "best",
+        "best_poor",
+        "current_poor"
+      ],
+      "title": "AnalysisSummary",
+      "type": "object"
+    },
     "Crop": {
       "enum": [
         "maize",
@@ -54,6 +101,32 @@
         "priorities"
       ],
       "title": "FieldRequest",
+      "type": "object"
+    },
+    "LastAnalysis": {
+      "additionalProperties": false,
+      "description": "The saved analysis in brief, listed with the field (the full analysis is fetched apart).",
+      "properties": {
+        "analyzed_at": {
+          "description": "ISO 8601, UTC",
+          "title": "Analyzed At",
+          "type": "string"
+        },
+        "summary": {
+          "$ref": "#/$defs/AnalysisSummary"
+        },
+        "current": {
+          "description": "run with the field's present inputs; false once the field or crops changed",
+          "title": "Current",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "analyzed_at",
+        "summary",
+        "current"
+      ],
+      "title": "LastAnalysis",
       "type": "object"
     },
     "LatLon": {
@@ -151,6 +224,17 @@
       "description": "ISO 8601, UTC",
       "title": "Updated At",
       "type": "string"
+    },
+    "last_analysis": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/LastAnalysis"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     }
   },
   "required": [

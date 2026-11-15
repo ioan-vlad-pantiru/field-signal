@@ -469,7 +469,67 @@ export interface SavedField {
    * ISO 8601, UTC
    */
   updated_at: string;
+  last_analysis?: LastAnalysis | null;
 }
+
+export interface LastAnalysis {
+  /**
+   * ISO 8601, UTC
+   */
+  analyzed_at: string;
+  summary: AnalysisSummary;
+  /**
+   * run with the field's present inputs; false once the field or crops changed
+   */
+  current: boolean;
+}
+/**
+ * What a field's card in My fields says about its last analysis; worked out by the web app.
+ */
+
+export interface AnalysisSummary {
+  /**
+   * keep the current rotation, or switch to one with fewer/as many/more poor seasons
+   */
+  kind: "keep" | "fewer" | "same" | "more";
+  /**
+   * the best rotation's crops
+   *
+   * @minItems 2
+   * @maxItems 4
+   */
+  best: [Crop, Crop] | [Crop, Crop, Crop] | [Crop, Crop, Crop, Crop];
+  /**
+   * poor seasons of the best rotation
+   */
+  best_poor: number;
+  /**
+   * poor seasons of the current rotation
+   */
+  current_poor: number;
+}
+
+export interface SavedAnalysisInput {
+  request: FieldRequest;
+  analysis: FieldAnalysis;
+  summary: AnalysisSummary;
+}
+/**
+ * the inputs the analysis was run with
+ */
+
+export interface SavedAnalysis {
+  request: FieldRequest;
+  analysis: FieldAnalysis;
+  summary: AnalysisSummary;
+  /**
+   * ISO 8601, UTC
+   */
+  analyzed_at: string;
+}
+/**
+ * the inputs the analysis was run with
+ */
 
 export interface AssistantRequest {
   /**

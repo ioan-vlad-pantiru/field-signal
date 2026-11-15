@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { MAX_REMEMBERED, parseVerdicts, withVerdict, type LastVerdict } from "./last-verdict.ts";
+import { fromSummary, MAX_REMEMBERED, parseVerdicts, withVerdict, type LastVerdict } from "./last-verdict.ts";
 
 const v = (at: string): LastVerdict => ({ kind: "fewer", best: ["maize", "wheat"], bestPoor: 2, currentPoor: 5, at });
 
@@ -27,5 +27,13 @@ describe("withVerdict", () => {
     for (let i = 0; i < MAX_REMEMBERED + 3; i++) all = withVerdict(all, `f${i}`, v(String(i)));
     assert.equal(Object.keys(all).length, MAX_REMEMBERED);
     assert.equal(Object.keys(all)[0], "f3");
+  });
+});
+
+describe("fromSummary", () => {
+  it("turns the account's saved brief into a card verdict dated by day", () => {
+    const card = fromSummary({ kind: "more", best: ["barley", "pea", "barley"], best_poor: 1, current_poor: 0 }, "2026-11-14T21:05:00.000Z");
+    assert.deepEqual(card, { kind: "more", best: ["barley", "pea", "barley"], bestPoor: 1, currentPoor: 0, at: "2026-11-14" });
+    assert.deepEqual(parseVerdicts(JSON.stringify({ id: card })), { id: card });
   });
 });

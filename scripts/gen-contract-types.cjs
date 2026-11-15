@@ -18,6 +18,8 @@ const NAMES = [
   "account_deletion",
   "saved_field_input",
   "saved_field",
+  "saved_analysis_input",
+  "saved_analysis",
   "assistant_request",
   "assistant_reply",
   "parcel_collection",

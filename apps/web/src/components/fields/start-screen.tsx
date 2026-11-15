@@ -6,7 +6,7 @@ import { createField, deleteField, fieldInput, updateField, useAccount, AccountE
 import type { Crop, SavedField as AccountField } from "@/lib/contracts";
 import { formatNumber } from "@/lib/format";
 import { fieldAreaHa } from "@/lib/geo";
-import { LOCAL_FIELD, type LastVerdict } from "@/lib/last-verdict";
+import { fromSummary, LOCAL_FIELD, type LastVerdict } from "@/lib/last-verdict";
 import { useAppLocale } from "@/lib/localized";
 import { useLastVerdicts } from "@/lib/use-last-verdicts";
 import { Link } from "@/i18n/navigation";
@@ -14,6 +14,7 @@ import { ActionBar } from "@/components/ui/action-bar";
 import { INPUT_CLASS } from "@/components/ui/input";
 import { Button, IconButton } from "@/components/ui/button";
 import { cardClass } from "@/components/ui/card";
+import { RotationWheel } from "@/components/ui/rotation-wheel";
 import { CheckIcon, EditIcon, MoreIcon, PlusIcon, SearchIcon, UploadIcon } from "@/components/ui/icons";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { Sheet } from "@/components/ui/sheet";
@@ -129,7 +130,8 @@ export function StartScreen({
           <li key={field.id} className="rise" style={{ "--i": Math.min(i + 1, 8) } as React.CSSProperties}>
             <FieldCard
               field={field}
-              verdict={verdicts[field.id]}
+              verdict={field.last_analysis ? fromSummary(field.last_analysis.summary, field.last_analysis.analyzed_at) : verdicts[field.id]}
+              changed={field.last_analysis?.current === false}
               selecting={selecting}
               selected={chosen.has(field.id)}
               onToggle={() => toggle(field.id)}
@@ -162,22 +164,26 @@ export function StartScreen({
   );
 }
 
-function VerdictLine({ verdict }: { verdict: LastVerdict | undefined }) {
+function VerdictLine({ verdict, changed = false }: { verdict: LastVerdict | undefined; changed?: boolean }) {
   const t = useTranslations("Fields");
   const crops = useTranslations("CropsShort");
+  if (changed) return <span className="text-ink-muted">{t("changed")}</span>;
   if (!verdict) return <span className="text-ink-muted">{t("notYet")}</span>;
+  const known = verdict.best.filter((c): c is Crop => crops.has(c));
+  const wheel = known.length >= 2 ? <RotationWheel sequence={known} size={32} /> : null;
   if (verdict.kind === "keep") {
     return (
-      <span className="inline-flex items-center gap-1 font-semibold text-status-good">
-        <CheckIcon size={16} />
+      <span className="flex items-center gap-2 font-semibold text-status-good">
+        {wheel ?? <CheckIcon size={16} />}
         {t("keep")}
       </span>
     );
   }
-  const names = verdict.best.map((c) => (crops.has(c) ? crops(c as Crop) : c)).join(" → ");
+  const names = known.map((c) => crops(c)).join(" → ");
   return (
-    <span className={verdict.kind === "fewer" ? "font-semibold text-field" : "text-ink"}>
-      {t(verdict.kind === "fewer" ? "better" : "other", { crops: names })}
+    <span className={`flex items-center gap-2 ${verdict.kind === "fewer" ? "font-semibold text-field" : "text-ink"}`}>
+      {wheel}
+      <span className="min-w-0">{t(verdict.kind === "fewer" ? "better" : "other", { crops: names })}</span>
     </span>
   );
 }
@@ -185,6 +191,7 @@ function VerdictLine({ verdict }: { verdict: LastVerdict | undefined }) {
 function FieldCard({
   field,
   verdict,
+  changed,
   selecting,
   selected,
   onToggle,
@@ -193,6 +200,8 @@ function FieldCard({
 }: {
   field: AccountField;
   verdict: LastVerdict | undefined;
+  /** The field or its crops changed after its saved analysis. */
+  changed: boolean;
   selecting: boolean;
   selected: boolean;
   onToggle: () => void;
@@ -241,10 +250,10 @@ function FieldCard({
       </div>
       <div className="flex items-center gap-3 border-t border-line pt-2">
         <span className="min-w-0 flex-1 text-sm leading-snug">
-          <VerdictLine verdict={verdict} />
+          <VerdictLine verdict={verdict} changed={changed} />
         </span>
         <Button variant="tonal" onClick={onAnalyze}>
-          {t("analyze")}
+          {field.last_analysis?.current ? t("open") : t("analyze")}
         </Button>
       </div>
     </div>

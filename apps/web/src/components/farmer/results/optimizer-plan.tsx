@@ -19,6 +19,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SourceChip } from "@/components/ui/source-chip";
 import { DemoBanner, EmptyState } from "@/components/ui/states";
+import { RotationWheel } from "@/components/ui/rotation-wheel";
 import { CropSequence } from "./crop-sequence";
 
 export type OptimizerState =
@@ -240,12 +241,15 @@ function PlanView({
         {/* One row per rotation; a field on a farm under 75 ha may have several rows (same field_id). */}
         <ul className="mt-2 flex flex-col divide-y divide-line">
           {byField(plan.allocations).map((a, i) => (
-            <li key={`${a.field_id}:${i}`} className="flex flex-col gap-1.5 py-2">
-              <p>
-                <span className="font-semibold">{fieldName(a.field_id)}</span>{" "}
-                <span className="tabular-nums text-ink-muted">· {t("ha", { ha: formatNumber(a.area_ha, locale, 1) })}</span>
-              </p>
-              <CropSequence sequence={a.sequence} />
+            <li key={`${a.field_id}:${i}`} className="flex items-center gap-3 py-2">
+              <RotationWheel sequence={a.sequence} size={44} />
+              <div className="flex min-w-0 flex-col gap-1.5">
+                <p>
+                  <span className="font-semibold">{fieldName(a.field_id)}</span>{" "}
+                  <span className="tabular-nums text-ink-muted">· {t("ha", { ha: formatNumber(a.area_ha, locale, 1) })}</span>
+                </p>
+                <CropSequence sequence={a.sequence} />
+              </div>
             </li>
           ))}
         </ul>

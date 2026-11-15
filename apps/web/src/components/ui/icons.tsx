@@ -288,3 +288,11 @@ export const LogoMark = ({ size = 28, ...props }: IconProps) => (
     <path d="M256 300c6-56 46-86 104-84-2 56-44 88-104 84z" fill="#f6f5ef" />
   </svg>
 );
+
+/** Run again: a circular arrow. */
+export const RefreshIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3" />
+    <path d="M19.5 4.5v4h-4" />
+  </Svg>
+);

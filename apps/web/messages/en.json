@@ -21,7 +21,10 @@
     "close": "Close",
     "sequence": "Crop order",
     "errorTitle": "We could not load the results",
-    "retry": "Try again"
+    "retry": "Try again",
+    "wheel": "{count}-year rotation: {crops}, then it repeats",
+    "wheelYear": "year {n}: {crop}",
+    "repeats": "Repeats every {count} years"
   },
   "Status": {
     "good": "Good",
@@ -268,14 +271,15 @@
     "verdict": {
       "label": "Best for this field",
       "keep": "<b>Keep your rotation.</b> It fits this field best.",
-      "fewer": "Switch to {name}: <b>{best, plural, one {# poor season} other {# poor seasons}}</b> instead of {current} since {start}.",
-      "fewerNone": "Switch to {name}: <b>no poor seasons</b> instead of {current} since {start}.",
-      "same": "<b>{name}</b> fits your priorities best, with as many poor seasons.",
-      "more": "<b>{name}</b> fits your priorities best, though it had {best, plural, one {# poor season} other {# poor seasons}} since {start} (yours had {current}).",
-      "risk": "Main risk now: {risk}. It hit {count, plural, one {# season} other {# seasons}} of your current rotation.",
-      "riskYield": "Main risk now: weak harvests. They hit {count, plural, one {# season} other {# seasons}} of your current rotation.",
+      "fewer": "Switch to <b>{name}</b>.",
+      "risk": "Main risk: {risk}",
+      "riskYield": "Main risk: weak harvests",
       "noRisk": "No single weather risk stands out.",
-      "data": "Data behind this"
+      "data": "Data behind this",
+      "best": "<b>{name}</b> fits your priorities best.",
+      "poor": "{count, plural, =0 {No poor seasons} one {# poor season} other {# poor seasons}} since {start}",
+      "yours": "Your rotation now: {count, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}}",
+      "riskHit": "It hit {count, plural, one {# season} other {# seasons}} of your current rotation."
     },
     "evidence": {
       "title": "Data behind this",
@@ -303,7 +307,9 @@
       "signIn": "Sign in",
       "signInWhy": "Sign in to keep this field and its answer on every device.",
       "failed": "Couldn't save. Try again."
-    }
+    },
+    "saved": "Saved results from {date}.",
+    "rerun": "Run again"
   },
   "Optimizer": {
     "meta": "{years}-year plan · {ha} ha · {count, plural, one {# past weather window} other {# past weather windows}}, seasons {first}–{last} · {model}",
@@ -1012,7 +1018,9 @@
     "delete": "Delete",
     "deleteConfirm": "Delete “{name}”? This can't be undone.",
     "cancel": "Cancel",
-    "failed": "That didn't work. Try again."
+    "failed": "That didn't work. Try again.",
+    "open": "See results",
+    "changed": "Changed since its last analysis"
   },
   "Glossary": {
     "et": {

@@ -10,6 +10,7 @@ import { ConfidenceBadge, StatusBadge } from "@/components/ui/badges";
 import { buttonClass } from "@/components/ui/button";
 import { Disclosure } from "@/components/ui/disclosure";
 import { ChartIcon, ShieldIcon } from "@/components/ui/icons";
+import { RotationLegend, RotationWheel } from "@/components/ui/rotation-wheel";
 import { Sheet } from "@/components/ui/sheet";
 import { useRotationName } from "./rotation-name";
 
@@ -59,6 +60,10 @@ function Body({ strategy, onData }: { strategy: Strategy; onData: () => void }) 
   return (
     <div className="flex flex-col pb-2">
       <div className="flex flex-col gap-3 pb-4">
+        <div className="flex items-center gap-5 py-1">
+          <RotationWheel sequence={strategy.sequence} size={112} animate />
+          <RotationLegend sequence={strategy.sequence} />
+        </div>
         <dl className="grid grid-cols-4 gap-2">
           {BREAKDOWN.map((key) => (
             <div key={key} className="rounded-[var(--radius-md)] bg-surface-sunken px-2 py-2 text-center">

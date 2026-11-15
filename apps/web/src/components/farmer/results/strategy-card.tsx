@@ -8,11 +8,12 @@ import { useAppLocale, useLocalized } from "@/lib/localized";
 import { firstSentence, poorSeasons } from "@/lib/results";
 import { useCountUp } from "@/lib/use-count-up";
 import { ConfidenceBadge } from "@/components/ui/badges";
+import { RotationWheel } from "@/components/ui/rotation-wheel";
 import { SeasonStrip } from "@/components/ui/season-strip";
 import { useRotationName } from "./rotation-name";
 
 /**
- * One rotation as a card: name, crops, fit score, a one-line why, its 25 seasons and its
+ * One rotation as a card: name, fit score, its wheel with a one-line why, its 25 seasons and its
  * confidence. Tapping it opens the full explanation.
  */
 export function StrategyCard({
@@ -77,7 +78,10 @@ export function StrategyCard({
         </span>
       )}
 
-      <span className="line-clamp-2 text-sm text-ink-muted">{firstSentence(l(strategy.explanation.why))}</span>
+      <span className="flex items-center gap-3">
+        <RotationWheel sequence={strategy.sequence} size={64} />
+        <span className="line-clamp-3 min-w-0 text-sm text-ink-muted">{firstSentence(l(strategy.explanation.why))}</span>
+      </span>
 
       <span className="mt-auto flex flex-col gap-1">
         <SeasonStrip

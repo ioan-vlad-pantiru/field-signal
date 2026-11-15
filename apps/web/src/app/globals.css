@@ -622,6 +622,19 @@ input[type="range"].slider::-moz-range-thumb {
   animation-delay: calc(var(--col, 0) * 24ms);
 }
 
+/* Rotation wheels: each year's segment settles in after the one before. */
+@keyframes wheel-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+.wheel-in {
+  transform-origin: 0 0;
+  animation: wheel-in var(--duration-base) var(--ease-settle) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+
 @media print {
   .no-print {
     display: none !important;
