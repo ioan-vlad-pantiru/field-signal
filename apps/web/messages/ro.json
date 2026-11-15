@@ -1,7 +1,7 @@
 {
   "App": {
     "name": "Field Signal",
-    "description": "Ajutor pentru alegerea rotației culturilor, pe baza datelor din satelit și a vremii din ultimii 25 de ani."
+    "description": "Ajutor la alegerea rotației, din 25 de ani de date meteo și din satelit."
   },
   "Nav": {
     "label": "Navigare principală",
@@ -14,12 +14,12 @@
   },
   "Banner": {
     "title": "Date demonstrative",
-    "text": "Cifrele de mai jos sunt inventate pentru demonstrație. Nu luați decizii pe baza lor.",
-    "offline": "Serverul nu răspunde, așa că afișăm datele incluse în aplicație."
+    "text": "Aceste cifre sunt doar pentru demonstrație. Nu luați decizii pe baza lor.",
+    "offline": "Serverul nu răspunde, așa că vedeți datele incluse în aplicație."
   },
   "Common": {
     "verifyAgronomist": "Verificați cu un agronom",
-    "close": "Închide",
+    "close": "Închideți",
     "sequence": "Ordinea culturilor",
     "errorTitle": "Nu am putut încărca rezultatele",
     "retry": "Încercați din nou"
@@ -59,7 +59,7 @@
   },
   "Field": {
     "mapLabel": "Hartă: atingeți parcelele câmpului",
-    "mapUnavailable": "Harta nu merge în acest browser. Încercați alt browser sau alt telefon.",
+    "mapUnavailable": "Harta nu merge în acest browser. Încercați alt browser sau alt dispozitiv.",
     "coordinates": "{lat}° N · {lon}° E",
     "pinned": "De pe harta cumpărătorului: {place}",
     "toFields": "Înapoi la câmpurile mele",
@@ -75,13 +75,13 @@
       "failed": "Locația nu e disponibilă. Căutați comuna."
     },
     "basemap": {
-      "satellite": "Arată satelitul",
-      "map": "Arată harta"
+      "satellite": "Afișați satelitul",
+      "map": "Afișați harta"
     },
     "area": "{ha} ha",
     "needField": "Atingeți parcelele câmpului",
     "continue": "Continuați",
-    "analyze": "Arată cele 25 de sezoane",
+    "analyze": "Vedeți cele 25 de sezoane",
     "assistantField": "Câmpul meu",
     "parcel": {
       "mapHint": "Atingeți parcelele dvs.",
@@ -92,7 +92,7 @@
       "use": "Folosiți ca un câmp",
       "joining": "Le unim…",
       "separate": "Fiecare separat",
-      "clear": "Goliți",
+      "clear": "Deselectați",
       "restart": "Alegeți din nou",
       "tooSmall": "Doar {ha} ha. Un câmp are nevoie de cel puțin {min} ha.",
       "tooBig": "{ha} ha depășește {max} ha. Alegeți mai puține.",
@@ -112,11 +112,11 @@
       "removeLabel": "Scoateți {field}",
       "addAnother": "Adăugați încă un câmp",
       "continueWith": "Continuați cu {count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}}",
-      "analyze": "Arată 25 de sezoane pentru {count} câmpuri"
+      "analyze": "Vedeți 25 de sezoane pentru {count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}}"
     },
     "setup": {
       "title": "Câmpul dvs.",
-      "titleMany": "{count} câmpuri",
+      "titleMany": "{count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}}",
       "rotation": "Culturile, an de an",
       "change": "Anul {n}: {crop}. Schimbați",
       "remove": "Scoateți {crop} din anul {n}",
@@ -135,7 +135,7 @@
       "level": {
         "less": "Puțin",
         "matters": "Contează",
-        "most": "Mult"
+        "most": "Cel mai mult"
       },
       "irrigated": "Câmpul este irigat"
     },
@@ -197,10 +197,10 @@
       "area": "{ha} ha",
       "rowBest": "Cea mai bună: „{name}” · {best, plural, =0 {niciun sezon slab} one {# sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} în loc de {current}",
       "rowKeep": "Rotația dumneavoastră este cea mai bună · {poor, plural, =0 {niciun sezon slab} one {# sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}",
-      "title": "{count} câmpuri",
+      "title": "{count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}}",
       "open": "Deschideți",
-      "summary": "Altă rotație a mers mai bine pe {count} din {total} câmpuri ({ha} ha).",
-      "summaryNone": "Rotațiile dvs. merg deja cât oricare din cele comparate ({ha} ha)."
+      "summary": "Altă rotație a mers mai bine pe {count} din {total, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}} ({ha} ha).",
+      "summaryNone": "Rotațiile dumneavoastră merg deja cât oricare dintre cele comparate ({ha} ha)."
     },
     "rotations": {
       "stripLabel": "{name}: {poor}",
@@ -240,10 +240,10 @@
     "plan": {
       "previous": "Sezonul anterior",
       "next": "Sezonul următor",
-      "pause": "Oprește",
+      "pause": "Pauză",
       "mapLabel": "Câmpul dumneavoastră în {year}: {crop}",
-      "mapUnavailable": "Harta nu poate fi afișată în acest browser. Sezoanele de mai jos conțin în continuare tot planul.",
-      "play": "Rulați sezoanele",
+      "mapUnavailable": "Harta nu poate fi afișată în acest browser. Sezoanele de mai jos conțin tot planul.",
+      "play": "Derulați sezoanele",
       "season": "Sezonul (anul recoltei)",
       "plot": "Parcela",
       "notFarmland": "Nu se cultivă: {ha} ha ({reasons})",
@@ -272,7 +272,7 @@
       "fewer": "Treceți la {name}: <b>{best, plural, one {# sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}</b> în loc de {current} din {start}.",
       "fewerNone": "Treceți la {name}: <b>niciun sezon slab</b> în loc de {current} din {start}.",
       "same": "<b>{name}</b> se potrivește cel mai bine priorităților dvs., cu tot atâtea sezoane slabe.",
-      "more": "<b>{name}</b> se potrivește cel mai bine priorităților, dar a avut {best} sezoane slabe, nu {current}, din {start}.",
+      "more": "<b>{name}</b> se potrivește cel mai bine priorităților, dar a avut {best, plural, one {# sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}, nu {current}, din {start}.",
       "risk": "Riscul principal: {risk}, în {count, plural, one {# sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}.",
       "noRisk": "Niciun risc meteo nu iese în evidență.",
       "data": "Datele din spate"
@@ -301,7 +301,7 @@
       "updated": "„{name}” actualizat",
       "toFields": "Mergeți la câmpurile mele",
       "signIn": "Intrați în cont",
-      "signInWhy": "Intrați în cont ca să păstrați câmpul și răspunsul pe orice telefon.",
+      "signInWhy": "Intrați în cont ca să păstrați câmpul și răspunsul pe orice dispozitiv.",
       "failed": "Nu s-a putut salva. Încercați din nou."
     }
   },
@@ -336,7 +336,7 @@
       "metByRotation": "Nu este necesar când cultura se schimbă în fiecare an (rotație, BCAM/GAEC 7)",
       "onlyWithEcoScheme": "Doar dacă aplicați eco-schema PD-04"
     },
-    "retry": "Încearcă din nou",
+    "retry": "Încercați din nou",
     "shares": "Ponderea culturilor în fermă, pe an de plan",
     "of100": "din 100",
     "vsCurrent": "{diff} față de acum",
@@ -392,7 +392,7 @@
     "closeDetail": "Închideți detaliile",
     "zone": {
       "area": "{ha} ha cultivate",
-      "availability": "Cantitate",
+      "availability": "Disponibilitate",
       "riskScore": "Scor de risc",
       "yieldAnomaly": "Recolta față de normal",
       "anomalyRange": "între {low}% și {high}%",
@@ -412,7 +412,7 @@
       "compareHere": "Comparați rotațiile aici"
     },
     "table": {
-      "caption": "Comunele pentru {crop}. Întâi cele cu riscul de aprovizionare cel mai mic, dacă nu sortați după altă coloană.",
+      "caption": "Comunele pentru {crop}, întâi cele cu riscul de aprovizionare cel mai mic.",
       "name": "Comuna",
       "area": "Suprafață",
       "risk": "Risc de aprovizionare",
@@ -444,7 +444,7 @@
     },
     "track": {
       "row": "Cât am nimerit",
-      "value": "{hits} din {total} ani",
+      "value": "{hits} din {total} sezoane estimate corect",
       "summary": "din {total} ani trecuți estimați corect",
       "cropSummary": "{hits} din {total} corect",
       "hit": "Estimat corect",
@@ -524,7 +524,7 @@
       "irregular": "Neregulată"
     },
     "loading": "Se încarcă câmpul 3D…",
-    "noWebgl": "3D nu funcționează pe acest dispozitiv, așa că vedeți același câmp de sus, în plan.",
+    "noWebgl": "3D nu funcționează pe acest dispozitiv, așa că vedeți același câmp de sus.",
     "year": "Anul {n}",
     "valueText": "{year}, {crop}: {phase}, {month}",
     "phase": {
@@ -537,7 +537,7 @@
       "stubble": "Miriște după recoltare"
     },
     "controls": {
-      "play": "Pornește",
+      "play": "Porniți",
       "pause": "Pauză",
       "restart": "De la început",
       "prev": "Pasul anterior",
@@ -580,7 +580,7 @@
     },
     "seasonRow": "semănat în {sow}, recoltat în {harvest}",
     "seasonRowCover": "semănat în {sow}, încorporat în sol în {harvest}",
-    "reducedMotion": "Ați cerut mai puțină mișcare, deci câmpul nu se animă. Folosiți Înapoi și Înainte ca să treceți prin fiecare sezon.",
+    "reducedMotion": "Ați cerut mai puțină mișcare, așa că câmpul stă pe loc. Treceți prin sezoane cu săgețile.",
     "aboutDemo": "Despre această ilustrație"
   },
   "Home": {
@@ -654,7 +654,7 @@
       "changePassword": "Schimbați",
       "passwordChanged": "Parola a fost schimbată. Celelalte dispozitive au fost deconectate.",
       "deleteTitle": "Ștergeți contul",
-      "deleteText": "Se șterg contul și {count, plural, =0 {} one {câmpul salvat} few {cele # câmpuri salvate} other {cele # de câmpuri salvate}}. Nu se poate anula.",
+      "deleteText": "{count, plural, =0 {Se șterge contul.} one {Se șterg contul și câmpul salvat.} few {Se șterg contul și cele # câmpuri salvate.} other {Se șterg contul și cele # de câmpuri salvate.}} Nu se poate anula.",
       "deletePassword": "Parola dumneavoastră",
       "deleteConfirm": "Ștergeți",
       "nameEmpty": "Adăugați-vă numele",
@@ -668,11 +668,11 @@
     "launcher": "Întrebați",
     "title": "Asistentul Field Signal",
     "model": "Răspunde din câmpurile dumneavoastră și datele NASA · Qwen",
-    "intro": "Întrebați orice despre Field Signal, rotația culturilor sau datele din spate. Ușor sau greu.",
-    "introFields": "Văd {count, plural, one {câmpul dumneavoastră} few {cele # câmpuri} other {cele # de câmpuri}} și pot căuta cele 25 de sezoane. Întrebați orice, ușor sau greu.",
+    "intro": "Întrebați despre rotații, despre date sau despre cum funcționează Field Signal.",
+    "introFields": "Văd {count, plural, one {câmpul dumneavoastră} few {cele # câmpuri} other {cele # de câmpuri}} și cele 25 de sezoane. Întrebați orice.",
     "placeholder": "Scrieți o întrebare…",
     "send": "Trimiteți",
-    "think": "Gândește temeinic",
+    "think": "Gândire mai atentă",
     "thinkHint": "mai încet, pentru întrebări grele",
     "newChat": "Conversație nouă",
     "close": "Închideți asistentul",
@@ -904,7 +904,7 @@
     "legendLabel": "Niveluri de stare",
     "share": "({share}%)",
     "more": "Vedeți încă {count, plural, one {# țară} few {# țări} other {# de țări}}",
-    "fewer": "Mai puține",
+    "fewer": "Vedeți mai puține",
     "pathLabel": "Direcția de producție",
     "inventoryTitle": "Stocul pe materii prime",
     "inventoryCaption": "Stocuri, consum și zile de acoperire, de la cea mai expusă materie primă",
@@ -926,7 +926,7 @@
     "legend": "Critic: sub {red} de zile. Atenție: sub {amber} de zile. Acoperit: {amber} de zile sau mai mult. Ținta: {target} de zile de acoperire.",
     "supplyTitle": "Furnizori pentru {name}",
     "shortfall": "Lipsesc {tonnes} până la {target} de zile de acoperire.",
-    "noShortfall": "Stocul acoperă deja {target} de zile. Nu trebuie cumpărat nimic acum.",
+    "noShortfall": "Stocul acoperă deja {target} de zile. Nu e nevoie să cumpărați nimic acum.",
     "noCandidates": "Nu avem prognoze de furnizori pentru această materie primă.",
     "allocationTitle": "Împărțire recomandată",
     "uncovered": "{tonnes} rămân neacoperite de furnizorii din prognoză. Căutați o materie primă alternativă sau un furnizor nou.",
@@ -976,7 +976,7 @@
     "title": "Mai mult",
     "account": "Cont",
     "signIn": "Intrați în cont",
-    "signInDetail": "Câmpurile dvs. pe orice telefon",
+    "signInDetail": "Câmpurile dumneavoastră, pe orice dispozitiv",
     "about": "Despre și date",
     "aboutDetail": "Cum funcționează, surse NASA, limite",
     "language": "Limba",
@@ -1005,7 +1005,7 @@
     "save": "Salvați",
     "forget": "Ștergeți de pe telefon",
     "signIn": "Intrați în cont",
-    "signInWhy": "ca să aveți câmpurile pe orice telefon.",
+    "signInWhy": "ca să aveți câmpurile pe orice dispozitiv.",
     "options": "Opțiuni pentru {name}",
     "edit": "Schimbați câmpul sau culturile",
     "rename": "Redenumiți",
@@ -1013,7 +1013,7 @@
     "saveName": "Salvați numele",
     "delete": "Ștergeți",
     "deleteConfirm": "Ștergeți „{name}”? Nu se poate anula.",
-    "cancel": "Renunțați",
+    "cancel": "Anulați",
     "failed": "Nu a mers. Încercați din nou."
   },
   "Glossary": {

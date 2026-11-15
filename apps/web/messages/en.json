@@ -1,7 +1,7 @@
 {
   "App": {
     "name": "Field Signal",
-    "description": "Help choosing a crop rotation, based on 25 years of satellite and weather data."
+    "description": "Crop rotation help from 25 years of satellite and weather data."
   },
   "Nav": {
     "label": "Main navigation",
@@ -14,8 +14,8 @@
   },
   "Banner": {
     "title": "Demo data",
-    "text": "The numbers below are made up for this demo. Do not make decisions based on them.",
-    "offline": "The server is not responding, so we are showing the data built into the app."
+    "text": "These numbers are for the demo only. Don't base decisions on them.",
+    "offline": "The server isn't responding, so you're seeing the data built into the app."
   },
   "Common": {
     "verifyAgronomist": "Verify with an agronomist",
@@ -116,7 +116,7 @@
     },
     "setup": {
       "title": "Your field",
-      "titleMany": "{count} fields",
+      "titleMany": "{count, plural, one {# field} other {# fields}}",
       "rotation": "Crops, year by year",
       "change": "Year {n}: {crop}. Change",
       "remove": "Remove {crop} from year {n}",
@@ -190,16 +190,16 @@
       "sparklineLabel": "{name} every year, {from}–{to}"
     },
     "overview": {
-      "mapLabel": "Map of the {count} analysed fields, coloured by result",
+      "mapLabel": "Map of the {count} analyzed fields, colored by result",
       "legendFewer": "Another rotation had fewer poor seasons",
       "legendOther": "Another rotation fits your priorities better",
       "legendKeep": "Your rotation is the best",
       "area": "{ha} ha",
       "rowBest": "Best: “{name}” · {best, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}} instead of {current}",
       "rowKeep": "Your rotation is the best · {poor, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}}",
-      "title": "{count} fields",
+      "title": "{count, plural, one {# field} other {# fields}}",
       "open": "Open",
-      "summary": "Another rotation did better on {count} of {total} fields ({ha} ha).",
+      "summary": "Another rotation did better on {count} of {total, plural, one {# field} other {# fields}} ({ha} ha).",
       "summaryNone": "Your rotations already do as well as any we compared ({ha} ha)."
     },
     "rotations": {
@@ -242,7 +242,7 @@
       "next": "Next season",
       "pause": "Pause",
       "mapLabel": "Your field in {year}: {crop}",
-      "mapUnavailable": "The map cannot be shown in this browser. The seasons below still hold the whole plan.",
+      "mapUnavailable": "This browser can't show the map. The seasons below hold the whole plan.",
       "play": "Play the seasons",
       "season": "Season (harvest year)",
       "plot": "Plot",
@@ -272,7 +272,7 @@
       "fewer": "Switch to {name}: <b>{best, plural, one {# poor season} other {# poor seasons}}</b> instead of {current} since {start}.",
       "fewerNone": "Switch to {name}: <b>no poor seasons</b> instead of {current} since {start}.",
       "same": "<b>{name}</b> fits your priorities best, with as many poor seasons.",
-      "more": "<b>{name}</b> fits your priorities best, but had {best} poor seasons, not {current}, since {start}.",
+      "more": "<b>{name}</b> fits your priorities best, but had {best, plural, one {# poor season} other {# poor seasons}}, not {current}, since {start}.",
       "risk": "Main risk: {risk}, in {count, plural, one {# weak season} other {# weak seasons}}.",
       "noRisk": "No single weather risk stands out.",
       "data": "Data behind this"
@@ -412,7 +412,7 @@
       "compareHere": "Compare rotations here"
     },
     "table": {
-      "caption": "Communes for {crop}. Lowest supply risk first unless you sort by another column.",
+      "caption": "Communes for {crop}, lowest supply risk first.",
       "name": "Commune",
       "area": "Area",
       "risk": "Supply risk",
@@ -440,7 +440,7 @@
       "flagDays": "{observed} risky days, versus {normal} usually",
       "confidence": "Confidence",
       "better": "better",
-      "note": "\"Better\" compares only these two, measure by measure. Every number is an estimate with a range."
+      "note": "“Better” compares only these two, measure by measure. Every number is an estimate with a range."
     },
     "track": {
       "row": "Track record",
@@ -491,7 +491,7 @@
       "hail": "Hail and other short, local weather events.",
       "pests": "Pests and diseases in your field.",
       "markets": "Prices and markets.",
-      "management": "Your field work, hybrids and fertiliser.",
+      "management": "Your field work, hybrids and fertilizer.",
       "scale": "Weather data describe an area tens of kilometres wide, not your exact plot."
     },
     "demo": {
@@ -524,7 +524,7 @@
       "irregular": "Irregular"
     },
     "loading": "Loading the 3D field…",
-    "noWebgl": "3D is not available on this device, so here is a flat view of the same field.",
+    "noWebgl": "3D isn't available on this device, so here is the same field seen from above.",
     "year": "Year {n}",
     "valueText": "{year}, {crop}: {phase}, {month}",
     "phase": {
@@ -580,14 +580,14 @@
     },
     "seasonRow": "sown in {sow}, harvested in {harvest}",
     "seasonRowCover": "sown in {sow}, worked into the soil in {harvest}",
-    "reducedMotion": "Reduced motion is on, so the field does not animate. Use Back and Next to step through each season.",
+    "reducedMotion": "Reduced motion is on, so the field stays still. Step through the seasons with the arrows.",
     "aboutDemo": "About this illustration"
   },
   "Home": {
     "title": "Which crops will do best on your field?",
     "lead": "We replay the last 25 seasons on your own land, so you can plan the next one.",
     "start": "Choose your field",
-    "imageAlt": "Satellite view of Transylvania in summer: farmland in the centre, ringed by the forested Carpathians.",
+    "imageAlt": "Satellite view of Transylvania in summer: farmland in the center, ringed by the forested Carpathians.",
     "imageCredit": "Transylvania, 2 July 2025. Image: NASA Worldview, MODIS on Terra.",
     "sceneNote": "Illustration: an example valley, not a real field.",
     "proof": {
@@ -654,7 +654,7 @@
       "changePassword": "Change",
       "passwordChanged": "Password changed. Other devices were signed out.",
       "deleteTitle": "Delete account",
-      "deleteText": "Deletes your account and {count, plural, =0 {} one {your saved field} other {all # saved fields}}. This cannot be undone.",
+      "deleteText": "{count, plural, =0 {Deletes your account.} one {Deletes your account and your saved field.} other {Deletes your account and all # saved fields.}} This can't be undone.",
       "deletePassword": "Your password",
       "deleteConfirm": "Delete",
       "nameEmpty": "Add your name",
@@ -668,8 +668,8 @@
     "launcher": "Ask",
     "title": "Field Signal assistant",
     "model": "Answers from your fields and NASA data · Qwen",
-    "intro": "Ask anything about Field Signal, crop rotations or the data behind it. Easy or hard.",
-    "introFields": "I can see your {count, plural, one {field} other {# fields}} and look up their 25 seasons. Ask anything, easy or hard.",
+    "intro": "Ask about crop rotations, the data, or how Field Signal works.",
+    "introFields": "I can see your {count, plural, one {field} other {# fields}} and their 25 seasons. Ask anything.",
     "placeholder": "Ask a question…",
     "send": "Send",
     "think": "Think it through",
@@ -926,7 +926,7 @@
     "legend": "Critical: under {red} days. Watch: under {amber} days. Covered: {amber} days or more. Target: {target} days of cover.",
     "supplyTitle": "Suppliers for {name}",
     "shortfall": "{tonnes} short of {target} days of cover.",
-    "noShortfall": "Stock already covers {target} days. Nothing needs buying now.",
+    "noShortfall": "Stock already covers {target} days. Nothing to buy now.",
     "noCandidates": "We have no supplier forecasts for this ingredient.",
     "allocationTitle": "Recommended split",
     "uncovered": "{tonnes} stay uncovered by the forecast suppliers. Look for an alternative ingredient or a new supplier.",
