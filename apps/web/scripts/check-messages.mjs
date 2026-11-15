@@ -35,6 +35,9 @@ export const DYNAMIC = [
   { prefix: "Farm.parcel.landUses." }, // APIA land-use codes, parcel-details.tsx
   { prefix: "Farm.parcel.flags." }, // soil flag ids, parcel-details.tsx
   { prefix: "Farm.stepName.", keys: ["1", "2", "3"] }, // step-count.tsx
+  // Region outlook: crop ids from the exported data, and the three legend tones (buyers/yield-outlook.tsx).
+  { prefix: "Outlook.crops." },
+  { prefix: "Outlook.legend.", keys: ["good", "watch", "bad"] },
   // Crop names from crop ids: tc(crop), tCrops(c) on results, simulator, farm, buyers, landing.
   { prefix: "Crops." },
   { prefix: "CropsShort." },

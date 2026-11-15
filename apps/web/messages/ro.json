@@ -454,6 +454,38 @@
       "sources": "Surse"
     }
   },
+  "Outlook": {
+    "title": "Perspectiva recoltelor pe următorii 2 ani",
+    "yearLabel": "Anul",
+    "cropLabel": "Cultura",
+    "loading": "Se încarcă perspectiva recoltelor",
+    "error": "Perspectiva recoltelor nu a putut fi încărcată.",
+    "mapLabel": "{crop} în {year}, pe regiuni",
+    "mapUnavailable": "Harta are nevoie de WebGL. Numerele fiecărei regiuni apar sub hartă după ce o alegeți.",
+    "legend": {
+      "good": "Până la 10% sub tipic",
+      "watch": "10–20% sub tipic",
+      "bad": "Peste 20% sub tipic"
+    },
+    "detail": {
+      "typical": "Recoltă tipică",
+      "range": "Interval după vreme: {low}–{high} t/ha",
+      "empty": "Alegeți o regiune pentru cifre.",
+      "none": "Fără estimare pentru această cultură.",
+      "lowest": "Recoltă minimă",
+      "spread": "Față de tipic"
+    },
+    "crops": {
+      "wheat": "Grâu",
+      "barley": "Orz",
+      "maize": "Porumb",
+      "rapeseed": "Rapiță",
+      "sunflower": "Floarea-soarelui",
+      "soybeans": "Soia",
+      "dry_pulses": "Leguminoase boabe"
+    },
+    "rapeseedNote": "Rapița variază puțin de la un an la altul."
+  },
   "About": {
     "title": "Despre și date",
     "lead": "25 de sezoane de vreme, sol și imagini din satelit, refăcute pe câmpul dumneavoastră.",
