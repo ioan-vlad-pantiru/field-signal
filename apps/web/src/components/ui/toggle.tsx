@@ -33,7 +33,7 @@ export function Toggle({
       />
       <span
         aria-hidden="true"
-        className="relative h-8 w-[3.25rem] shrink-0 rounded-pill bg-line transition-colors duration-[var(--duration-base)] peer-checked:bg-field peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--focus)] after:absolute after:left-1 after:top-1 after:size-6 after:rounded-full after:bg-surface after:shadow-1 after:transition-transform after:duration-[var(--duration-slow)] after:ease-[var(--ease-spring)] peer-checked:after:translate-x-5"
+        className="relative h-8 w-[3.25rem] shrink-0 rounded-pill bg-line transition-colors duration-[var(--duration-base)] peer-checked:bg-field peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--focus)] after:absolute after:left-1 after:top-1 after:size-6 after:rounded-full after:bg-surface after:shadow-1 after:transition-transform after:duration-[var(--duration-slow)] after:ease-[var(--ease-settle)] peer-checked:after:translate-x-5"
       />
     </label>
   );

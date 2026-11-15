@@ -6,7 +6,7 @@ import type { Crop, CropOutlook, RiskLevel, Zone } from "@/lib/contracts";
 import { formatNumber } from "@/lib/format";
 import { useAppLocale, useLocalized } from "@/lib/localized";
 import { useUnitLabel } from "@/lib/use-unit-label";
-import { ConfidenceBadge, RiskBadge } from "@/components/ui/badges";
+import { RiskBadge } from "@/components/ui/badges";
 import { CheckIcon } from "@/components/ui/icons";
 
 type Side = "a" | "b";
@@ -166,17 +166,6 @@ export function ZoneCompare({ zones, crop, ids }: { zones: Zone[]; crop: Crop; i
               </div>
             </li>
           ))}
-          <li className="border-t border-line">
-            <p className="px-3 pt-2 text-sm text-ink-muted">{t("confidence")}</p>
-            <div className="grid grid-cols-2">
-              <Cell zone={zoneA.name} wins={false} betterLabel={t("better")}>
-                {a ? <ConfidenceBadge confidence={a.confidence} /> : "—"}
-              </Cell>
-              <Cell zone={zoneB.name} wins={false} betterLabel={t("better")} divider>
-                {b ? <ConfidenceBadge confidence={b.confidence} /> : "—"}
-              </Cell>
-            </div>
-          </li>
         </ul>
       </div>
       <p className="text-sm text-ink-muted">{t("note")}</p>

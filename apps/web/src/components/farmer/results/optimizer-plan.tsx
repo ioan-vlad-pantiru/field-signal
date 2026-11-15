@@ -8,12 +8,11 @@ import { CROP_COLORS } from "@/lib/crops";
 import { formatNumber } from "@/lib/format";
 import { byField, ruleStatus } from "@/lib/results";
 import { useAppLocale, useLocalized } from "@/lib/localized";
-import { ConfidenceBadge, ToneBadge } from "@/components/ui/badges";
+import { ToneBadge } from "@/components/ui/badges";
 import { RangeBar } from "@/components/ui/charts";
 import { CropDot } from "@/components/ui/crop-chip";
 import { Disclosure } from "@/components/ui/disclosure";
 import { Button } from "@/components/ui/button";
-import { GridIcon } from "@/components/ui/icons";
 import { InfoTip } from "@/components/ui/info-tip";
 import { Sheet } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -37,7 +36,7 @@ function Pill({ children }: { children: ReactNode }) {
 
 /**
  * All submitted fields planned together (`POST /v1/farm/optimize/jobs`, a background job) as one
- * compact card; the full plan opens in its own sheet. Its own loading and error state: a slow solve
+ * short section; the full plan opens in its own sheet. Its own loading and error state: a slow solve
  * or a rejected request never touches the per-field results.
  */
 export function OptimizerCard({
@@ -59,14 +58,11 @@ export function OptimizerCard({
   const diff = best && current ? Math.round(best.score.total - current.score.total) : null;
 
   return (
-    <section aria-labelledby="farm-plan" className="rise print:hidden" style={{ "--i": 4 } as React.CSSProperties}>
-      <div className="flex flex-col gap-3 rounded-[var(--radius-xl)] bg-surface p-4 shadow-1">
+    <section aria-labelledby="farm-plan" className="rise mt-3 border-t border-line pt-6 print:hidden" style={{ "--i": 4 } as React.CSSProperties}>
+      <div className="flex flex-col gap-3">
         <div className="flex items-start gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-field-soft text-field-strong">
-            <GridIcon size={20} />
-          </span>
           <div className="min-w-0 flex-1">
-            <h2 id="farm-plan" className="font-semibold">
+            <h2 id="farm-plan" className="text-lg font-semibold">
               {t("title")}
             </h2>
             <p className="text-sm text-ink-muted" role="status" aria-live="polite">
@@ -99,7 +95,7 @@ export function OptimizerCard({
           </Button>
         ) : null}
         {state.status === "done" && best ? (
-          <Button variant="tonal" onClick={() => setOpen(true)} aria-haspopup="dialog">
+          <Button variant="tonal" onClick={() => setOpen(true)} aria-haspopup="dialog" className="sm:self-start">
             {t("open")}
           </Button>
         ) : null}
@@ -266,7 +262,6 @@ function PlanView({
                 </div>
               ))}
             </dl>
-            <ConfidenceBadge confidence={plan.confidence} />
           </div>
           <YearShares plan={plan} />
           <Rules rules={plan.rules} />

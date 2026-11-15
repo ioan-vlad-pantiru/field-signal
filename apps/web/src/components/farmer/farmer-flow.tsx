@@ -417,7 +417,6 @@ function Flow({
           key={formKey}
           initialFields={fields.map(toDraft)}
           initialPriorities={fields[0]?.request.priorities}
-          initialIrrigated={fields[0]?.request.irrigated ?? false}
           initialStep={resumed ?? 0}
           startPoint={pin?.point}
           initialPlace={pin?.place ?? null}

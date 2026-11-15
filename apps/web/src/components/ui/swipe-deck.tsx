@@ -79,7 +79,7 @@ export function SwipeDeck({
       <div
         ref={track}
         onKeyDown={onKeyDown}
-        className="snap-deck -mx-gutter flex gap-3 overflow-x-auto px-gutter pb-3 pt-1 lg:mx-0 lg:grid lg:grid-cols-3 lg:overflow-visible lg:px-0"
+        className="snap-deck -mx-gutter flex gap-6 overflow-x-auto px-gutter pb-3 pt-1 lg:mx-0 lg:grid lg:grid-cols-3 lg:overflow-visible lg:px-0"
       >
         {items.map((child, i) => (
           <div
@@ -105,7 +105,7 @@ export function SwipeDeck({
               className="-my-2.5 flex size-tap items-center justify-center"
             >
               <span
-                className={`h-1.5 rounded-pill transition-all duration-[var(--duration-slow)] ease-[var(--ease-spring)] ${
+                className={`h-1.5 rounded-pill transition-all duration-[var(--duration-slow)] ease-[var(--ease-settle)] ${
                   i === shown ? "w-5 bg-field" : "w-1.5 bg-line"
                 }`}
               />

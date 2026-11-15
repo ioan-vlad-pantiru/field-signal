@@ -85,7 +85,7 @@ export function SaveField({
         ) : account.status === "signed-out" ? (
           <div className="flex flex-col gap-3 pb-2">
             <p>{t("signInWhy")}</p>
-            <Link href="/more/account" className="press inline-flex min-h-tap items-center justify-center rounded-pill bg-field px-4 font-semibold text-on-field">
+            <Link href="/more/account" className="press inline-flex min-h-tap items-center justify-center rounded-[var(--radius-sm)] bg-field px-4 font-semibold text-on-field">
               {t("signIn")}
             </Link>
           </div>

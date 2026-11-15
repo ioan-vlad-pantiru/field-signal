@@ -852,8 +852,8 @@
       ],
       "explanation": {
         "why": {
-          "ro": "[MOCK] Current rotation: comparată pe 25 de sezoane cu datele NASA ale zonei.",
-          "en": "[MOCK] Current rotation: compared over 25 seasons of NASA data for this area."
+          "ro": "[MOCK] Current rotation: verificată pe 25 de ani cu datele NASA ale zonei.",
+          "en": "[MOCK] Current rotation: checked against 25 years of NASA data for this area."
         },
         "evidence": [
           {
@@ -1181,8 +1181,8 @@
       ],
       "explanation": {
         "why": {
-          "ro": "[MOCK] With peas: comparată pe 25 de sezoane cu datele NASA ale zonei.",
-          "en": "[MOCK] With peas: compared over 25 seasons of NASA data for this area."
+          "ro": "[MOCK] With peas: verificată pe 25 de ani cu datele NASA ale zonei.",
+          "en": "[MOCK] With peas: checked against 25 years of NASA data for this area."
         },
         "evidence": [
           {
@@ -1472,8 +1472,8 @@
       ],
       "explanation": {
         "why": {
-          "ro": "[MOCK] Drought-safe: comparată pe 25 de sezoane cu datele NASA ale zonei.",
-          "en": "[MOCK] Drought-safe: compared over 25 seasons of NASA data for this area."
+          "ro": "[MOCK] Drought-safe: verificată pe 25 de ani cu datele NASA ale zonei.",
+          "en": "[MOCK] Drought-safe: checked against 25 years of NASA data for this area."
         },
         "evidence": [
           {

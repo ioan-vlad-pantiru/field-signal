@@ -36,7 +36,7 @@ export function Warnings({ outlook }: { outlook: CropOutlook }) {
 
 const CONFIDENCE_DOTS: Record<Confidence, number> = { low: 1, medium: 2, high: 3 };
 
-/** The confidence badge's three dots without its frame, so it fits a table cell. */
+/** A forecast's confidence as three dots and a word, sized for a table cell. */
 export function ConfidenceMark({ confidence }: { confidence: Confidence }) {
   const t = useTranslations("Confidence");
   const filled = CONFIDENCE_DOTS[confidence];

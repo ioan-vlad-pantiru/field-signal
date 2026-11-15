@@ -47,7 +47,6 @@ function MapChip({ children, tone = "glass" }: { children: ReactNode; tone?: "gl
 export function FieldForm({
   initialFields,
   initialPriorities,
-  initialIrrigated = false,
   initialStep = 0,
   startPoint,
   initialPlace = null,
@@ -60,7 +59,6 @@ export function FieldForm({
   /** Fields to start with (resumed or opened from My fields); the last one is the one being edited. */
   initialFields: DraftField[];
   initialPriorities?: FieldRequest["priorities"];
-  initialIrrigated?: boolean;
   initialStep?: FormStep;
   /** Where the map opens when there is no earlier request (e.g. a point passed from the buyer map). */
   startPoint?: LatLon | null;
@@ -86,8 +84,9 @@ export function FieldForm({
   const [listOpen, setListOpen] = useState(false);
   const [point, setPoint] = useState<LatLon>(last?.point ?? startPoint ?? DEFAULT_POINT);
   const [rotation, setRotation] = useState<Crop[]>(last ? [...last.rotation] : START_ROTATION);
+  /** False while the rotation is still our guess: the farmer has to set his own before analysing. */
+  const [rotationSet, setRotationSet] = useState(last !== null);
   const [levels, setLevels] = useState<PriorityLevels>(() => levelsFrom(initialPriorities));
-  const [irrigated, setIrrigated] = useState(initialIrrigated);
   const [corners, setCorners] = useState<LatLon[]>(last?.boundary ?? []);
   /** Further pieces of the field: picked parcels that do not touch the main outline. */
   const [parts, setParts] = useState<LatLon[][]>(last?.parts ?? []);
@@ -276,7 +275,6 @@ export function FieldForm({
           location: f.point,
           current_rotation: f.rotation as FieldRequest["current_rotation"],
           priorities,
-          irrigated,
         },
         boundary: f.boundary,
         parts: f.parts,
@@ -480,7 +478,7 @@ export function FieldForm({
                 <PlusIcon size={20} />
               </IconButton>
             ) : null}
-            <Button type="submit" size="lg" className="flex-1">
+            <Button type="submit" size="lg" className="flex-1" disabled={boundary !== null && !rotationSet}>
               {total > 1 ? t("multi.analyze", { count: total }) : t("analyze")}
             </Button>
           </div>
@@ -490,18 +488,25 @@ export function FieldForm({
           {boundary ? (
             <section className="flex flex-col gap-2">
               <h3 className="text-sm font-semibold text-ink-muted">{t("setup.rotation")}</h3>
-              <RotationEditor rotation={rotation} onChange={setRotation} />
+              <p className="text-sm text-ink-muted">{t("setup.rotationHelp")}</p>
+              <RotationEditor
+                rotation={rotation}
+                onChange={(next) => {
+                  setRotation(next);
+                  setRotationSet(true);
+                }}
+              />
+              {!rotationSet ? (
+                <p className="flex items-start gap-2 rounded-[var(--radius-md)] bg-status-watch-tint p-2 text-sm">
+                  <AlertIcon size={16} className="mt-0.5 shrink-0 text-status-watch" />
+                  {t("setup.rotationNeeded")}
+                </p>
+              ) : null}
             </section>
           ) : null}
           <section className="flex flex-col gap-1">
             <h3 className="text-sm font-semibold text-ink-muted">{t("setup.priorities")}</h3>
-            <PrioritiesStep
-              levels={levels}
-              onLevels={setLevels}
-              irrigated={irrigated}
-              onIrrigated={setIrrigated}
-              fieldCount={Math.max(1, total)}
-            />
+            <PrioritiesStep levels={levels} onLevels={setLevels} />
           </section>
           {boundary ? (
             <SaveToAccount
@@ -518,7 +523,6 @@ export function FieldForm({
                   location: point,
                   current_rotation: rotation as FieldRequest["current_rotation"],
                   priorities: weightsFrom(levels),
-                  irrigated,
                 },
                 boundary,
                 near: place,

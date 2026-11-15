@@ -38,7 +38,6 @@
     "high": "Risc mare"
   },
   "Confidence": {
-    "label": "Încredere: {level}",
     "low": "scăzută",
     "medium": "medie",
     "high": "ridicată"
@@ -83,7 +82,7 @@
     "area": "{ha} ha",
     "needField": "Atingeți parcelele câmpului",
     "continue": "Continuați",
-    "analyze": "Vedeți 25 de sezoane",
+    "analyze": "Vezi rotațiile",
     "assistantField": "Câmpul meu",
     "parcel": {
       "mapHint": "Atingeți parcelele dvs.",
@@ -114,16 +113,14 @@
       "removeLabel": "Scoateți {field}",
       "addAnother": "Adăugați încă un câmp",
       "continueWith": "Continuați cu {count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}}",
-      "analyze": "Vedeți 25 de sezoane pentru {count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}}"
+      "analyze": "Vezi rotațiile pentru {count, plural, few {# câmpuri} other {# de câmpuri}}"
     },
     "setup": {
       "title": "Câmpul dvs.",
       "titleMany": "{count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}}",
-      "rotation": "Culturile, an de an",
-      "change": "Anul {n}: {crop}. Schimbați",
+      "rotation": "Rotația dvs. actuală",
       "remove": "Scoateți {crop} din anul {n}",
       "addYear": "Adăugați un an",
-      "pickerLabel": "Cultura din anul {n}",
       "presets": "Rotații obișnuite",
       "priorities": "Ce contează cel mai mult",
       "priority": {
@@ -139,7 +136,9 @@
         "matters": "Contează",
         "most": "Cel mai mult"
       },
-      "irrigated": "{count, plural, one {Câmpul este irigat} other {Câmpurile sunt irigate}}"
+      "rotationHelp": "Cultura pe care o semănați anul viitor, apoi fiecare an în parte — ultima este cultura de anul trecut.",
+      "rotationNeeded": "Setați-vă rotația: atingeți o cultură sau alegeți o rotație obișnuită mai jos.",
+      "yearN": "Anul {n}"
     },
     "save": {
       "nameLabel": "Nume (opțional)",
@@ -205,9 +204,6 @@
       "summaryNone": "Rotațiile dumneavoastră merg deja cât oricare dintre cele comparate ({ha} ha)."
     },
     "rotations": {
-      "stripLabel": "{name}: {poor}",
-      "poor": "{count, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} din {start}",
-      "poorShort": "{count, plural, =0 {niciun sezon slab} one {un singur sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}",
       "scoreLabel": "Potrivire cu prioritățile dumneavoastră",
       "best": "Cea mai potrivită",
       "current": "Rotația de acum",
@@ -217,9 +213,7 @@
         "soil_health": "Sănătatea solului",
         "low_risk": "Risc mic"
       },
-      "weakEvidence": "Dovezi slabe (înainte de 2015)",
       "title": "Rotații",
-      "legend": "Cum citiți sezoanele",
       "dot": "Rotația {n} din {total}",
       "of100": "din 100",
       "scoreLine": "Potrivire {score} din 100 · probabil {low}–{high}"
@@ -230,14 +224,14 @@
         "template": "Text generat după un șablon, din valorile calculate mai sus.",
         "llm": "Text scris de un model AI doar din valorile calculate mai sus."
       },
-      "why": "De ce",
       "evidence": "Dovezi",
-      "benefits": "Avantaje",
-      "gaps": "Ce nu știm",
       "risks": "Riscuri",
-      "seasons": "Sezon cu sezon",
       "data": "Datele din spate",
       "simulator": "Vedeți-o pe un câmp"
+    },
+    "history": {
+      "title": "{count, plural, one {Cum ar fi mers pământul dvs. anul trecut} few {Cum ar fi mers pământul dvs. în ultimii # ani} other {Cum ar fi mers pământul dvs. în ultimii # de ani}}",
+      "lead": "Dacă ați fi urmat rotația selectată, cu vremea din fiecare an."
     },
     "plan": {
       "previous": "Sezonul anterior",
@@ -256,7 +250,7 @@
     "copyFailed": "Nu s-a putut copia. Linkul e în bara de adrese.",
     "print": "Tipăriți o pagină",
     "meta": "{area} · {period}",
-    "loading": "Citim 25 de sezoane pentru acest câmp…",
+    "loading": "Citim 25 de ani de vreme pentru acest câmp…",
     "planTitle": "Câmpul dvs., sezon cu sezon",
     "verdict": {
       "label": "Cel mai potrivit pentru acest câmp",
@@ -434,7 +428,6 @@
       "anomaly": "{mid}% (între {low}% și {high}%)",
       "area": "Suprafață cultivată",
       "flagDays": "{observed} zile cu risc, față de {normal} de obicei",
-      "confidence": "Încredere",
       "better": "mai bine",
       "note": "„Mai bine” compară doar aceste două comune, indicator cu indicator. Toate cifrele sunt estimări cu interval."
     },
@@ -488,7 +481,7 @@
   },
   "About": {
     "title": "Despre și date",
-    "lead": "25 de sezoane de vreme, sol și imagini din satelit, refăcute pe câmpul dumneavoastră.",
+    "lead": "25 de ani de vreme, sol și date din satelit, refăcute pe câmpul dumneavoastră.",
     "how": {
       "title": "Cum funcționează",
       "text": "Alegeți câmpul și spuneți ce cultivați. Refacem pe el fiecare sezon din 2001 încoace, cu secete și primăveri ploioase cu tot, și comparăm rotația dumneavoastră cu alte două, dintre care cel puțin una cu mazăre. Cumpărătorii de furaje văd aceleași semnale, comună cu comună.",
@@ -499,12 +492,15 @@
       "nasa": "NASA",
       "other": "Altă sursă publică",
       "note": "Folosim date publice, gratuite, de la NASA și de la alte instituții. NASA nu este partener și nu susține acest instrument.",
-      "power": "Căldură, ploaie și umezeala aerului, zi de zi",
-      "modis": "Cât de verde și viguroasă este vegetația (NDVI)",
+      "power": "Temperatură, ploaie, umezeala aerului, umiditatea solului și radiația, zi de zi",
+      "modis": "Cât de verde și viguroasă este vegetația (NDVI), de la satelitul Terra",
+      "myd13": "Același indice de vegetație, de la satelitul Aqua, care umple golurile lăsate de nori",
       "smap": "Apa din sol, în zona rădăcinilor",
-      "soilgrids": "Carbon organic, pH și textura solului",
-      "eucropmap": "Ce culturi sunt unde, pentru suprafețe pe comună",
-      "ins": "Producții oficiale pe județ, pentru verificarea modelului"
+      "eucropmap": "Ce culturi sunt unde, și suprafețele pe comună",
+      "ins": "Suprafețe, producții și recolte oficiale pe județ, pentru verificarea modelului",
+      "soilgrids": "Carbon organic, pH și textura solului, 0–30 cm",
+      "gisco": "Limitele regiunilor și ale comunelor",
+      "et0": "Evapotranspirația de referință: cât de multă apă pierde zilnic un câmp verde bine udat"
     },
     "glossaryTitle": "Glosar",
     "ai": {
@@ -670,7 +666,7 @@
     "title": "Asistentul Field Signal",
     "model": "Răspunde din câmpurile dumneavoastră și datele NASA · Qwen",
     "intro": "Întrebați despre rotații, despre date sau despre cum funcționează Field Signal.",
-    "introFields": "Văd {count, plural, one {câmpul dumneavoastră} few {cele # câmpuri} other {cele # de câmpuri}} și cele 25 de sezoane. Întrebați orice.",
+    "introFields": "Văd {count, plural, one {câmpul dumneavoastră} few {cele # câmpuri} other {cele # de câmpuri}} și pot verifica cum s-au descurcat în ultimii 25 de ani. Întrebați orice, ușor sau greu.",
     "placeholder": "Scrieți o întrebare…",
     "send": "Trimiteți",
     "think": "Gândire mai atentă",
@@ -684,7 +680,7 @@
     "demo": "Folosește date demonstrative",
     "tools": {
       "list_fields": "câmpurile dumneavoastră",
-      "analyze_field": "cele 25 de sezoane ale unui câmp",
+      "analyze_field": "istoricul unui câmp",
       "compare_fields": "toate câmpurile comparate",
       "regional_supply": "oferta regională de furaje"
     },
@@ -887,34 +883,15 @@
     "download": "Descărcați lista APIA pentru {year}"
   },
   "Stocks": {
-    "title": "Stocuri și furnizori",
-    "meta": "Situația la {date}",
+    "title": "Stocuri",
     "report": "Raport",
     "reportLabel": "Raport în română (PDF)",
     "empty": "Nu există încă materii prime pe această linie.",
-    "about": "Despre date",
-    "headline": {
-      "label": "Cel mai mare deficit",
-      "daysLeft": "{days, plural, one {zi rămasă} few {zile rămase} other {de zile rămase}}",
-      "line": "lipsesc {tonnes} · cea mai bună sursă: {country}",
-      "short": "lipsesc {tonnes}",
-      "none": "Toate materiile prime acoperă {target} de zile."
-    },
-    "legendLabel": "Niveluri de stare",
-    "share": "({share}%)",
+    "share": "{share}%",
     "more": "Vedeți încă {count, plural, one {# țară} few {# țări} other {# de țări}}",
     "fewer": "Vedeți mai puține",
     "pathLabel": "Direcția de producție",
-    "inventoryTitle": "Stocul pe materii prime",
-    "inventoryCaption": "Stocuri, consum și zile de acoperire, de la cea mai expusă materie primă",
-    "col": {
-      "ingredient": "Materie primă",
-      "stock": "Stoc",
-      "use": "Consum lunar",
-      "incoming": "În drum",
-      "cover": "Acoperire",
-      "status": "Stare"
-    },
+    "inventoryTitle": "Materii prime",
     "tonnes": "{value} t",
     "days": "{days, plural, one {# zi} few {# zile} other {# de zile}}",
     "status": {
@@ -922,8 +899,6 @@
       "amber": "Atenție",
       "ok": "Acoperit"
     },
-    "legend": "Critic: sub {red} de zile. Atenție: sub {amber} de zile. Acoperit: {amber} de zile sau mai mult. Ținta: {target} de zile de acoperire.",
-    "supplyTitle": "Furnizori pentru {name}",
     "shortfall": "Lipsesc {tonnes} până la {target} de zile de acoperire.",
     "noShortfall": "Stocul acoperă deja {target} de zile. Nu e nevoie să cumpărați nimic acum.",
     "noCandidates": "Nu avem prognoze de furnizori pentru această materie primă.",
@@ -933,37 +908,40 @@
     "concentrated": "Peste jumătate din cantitate vine dintr-o singură țară: risc de concentrare.",
     "alternatives": "Alternative din aceeași grupă, cu stoc suficient: {list}.",
     "rankingTitle": "Clasamentul țărilor",
-    "rank": "Locul {rank}",
-    "score": "Scor",
-    "scoreOutOf": "{score} din 100",
+    "scoreOutOf": "<b>{score}</b> din 100",
     "scores": {
       "coverage": "Acoperire",
       "reliability": "Fiabilitate",
       "logistics": "Logistică",
       "friction": "Ușurință comercială"
     },
-    "scoreLine": "{label} · pondere {weight}%",
     "volume": "Volum disponibil estimat",
     "volumeText": "{low} – {mid} – {high} t (minim – median – maxim)",
     "volumeLabel": "Volum estimat între {low} și {high} t, valoare centrală {mid} t",
     "history": "Volum în anii de comercializare {first}–{last} (linia punctată: media)",
     "historyLabel": "Volum pe ani: {list}",
-    "route": "Rută: {route} · aprox. {days}",
+    "route": "{route} · aprox. {days}",
     "pros": "Avantaje",
     "cons": "Dezavantaje",
-    "context": "Situația la {date} · anul de comercializare {year} · fereastra de aprovizionare {window}",
-    "methodTitle": "Cum calculăm",
-    "method": {
-      "cover": "Zile de acoperire = (stoc + cantitatea în drum) ÷ consumul zilnic, unde consumul zilnic = consumul lunar ÷ 30. Sub {red} de zile starea este critică, sub {amber} de zile cere atenție.",
-      "shortfall": "Deficitul = cantitatea care lipsește până la {target} de zile de acoperire.",
-      "score": "Scorul unei țări (0–100) = {coverage}% acoperire + {reliability}% fiabilitate + {logistics}% logistică + {friction}% ușurință comercială.",
-      "coverage": "Acoperire: cât din deficit acoperă singur volumul median estimat al țării.",
-      "reliability": "Fiabilitate: jumătate din încrederea prognozei, jumătate din cât de îngust este intervalul de volum.",
-      "logistics": "Logistică: 100 de puncte la 2 zile de livrare, apoi scade liniar până la 0 la 50 de zile.",
-      "friction": "Ușurință comercială: pornește de la 100. Scădem 30 în afara UE, 30 pentru risc de război, 10 pentru ecartament feroviar de 1520 mm, 15 pentru restricții la export în 2022 și 20 pentru șrot de soia din țări unde soia modificată genetic este frecventă.",
-      "allocation": "Împărțirea: luăm cel mult 4 țări, în ordinea scorului. La prima trecere fiecare dă cel mult volumul ei minim estimat și cel mult jumătate din deficit; la a doua trecere completăm până la volumul minim, fără plafon.",
-      "assumptions": "Ipoteze: stocurile, consumul și volumele furnizorilor sunt inventate. Regulile UE și Schengen, ecartamentul și restricțiile la export din 2022 sunt fapte publice. Timpii de livrare sunt estimări. Prețurile nu intră în calcul."
-    }
+    "hero": {
+      "label": "Se epuizează cel mai repede",
+      "daysLeft": "{days, plural, one {zi rămasă} few {zile rămase} other {de zile rămase}}",
+      "split": "Împărțirea recomandată: {list}.",
+      "gap": "Prima livrare ajunge <b>la {days} după epuizarea stocului</b>.",
+      "bridge": "Acoperiți golul cu o achiziție rapidă din {list}: livrare în cel mult {days}.",
+      "cta": "Vedeți opțiunile de cumpărare",
+      "none": "Toate materiile prime acoperă {target} de zile."
+    },
+    "runway": {
+      "today": "Azi",
+      "stockOut": "Stoc epuizat",
+      "firstDelivery": "Prima livrare",
+      "target": "Ținta de {target} de zile · {date}"
+    },
+    "rowMeta": "{stock} în stoc · {use} pe lună",
+    "listCaption": "Zile de acoperire · linia marchează {target}",
+    "details": "Detalii",
+    "uncoveredShort": "Neacoperit de niciun furnizor"
   },
   "Buyers": {
     "title": "Cumpărători",

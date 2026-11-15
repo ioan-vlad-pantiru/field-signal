@@ -4,29 +4,22 @@ import { useTranslations } from "next-intl";
 import type { Strategy } from "@/lib/contracts";
 import { CROP_COLORS } from "@/lib/crops";
 import { formatNumber } from "@/lib/format";
-import { useAppLocale, useLocalized } from "@/lib/localized";
-import { firstSentence, poorSeasons } from "@/lib/results";
+import { useAppLocale } from "@/lib/localized";
 import { useCountUp } from "@/lib/use-count-up";
-import { ConfidenceBadge } from "@/components/ui/badges";
 import { RotationWheel } from "@/components/ui/rotation-wheel";
-import { SeasonStrip } from "@/components/ui/season-strip";
 import { useRotationName } from "./rotation-name";
 
 /**
- * One rotation as a card: name, fit score, its wheel with a one-line why, its 25 seasons and its
- * confidence. Tapping it opens the full explanation.
+ * One rotation as a card: name, fit score and its wheel. Tapping it opens the full explanation,
+ * season by season.
  */
 export function StrategyCard({
   strategy,
-  years,
-  start,
   isBest,
   selected,
   onOpen,
 }: {
   strategy: Strategy;
-  years: number[];
-  start: number;
   isBest: boolean;
   selected: boolean;
   onOpen: () => void;
@@ -34,9 +27,7 @@ export function StrategyCard({
   const t = useTranslations("Results.rotations");
   const short = useTranslations("CropsShort");
   const locale = useAppLocale();
-  const l = useLocalized();
   const name = useRotationName()(strategy);
-  const poor = poorSeasons(strategy);
   const score = useCountUp(strategy.score.total);
   const tag = isBest ? t("best") : null;
   // API names spell out the crops; the crop line only adds something under "Your rotation now".
@@ -48,14 +39,14 @@ export function StrategyCard({
       onClick={onOpen}
       aria-haspopup="dialog"
       aria-current={selected ? "true" : undefined}
-      className={`press flex h-full w-full flex-col gap-3 rounded-[var(--radius-xl)] bg-surface p-4 text-left shadow-1 hover:shadow-2 ${
-        selected ? "ring-2 ring-field" : ""
+      className={`press flex h-full w-full flex-col gap-3 pt-4 text-left ${
+        selected ? "shadow-[inset_0_2px_0_var(--field)]" : "shadow-[inset_0_1px_0_var(--line)] hover:shadow-[inset_0_2px_0_var(--line)]"
       }`}
     >
       <span className="flex items-start justify-between gap-3">
         <span className="min-w-0">
           {tag ? (
-            <span className="mb-1 inline-flex rounded-pill bg-field-soft px-2.5 py-0.5 text-xs font-semibold text-field-strong">{tag}</span>
+            <span className="mb-0.5 block text-xs font-semibold text-field">{tag}</span>
           ) : null}
           <span className="block text-lg font-semibold leading-snug">{name}</span>
         </span>
@@ -78,30 +69,7 @@ export function StrategyCard({
         </span>
       )}
 
-      <span className="flex items-center gap-3">
-        <RotationWheel sequence={strategy.sequence} size={64} />
-        <span className="line-clamp-3 min-w-0 text-sm text-ink-muted">{firstSentence(l(strategy.explanation.why))}</span>
-      </span>
-
-      <span className="mt-auto flex flex-col gap-1">
-        <SeasonStrip
-          outcomes={strategy.replay}
-          years={years}
-          label={t("stripLabel", { name, poor: t("poor", { count: poor, start }) })}
-          size="sm"
-          animate
-          className="w-full"
-        />
-        <span aria-hidden="true" className="flex justify-between text-xs tabular-nums text-ink-muted">
-          <span>{years[0]}</span>
-          <span>{years.at(-1)}</span>
-        </span>
-      </span>
-
-      <span className="flex flex-wrap items-center justify-between gap-2">
-        <span className={`text-sm font-semibold ${poor === 0 ? "text-status-good" : ""}`}>{t("poorShort", { count: poor })}</span>
-        <ConfidenceBadge confidence={strategy.confidence} />
-      </span>
+      <RotationWheel sequence={strategy.sequence} size={64} />
     </button>
   );
 }

@@ -1,18 +1,5 @@
-import type { Confidence } from "@/lib/contracts";
-import { AMBER_DAYS, CONF_SCORE, COUNTRIES, fmtDays, MAX_LINES, RED_DAYS, TARGET_DAYS, WEIGHTS, type CountryCode } from "@/lib/stocks";
-import {
-  Bullets,
-  CONFIDENCE_RO,
-  ReportSection,
-  Subhead,
-  Table,
-  dateRo,
-  num,
-  pct,
-  tonnes,
-  yesNo,
-  type ReportData,
-} from "./stocks-report-ui";
+import { COUNTRIES, fmtDays, type CountryCode } from "@/lib/stocks";
+import { ReportSection, Table, num, pct, tonnes, yesNo, type ReportData } from "./stocks-report-ui";
 
 /** Every country that appears in a recommended split, fastest first. */
 function splitCountries(data: ReportData): CountryCode[] {
@@ -137,92 +124,6 @@ export function RisksSection({ data }: { data: ReportData }) {
           ))}
         </ol>
       )}
-    </ReportSection>
-  );
-}
-
-/** Average half-width of the forecast interval per confidence level, as a share of the mid value. */
-function intervalWidths(data: ReportData): { c: Confidence; pct: number }[] {
-  return (["high", "medium", "low"] as const).flatMap((c) => {
-    const fs = data.s.forecasts.filter((f) => f.confidence === c);
-    if (fs.length === 0) return [];
-    const sum = fs.reduce((acc, f) => acc + (f.volume_t.high - f.volume_t.low) / (2 * f.volume_t.mid), 0);
-    return [{ c, pct: (100 * sum) / fs.length }];
-  });
-}
-
-/** 7. Data, assumptions, confidence and the role of AI. */
-export function AnnexSection({ data }: { data: ReportData }) {
-  const years = data.s.forecasts.flatMap((f) => f.history.map((h) => h.year));
-  const my = (y: number) => `${y}/${String(y + 1).slice(2)}`;
-  const history = years.length > 0 ? `${my(Math.min(...years))} – ${my(Math.max(...years))}` : "—";
-  const w = (v: number) => pct(v * 100);
-  return (
-    <ReportSection newPage n={7} title="Anexă — date, ipoteze, încredere, rolul AI">
-      <Subhead>Starea datelor</Subhead>
-      <Bullets
-        items={[
-          "Stocurile, consumul, livrările pe drum și prognozele furnizorilor sunt ilustrative (date demonstrative), construite după modelul secetei din vara lui 2024.",
-          "Datele despre țări (UE, Schengen, monedă, rută, ecartament, Dunăre, restricții din 2022, soia MG, note) sunt fapte publice, valabile în noiembrie 2026.",
-          `Data de referință: ${dateRo(data.s.as_of)}. An de comercializare: ${data.s.marketing_year}. Fereastra analizată: ${data.s.window.ro}. Istoricul prognozelor: anii de comercializare ${history}.`,
-        ]}
-      />
-      <Subhead>Praguri</Subhead>
-      <p>
-        Critic: sub {RED_DAYS} de zile de acoperire. Atenție: sub {AMBER_DAYS} de zile. Ținta de aprovizionare: {TARGET_DAYS}{" "}
-        de zile. Cel mult {MAX_LINES} țări furnizoare pe ingredient.
-      </p>
-      <Subhead>Ponderi și formule</Subhead>
-      <div className="break-inside-avoid rounded-sm border border-neutral-300 px-3 py-2 font-mono text-[8.5pt] leading-relaxed">
-        <p>consum zilnic = consum lunar / 30</p>
-        <p>zile de acoperire = (stoc + pe drum) / consum zilnic</p>
-        <p>deficit = max(0, {TARGET_DAYS} × consum zilnic − stoc − pe drum)</p>
-        <p>acoperire = min(1, volum mediu prognozat / deficit) × 100</p>
-        <p>fiabilitate = 50 % × scorul încrederii (ridicată {CONF_SCORE.high}, medie {CONF_SCORE.medium}, scăzută {CONF_SCORE.low}) + 50 % × îngustimea intervalului</p>
-        <p>logistică = 100 × (1 − (zile de livrare − 2) / 48), limitat la 0–100</p>
-        <p>fricțiune = 100 − 30 în afara UE − 30 risc de război − 10 ecartament 1520 mm − 15 restricții 2022 − 20 soia MG</p>
-        <p>
-          scor = {w(WEIGHTS.coverage)} acoperire + {w(WEIGHTS.reliability)} fiabilitate + {w(WEIGHTS.logistics)} logistică +{" "}
-          {w(WEIGHTS.friction)} fricțiune
-        </p>
-        <p>
-          alocare: primii {MAX_LINES} candidați; întâi cel mult jumătate din deficit fiecare, apoi completare până la capătul de
-          jos al prognozei; restul rămâne neacoperit
-        </p>
-      </div>
-      <Subhead>Ce înseamnă încrederea</Subhead>
-      <p>
-        Încrederea descrie lățimea intervalului de prognoză. În datele acestui raport, jumătatea intervalului este în medie:{" "}
-        {intervalWidths(data)
-          .map((x) => `${CONFIDENCE_RO[x.c]} ±${pct(x.pct)}`)
-          .join(", ")}{" "}
-        din valoarea mijlocie. Alocarea folosește capătul de jos al intervalului.
-      </p>
-      <Subhead>Ipoteze</Subhead>
-      <Bullets
-        items={[
-          "Timpii de livrare sunt estimări tipice pe ruta indicată, nu oferte ferme.",
-          "Faptele despre țări sunt valabile în noiembrie 2026 și trebuie verificate înainte de contractare.",
-          "O lună are 30 de zile; consumul rămâne constant în fereastra analizată.",
-          "Prețurile nu sunt luate în calcul.",
-        ]}
-      />
-      <Subhead>Rolul AI și limitele lui</Subhead>
-      <Bullets
-        items={[
-          "Un model lingvistic (Qwen) redactează doar paragraful din Rezumatul executiv, pornind de la cifrele deja calculate de reguli. Nu calculează nimic și nu este sursa niciunei cifre.",
-          "Un filtru automat respinge textul dacă apare un număr (mai mare de 10) care nu există în cifrele calculate; atunci raportul păstrează rezumatul generat din reguli.",
-          "Modelul poate reda greșit o nuanță (ordinea priorităților, tonul) sau poate omite un risc; rezumatul se citește împreună cu tabelele.",
-        ]}
-      />
-      <Subhead>Pași următori</Subhead>
-      <Bullets
-        items={[
-          "Înlocuirea stocurilor ilustrative cu un export din ERP-ul Transavia (stoc, consum, livrări pe drum).",
-          "Prognoze de recoltă pentru regiunile furnizorilor din indicatori NASA — MODIS NDVI (vegetație), SMAP (umiditatea solului), IMERG (precipitații) — în locul prognozelor ilustrative.",
-          "Timpi de livrare și prețuri din oferte reale ale furnizorilor.",
-        ]}
-      />
     </ReportSection>
   );
 }

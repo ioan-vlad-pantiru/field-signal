@@ -7,7 +7,7 @@ import type { CropOutlook, LatLon, RiskLevel } from "@/lib/contracts";
 import { formatNumber } from "@/lib/format";
 import { useAppLocale, useLocalized } from "@/lib/localized";
 import { useUnitLabel } from "@/lib/use-unit-label";
-import { AgronomistBadge, ConfidenceBadge, RiskBadge } from "@/components/ui/badges";
+import { AgronomistBadge, RiskBadge } from "@/components/ui/badges";
 import { buttonClass } from "@/components/ui/button";
 import { FieldIcon } from "@/components/ui/icons";
 
@@ -151,10 +151,7 @@ export function ZoneDetails({
         ))}
       </Light>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <ConfidenceBadge confidence={outlook.confidence} />
-        <span className="text-sm text-ink-muted">{t("model", { version: outlook.model_version })}</span>
-      </div>
+      <p className="text-sm text-ink-muted">{t("model", { version: outlook.model_version })}</p>
     </div>
   );
 }

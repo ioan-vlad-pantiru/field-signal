@@ -1,12 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import type { SeasonOutcome, Strategy } from "@/lib/contracts";
+import type { Strategy } from "@/lib/contracts";
 import { formatNumber, formatQuantity } from "@/lib/format";
 import { useAppLocale, useLocalized } from "@/lib/localized";
 import { useUnitLabel } from "@/lib/use-unit-label";
 import { Link } from "@/i18n/navigation";
-import { ConfidenceBadge, StatusBadge } from "@/components/ui/badges";
 import { buttonClass } from "@/components/ui/button";
 import { Disclosure } from "@/components/ui/disclosure";
 import { ChartIcon, ShieldIcon } from "@/components/ui/icons";
@@ -17,9 +16,9 @@ import { useRotationName } from "./rotation-name";
 const BREAKDOWN = ["yield_stability", "water", "soil_health", "low_risk"] as const;
 
 /**
- * Everything about one rotation, one tap from its card: the score and its parts, then Why,
- * Evidence, Benefits, Gaps, Risks (each with its confidence and "check with an agronomist") and
- * every season, as collapsible sections. Links to the simulator and to the data behind it.
+ * Everything about one rotation, one tap from its card: the score and its parts, then Evidence and
+ * Risks (each with "check with an agronomist") as collapsible sections. Its seasons are on the page,
+ * as a timeline. Links to the simulator and to the data behind it.
  */
 export function StrategySheet({
   strategy,
@@ -72,12 +71,7 @@ function Body({ strategy, onData }: { strategy: Strategy; onData: () => void }) 
             </div>
           ))}
         </dl>
-        <ConfidenceBadge confidence={strategy.confidence} />
       </div>
-
-      <Disclosure summary={t("why")} defaultOpen>
-        <p>{l(explanation.why)}</p>
-      </Disclosure>
 
       {explanation.evidence.length > 0 ? (
         <Disclosure summary={t("evidence")}>
@@ -97,45 +91,21 @@ function Body({ strategy, onData }: { strategy: Strategy; onData: () => void }) 
         </Disclosure>
       ) : null}
 
-      <Disclosure summary={t("benefits")}>
-        <ul className="list-disc space-y-1 pl-5">
-          {explanation.benefits.map((b, i) => (
-            <li key={i}>{l(b)}</li>
-          ))}
-        </ul>
-      </Disclosure>
-
-      <Disclosure summary={t("gaps")}>
-        <ul className="list-disc space-y-1 pl-5">
-          {explanation.gaps.map((g, i) => (
-            <li key={i}>{l(g)}</li>
-          ))}
-        </ul>
-      </Disclosure>
-
       {explanation.risks.length > 0 ? (
         <Disclosure summary={`${t("risks")} · ${explanation.risks.length}`}>
           <ul className="flex flex-col gap-3">
             {explanation.risks.map((r, i) => (
               <li key={i} className="flex flex-col gap-2 rounded-[var(--radius-md)] bg-surface-sunken p-3">
                 <span>{l(r.text)}</span>
-                {/* A risk carries its rotation's confidence: the API rates one confidence per rotation. */}
-                <span className="flex flex-wrap items-center gap-2">
-                  <ConfidenceBadge confidence={strategy.confidence} />
-                  <span className="inline-flex items-center gap-1 text-sm font-semibold">
-                    <ShieldIcon size={14} />
-                    {common("verifyAgronomist")}
-                  </span>
+                <span className="inline-flex items-center gap-1 text-sm font-semibold">
+                  <ShieldIcon size={14} />
+                  {common("verifyAgronomist")}
                 </span>
               </li>
             ))}
           </ul>
         </Disclosure>
       ) : null}
-
-      <Disclosure summary={t("seasons")}>
-        <SeasonList outcomes={strategy.replay} />
-      </Disclosure>
 
       <div className="flex flex-wrap gap-2 border-t border-line pt-4">
         <button type="button" onClick={onData} className={buttonClass("secondary")}>
@@ -151,29 +121,5 @@ function Body({ strategy, onData }: { strategy: Strategy; onData: () => void }) 
       </div>
       <p className="mt-3 text-xs text-ink-muted">{t(`generatedBy.${explanation.generated_by}`)}</p>
     </div>
-  );
-}
-
-/** Every season of one rotation, newest first: crop, outcome and the main reason. */
-function SeasonList({ outcomes }: { outcomes: SeasonOutcome[] }) {
-  const tr = useTranslations("Results.rotations");
-  const tc = useTranslations("CropsShort");
-  const l = useLocalized();
-  return (
-    <ol className="flex flex-col divide-y divide-line">
-      {[...outcomes].reverse().map((o) => (
-        <li key={o.year} className="flex items-start gap-3 py-2">
-          <span className="w-12 shrink-0 pt-1 font-semibold tabular-nums">{o.year}</span>
-          <span className="min-w-0 flex-1">
-            <span className="flex flex-wrap items-center gap-2">
-              <StatusBadge status={o.status} />
-              <span className="text-sm text-ink-muted">{tc(o.crop)}</span>
-              {o.evidence_level === "low" ? <span className="text-xs text-ink-muted">{tr("weakEvidence")}</span> : null}
-            </span>
-            {o.status !== "good" && o.reasons[0] ? <span className="mt-1 block text-sm">{l(o.reasons[0].label)}</span> : null}
-          </span>
-        </li>
-      ))}
-    </ol>
   );
 }

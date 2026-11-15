@@ -45,7 +45,7 @@ export function BuyersView() {
       {view === "region" ? (
         <YieldOutlook crop={crop} onCrop={setCrop} year={year} onYear={setYear} />
       ) : (
-        <StocksView key={path} initialPath={path} onPath={(next) => update({ path: next })} />
+        <StocksView path={path} onPath={(next) => update({ path: next })} />
       )}
     </div>
   );

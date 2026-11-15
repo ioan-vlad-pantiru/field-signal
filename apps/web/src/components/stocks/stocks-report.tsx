@@ -7,7 +7,7 @@ import { getStocksBrief } from "@/lib/api";
 import { AMBER_DAYS, RED_DAYS, templateSummary, type PathId } from "@/lib/stocks";
 import { Button, buttonClass } from "@/components/ui/button";
 import { ArrowLeftIcon } from "@/components/ui/icons";
-import { AnnexSection, LogisticsSection, RisksSection } from "./stocks-report-appendix";
+import { LogisticsSection, RisksSection } from "./stocks-report-appendix";
 import { CandidatesSection, ProblemSection, RecommendationsSection } from "./stocks-report-sections";
 import { ReportSection, buildReport, dateRo, num, tonnes } from "./stocks-report-ui";
 
@@ -129,7 +129,6 @@ export function StocksReport() {
         <CandidatesSection data={data} />
         <LogisticsSection data={data} />
         <RisksSection data={data} />
-        <AnnexSection data={data} />
 
         <p className="mt-10 border-t border-neutral-300 pt-2 text-[8pt] text-neutral-500 print:hidden">{FOOTER}</p>
       </article>
