@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useTranslations } from "next-intl";
 import type { Parcel } from "@/lib/contracts";
 import type { FieldGroup, SoilFlag } from "@/lib/farm";
@@ -9,6 +8,7 @@ import { useAppLocale } from "@/lib/localized";
 import { Button } from "@/components/ui/button";
 import { AlertIcon } from "@/components/ui/icons";
 import { Sheet } from "@/components/ui/sheet";
+import { MoveTargets } from "./move-targets";
 
 /** EUCROPMAP class names we can name in the page language; others are shown as they come. */
 const MAPPED_CROPS = new Set([
@@ -71,7 +71,6 @@ export function ParcelDetails({
 }) {
   const t = useTranslations("Farm.parcel");
   const locale = useAppLocale();
-  const [moveTo, setMoveTo] = useState("new");
   const crop = (name: string | null | undefined) =>
     !name ? t("crops.none") : MAPPED_CROPS.has(name) ? t(`crops.${name}`) : name.replaceAll("_", " ");
   const num = (value: number | null | undefined, digits = 1) =>
@@ -96,7 +95,7 @@ export function ParcelDetails({
                 <span className="flex items-center gap-2">
                   <span
                     aria-hidden="true"
-                    className="h-4 w-4 rounded border border-line"
+                    className="size-4 rounded-[var(--radius-xs)] ring-1 ring-line"
                     style={{ background: fieldColour ?? undefined }}
                   />
                   {field.name}
@@ -152,37 +151,16 @@ export function ParcelDetails({
           </dl>
 
           {onMove && fields.length > 0 ? (
-            <div className="flex flex-wrap items-end gap-2 border-t border-line pt-4">
-              <label className="flex flex-col gap-1 text-sm font-medium">
-                {t("moveLabel")}
-                <select
-                  value={moveTo}
-                  onChange={(e) => setMoveTo(e.target.value)}
-                  className="min-h-11 rounded-xl border border-line bg-ground px-3 text-base"
-                >
-                  <option value="new">{t("moveNew")}</option>
-                  {fields
-                    .filter((f) => f.id !== field?.id)
-                    .map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {f.name}
-                      </option>
-                    ))}
-                </select>
-              </label>
-              <Button onClick={() => onMove(moveTo)}>{t("move")}</Button>
-            </div>
+            <section className="border-t border-line pt-4">
+              <h3 className="mb-1 text-sm font-semibold text-ink-muted">{t("moveLabel")}</h3>
+              <MoveTargets fields={fields} exclude={field?.id} onMove={onMove} />
+            </section>
           ) : null}
 
-          <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" onClick={onRemove}>
-              {t("remove")}
-            </Button>
-            <Button variant="secondary" onClick={onClose}>
-              {t("close")}
-            </Button>
-          </div>
-          <p className="text-xs text-ink-muted">{t("sources")}</p>
+          <Button variant="secondary" onClick={onRemove} className="w-fit text-status-bad">
+            {t("remove")}
+          </Button>
+          <p className="text-sm text-ink-muted">{t("sources")}</p>
         </div>
       ) : null}
     </Sheet>

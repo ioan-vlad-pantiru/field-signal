@@ -186,6 +186,8 @@ export function FarmMap({
     const bounds = new LngLatBounds();
     parcels.forEach((p) => p.boundary.forEach((c) => bounds.extend([c.lon, c.lat])));
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // The frame may have just changed size (step 1's tall map, step 2's shorter one): measure first.
+    map.resize();
     map.fitBounds(bounds, { padding: 48, maxZoom: 16, pitch: 0, duration: reduced ? 0 : 900 });
     // Only when asked to fit, not on every parcel change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -197,7 +199,7 @@ export function FarmMap({
 
   if (failed) {
     return (
-      <div role="status" className={`flex items-center justify-center rounded-2xl border border-line bg-surface-sunken p-6 text-center text-ink-muted ${className}`}>
+      <div role="status" className={`flex items-center justify-center bg-surface-sunken p-6 text-center text-ink-muted ${className}`}>
         {t("mapUnavailable")}
       </div>
     );
@@ -207,7 +209,7 @@ export function FarmMap({
       ref={container}
       role="region"
       aria-label={label}
-      className={`w-full overflow-hidden rounded-2xl border border-line bg-surface-sunken ${className}`}
+      className={`w-full overflow-hidden bg-surface-sunken ${className}`}
     />
   );
 }
