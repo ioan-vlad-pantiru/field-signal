@@ -14,6 +14,7 @@ import {
   ShieldIcon,
   UserIcon,
 } from "@/components/ui/icons";
+import { Diagram } from "@/components/ui/diagram";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { BackLink } from "@/components/more/back-link";
 import { REPO_URL } from "@/lib/site";
@@ -47,6 +48,11 @@ const TOOLS = {
 
 type Icon = ComponentType<{ size?: number; className?: string }>;
 
+/** A Mermaid node label: quoted, so punctuation in a translation cannot break the chart. */
+function label(text: string): string {
+  return `"${text.replaceAll('"', "#quot;")}"`;
+}
+
 export async function generateMetadata({ params }: PageProps<"/[locale]/more/about">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "About" });
@@ -77,6 +83,40 @@ export default async function AboutPage({ params }: PageProps<"/[locale]/more/ab
   const tMore = await getTranslations("More");
   const terms = GLOSSARY.filter((id) => tg.has(`${id}.term`) && tg.has(`${id}.text`));
 
+  // Charts are top-down and two boxes wide at most, so they stay readable on a phone.
+  const replayChart = `flowchart TD
+    field[${label(t("diagrams.replay.field"))}] --> model
+    weather[${label(t("diagrams.replay.weather"))}] --> model
+    model([${label(t("diagrams.replay.model"))}]) --> states[${label(t("diagrams.replay.states"))}]
+    states --> scores[${label(t("diagrams.replay.scores"))}]
+    scores --> fit[${label(t("diagrams.replay.fit"))}]
+    priorities[${label(t("diagrams.replay.priorities"))}] --> fit
+    weather ~~~~~ priorities
+    class model,fit accent`;
+  const stepChart = `flowchart TD
+    now[${label(t("diagrams.step.now"))}] --> model
+    inputs[${label(t("diagrams.step.inputs"))}] --> model
+    model([${label(t("diagrams.step.model"))}]) --> next[${label(t("diagrams.step.next"))}]
+    next -.-> again[${label(t("diagrams.step.loop"))}]
+    class model accent`;
+  const outlookChart = `flowchart TD
+    seasons[${label(t("diagrams.outlook.seasons"))}] --> greenness[${label(t("diagrams.outlook.greenness"))}]
+    greenness --> yieldModel([${label(t("diagrams.outlook.yieldModel"))}])
+    yieldModel --> tonnes[${label(t("diagrams.outlook.tonnes"))}]
+    tonnes --> map[${label(t("diagrams.outlook.map"))}]
+    class yieldModel accent`;
+  // The invisible links put the four services in two rows of two instead of one row of four.
+  const systemChart = `flowchart TD
+    app[${label(t("diagrams.system.app"))}] --> api
+    whatsapp[${label(t("diagrams.system.whatsapp"))}] --> api
+    api([${label(t("diagrams.system.api"))}]) --> model[${label(t("diagrams.system.model"))}]
+    api --> parcels[${label(t("diagrams.system.parcels"))}]
+    model ~~~ accounts[${label(t("diagrams.system.accounts"))}]
+    parcels ~~~ llm[${label(t("diagrams.system.llm"))}]
+    api --> accounts
+    api --> llm
+    class api accent`;
+
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
       <ScreenHeader back={<BackLink label={tMore("title")} />} title={t("title")} meta={t("lead")} />
@@ -92,6 +132,7 @@ export default async function AboutPage({ params }: PageProps<"/[locale]/more/ab
         <Topic icon={RefreshIcon} title={t("how.title")}>
           <p>{t("how.replay")}</p>
           <p>{t("how.model")}</p>
+          <Diagram chart={replayChart} caption={t("diagrams.replay.caption")} />
           <p>{t("how.plan")}</p>
           <p className="text-ink-muted">{t("how.judgment")}</p>
         </Topic>
@@ -132,10 +173,12 @@ export default async function AboutPage({ params }: PageProps<"/[locale]/more/ab
             <span className="font-semibold">{t("ai.modelTitle")}. </span>
             {t("ai.model")}
           </p>
+          <Diagram chart={stepChart} caption={t("diagrams.step.caption")} />
           <p>
             <span className="font-semibold">{t("ai.yieldTitle")}. </span>
             {t("ai.yield")}
           </p>
+          <Diagram chart={outlookChart} caption={t("diagrams.outlook.caption")} />
           <p>
             <span className="font-semibold">{t("ai.textTitle")}. </span>
             {t("ai.text")}
@@ -181,6 +224,7 @@ export default async function AboutPage({ params }: PageProps<"/[locale]/more/ab
               {t("made.code")}
             </a>
           </p>
+          <Diagram chart={systemChart} caption={t("diagrams.system.caption")} />
           <div>
             <p className="font-semibold">{t("made.tools")}</p>
             <dl className="mt-2 flex flex-col gap-2 text-sm">

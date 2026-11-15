@@ -544,6 +544,44 @@
       "title": "Date demonstrative",
       "text": "Rezultatele pe câmp, planurile de fermă și perspectiva recoltelor vin din model. Fila Stocuri folosește un scenariu inventat, iar simulatorul de câmp este o ilustrație. Dacă serverul nu răspunde, aplicația arată cifre demonstrative incluse în ea și le marchează cu „Date demonstrative”."
     },
+    "diagrams": {
+      "replay": {
+        "caption": "O rotație, refăcută: de la câmpul dumneavoastră la o notă din 100.",
+        "field": "Câmpul dumneavoastră și o rotație de încercat",
+        "weather": "Vremea reală din fiecare sezon trecut",
+        "model": "Modelul de culturi",
+        "states": "Vegetația și umiditatea solului, lună de lună",
+        "scores": "Patru note: recoltă, apă, sănătatea solului, risc",
+        "priorities": "Prioritățile dumneavoastră",
+        "fit": "Potrivire din 100"
+      },
+      "step": {
+        "caption": "Un pas al modelului de culturi. Un sezon înseamnă acest pas, repetat lună după lună.",
+        "now": "Luna aceasta: vegetația și umiditatea solului",
+        "inputs": "Vremea, culturile din trei ani, solul și relieful",
+        "model": "Modelul de culturi",
+        "next": "Luna viitoare: vegetația și umiditatea solului",
+        "loop": "Același pas din nou, pentru fiecare lună a sezonului"
+      },
+      "outlook": {
+        "caption": "De la sezoanele simulate la perspectiva recoltelor pentru cumpărători.",
+        "seasons": "Sezoane simulate cu vremea din 41 de ani trecuți",
+        "greenness": "Vârful și totalul vegetației din fiecare sezon",
+        "yieldModel": "Modelul de recoltă al culturii",
+        "tonnes": "Tone la hectar: minim, obișnuit, maxim",
+        "map": "Harta perspectivei, 136 de regiuni"
+      },
+      "system": {
+        "caption": "Cum se leagă părțile între ele.",
+        "app": "Aplicația web",
+        "whatsapp": "WhatsApp",
+        "api": "API",
+        "model": "Modelul de culturi și optimizatorul fermei",
+        "parcels": "Parcelele APIA",
+        "accounts": "Conturi și câmpuri salvate",
+        "llm": "Model de limbaj (Qwen)"
+      }
+    },
     "made": {
       "title": "Cine l-a făcut",
       "text": "Echipa Farm Titans, la NASA Space Apps Challenge 2026, pentru provocarea „Field Shift: Adapting Farms with NASA Data”. Folosește doar date deschise, iar codul este și el deschis.",

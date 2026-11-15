@@ -544,6 +544,44 @@
       "title": "Demo data",
       "text": "Field results, farm plans and the yield outlook come from the model. The Stocks tab runs on a made-up scenario, and the field simulator is an illustration. If the server can't be reached, the app shows built-in demonstration numbers and marks them “Demo data”."
     },
+    "diagrams": {
+      "replay": {
+        "caption": "One rotation, replayed: from your field to a score out of 100.",
+        "field": "Your field and a rotation to try",
+        "weather": "The real weather of every past season",
+        "model": "Crop model",
+        "states": "Greenness and soil moisture, month by month",
+        "scores": "Four scores: harvest, water, soil health, risk",
+        "priorities": "Your priorities",
+        "fit": "Fit out of 100"
+      },
+      "step": {
+        "caption": "One step of the crop model. A season is this step, repeated month after month.",
+        "now": "This month: greenness and soil moisture",
+        "inputs": "Weather, crops of three years, soil and terrain",
+        "model": "Crop model",
+        "next": "Next month: greenness and soil moisture",
+        "loop": "The same step again, for every month of the season"
+      },
+      "outlook": {
+        "caption": "From simulated seasons to the buyers' yield outlook.",
+        "seasons": "Seasons simulated under 41 past weather years",
+        "greenness": "Peak and total greenness of each season",
+        "yieldModel": "Yield model for the crop",
+        "tonnes": "Tonnes per hectare: low, typical, high",
+        "map": "Outlook map, 136 regions"
+      },
+      "system": {
+        "caption": "How the parts fit together.",
+        "app": "Web app",
+        "whatsapp": "WhatsApp",
+        "api": "API",
+        "model": "Crop model and farm optimizer",
+        "parcels": "APIA parcels",
+        "accounts": "Accounts and saved fields",
+        "llm": "Language model (Qwen)"
+      }
+    },
     "made": {
       "title": "Who made it",
       "text": "Team Farm Titans, at the NASA Space Apps Challenge 2026, for the challenge “Field Shift: Adapting Farms with NASA Data”. It uses open data only, and the code is open too.",
