@@ -6,13 +6,7 @@
   "Nav": {
     "label": "Main navigation",
     "field": "My field",
-    "feed": "Feed buyer",
-    "stocks": "Stocks",
-    "about": "About",
     "language": "Language",
-    "languageLabel": "Language: {current}. Choose another language",
-    "account": "Account",
-    "farm": "My farm",
     "fields": "My fields",
     "buyers": "Buyers",
     "more": "More",
@@ -28,7 +22,6 @@
     "close": "Close",
     "sequence": "Crop order",
     "errorTitle": "We could not load the results",
-    "errorText": "The request was not accepted. Check what you entered and try again.",
     "retry": "Try again"
   },
   "Status": {
@@ -173,7 +166,6 @@
       "sparklineLabel": "Trend for {name}, {from}–{to}"
     },
     "soil": {
-      "title": "Soil",
       "depth": "Top layer ({depth})",
       "whatIs": "What this means: {term}",
       "mix": "{clay}% clay · {sand}% sand · {silt}% silt",
@@ -589,7 +581,6 @@
     "seasonRow": "sown in {sow}, harvested in {harvest}",
     "seasonRowCover": "sown in {sow}, worked into the soil in {harvest}",
     "reducedMotion": "Reduced motion is on, so the field does not animate. Use Back and Next to step through each season.",
-    "openLink": "See it on a field",
     "aboutDemo": "About this illustration"
   },
   "Home": {

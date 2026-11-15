@@ -6,13 +6,7 @@
   "Nav": {
     "label": "Navigare principală",
     "field": "Câmpul meu",
-    "feed": "Furaje",
-    "stocks": "Stocuri",
-    "about": "Despre",
     "language": "Limba",
-    "languageLabel": "Limba: {current}. Alegeți altă limbă",
-    "account": "Cont",
-    "farm": "Ferma mea",
     "fields": "Câmpurile mele",
     "buyers": "Cumpărători",
     "more": "Mai mult",
@@ -28,7 +22,6 @@
     "close": "Închide",
     "sequence": "Ordinea culturilor",
     "errorTitle": "Nu am putut încărca rezultatele",
-    "errorText": "Cererea nu a fost acceptată. Verificați datele introduse și încercați din nou.",
     "retry": "Încercați din nou"
   },
   "Status": {
@@ -173,7 +166,6 @@
       "sparklineLabel": "Evoluția pentru {name}, {from}–{to}"
     },
     "soil": {
-      "title": "Solul",
       "depth": "Stratul de la suprafață ({depth})",
       "whatIs": "Ce înseamnă: {term}",
       "mix": "{clay}% argilă · {sand}% nisip · {silt}% praf",
@@ -589,7 +581,6 @@
     "seasonRow": "semănat în {sow}, recoltat în {harvest}",
     "seasonRowCover": "semănat în {sow}, încorporat în sol în {harvest}",
     "reducedMotion": "Ați cerut mai puțină mișcare, deci câmpul nu se animă. Folosiți Înapoi și Înainte ca să treceți prin fiecare sezon.",
-    "openLink": "Vedeți pe un câmp",
     "aboutDemo": "Despre această ilustrație"
   },
   "Home": {
