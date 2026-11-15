@@ -55,7 +55,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>
           <SiteHeader />
-          <main className="mx-auto w-full max-w-[1200px] flex-1 px-gutter pb-[calc(var(--bar-space)+1.5rem)] pt-4 sm:pb-12 sm:pt-6">
+          <main className="mx-auto w-full max-w-[1200px] flex-1 px-gutter pb-[calc(var(--bar-space)+1.5rem)] pt-[max(1rem,env(safe-area-inset-top))] sm:pb-12 sm:pt-6">
             {children}
           </main>
           <BottomBar />

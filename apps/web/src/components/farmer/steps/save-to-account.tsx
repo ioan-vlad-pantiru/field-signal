@@ -6,7 +6,7 @@ import { AccountError, createField, updateField, useAccount, type FieldDraft } f
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { CheckIcon } from "@/components/ui/icons";
-import { INPUT } from "@/components/account/account-view";
+import { INPUT_CLASS } from "@/components/ui/input";
 
 /**
  * Name the field being drawn and keep it in My fields, without running the analysis first.
@@ -67,14 +67,11 @@ export function SaveToAccount({
   }
 
   return (
-    <section aria-labelledby={`${id}-title`} className="flex flex-col gap-3 border-t border-line pt-4">
-      <h2 id={`${id}-title`} className="sr-only">
-        {t("title")}
-      </h2>
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor={`${id}-name`} className="font-medium">
-          {t("nameLabel")}
-        </label>
+    <div className="flex flex-col gap-2">
+      <label htmlFor={`${id}-name`} className="text-sm font-semibold text-ink-muted">
+        {t("nameLabel")}
+      </label>
+      <div className="flex gap-2">
         <input
           id={`${id}-name`}
           value={name}
@@ -85,37 +82,25 @@ export function SaveToAccount({
           maxLength={80}
           placeholder={fallbackName ?? t("namePlaceholder")}
           autoComplete="off"
-          className={INPUT}
+          className={INPUT_CLASS}
         />
-      </div>
-
-      {account.status === "signed-out" ? (
-        <p className="text-sm text-ink-muted">
-          <Link href="/more/account" className="font-medium text-field underline underline-offset-4">
-            {t("signIn")}
-          </Link>{" "}
-          {t("signInHint")}
-        </p>
-      ) : signedIn ? (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <Button variant="secondary" onClick={save} disabled={busy || upToDate}>
-            {busy ? t("saving") : saved ? t("update") : t("save")}
+        {signedIn ? (
+          <Button variant={upToDate ? "quiet" : "secondary"} onClick={save} disabled={busy || upToDate} className="shrink-0">
+            {upToDate ? <CheckIcon size={18} /> : null}
+            {busy ? t("saving") : upToDate ? t("saved") : saved ? t("update") : t("save")}
           </Button>
-          <p role="status" className="flex items-center gap-1.5 text-sm text-field">
-            {saved ? (
-              <>
-                <CheckIcon size={16} />
-                {upToDate ? t("savedAs", { name: name.trim() || fallbackName || "" }) : t("inMyFields")}
-              </>
-            ) : null}
-          </p>
-        </div>
+        ) : null}
+      </div>
+      {account.status === "signed-out" ? (
+        <Link href="/more/account" className="w-fit text-sm font-semibold text-field underline-offset-4 hover:underline">
+          {t("signIn")}
+        </Link>
       ) : null}
       {error ? (
         <p role="alert" className="text-sm text-status-bad">
           {error}
         </p>
       ) : null}
-    </section>
+    </div>
   );
 }

@@ -35,6 +35,8 @@ export function SwipeDeck({
     if (!el) return;
     const observer = new IntersectionObserver(
       (entries) => {
+        // In the desktop grid every card is in view: nothing to report.
+        if (el.scrollWidth <= el.clientWidth + 1) return;
         for (const entry of entries) {
           if (entry.intersectionRatio < 0.6) continue;
           const index = Number((entry.target as HTMLElement).dataset.index);

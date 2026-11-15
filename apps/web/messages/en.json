@@ -69,246 +69,102 @@
     "seasons": "seasons"
   },
   "Field": {
-    "steps": {
-      "label": "Steps",
-      "field": "Field",
-      "rotation": "Rotation",
-      "priorities": "Priorities"
-    },
-    "field": {
-      "title": "Choose your field",
-      "hint": "Find your place, then tap the parcels of your field on the map."
-    },
+    "mapLabel": "Map: tap your field's parcels",
+    "mapUnavailable": "The map can't run in this browser. Try another browser or phone.",
+    "coordinates": "{lat}° N · {lon}° E",
+    "pinned": "From the buyer map: {place}",
+    "toFields": "Back to my fields",
     "search": {
-      "label": "Find your commune",
-      "placeholder": "For example Aiud",
-      "none": "No commune with that name in the area we cover.",
-      "results": "{count, plural, one {1 commune found} other {# communes found}}"
+      "label": "Find a commune",
+      "placeholder": "Find a commune",
+      "none": "No commune by that name here.",
+      "results": "{count, plural, one {1 commune} other {# communes}}"
     },
     "locate": {
       "button": "Use my location",
       "busy": "Finding you…",
-      "failed": "Your location is not available. Search for your commune instead."
+      "failed": "Location not available. Search instead."
     },
     "basemap": {
-      "label": "Map view",
-      "satellite": "Satellite",
-      "map": "Map"
+      "satellite": "Show satellite",
+      "map": "Show map"
     },
-    "draw": {
-      "yourField": "Your field",
-      "area": "{ha} ha"
-    },
-    "mapLabel": "Map for drawing your field",
-    "mapUnavailable": "The map cannot be shown in this browser, so the field cannot be drawn here. Please try another browser or device.",
-    "coordinates": "{lat}° N · {lon}° E",
-    "needField": "Choose your field's parcels on the map to continue.",
-    "pinnedFromFeed": "Pinned from the feed screen: {place}",
+    "area": "{ha} ha",
+    "needField": "Tap your field's parcels",
     "continue": "Continue",
-    "back": "Back",
-    "rotation": {
-      "title": "What do you grow here?",
-      "hint": "Your rotation on this field, year after year.",
-      "presets": "Common rotations",
-      "change": "Year {n}: {crop}. Change the crop",
-      "changeShort": "Change",
-      "addYear": "Add a year",
-      "pickerLabel": "Crop for year {n}",
-      "limits": "Between {min} and {max} years."
-    },
-    "year": "Year {n}",
-    "removeCrop": "Remove {crop} from year {n}",
-    "rotationFull": "The rotation has {max} years, the most we compare. Remove a year to add another.",
-    "prioritiesTitle": "What matters to you?",
-    "prioritiesHint": "Say how much each one counts. We rank the rotations by it.",
-    "level": {
-      "less": "Less",
-      "matters": "Matters",
-      "most": "Matters most"
-    },
-    "priority": {
-      "yield": {
-        "label": "Reliable harvest",
-        "hint": "A harvest that stays steady from year to year"
-      },
-      "water": {
-        "label": "Water",
-        "hint": "Crops that cope with dry summers"
-      },
-      "soil": {
-        "label": "Soil health",
-        "hint": "More organic matter, soil covered in winter"
-      },
-      "risk": {
-        "label": "Low risk",
-        "hint": "As few poor years as possible"
-      }
-    },
-    "irrigatedTitle": "The field is irrigated",
-    "irrigatedHint": "Turn on if you can water the crops in summer.",
     "analyze": "Show my 25 seasons",
-    "saved": {
-      "near": "Continue with your field near {place}, {ha} ha",
-      "noPlace": "Continue with your field of {ha} ha",
-      "resume": "Continue",
-      "forget": "Start a new field"
+    "assistantField": "My field",
+    "parcel": {
+      "mapHint": "Tap your parcels",
+      "zoomHint": "Zoom in to see the parcels",
+      "brushHint": "Drag over your parcels",
+      "brush": "Drag to select",
+      "selected": "{count, plural, one {# parcel} other {# parcels}} · {ha} ha",
+      "use": "Use as my field",
+      "joining": "Joining…",
+      "separate": "Each its own field",
+      "clear": "Clear",
+      "restart": "Pick again",
+      "tooSmall": "Only {ha} ha. A field needs {min} ha or more.",
+      "tooBig": "{ha} ha is over {max} ha. Pick fewer.",
+      "failed": "Couldn't join them. Try again.",
+      "separateSmall": "{count, plural, one {# parcel is} other {# parcels are}} under {min} ha and still selected.",
+      "separateFull": "Up to {max} fields at once."
     },
     "multi": {
-      "addAnother": "Add another field",
-      "addAnotherHint": "Keeps this field and starts the next one. All fields are analysed together.",
-      "listTitle": "{count, plural, one {# field kept} other {# fields kept}} · {ha} ha",
+      "count": "{count, plural, one {# field} other {# fields}}",
+      "listTitle": "Fields in this analysis",
       "fieldN": "Field {n}",
       "fieldNear": "Field {n} · {place}",
-      "area": "{ha} ha",
+      "area": "{ha} ha",
       "edit": "Edit",
       "remove": "Remove",
       "editLabel": "Edit {field}",
       "removeLabel": "Remove {field}",
+      "addAnother": "Add another field",
       "continueWith": "Continue with {count, plural, one {# field} other {# fields}}",
-      "analyze": "Show 25 seasons for {count} fields",
-      "editing": "Now editing: {field}"
+      "analyze": "Show 25 seasons for {count} fields"
+    },
+    "setup": {
+      "title": "Your field",
+      "titleMany": "{count} fields",
+      "rotation": "Crops, year by year",
+      "change": "Year {n}: {crop}. Change",
+      "remove": "Remove {crop} from year {n}",
+      "addYear": "Add a year",
+      "pickerLabel": "Crop for year {n}",
+      "presets": "Common rotations",
+      "priorities": "What matters most",
+      "priority": {
+        "yield": "Steady harvest",
+        "water": "Copes with drought",
+        "soil": "Soil health",
+        "risk": "Fewer bad years"
+      },
+      "fineTune": "Fine-tune",
+      "simple": "Simple",
+      "level": {
+        "less": "Less",
+        "matters": "Matters",
+        "most": "Most"
+      },
+      "irrigated": "The field is irrigated"
     },
     "save": {
-      "title": "Save this field",
-      "nameLabel": "Field name",
+      "nameLabel": "Name (optional)",
       "namePlaceholder": "e.g. Behind the barn",
-      "save": "Save to my fields",
+      "save": "Save",
       "update": "Save changes",
       "saving": "Saving…",
-      "savedAs": "Saved in My fields as “{name}”",
-      "inMyFields": "In My fields · unsaved changes",
-      "signIn": "Sign in",
-      "signInHint": "to save this field to your account.",
+      "saved": "Saved",
+      "signIn": "Sign in to save this field",
       "nameNeeded": "Give the field a name first.",
-      "failed": "Could not save. Try again."
-    },
-    "assistantField": "My field",
-    "parcel": {
-      "hint": "Tap your parcels to select them, or switch on “Drag to select” to select many at once. Then use them as one field (they do not need to touch), or add each as its own field. These are the parcels declared to APIA.",
-      "mapHint": "Tap your parcels",
-      "selected": "{count, plural, one {# parcel} other {# parcels}} selected · {ha} ha",
-      "use": "Use as my field",
-      "joining": "Joining parcels…",
-      "clear": "Clear selection",
-      "tooSmall": "Together that is {ha} ha. A field needs at least {min} ha: also tap the parcels next to it.",
-      "tooBig": "That is {ha} ha, over {max} ha. Select fewer parcels.",
-      "failed": "Could not join the parcels. Try again.",
-      "brush": "Drag to select",
-      "brushHint": "Drag over your parcels",
-      "brushHelp": "Drag over your parcels to select them. Start a drag on a green parcel to unselect. Use two fingers to move the map, or switch off “Drag to select”.",
-      "separate": "Add each as its own field",
-      "separateSmall": "{count, plural, one {# parcel is} other {# parcels are}} under {min} ha, too small for a field of {count, plural, one {its} other {their}} own: they are still selected. Use them as one field together, or with the parcels next to them.",
-      "separateFull": "You can analyse up to {max} fields together. The parcels left are still selected.",
-      "zoomHint": "Zoom in to see your parcels",
-      "zoomHelp": "Zoom in on your farm to see the parcels declared to APIA, then tap yours. Parcel outlines are available for Alba county for now.",
-      "restart": "Choose other parcels"
+      "failed": "Couldn't save. Try again."
     }
   },
   "Results": {
-    "back": "Change field or rotation",
-    "print": "Print",
-    "copyLink": "Copy link",
-    "linkCopied": "Link copied",
-    "copyFailed": "Could not copy. The address is in your browser's address bar.",
-    "actions": "Page actions",
     "period": "{start}–{end}",
     "area": "{ha} ha",
-    "meta": "{area} · seasons {period}",
-    "metaNoArea": "Seasons {period}",
-    "loading": "Reading 25 years of data for this place…",
-    "loadingSteps": {
-      "weather": "Heat and rain in every season",
-      "vegetation": "How green the crops were, from satellite",
-      "soil": "Soil and soil water"
-    },
-    "nav": {
-      "label": "On this page",
-      "shift": "Shift",
-      "rotations": "Rotations",
-      "plan": "Plan",
-      "evidence": "Evidence"
-    },
-    "verdict": {
-      "fewer": "With the “{name}” rotation you would have had <b>{best, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}} instead of {current}</b> since {start}.",
-      "same": "“{name}” fits your priorities best. Since {start} it would have had <b>{count, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}}</b>, the same as your rotation.",
-      "more": "“{name}” fits your priorities best, though since {start} it would have had <b>{best, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}} against {current}</b> with your rotation.",
-      "keep": "Your current rotation already fits your priorities best. Since {start} it had <b>{count, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}}</b>.",
-      "fit": "Fits your priorities {best} of 100; your rotation now {current}",
-      "fitKeep": "Fits your priorities {score} of 100",
-      "seeRotations": "Compare the rotations",
-      "fewerNone": "With the “{name}” rotation you would have had <b>no poor seasons instead of {current}</b> since {start}.",
-      "keepNone": "Your current rotation already fits your priorities best. Since {start} it had <b>no poor seasons</b>."
-    },
-    "shift": {
-      "title": "What changed at this place",
-      "hint": "Average of the last five years with data against the first ten. These are measurements at this place, not causes.",
-      "statement": "{recent} on average in {recentStart}–{recentEnd}, against {early} in {earlyStart}–{earlyEnd}.",
-      "up": "Higher lately",
-      "down": "Lower lately",
-      "steady": "About the same",
-      "sparklineLabel": "{name} every year, {from}–{to}"
-    },
-    "rotations": {
-      "title": "Rotations compared",
-      "hint": "Best fit first. Each square is one season, {start} to {end}. Select a year to see all three rotations in it.",
-      "hintPhone": "Best fit first. Each square is one season, {start} to {end}. Tap a rotation to see every year.",
-      "current": "Your rotation now",
-      "best": "Best fit",
-      "shown": "Shown on this page",
-      "score": "{score} of 100",
-      "scoreLabel": "Fit with your priorities",
-      "poor": "{count, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}} since {start}",
-      "poorShort": "{count, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}}",
-      "stripLabel": "{name}: {poor}",
-      "cellLabel": "{year}, {crop}: {status}, {evidence} evidence",
-      "openYears": "See every year of {name}",
-      "showDetails": "Why this rotation",
-      "hideDetails": "Hide the explanation",
-      "yearTitle": "Season {year}",
-      "closeYear": "Close season {year}",
-      "yearsSheetTitle": "Every season, newest first",
-      "evidence": {
-        "high": "strong",
-        "medium": "medium",
-        "low": "weak"
-      },
-      "evidenceLine": "Evidence: {level}",
-      "weakEvidence": "Weak evidence (before 2015)",
-      "noReasons": "Nothing unusual in this season's data.",
-      "legend": "Legend",
-      "range": "Likely between {low} and {high}",
-      "breakdown": {
-        "yield_stability": "Steady harvest",
-        "water": "Water",
-        "soil_health": "Soil health",
-        "low_risk": "Low risk"
-      },
-      "year": "Season"
-    },
-    "explain": {
-      "why": "In short",
-      "evidence": "What the data show",
-      "source": "Source: {source}",
-      "benefits": "Benefits",
-      "gaps": "What we don't know",
-      "risks": "Risks to check locally",
-      "generatedBy": {
-        "template": "Text built from a template, using only the values computed above.",
-        "llm": "Text written by an AI model, using only the values computed above."
-      }
-    },
-    "planTitle": "What to grow where",
-    "planHint": "Your field split into plots, one for each year of the rotation, so every crop in the plan is on the farm each year.",
-    "planRotation": "Rotation shown",
-    "evidence": {
-      "title": "Evidence",
-      "hint": "The measurements behind the results, with their sources.",
-      "show": "Show the evidence",
-      "indicatorsTitle": "Measured at this place",
-      "indicatorsHint": "Latest year compared with the average of all years. The dashed line is the average.",
-      "caveatsTitle": "Keep in mind",
-      "sourcesTitle": "Data sources"
-    },
     "indicator": {
       "noComparison": "Not enough data to compare",
       "nearNormal": "Close to average",
@@ -338,30 +194,14 @@
         "help": "The mix of clay, sand and silt. Clay soils hold water longer; sandy soils dry out quickly."
       }
     },
-    "plan": {
-      "season": "Season (harvest year)",
-      "previous": "Previous season",
-      "next": "Next season",
-      "play": "Play the years",
-      "pause": "Pause",
-      "mapLabel": "Your field in {year}: {crop}",
-      "mapUnavailable": "The map cannot be shown in this browser. The seasons below still hold the whole plan.",
-      "seasons": "The rotation's seasons on this field",
-      "noteField": "Your field, {area} ha, from your APIA parcels. Each season the whole field grows that year's crop; the plan repeats every {years} years.",
-      "notePin": "The circle marks your pin; draw the field's outline to see its real shape. Each season the whole field grows that year's crop; the plan repeats every {years} years."
-    },
-    "fields": {
-      "title": "{count} fields · {ha} ha in total",
-      "area": "{ha} ha",
-      "keep": "Your rotation is the best",
-      "best": "Best: “{name}”",
-      "all": "All fields",
-      "allHint": "Map and summary"
+    "shift": {
+      "statement": "{recent} on average in {recentStart}–{recentEnd}, against {early} in {earlyStart}–{earlyEnd}.",
+      "up": "Higher lately",
+      "down": "Lower lately",
+      "steady": "About the same",
+      "sparklineLabel": "{name} every year, {from}–{to}"
     },
     "overview": {
-      "title": "{count} fields",
-      "summary": "On {count} of {total} fields another rotation would have had fewer poor seasons ({ha} ha).",
-      "summaryNone": "Your rotations already do as well as any we compared, on all {ha} ha.",
       "mapLabel": "Map of the {count} analysed fields, coloured by result",
       "legendFewer": "Another rotation had fewer poor seasons",
       "legendOther": "Another rotation fits your priorities better",
@@ -369,41 +209,132 @@
       "area": "{ha} ha",
       "rowBest": "Best: “{name}” · {best, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}} instead of {current}",
       "rowKeep": "Your rotation is the best · {poor, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}}",
-      "open": "See this field"
+      "title": "{count} fields",
+      "open": "Open",
+      "summary": "Another rotation did better on {count} of {total} fields ({ha} ha).",
+      "summaryNone": "Your rotations already do as well as any we compared ({ha} ha)."
+    },
+    "rotations": {
+      "stripLabel": "{name}: {poor}",
+      "poor": "{count, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}} since {start}",
+      "poorShort": "{count, plural, =0 {no poor seasons} one {# poor season} other {# poor seasons}}",
+      "scoreLabel": "Fit with your priorities",
+      "best": "Best fit",
+      "current": "Your rotation now",
+      "breakdown": {
+        "yield_stability": "Steady harvest",
+        "water": "Water",
+        "soil_health": "Soil health",
+        "low_risk": "Low risk"
+      },
+      "weakEvidence": "Weak evidence (before 2015)",
+      "title": "Rotations",
+      "legend": "How to read the seasons",
+      "dot": "Rotation {n} of {total}",
+      "of100": "of 100",
+      "scoreLine": "Fit {score} of 100 · likely {low}–{high}"
+    },
+    "explain": {
+      "source": "Source: {source}",
+      "generatedBy": {
+        "template": "Text built from a template, using only the values computed above.",
+        "llm": "Text written by an AI model, using only the values computed above."
+      },
+      "why": "Why",
+      "evidence": "Evidence",
+      "benefits": "Benefits",
+      "gaps": "What we don't know",
+      "risks": "Risks",
+      "seasons": "Season by season",
+      "data": "Data behind this",
+      "simulator": "Watch it on a field"
+    },
+    "plan": {
+      "previous": "Previous season",
+      "next": "Next season",
+      "pause": "Pause",
+      "mapLabel": "Your field in {year}: {crop}",
+      "mapUnavailable": "The map cannot be shown in this browser. The seasons below still hold the whole plan.",
+      "play": "Play the seasons",
+      "season": "Season (harvest year)",
+      "plot": "Plot",
+      "notFarmland": "Not farmed: {ha} ha ({reasons})",
+      "hexScale": "1 hexagon = 1 ha",
+      "reason": {
+        "road": "road",
+        "building": "buildings",
+        "water": "water",
+        "woods": "woods",
+        "built_up": "built-up land"
+      }
+    },
+    "back": "Change field or crops",
+    "share": "Share or print",
+    "shareTitle": "Share this plan",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "copyFailed": "Couldn't copy. The link is in the address bar.",
+    "print": "Print one page",
+    "meta": "{area} · {period}",
+    "loading": "Reading 25 seasons for this field…",
+    "planTitle": "Your field, season by season",
+    "verdict": {
+      "label": "Best for this field",
+      "keep": "<b>Keep your rotation.</b> It fits this field best.",
+      "fewer": "Switch to {name}: <b>{best, plural, one {# poor season} other {# poor seasons}}</b> instead of {current} since {start}.",
+      "fewerNone": "Switch to {name}: <b>no poor seasons</b> instead of {current} since {start}.",
+      "same": "<b>{name}</b> fits your priorities best, with as many poor seasons.",
+      "more": "<b>{name}</b> fits your priorities best, but had {best} poor seasons, not {current}, since {start}.",
+      "risk": "Main risk: {risk}, in {count, plural, one {# weak season} other {# weak seasons}}.",
+      "noRisk": "No single weather risk stands out.",
+      "data": "Data behind this"
+    },
+    "evidence": {
+      "title": "Data behind this",
+      "period": "Seasons {start}–{end}",
+      "changed": "What changed here",
+      "measured": "Measured here",
+      "soil": "Soil",
+      "caveats": "Keep in mind",
+      "terms": "Words used here",
+      "sources": "Sources"
+    },
+    "fields": {
+      "label": "Fields in this analysis",
+      "all": "All fields"
+    },
+    "save": {
+      "save": "Save field",
+      "title": "Save this field",
+      "nameLabel": "Name",
+      "confirm": "Save",
+      "saving": "Saving…",
+      "saved": "Saved as “{name}”",
+      "updated": "“{name}” updated",
+      "toFields": "Go to my fields",
+      "signIn": "Sign in",
+      "signInWhy": "Sign in to keep this field and its answer on every device.",
+      "failed": "Couldn't save. Try again."
     }
   },
   "Optimizer": {
-    "title": "Farm plan",
-    "hint": "All your fields planned together and tested against past weather.",
-    "loading": "Running the crop model on your fields…",
-    "loadingHint": "It runs in the background: you can read the results for each field above meanwhile.",
-    "loadingBackground": "Still running ({s} s). It runs in the background: the rest of the page works meanwhile.",
-    "error": "The farm plan could not be made this time. The results for each field above are not affected.",
-    "invalid": "These fields could not be planned: a field is outside the covered area, too large, or its outline is not valid. The results for each field above are not affected.",
     "meta": "{years}-year plan · {ha} ha · {count, plural, one {# past weather window} other {# past weather windows}}, seasons {first}–{last} · {model}",
-    "none": "No plan was found for these fields. See the notes below.",
-    "best": "Best solution found",
-    "bestOptimal": "Best solution found, optimal for the model",
-    "alternative": "Alternative {n}",
-    "of100": "of 100",
-    "vsCurrent": "{diff} vs your rotation now",
-    "rangeLabel": "Score across past weather: worst {low}, typical {mid}, best {high} of 100",
+    "bestCase": "Best weather",
     "worst": "Worst weather",
     "typical": "Typical",
-    "bestCase": "Best weather",
     "window": "seasons {start}–{end}",
     "median": "median",
     "perField": "Rotations by field",
-    "perFieldHint": "Each row is one rotation: one crop per year, in this order from year 1. Every field keeps one rotation and changes crop every year, as the EU crop rotation rule (GAEC 7) asks.",
     "ha": "{ha} ha",
-    "details": "Score parts, crop shares and rule check",
-    "shares": "Crop shares of the farm, per plan year",
     "year": "Year {n}",
     "pct": "{value}%",
-    "caveats": "What this plan does not tell you",
+    "alternative": "Alternative {n}",
+    "best": "Best solution found",
+    "bestOptimal": "Best solution found, optimal for the model",
+    "rangeLabel": "Score across past weather: worst {low}, typical {mid}, best {high} of 100",
+    "modelName": "Field Signal crop model{runs, plural, one {} other {, # runs}}",
     "rules": {
       "title": "Rule check",
-      "hint": "Checks of the farm's crops in its worst plan year, against the 2026 APIA guides. They do not tell you whether the farm qualifies for payments.",
       "max_crop_share": "Main crop at most {limit}% of the farm",
       "max_two_crops_share": "Two main crops at most {limit}% together",
       "legume_share": "Legumes at least {limit}% of the farm",
@@ -412,14 +343,27 @@
       "outside": "Outside the limit",
       "belowThreshold": "Farm below the rule's size threshold",
       "applied": "Enforced in this plan",
-      "notApplied": "Not enforced",
       "unverified": "Unverified",
       "crop_change": "The crop changes every year on every field",
       "metByRotation": "Not needed when the crop changes every year (GAEC 7 rotation)",
       "onlyWithEcoScheme": "Only if you join the PD-04 eco-scheme"
     },
     "retry": "Try again",
-    "modelName": "Field Signal crop model{runs, plural, one {} other {, # runs}}"
+    "shares": "Crop shares of the farm, per plan year",
+    "of100": "of 100",
+    "vsCurrent": "{diff} vs now",
+    "title": "Farm plan",
+    "loading": "Planning all your fields together…",
+    "loadingFor": "Still planning ({s} s). You can read the rest meanwhile.",
+    "error": "The plan couldn't be made this time.",
+    "invalid": "These fields can't be planned together (outside the area, too large or an invalid outline).",
+    "none": "No plan was found for these fields.",
+    "summary": "{years}-year plan · {ha} ha, tested on past weather",
+    "open": "See the plan",
+    "details": "Score parts, crop shares, rules",
+    "caveats": "What this plan doesn't tell you",
+    "perFieldHint": "Each field keeps one rotation and changes crop every year, as the EU crop rotation rule (GAEC 7) asks.",
+    "perFieldInfo": "Why one rotation per field"
   },
   "Feed": {
     "title": "Where to buy feed this year",
@@ -809,25 +753,6 @@
       "edit": "Edit",
       "irrigated": "irrigated"
     },
-    "save": {
-      "save": "Save field",
-      "saving": "Saving…",
-      "saved": "Saved as “{name}”",
-      "updated": "“{name}” updated",
-      "nameLabel": "Name this field",
-      "confirm": "Save",
-      "cancel": "Cancel",
-      "signInToSave": "Sign in to save",
-      "failed": "Could not save. Try again."
-    },
-    "picker": {
-      "title": "Your fields",
-      "all": "All fields ({count})",
-      "new": "Or choose a new field below.",
-      "pickHint": "Tick one or several to analyse them together.",
-      "openOne": "Open field",
-      "openMany": "Analyse {count} fields"
-    },
     "profile": {
       "title": "Profile and security",
       "email": "Email",
@@ -1176,5 +1101,59 @@
     "ask": "Ask Field Signal",
     "askDetail": "Questions about crops, data or this app",
     "credit": "Made at NASA Space Apps 2026 by Farm Titans"
+  },
+  "Fields": {
+    "title": "My fields",
+    "summary": "{count, plural, one {# field} other {# fields}} · {ha} ha",
+    "add": "Add a field",
+    "import": "Import from file",
+    "select": "Select",
+    "done": "Done",
+    "search": "Search your fields",
+    "analyze": "Analyze",
+    "analyzeMany": "{count, plural, =0 {Pick fields} one {Analyze # field} other {Analyze # fields}}",
+    "max": "Up to {max} fields at once.",
+    "area": "{ha} ha",
+    "notYet": "Not analyzed yet",
+    "keep": "Your rotation fits best",
+    "better": "Better: {crops}",
+    "other": "Also worth a look: {crops}",
+    "thisDevice": "on this phone",
+    "keepOnAccount": "Keep it in your account",
+    "save": "Save",
+    "forget": "Remove from this phone",
+    "signIn": "Sign in",
+    "signInWhy": "to keep your fields on every device.",
+    "options": "Options for {name}",
+    "edit": "Change field or crops",
+    "rename": "Rename",
+    "name": "Name",
+    "saveName": "Save name",
+    "delete": "Delete",
+    "deleteConfirm": "Delete “{name}”? This can't be undone.",
+    "cancel": "Cancel",
+    "failed": "That didn't work. Try again."
+  },
+  "Glossary": {
+    "et": {
+      "term": "ET (evapotranspiration)",
+      "text": "Water the field loses to the air, from the soil and through the plants."
+    },
+    "ndvi": {
+      "term": "NDVI",
+      "text": "How green and dense the crop looks from satellite, from 0 (bare) to 1 (lush)."
+    },
+    "soilMoisture": {
+      "term": "Soil-moisture anomaly",
+      "text": "How much wetter or drier the root zone was than usual for that time of year."
+    },
+    "waterBalance": {
+      "term": "Water balance",
+      "text": "Rain minus the water the field loses (ET). Below zero means the crop went short."
+    },
+    "frost": {
+      "term": "Frost risk",
+      "text": "Nights below 0 °C at a stage when the crop can be hurt, such as flowering."
+    }
   }
 }

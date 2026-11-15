@@ -1,8 +1,11 @@
 "use client";
 
+import { useId, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { FieldRequest } from "@/lib/contracts";
+import { ChevronDownIcon } from "@/components/ui/icons";
 import { Segmented } from "@/components/ui/segmented";
+import { Toggle } from "@/components/ui/toggle";
 
 export const PRIORITIES = ["yield", "water", "soil", "risk"] as const;
 export type Priority = (typeof PRIORITIES)[number];
@@ -20,7 +23,7 @@ function levelFor(weight: number | undefined): Level {
   return weight < 0.4 ? "less" : weight < 0.8 ? "matters" : "most";
 }
 
-/** Levels back from an earlier request, e.g. after "Change field or rotation". */
+/** Levels back from an earlier request, e.g. after "Change field". */
 export function levelsFrom(priorities: FieldRequest["priorities"] | undefined): PriorityLevels {
   if (!priorities) return DEFAULT_LEVELS;
   return Object.fromEntries(PRIORITIES.map((p) => [p, levelFor(priorities[p])])) as PriorityLevels;
@@ -30,68 +33,70 @@ export function weightsFrom(levels: PriorityLevels): Record<Priority, number> {
   return Object.fromEntries(PRIORITIES.map((p) => [p, LEVEL_WEIGHT[levels[p]]])) as Record<Priority, number>;
 }
 
+/**
+ * What matters: one "matters most" switch per priority (off = it matters as usual), and the
+ * three-level control behind "Fine-tune" for farmers who want "matters less" too. Every level the
+ * API accepted before is still reachable.
+ */
 export function PrioritiesStep({
   levels,
   onLevels,
   irrigated,
   onIrrigated,
-  headingLevel = 1,
 }: {
   levels: PriorityLevels;
   onLevels: (levels: PriorityLevels) => void;
   irrigated: boolean;
   onIrrigated: (irrigated: boolean) => void;
-  /** 1 as its own step; 2 inside a page that already has a title (the farm plan). */
-  headingLevel?: 1 | 2;
 }) {
-  const Heading = headingLevel === 1 ? "h1" : "h2";
-  const t = useTranslations("Field");
+  const t = useTranslations("Field.setup");
+  const [fine, setFine] = useState(() => PRIORITIES.some((p) => levels[p] === "less"));
+  const id = useId();
   const options = LEVELS.map((value) => ({ value, label: t(`level.${value}`) }));
 
   return (
-    <div className="flex flex-col gap-4">
-      <header>
-        <Heading className={headingLevel === 1 ? "text-3xl font-semibold tracking-tight" : "text-xl font-semibold tracking-tight"}>
-          {t("prioritiesTitle")}
-        </Heading>
-        <p className="mt-1 text-ink-muted">{t("prioritiesHint")}</p>
-      </header>
-
-      <ul className="flex flex-col divide-y divide-line border-y border-line">
-        {PRIORITIES.map((p) => (
-          <li key={p} className="flex flex-col gap-1.5 py-3">
-            <p>
-              <span className="font-medium">{t(`priority.${p}.label`)}</span>
-              <span className="text-ink-muted"> · {t(`priority.${p}.hint`)}</span>
-            </p>
-            <Segmented
-              label={t(`priority.${p}.label`)}
-              options={options}
-              value={levels[p]}
-              onChange={(value) => onLevels({ ...levels, [p]: value })}
-              className="w-full"
+    <div className="flex flex-col gap-1">
+      {fine ? (
+        <ul id={id} className="flex flex-col gap-3 py-1">
+          {PRIORITIES.map((p) => (
+            <li key={p} className="flex flex-col gap-1.5">
+              <span className="font-semibold">{t(`priority.${p}`)}</span>
+              <Segmented
+                label={t(`priority.${p}`)}
+                options={options}
+                value={levels[p]}
+                onChange={(value) => onLevels({ ...levels, [p]: value })}
+                className="w-full"
+              />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div id={id} className="divide-y divide-line">
+          {PRIORITIES.map((p) => (
+            <Toggle
+              key={p}
+              label={t(`priority.${p}`)}
+              checked={levels[p] === "most"}
+              onChange={(on) => onLevels({ ...levels, [p]: on ? "most" : "matters" })}
+              className="py-1.5"
             />
-          </li>
-        ))}
-      </ul>
-
-      <label className="press flex min-h-11 cursor-pointer items-center justify-between gap-4">
-        <span>
-          <span className="block text-lg font-medium">{t("irrigatedTitle")}</span>
-          <span className="text-sm text-ink-muted">{t("irrigatedHint")}</span>
-        </span>
-        <input
-          type="checkbox"
-          role="switch"
-          checked={irrigated}
-          onChange={(event) => onIrrigated(event.target.checked)}
-          className="peer sr-only"
-        />
-        <span
-          aria-hidden="true"
-          className="relative h-8 w-14 shrink-0 rounded-full bg-line transition-colors peer-checked:bg-field peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--focus)] after:absolute after:left-1 after:top-1 after:h-6 after:w-6 after:rounded-full after:bg-surface after:shadow after:transition-transform peer-checked:after:translate-x-6"
-        />
-      </label>
+          ))}
+        </div>
+      )}
+      <button
+        type="button"
+        aria-expanded={fine}
+        aria-controls={id}
+        onClick={() => setFine((f) => !f)}
+        className="press -ml-3 inline-flex min-h-tap w-fit items-center gap-1.5 rounded-pill px-3 text-sm font-semibold text-field hover:bg-surface-sunken"
+      >
+        {t(fine ? "simple" : "fineTune")}
+        <ChevronDownIcon size={16} className={`transition-transform duration-[var(--duration-base)] ${fine ? "rotate-180" : ""}`} />
+      </button>
+      <div className="mt-2 border-t border-line pt-2">
+        <Toggle label={t("irrigated")} checked={irrigated} onChange={onIrrigated} />
+      </div>
     </div>
   );
 }

@@ -96,7 +96,7 @@ export function PlanStep({
   return (
     <div className="flex flex-col gap-6">
       <Panel>
-        <PrioritiesStep levels={levels} onLevels={setLevels} irrigated={irrigated} onIrrigated={setIrrigated} headingLevel={2} />
+        <PrioritiesStep levels={levels} onLevels={setLevels} irrigated={irrigated} onIrrigated={setIrrigated} />
         <div className="mt-6 flex flex-col gap-2 border-t border-line pt-5">
           <p className="text-ink-muted">
             {t("summary", { count: ready.length, from: startYear, to: lastYear })}

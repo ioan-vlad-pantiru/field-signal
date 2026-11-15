@@ -11,6 +11,9 @@ import { useAppLocale } from "@/lib/localized";
 import { verdict, type VerdictKind } from "@/lib/results";
 import { useMap } from "@/components/map/use-map";
 import { Button } from "@/components/ui/button";
+import { cardClass } from "@/components/ui/card";
+import { ScreenHeader } from "@/components/ui/screen-header";
+import { FieldThumb } from "@/components/fields/field-thumb";
 import { DemoBanner } from "@/components/ui/states";
 import type { SubmittedField } from "../draft-field";
 import { useFieldLabel } from "../steps/field-list";
@@ -117,76 +120,63 @@ export function ResultsOverview({
   }, [map, data, onOpen]);
 
   return (
-    <div className="flex flex-col gap-6">
-      {mock ? <DemoBanner origin={mock.origin} /> : null}
-      <header>
-        <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-          {t("title", { count: fields.length })}
-        </h1>
-        <p className="mt-2 max-w-[60ch] text-lg">
-          {better.length === 0
+    <div className="flex flex-col gap-5">
+      <ScreenHeader
+        title={t("title", { count: fields.length })}
+        meta={
+          better.length === 0
             ? t("summaryNone", { ha: formatNumber(totalHa, locale, 0) })
-            : t("summary", {
-                count: better.length,
-                total: fields.length,
-                ha: formatNumber(betterHa, locale, 0),
-              })}
-        </p>
-      </header>
+            : t("summary", { count: better.length, total: fields.length, ha: formatNumber(betterHa, locale, 0) })
+        }
+      />
+      {mock ? <DemoBanner origin={mock.origin} /> : null}
 
       {failed ? null : (
-        <div className="flex flex-col gap-2">
+        <div className="-mx-gutter flex flex-col gap-2 sm:mx-0">
           <div
             ref={container}
             role="img"
             aria-label={t("mapLabel", { count: fields.length })}
-            className="h-[min(60svh,520px)] min-h-72 w-full overflow-hidden rounded-2xl border border-line bg-surface-sunken"
+            className="h-[min(50svh,460px)] min-h-72 w-full overflow-hidden bg-surface-sunken sm:rounded-[var(--radius-xl)] sm:shadow-1"
           />
-          <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-muted">
+          <ul className="flex flex-wrap gap-x-4 gap-y-1 px-gutter text-sm text-ink-muted sm:px-0">
             <li className="flex items-center gap-1.5">
-              <span className="size-3 rounded-sm" style={{ background: KIND_COLOR.fewer }} />
+              <span className="size-3 rounded-xs" style={{ background: KIND_COLOR.fewer }} />
               {t("legendFewer")}
             </li>
             <li className="flex items-center gap-1.5">
-              <span className="size-3 rounded-sm" style={{ background: KIND_COLOR.same }} />
+              <span className="size-3 rounded-xs" style={{ background: KIND_COLOR.same }} />
               {t("legendOther")}
             </li>
             <li className="flex items-center gap-1.5">
-              <span className="size-3 rounded-sm" style={{ background: KIND_COLOR.keep }} />
+              <span className="size-3 rounded-xs" style={{ background: KIND_COLOR.keep }} />
               {t("legendKeep")}
             </li>
           </ul>
         </div>
       )}
 
-      <ul className="divide-y divide-line border-y border-line">
+      <ul className="flex flex-col gap-3">
         {fields.map((field, i) => {
           const v = verdicts[i];
           return (
-            <li key={i} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3">
-              <div className="flex min-w-0 items-start gap-3">
-                <span
-                  aria-hidden="true"
-                  className="mt-1.5 size-3 shrink-0 rounded-sm"
-                  style={{ background: KIND_COLOR[v.kind] }}
-                />
-                <div className="min-w-0">
-                  <p className="break-words font-semibold">
-                    {label(field, i)}{" "}
-                    <span className="font-normal tabular-nums text-ink-muted">
-                      · {t("area", { ha: formatNumber(fieldAreaHa(field), locale, 1) })}
+            <li key={i} className="rise" style={{ "--i": Math.min(i, 8) } as React.CSSProperties}>
+              <div className={cardClass(false, "flex items-center gap-3 p-3")}>
+                <FieldThumb boundary={field.boundary} parts={field.parts} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold">{label(field, i)}</p>
+                  <p className="text-sm tabular-nums text-ink-muted">{t("area", { ha: formatNumber(fieldAreaHa(field), locale, 1) })}</p>
+                  <p className="mt-0.5 flex items-center gap-1.5 text-sm">
+                    <span aria-hidden="true" className="size-2.5 shrink-0 rounded-full" style={{ background: KIND_COLOR[v.kind] }} />
+                    <span className="truncate">
+                      {v.kind === "keep" ? t("rowKeep", { poor: v.currentPoor }) : t("rowBest", { name: nameOf(v.best), best: v.bestPoor, current: v.currentPoor })}
                     </span>
                   </p>
-                  <p className="text-ink-muted">
-                    {v.kind === "keep"
-                      ? t("rowKeep", { poor: v.currentPoor })
-                      : t("rowBest", { name: nameOf(v.best), best: v.bestPoor, current: v.currentPoor })}
-                  </p>
                 </div>
+                <Button variant="tonal" onClick={() => onOpen(i)}>
+                  {t("open")}
+                </Button>
               </div>
-              <Button variant="secondary" onClick={() => onOpen(i)}>
-                {t("open")}
-              </Button>
             </li>
           );
         })}

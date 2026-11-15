@@ -510,6 +510,17 @@ input[type="range"].slider::-moz-range-thumb {
 .maplibregl-ctrl-attrib {
   font-size: 11px;
 }
+/* MapLibre's zoom and compass, rounded like the rest of the floating controls. */
+.maplibregl-ctrl-group {
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-float) !important;
+  overflow: hidden;
+}
+/* On the field picker they sit under the round basemap and drag-to-select buttons. */
+.field-map-frame .maplibregl-ctrl-top-right {
+  top: 10.5rem;
+  right: 0.5rem;
+}
 
 
 /* Zone markers on the buyer map (DOM markers so they are real, focusable buttons). */

@@ -13,7 +13,7 @@ const ARROW = { up: "↑", down: "↓", steady: "→" } as const;
 /** What changed at this place: early and recent means, stated with both periods, no causes. */
 export function ShiftList({ shifts }: { shifts: Shift[] }) {
   return (
-    <ul className="grid gap-x-8 gap-y-8 md:grid-cols-3">
+    <ul className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
       {shifts.map((shift) => (
         <ShiftItem key={shift.indicator.id} shift={shift} />
       ))}

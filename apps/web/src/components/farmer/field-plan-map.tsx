@@ -236,23 +236,23 @@ export function FieldPlanMap({
 
   if (failed) {
     return (
-      <p role="status" className="rounded-[16px] bg-surface-sunken px-4 py-3 text-ink-muted">
+      <p role="status" className="rounded-[var(--radius-lg)] bg-surface-sunken px-4 py-3 text-ink-muted">
         {t("mapUnavailable")}
       </p>
     );
   }
 
   return (
-    <div className="relative print:break-inside-avoid">
+    <div className="relative print:break-inside-avoid" style={{ viewTransitionName: "none" }}>
       <div
         ref={container}
         role="img"
         aria-label={label}
-        className="h-80 w-full overflow-hidden rounded-[16px] border border-line bg-surface-sunken sm:h-[28rem] print:hidden"
+        className="h-[min(56svh,26rem)] w-full overflow-hidden rounded-[var(--radius-xl)] bg-surface-sunken shadow-1 sm:h-[28rem] print:hidden"
       />
       {snapshot ? (
         // eslint-disable-next-line @next/next/no-img-element -- a data URL of the live map, print only
-        <img src={snapshot} alt={label} className="hidden h-[5.5cm] w-full rounded-[16px] object-cover print:block" />
+        <img src={snapshot} alt={label} className="hidden h-[5.5cm] w-full rounded-[var(--radius-lg)] object-cover print:block" />
       ) : null}
       {/* The imagery licence asks for a clearly visible credit, not one behind the (i) button. */}
       <p className="absolute bottom-2 left-2 z-[1] print:static print:mt-1 print:bg-transparent print:px-0 max-w-[calc(100%-3.5rem)] rounded-md bg-surface/90 px-2 py-0.5 text-xs leading-snug text-ink">
