@@ -214,7 +214,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
             <BarnIcon size={28} className="text-ink-muted" />
             <h3 className="mt-4 font-display text-2xl font-semibold">{t("buyer.title")}</h3>
             <p className="mt-2 flex-1 text-lg text-ink-muted">{t("buyer.text")}</p>
-            <Link href="/feed" className={buttonClass("secondary", "lg", "mt-6 self-start")}>
+            <Link href="/buyers" className={buttonClass("secondary", "lg", "mt-6 self-start")}>
               {t("buyer.cta")}
             </Link>
           </div>

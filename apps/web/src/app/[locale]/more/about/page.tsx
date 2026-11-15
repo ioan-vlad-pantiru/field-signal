@@ -15,13 +15,13 @@ const SOURCES = [
 const WHAT = ["farmer", "buyer", "transparency"] as const;
 const LIMITS = ["hail", "pests", "markets", "management", "scale"] as const;
 
-export async function generateMetadata({ params }: PageProps<"/[locale]/about">): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps<"/[locale]/more/about">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "About" });
   return { title: t("title") };
 }
 
-export default async function AboutPage({ params }: PageProps<"/[locale]/about">) {
+export default async function AboutPage({ params }: PageProps<"/[locale]/more/about">) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("About");

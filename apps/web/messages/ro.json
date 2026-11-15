@@ -12,7 +12,11 @@
     "language": "Limba",
     "languageLabel": "Limba: {current}. Alegeți altă limbă",
     "account": "Cont",
-    "farm": "Ferma mea"
+    "farm": "Ferma mea",
+    "fields": "Câmpurile mele",
+    "buyers": "Cumpărători",
+    "more": "Mai mult",
+    "home": "Field Signal, prima pagină"
   },
   "Footer": {
     "credit": "Creat la NASA Space Apps Challenge 2026 · Date: NASA POWER, MODIS, SMAP, SoilGrids",
@@ -1154,5 +1158,23 @@
       "assumptions": "Ipoteze: stocurile, consumul și volumele furnizorilor sunt inventate. Regulile UE și Schengen, ecartamentul și restricțiile la export din 2022 sunt fapte publice. Timpii de livrare sunt estimări. Prețurile nu intră în calcul."
     },
     "report": "Generează raportul PDF (în română)"
+  },
+  "Buyers": {
+    "title": "Cumpărători",
+    "viewLabel": "Ce vreți să vedeți",
+    "region": "Zonă",
+    "stocks": "Stocuri"
+  },
+  "More": {
+    "title": "Mai mult",
+    "account": "Cont",
+    "signIn": "Intrați în cont",
+    "signInDetail": "Câmpurile dvs. pe orice telefon",
+    "about": "Despre și date",
+    "aboutDetail": "Cum funcționează, surse NASA, limite",
+    "language": "Limba",
+    "ask": "Întrebați Field Signal",
+    "askDetail": "Despre culturi, date sau aplicație",
+    "credit": "Făcut la NASA Space Apps 2026 de Farm Titans"
   }
 }

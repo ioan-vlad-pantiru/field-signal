@@ -46,7 +46,7 @@ export function SaveField({
   if (account.status === "loading" || account.status === "offline") return null;
   if (account.status === "signed-out") {
     return (
-      <Link href="/account" className={buttonClass("quiet")}>
+      <Link href="/more/account" className={buttonClass("quiet")}>
         {t("signInToSave")}
       </Link>
     );
@@ -55,7 +55,7 @@ export function SaveField({
   if (saved) {
     return (
       <Link
-        href="/account"
+        href="/more/account"
         role="status"
         className="press inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 font-medium text-field hover:bg-surface-sunken"
       >

@@ -12,7 +12,11 @@
     "language": "Language",
     "languageLabel": "Language: {current}. Choose another language",
     "account": "Account",
-    "farm": "My farm"
+    "farm": "My farm",
+    "fields": "My fields",
+    "buyers": "Buyers",
+    "more": "More",
+    "home": "Field Signal home"
   },
   "Footer": {
     "credit": "Created at NASA Space Apps Challenge 2026 · Data: NASA POWER, MODIS, SMAP, SoilGrids",
@@ -1154,5 +1158,23 @@
       "assumptions": "Assumptions: stocks, use and supplier volumes are invented. EU and Schengen rules, rail gauge and the 2022 export curbs are public facts. Lead times are estimates. Prices are not part of the calculation."
     },
     "report": "Generate the PDF report (in Romanian)"
+  },
+  "Buyers": {
+    "title": "Buyers",
+    "viewLabel": "What to look at",
+    "region": "Region",
+    "stocks": "Stocks"
+  },
+  "More": {
+    "title": "More",
+    "account": "Account",
+    "signIn": "Sign in",
+    "signInDetail": "Keep your fields on every device",
+    "about": "About and data",
+    "aboutDetail": "How it works, NASA sources, limits",
+    "language": "Language",
+    "ask": "Ask Field Signal",
+    "askDetail": "Questions about crops, data or this app",
+    "credit": "Made at NASA Space Apps 2026 by Farm Titans"
   }
 }

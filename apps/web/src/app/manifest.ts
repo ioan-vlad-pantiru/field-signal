@@ -5,14 +5,14 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Field Signal",
     short_name: "Field Signal",
     description:
-      "Ajutor pentru alegerea rotației culturilor, pe baza datelor din satelit. Crop-rotation help from satellite data.",
+      "Crop-rotation help from satellite data. Ajutor pentru alegerea rotației culturilor, pe baza datelor din satelit.",
     id: "/",
-    start_url: "/ro",
+    start_url: "/",
     scope: "/",
     display: "standalone",
     orientation: "portrait",
-    lang: "ro",
-    background_color: "#ffffff",
+    lang: "en",
+    background_color: "#f4f6f1",
     theme_color: "#1f6b45",
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },

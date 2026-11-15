@@ -16,11 +16,11 @@ import { SupplierPanel } from "./supplier-panel";
 const PATHS: readonly PathId[] = ["A", "B"];
 
 /** Buyer tab: days of stock cover per ingredient, and which countries can refill it to 90 days. */
-export function StocksView() {
+export function StocksView({ initialPath = "A", onPath }: { initialPath?: PathId; onPath?: (path: PathId) => void }) {
   const t = useTranslations("Stocks");
   const l = useLocalized();
   const s = mockStocks;
-  const [path, setPath] = useState<PathId>("A");
+  const [path, setPath] = useState<PathId>(initialPath);
   // null = the most exposed row (assessPath sorts by days of cover, lowest first).
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const rows = assessPath(s, path);
@@ -44,6 +44,7 @@ export function StocksView() {
           onChange={(next) => {
             setPath(next);
             setSelectedId(null);
+            onPath?.(next);
           }}
           className="w-full sm:w-auto"
           options={PATHS.map((p) => ({

@@ -91,7 +91,7 @@ export function SaveToAccount({
 
       {account.status === "signed-out" ? (
         <p className="text-sm text-ink-muted">
-          <Link href="/account" className="font-medium text-field underline underline-offset-4">
+          <Link href="/more/account" className="font-medium text-field underline underline-offset-4">
             {t("signIn")}
           </Link>{" "}
           {t("signInHint")}

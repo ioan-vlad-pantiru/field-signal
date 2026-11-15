@@ -357,7 +357,7 @@ export function FarmView() {
               {saving === "busy" ? t("save.busy") : saving === "saved" ? t("save.done") : t("save.button")}
             </Button>
           ) : (
-            <Link href="/account" className={buttonClass("secondary")}>
+            <Link href="/more/account" className={buttonClass("secondary")}>
               {t("save.signIn")}
             </Link>
           )}

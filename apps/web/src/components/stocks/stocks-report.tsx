@@ -75,7 +75,7 @@ export function StocksReport() {
       </div>
 
       <div className="no-print -ml-3 flex flex-wrap items-center gap-1">
-        <Link href={{ pathname: "/stocks", query: { path } }} className={buttonClass("quiet")}>
+        <Link href={{ pathname: "/buyers", query: { view: "stocks", path } }} className={buttonClass("quiet")}>
           <ArrowLeftIcon size={18} />
           Înapoi la stocuri
         </Link>

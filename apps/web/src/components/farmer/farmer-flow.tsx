@@ -130,7 +130,7 @@ function AccountFieldsBar({ fields, onOpen }: { fields: AccountField[]; onOpen: 
           <p className="text-sm text-ink-muted">{t("pickHint")}</p>
         </div>
         {fields.length > shown.length ? (
-          <Link href="/account" className="press min-h-11 rounded-lg font-medium text-field">
+          <Link href="/more/account" className="press min-h-11 rounded-lg font-medium text-field">
             {t("all", { count: fields.length })}
           </Link>
         ) : null}

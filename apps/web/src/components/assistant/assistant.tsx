@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
-import { AssistantError, ask, dropLastQuestion, resetConversation, useAssistant, type Message } from "@/lib/assistant";
+import { AssistantError, ask, dropLastQuestion, OPEN_ASSISTANT_EVENT, resetConversation, useAssistant, type Message } from "@/lib/assistant";
 import { CrossIcon } from "@/components/ui/icons";
 
 /** Inline **bold** only; everything else stays plain text. */
@@ -99,6 +99,13 @@ export function Assistant() {
     if (open) input.current?.focus();
   }, [open]);
 
+  // "Ask Field Signal" rows and header actions open the panel from anywhere.
+  useEffect(() => {
+    const onOpen = () => setOpen(true);
+    window.addEventListener(OPEN_ASSISTANT_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_ASSISTANT_EVENT, onOpen);
+  }, []);
+
   useEffect(() => {
     log.current?.scrollTo({ top: log.current.scrollHeight, behavior: "smooth" });
   }, [messages, busy]);
@@ -147,13 +154,14 @@ export function Assistant() {
         ref={launcher}
         type="button"
         onClick={() => setOpen(true)}
-        className="no-print press fixed bottom-[calc(9.5rem+env(safe-area-inset-bottom))] right-4 z-30 inline-flex min-h-12 items-center gap-2 rounded-full bg-field px-4 font-semibold text-on-field shadow-[var(--shadow-2)] hover:bg-field-strong sm:bottom-6 sm:right-6"
+        aria-label={t("launcher")}
+        className="no-print press fixed bottom-[calc(var(--bar-gap)+env(safe-area-inset-bottom))] right-4 z-30 inline-flex size-[var(--bar-h)] items-center justify-center gap-2 rounded-pill bg-field font-semibold text-on-field shadow-float hover:bg-field-strong sm:bottom-6 sm:right-6 sm:size-auto sm:min-h-14 sm:px-5 [html[data-sheets]_&]:hidden"
       >
-        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-6 sm:size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M4 5h16v11H9l-5 4z" />
           <path d="M8.5 10h.01M12 10h.01M15.5 10h.01" />
         </svg>
-        {t("launcher")}
+        <span className="hidden sm:inline">{t("launcher")}</span>
       </button>
     );
   }
@@ -166,7 +174,7 @@ export function Assistant() {
       onKeyDown={(e) => {
         if (e.key === "Escape") close();
       }}
-      className="no-print fixed inset-x-0 bottom-0 top-16 z-40 flex flex-col border-line bg-surface shadow-[var(--shadow-3)] sm:inset-x-auto sm:bottom-6 sm:right-6 sm:top-auto sm:h-[min(640px,calc(100svh-7rem))] sm:w-[400px] sm:rounded-2xl sm:border"
+      className="no-print fixed inset-x-0 bottom-0 z-40 flex h-[88dvh] flex-col overflow-hidden rounded-t-[var(--radius-xl)] bg-surface-raised shadow-3 sm:inset-x-auto sm:bottom-6 sm:right-6 sm:h-[min(640px,calc(100svh-7rem))] sm:w-[400px] sm:rounded-[var(--radius-xl)] sm:shadow-float"
     >
       <header className="flex items-center justify-between gap-2 border-b border-line py-2 pl-4 pr-2">
         <div>

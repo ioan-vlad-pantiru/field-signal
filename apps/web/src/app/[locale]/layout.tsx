@@ -5,9 +5,8 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { Assistant } from "@/components/assistant/assistant";
-import { BottomNav } from "@/components/layout/nav";
+import { BottomBar } from "@/components/layout/nav";
 import { ServiceWorkerRegistration } from "@/components/layout/service-worker";
-import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import "../globals.css";
 
@@ -35,8 +34,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f1411" },
+    { media: "(prefers-color-scheme: light)", color: "#f4f6f1" },
+    { media: "(prefers-color-scheme: dark)", color: "#0c110e" },
   ],
 };
 
@@ -56,9 +55,10 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>
           <SiteHeader />
-          <main className="mx-auto w-full max-w-[1200px] flex-1 px-4 pb-8 pt-5">{children}</main>
-          <SiteFooter />
-          <BottomNav />
+          <main className="mx-auto w-full max-w-[1200px] flex-1 px-gutter pb-[calc(var(--bar-space)+1.5rem)] pt-4 sm:pb-12 sm:pt-6">
+            {children}
+          </main>
+          <BottomBar />
           <Assistant />
           <ServiceWorkerRegistration />
         </NextIntlClientProvider>
