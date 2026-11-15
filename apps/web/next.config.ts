@@ -19,10 +19,16 @@ const nextConfig: NextConfig = {
       // The farm import is a path inside My fields now.
       ["/farm", "/field?import=1"],
     ];
-    return moved.flatMap(([from, to]) => [
-      { source: `/:locale(en|ro)${from}`, destination: `/:locale${to}`, permanent: false },
-      { source: from, destination: to, permanent: false },
-    ]);
+    return [
+      ...moved.flatMap(([from, to]) => [
+        { source: `/:locale(en|ro)${from}`, destination: `/:locale${to}`, permanent: false },
+        { source: from, destination: to, permanent: false },
+      ]),
+      // The pitch deck is a static page in public/pitch; its assets are relative to that folder.
+      { source: "/:locale(en|ro)/pitch", destination: "/pitch/index.html", permanent: false },
+      { source: "/pitch", destination: "/pitch/index.html", permanent: false },
+      { source: "/pitch/", destination: "/pitch/index.html", permanent: false },
+    ];
   },
   partialPrefetching: true,
   turbopack: {

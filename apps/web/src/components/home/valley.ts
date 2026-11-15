@@ -1,21 +1,34 @@
 /**
  * A made-up Transylvanian valley for the start page: rolling farmland between forested mountains,
- * a road, a river and a village, with a 1 ha hexagon field laid over it the way the field plan
- * does it (lib/field-plan). Deterministic, so every visit draws the same valley.
+ * a road, a river and a village, cut into plots along the field plan's plot axis. Deterministic,
+ * so every visit draws the same valley.
  *
  * Units: 1 = 100 m. x is east, z is south (three.js), y is up.
  */
-import { HEX_SIDE_M, layoutField, type FieldLayout, type Hex } from "@/lib/field-plan";
+import { HEX_SIDE_M } from "@/lib/field-plan";
 import type { NonFarmland } from "@/lib/land-cover";
 
 export const HEX_SIDE = HEX_SIDE_M / 100;
 /** The area searched for farmland: the valley between the mountains, north of the river. */
-const FIELD_HALF_WIDTH = 22;
-const FIELD_NORTH = 13;
+export const FIELD_HALF_WIDTH = 22;
+export const FIELD_NORTH = 13;
+/** Past this the land is river bank or hillside: `riverZ` peaks at 8.3. */
+export const FIELD_SOUTH = 10;
 export const WATER_LEVEL = -0.08;
 export const ROAD_HALF_WIDTH = 0.13;
 export const RIVER_HALF_WIDTH = 0.34;
 const PLOT_AXIS_DEG = -24;
+const PLOT_ANGLE = (PLOT_AXIS_DEG * Math.PI) / 180;
+
+/** Distance along the plot axis (local north is −z). */
+const plotAxis = (x: number, z: number) => x * Math.cos(PLOT_ANGLE) - z * Math.sin(PLOT_ANGLE);
+
+const PLOT_AXIS_RANGE = (() => {
+  const us = [-FIELD_HALF_WIDTH, FIELD_HALF_WIDTH].flatMap((x) =>
+    [-FIELD_NORTH, FIELD_SOUTH].map((z) => plotAxis(x, z)),
+  );
+  return [Math.min(...us), Math.max(...us)] as const;
+})();
 
 // ---------------------------------------------------------------------------------------------
 // Noise
@@ -176,7 +189,7 @@ export function village(): House[] {
 }
 
 // ---------------------------------------------------------------------------------------------
-// The hexagon field
+// The field
 
 /** Pointy-top hexagon outline, inset by `scale`: 12 points, corners and edge midpoints. */
 export function hexRing(cx: number, cz: number, scale = 1): [number, number][] {
@@ -193,16 +206,7 @@ export function hexRing(cx: number, cz: number, scale = 1): [number, number][] {
   return pts;
 }
 
-export interface ValleyField {
-  layout: FieldLayout;
-  /** Why each left-out hexagon is not farmed. */
-  reasons: Map<string, NonFarmland>;
-  /** Hexagon centre by id. */
-  centers: Map<string, [number, number]>;
-  /** Plot index by farmed hexagon id. */
-  plotOf: Map<string, number>;
-}
-
+/** Why the land at a point cannot be farmed, sampled over one hexagon's worth of ground. */
 function classify(cx: number, cz: number, houses: readonly House[]): NonFarmland | null {
   const samples: [number, number][] = [[cx, cz], ...hexRing(cx, cz, 0.92).filter((_, i) => i % 2 === 0)];
   if (samples.some(([x, z]) => distToRiver(x, z) < RIVER_HALF_WIDTH + 0.05)) return "water";
@@ -215,44 +219,25 @@ function classify(cx: number, cz: number, houses: readonly House[]): NonFarmland
   return null;
 }
 
-/** Axial neighbours of a pointy-top hexagon. */
-const NEIGHBOURS: [number, number][] = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1]];
-
 /**
- * Covers the whole valley floor north of the river with 1 ha hexagons, keeps the farmable ones
- * and splits them into plots. Mountains, woods, the road, the river and the village bound it.
- * Only left-out hexagons that touch the field are reported, so the gaps read inside the field.
+ * The plot under a point, as an index in `0..plotCount-1`, or −1 where the land is not farmed.
+ * Plots are straight bands across the valley floor along the plot axis, cut off by the road,
+ * river, village and woods, so nothing of the hexagon grid shows.
  */
-export function valleyField(plotCount: number, houses: readonly House[]): ValleyField {
-  const s = HEX_SIDE;
-  const angle = (PLOT_AXIS_DEG * Math.PI) / 180;
-  const hexes: Hex[] = [];
-  const all = new Map<string, NonFarmland | null>();
-  const centers = new Map<string, [number, number]>();
-  const R = 40;
-  for (let q = -R; q <= R; q++) {
-    for (let r = -R; r <= R; r++) {
-      const x = s * Math.sqrt(3) * (q + r / 2);
-      const north = s * 1.5 * r;
-      const z = -north;
-      if (Math.abs(x) > FIELD_HALF_WIDTH || z < -FIELD_NORTH || z > riverZ(x) + RIVER_HALF_WIDTH + HEX_SIDE) continue;
-      const reason = classify(x, z, houses);
-      const id = `${q},${r}`;
-      all.set(id, reason);
-      centers.set(id, [x, z]);
-      hexes.push({ id, ring: [], center: [x, z], axis: x * Math.cos(angle) + north * Math.sin(angle) });
-    }
-  }
-  const blocked = new Set([...all].filter(([, reason]) => reason !== null).map(([id]) => id));
-  const reasons = new Map<string, NonFarmland>();
-  for (const id of blocked) {
-    const [q, r] = id.split(",").map(Number);
-    const touches = NEIGHBOURS.some(([dq, dr]) => all.get(`${q + dq},${r + dr}`) === null);
-    const reason = all.get(id);
-    if (touches && reason) reasons.set(id, reason);
-  }
-  const layout = layoutField(hexes, blocked, plotCount);
-  const plotOf = new Map<string, number>();
-  layout.plots.forEach((plot, i) => plot.hexIds.forEach((id) => plotOf.set(id, i)));
-  return { layout, reasons, centers, plotOf };
+export function fieldPlotAt(x: number, z: number, houses: readonly House[], plotCount: number): number {
+  if (Math.abs(x) > FIELD_HALF_WIDTH || z < -FIELD_NORTH || z > riverZ(x) + RIVER_HALF_WIDTH + HEX_SIDE) return -1;
+  if (classify(x, z, houses)) return -1;
+  const { axisX, axisZ, u0, width } = plotBands(plotCount);
+  const band = Math.floor((x * axisX + z * axisZ - u0) / width);
+  return Math.min(Math.max(band, 0), plotCount - 1);
+}
+
+/** The plot bands' layout: axis direction, first edge and one band's width along it. */
+export function plotBands(plotCount: number) {
+  return {
+    axisX: Math.cos(PLOT_ANGLE),
+    axisZ: -Math.sin(PLOT_ANGLE),
+    u0: PLOT_AXIS_RANGE[0],
+    width: (PLOT_AXIS_RANGE[1] - PLOT_AXIS_RANGE[0]) / plotCount,
+  };
 }

@@ -1,11 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import type { PathId } from "@/lib/stocks";
 import { Segmented } from "@/components/ui/segmented";
-import { FeedView } from "@/components/feed/feed-view";
+import { YieldOutlook } from "@/components/buyers/yield-outlook";
 import { StocksView } from "@/components/stocks/stocks-view";
 
 const VIEWS = ["region", "stocks"] as const;
@@ -23,6 +24,9 @@ export function BuyersView() {
   const pathname = usePathname();
   const view: View = params.get("view") === "stocks" ? "stocks" : "region";
   const path: PathId = params.get("path") === "B" ? "B" : "A";
+  // The crop and year picked on the map.
+  const [crop, setCrop] = useState("maize");
+  const [year, setYear] = useState<string | null>(null);
 
   function update(next: Record<string, string>) {
     const query = { ...Object.fromEntries(params.entries()), ...next };
@@ -39,7 +43,7 @@ export function BuyersView() {
         className="w-full sm:w-80"
       />
       {view === "region" ? (
-        <FeedView />
+        <YieldOutlook crop={crop} onCrop={setCrop} year={year} onYear={setYear} />
       ) : (
         <StocksView path={path} onPath={(next) => update({ path: next })} />
       )}

@@ -93,6 +93,7 @@ export function RegionView({ result }: { result: Loaded<SourcingRegion> }) {
     <div className={`flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-8 ${ticked.length > 0 ? "pb-20" : ""}`}>
       <div className="flex flex-col gap-5 lg:col-start-2 lg:row-start-1">
         <ScreenHeader
+          as="h2"
           title={t("title")}
           meta={t("meta", { region: region.region_name.replace(/\s*\(mock\)/i, ""), season: region.season, count: zones.length })}
         />

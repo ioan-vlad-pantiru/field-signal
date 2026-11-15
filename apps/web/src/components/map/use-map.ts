@@ -156,8 +156,9 @@ export function useMap(
    * `cooperativeGestures`: the page scrolls past the map; zoom needs Ctrl/⌘ + wheel, pan needs two
    * fingers. For maps that sit in a scrolling page; off where the map is the task (drawing a field).
    * `bounds`: land on a view that shows all of it (on a narrow phone, below `zoom`), never closer than `zoom`.
+   * `flat`: no terrain, tilt or rotation — for data layers drawn over a wide area, which a tilt distorts.
    */
-  options: { satellite?: boolean; cooperativeGestures?: boolean; bounds?: LngLatBoundsLike } = {},
+  options: { satellite?: boolean; cooperativeGestures?: boolean; bounds?: LngLatBoundsLike; flat?: boolean } = {},
 ) {
   const container = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<MapLibreMap | null>(null);
@@ -169,6 +170,7 @@ export function useMap(
     satellite: options.satellite ?? false,
     cooperativeGestures: options.cooperativeGestures ?? false,
     bounds: options.bounds,
+    flat: options.flat ?? false,
   });
 
   useEffect(() => {
@@ -209,6 +211,7 @@ export function useMap(
       if (event.originalEvent) userTilted = true;
     });
     instance.on("zoomend", (event) => {
+      if (initial.current.flat) return;
       // Only follow zooms the user made, not our own camera moves.
       if (userTilted || !("originalEvent" in event && event.originalEvent)) return;
       const target = pitchForZoom(instance.getZoom());
@@ -223,7 +226,7 @@ export function useMap(
         .getContainer()
         .querySelector(".maplibregl-compact-show")
         ?.classList.remove("maplibregl-compact-show");
-      addThreeD(instance, dark);
+      if (!initial.current.flat) addThreeD(instance, dark);
       if (initial.current.satellite) addSatellite(instance, true);
       // Arrival: settle from a wider, flat view into the working view, slightly tilted.
       const { bounds } = initial.current;
@@ -233,8 +236,8 @@ export function useMap(
       instance.flyTo({
         center: fit?.center ?? initial.current.center,
         zoom: fit?.zoom ?? initial.current.zoom,
-        pitch: Math.max(35, pitchForZoom(initial.current.zoom)),
-        bearing: -12,
+        pitch: initial.current.flat ? 0 : Math.max(35, pitchForZoom(initial.current.zoom)),
+        bearing: initial.current.flat ? 0 : -12,
         duration: prefersReducedMotion() ? 0 : 1800,
         essential: false,
       });

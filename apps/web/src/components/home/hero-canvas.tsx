@@ -8,42 +8,51 @@ import {
   BufferGeometry,
   Color,
   ConeGeometry,
+  DataTexture,
   type DirectionalLight,
   DoubleSide,
   Float32BufferAttribute,
   type InstancedMesh,
-  LineBasicMaterial,
   Matrix4,
   MeshStandardMaterial,
+  NearestFilter,
   Object3D,
   PlaneGeometry,
   Quaternion,
+  RedFormat,
+  type Texture,
+  UnsignedByteType,
   Vector3,
+  Vector4,
   type WebGLProgramParametersWithUniforms,
 } from "three";
 import type { Crop } from "@/lib/contracts";
-import { CROP_COLORS, CROP_HEIGHT_M } from "@/lib/crops";
+import { CROP_COLORS } from "@/lib/crops";
 import { cropFor } from "@/lib/field-plan";
 import { HORIZON, SOIL, Sky } from "@/components/simulator/scene/landscape";
 import {
+  FIELD_HALF_WIDTH,
+  FIELD_NORTH,
+  FIELD_SOUTH,
+  fieldPlotAt,
   type House,
   RIVER_HALF_WIDTH,
   ROAD_HALF_WIDTH,
-  type ValleyField,
   WATER_LEVEL,
   distToRiver,
   distToRoad,
   heightAt,
-  hexRing,
   isForest,
   mulberry32,
+  plotBands,
   roadZ,
 } from "./valley";
 
 export interface HeroCanvasProps {
   sequence: readonly Crop[];
   houses: readonly House[];
-  field: ValleyField;
+  /** How many plots the field is cut into. */
+  plots: number;
   /** Render one finished frame and stop (prefers-reduced-motion). */
   still: boolean;
   /** False while the hero is off screen or the tab is hidden. */
@@ -55,17 +64,13 @@ export interface HeroCanvasProps {
 }
 
 // Timeline, in seconds from the first frame.
-const DESCEND = 4.2;
-const HEX_REVEAL = 1.4;
-const FLAG_AT = 2.6;
-const SEASON_START = 4.4;
-const SEASON = 3.6;
-const STILL_T = SEASON_START + 2.2;
+const DESCEND = 6.5;
+const REVEAL = 2.0;
+const SEASON_START = 6.8;
+const SEASON = 5.6;
+const STILL_T = SEASON_START + 3.2;
 
 const MAX_PLOTS = 4;
-/** Crop heights are exaggerated so a 2.5 m maize crop reads against 100 m hexagons. */
-const CROP_SCALE = 0.13;
-const PLINTH = 0.035;
 const SPROUT = new Color("#8fb653");
 const STUBBLE = new Color("#d4c08e");
 const SOIL_COLOR = new Color(SOIL);
@@ -290,103 +295,121 @@ function Trees({ count }: { count: number }) {
 // ---------------------------------------------------------------------------------------------
 // The field
 
+/** One texel of the plot map, in world units: fine enough that a plot edge looks smooth. */
+const PLOT_TEXEL = 0.05;
+
 /**
- * Farmed hexagons as one mesh. Each hexagon is draped on the ground (centre, corners and edge
- * midpoints follow the terrain) and lifted by its plot's crop in the vertex shader.
+ * A plot map over the valley floor: each texel holds the plot index + 1 of the land under it, or
+ * 0 where nothing is farmed. The overlay is coloured through it, so plots read as continuous
+ * shapes and no hexagon edges show.
  */
-function fieldGeometry(field: ValleyField) {
-  const pos: number[] = [];
-  const plot: number[] = [];
-  const top: number[] = [];
-  const delay: number[] = [];
-  const rand: number[] = [];
-  const rnd = mulberry32(3);
-  for (const [id, p] of field.plotOf) {
-    const center = field.centers.get(id);
-    if (!center) continue;
-    const [cx, cz] = center;
-    const ring = hexRing(cx, cz, 0.9).map(([x, z]) => [x, heightAt(x, z) + PLINTH, z] as const);
-    const c = [cx, heightAt(cx, cz) + PLINTH, cz] as const;
-    const d = HEX_REVEAL + Math.hypot(cx, cz) * 0.07 + rnd() * 0.12;
-    const r = rnd();
-    const push = (v: readonly [number, number, number], isTop: number, dy = 0) => {
-      pos.push(v[0], v[1] + dy, v[2]);
-      plot.push(p);
-      top.push(isTop);
-      delay.push(d);
-      rand.push(r);
-    };
-    for (let k = 0; k < 12; k++) {
-      const a = ring[k];
-      const b = ring[(k + 1) % 12];
-      push(c, 1);
-      push(a, 1);
-      push(b, 1);
-      push(a, 1);
-      push(a, 0, -0.35);
-      push(b, 0, -0.35);
-      push(a, 1);
-      push(b, 0, -0.35);
-      push(b, 1);
+function plotTexture(houses: readonly House[], plots: number) {
+  const width = 2 * FIELD_HALF_WIDTH;
+  const height = FIELD_SOUTH + FIELD_NORTH;
+  const nx = Math.ceil(width / PLOT_TEXEL);
+  const ny = Math.ceil(height / PLOT_TEXEL);
+  const data = new Uint8Array(nx * ny);
+  for (let j = 0; j < ny; j++) {
+    const z = -FIELD_NORTH + (j + 0.5) * PLOT_TEXEL;
+    for (let i = 0; i < nx; i++) {
+      const x = -FIELD_HALF_WIDTH + (i + 0.5) * PLOT_TEXEL;
+      const plot = fieldPlotAt(x, z, houses, plots);
+      data[j * nx + i] = plot < 0 ? 0 : plot + 1;
     }
   }
-  const g = new BufferGeometry();
-  g.setAttribute("position", new Float32BufferAttribute(pos, 3));
-  g.setAttribute("aPlot", new Float32BufferAttribute(plot, 1));
-  g.setAttribute("aTop", new Float32BufferAttribute(top, 1));
-  g.setAttribute("aDelay", new Float32BufferAttribute(delay, 1));
-  g.setAttribute("aRand", new Float32BufferAttribute(rand, 1));
-  g.computeVertexNormals();
-  return g;
+  const texture = new DataTexture(data, nx, ny, RedFormat, UnsignedByteType);
+  texture.minFilter = NearestFilter;
+  texture.magFilter = NearestFilter;
+  texture.needsUpdate = true;
+  return texture;
 }
 
-/** The field's material, with one height and colour per plot set every frame. */
-function fieldMaterial() {
+/** A plane over the same bounds, draped on the ground; the shader colours it by plot. */
+function overlayGeometry() {
+  const width = 2 * FIELD_HALF_WIDTH;
+  const height = FIELD_SOUTH + FIELD_NORTH;
+  const geometry = new PlaneGeometry(width, height, 140, 70);
+  geometry.rotateX(-Math.PI / 2);
+  geometry.translate(0, 0, (FIELD_SOUTH - FIELD_NORTH) / 2);
+  const pos = geometry.attributes.position;
+  for (let i = 0; i < pos.count; i++) pos.setY(i, heightAt(pos.getX(i), pos.getZ(i)) + 0.03);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+/** Half-width, in world units, of the white line drawn between two plots. */
+const PLOT_LINE = 0.07;
+
+/**
+ * The overlay's material: one colour per plot, set every frame, white lines on the plot edges and
+ * a ripple from the centre when the plan is laid out.
+ */
+function overlayMaterial(texture: Texture, plots: number) {
+  const bands = plotBands(plots);
   const uniforms = {
     uTime: { value: 0 },
-    uHeight: { value: new Array<number>(MAX_PLOTS).fill(0) },
+    uPlot: { value: texture },
+    uBounds: {
+      value: new Vector4(
+        -FIELD_HALF_WIDTH,
+        -FIELD_NORTH,
+        1 / (2 * FIELD_HALF_WIDTH),
+        1 / (FIELD_SOUTH + FIELD_NORTH),
+      ),
+    },
     uColor: { value: Array.from({ length: MAX_PLOTS }, () => new Color(SOIL)) },
-    uSoil: { value: new Color(SOIL).multiplyScalar(0.8) },
+    uBands: { value: new Vector4(bands.axisX, bands.axisZ, bands.u0, bands.width) },
   };
-  const material = new MeshStandardMaterial({ roughness: 0.82, metalness: 0 });
+  const material = new MeshStandardMaterial({
+    roughness: 0.9,
+    metalness: 0,
+    transparent: true,
+    depthWrite: false,
+    polygonOffset: true,
+    polygonOffsetFactor: -2,
+  });
   material.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms) => {
     Object.assign(shader.uniforms, uniforms);
     shader.vertexShader = shader.vertexShader
       .replace(
         "#include <common>",
         `#include <common>
-        attribute float aPlot; attribute float aTop; attribute float aDelay; attribute float aRand;
-        uniform float uTime; uniform float uHeight[${MAX_PLOTS}]; uniform vec3 uColor[${MAX_PLOTS}];
-        varying vec3 vCrop; varying float vTop; varying vec2 vXZ;`,
+        uniform float uTime;
+        varying vec2 vXZ; varying float vReveal;`,
       )
       .replace(
         "#include <begin_vertex>",
         `#include <begin_vertex>
-        int plotIndex = int(aPlot + 0.5);
-        float rise = clamp((uTime - aDelay) / 0.7, 0.0, 1.0);
-        rise = 1.0 - pow(1.0 - rise, 3.0);
-        transformed.y += aTop * uHeight[plotIndex] * (0.85 + 0.3 * aRand) + (rise - 1.0) * 0.6;
-        vCrop = uColor[plotIndex] * (0.94 + 0.12 * aRand);
-        vTop = aTop;
-        vXZ = position.xz;`,
+        vXZ = position.xz;
+        float delay = ${REVEAL.toFixed(2)} + length(position.xz) * 0.07;
+        vReveal = smoothstep(delay, delay + 0.85, uTime);`,
       );
     shader.fragmentShader = shader.fragmentShader
       .replace(
         "#include <common>",
-        "#include <common>\nuniform vec3 uSoil;\nvarying vec3 vCrop;\nvarying float vTop;\nvarying vec2 vXZ;",
+        `#include <common>
+        uniform sampler2D uPlot; uniform vec4 uBounds; uniform vec3 uColor[${MAX_PLOTS}];
+        uniform vec4 uBands;
+        varying vec2 vXZ; varying float vReveal;`,
       )
       .replace(
         "#include <color_fragment>",
         `#include <color_fragment>
+        float id = texture2D(uPlot, (vXZ - uBounds.xy) * uBounds.zw).r * 255.0;
+        if (id < 0.5) discard;
         float rows = 0.5 + 0.5 * sin(dot(vXZ, vec2(0.407, 0.914)) * 140.0);
-        vec3 crop = vCrop * mix(0.88, 1.04, rows);
-        diffuseColor.rgb = mix(uSoil, crop, smoothstep(0.55, 0.98, vTop));`,
+        diffuseColor.rgb = uColor[int(id - 1.0)] * mix(0.94, 1.02, rows);
+        // White line down the middle of each plot edge (fract is 0 on an edge).
+        float bandPos = (dot(vXZ, uBands.xy) - uBands.z) / uBands.w;
+        float edge = min(fract(bandPos), 1.0 - fract(bandPos)) * uBands.w;
+        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.95), smoothstep(${PLOT_LINE.toFixed(3)}, ${(PLOT_LINE / 2).toFixed(3)}, edge));
+        diffuseColor.a *= vReveal;`,
       );
   };
   const target = new Color();
   return {
     material,
-    /** Sets each plot's crop height and colour for time `t`; returns the season index. */
+    /** Sets each plot's crop colour for time `t`; returns the season index. */
     update(t: number, sequence: readonly Crop[], plots: number): number {
       uniforms.uTime.value = t;
       const since = t - SEASON_START;
@@ -395,15 +418,12 @@ function fieldMaterial() {
       for (let p = 0; p < MAX_PLOTS; p++) {
         const color = uniforms.uColor.value[p];
         if (season < 0 || p >= plots) {
-          uniforms.uHeight.value[p] = 0;
           color.copy(SOIL_COLOR);
           continue;
         }
         const crop = cropFor(sequence, p, season);
-        const l = local - p * 0.18;
-        const grow = settle(l / 1.9);
-        const harvest = smooth(SEASON - 0.75, SEASON - 0.1, l);
-        uniforms.uHeight.value[p] = CROP_HEIGHT_M[crop] * CROP_SCALE * grow * (1 - harvest * 0.92);
+        const grow = settle((local - p * 0.28) / 2.9);
+        const harvest = smooth(SEASON - 1.2, SEASON - 0.15, local - p * 0.28);
         target.set(CROP_COLORS[crop]);
         if (grow < 0.35) color.copy(SOIL_COLOR).lerp(SPROUT, grow / 0.35);
         else color.copy(SPROUT).lerp(target, (grow - 0.35) / 0.65);
@@ -415,69 +435,32 @@ function fieldMaterial() {
 }
 
 function Field({
-  field,
+  houses,
+  plots,
   sequence,
   clock,
   onSeason,
 }: {
-  field: ValleyField;
+  houses: readonly House[];
+  plots: number;
   sequence: readonly Crop[];
   clock: SceneClock;
   onSeason: (index: number) => void;
 }) {
-  const geometry = useMemo(() => fieldGeometry(field), [field]);
-  const fm = useMemo(() => fieldMaterial(), []);
+  const texture = useMemo(() => plotTexture(houses, plots), [houses, plots]);
+  const geometry = useMemo(() => overlayGeometry(), []);
+  const om = useMemo(() => overlayMaterial(texture, plots), [texture, plots]);
   const shown = useRef(-2);
 
   useFrame(() => {
-    const season = fm.update(clock.t, sequence, field.layout.plots.length);
+    const season = om.update(clock.t, sequence, plots);
     if (season !== shown.current) {
       shown.current = season;
       onSeason(season);
     }
   });
 
-  return <mesh geometry={geometry} material={fm.material} receiveShadow />;
-}
-
-/**
- * Outlines of the hexagons left out of the plan (road, river, village, woods): they flash when
- * the plan is laid out, then stay as faint outlines.
- */
-function blockedOutlines(field: ValleyField) {
-  const pts: number[] = [];
-  const lift = (x: number, z: number) => Math.max(heightAt(x, z), WATER_LEVEL) + 0.05;
-  for (const id of field.reasons.keys()) {
-    const center = field.centers.get(id);
-    if (!center) continue;
-    const ring = hexRing(center[0], center[1], 0.9);
-    for (let k = 0; k < 12; k++) {
-      const [ax, az] = ring[k];
-      const [bx, bz] = ring[(k + 1) % 12];
-      pts.push(ax, lift(ax, az), az, bx, lift(bx, bz), bz);
-    }
-  }
-  const geometry = new BufferGeometry();
-  geometry.setAttribute("position", new Float32BufferAttribute(pts, 3));
-  const material = new LineBasicMaterial({ color: "#ffffff", transparent: true, opacity: 0, depthWrite: false });
-  const flag = new Color("#ff8a78");
-  const rest = new Color("#ffffff");
-  return {
-    geometry,
-    material,
-    update(t: number) {
-      const on = smooth(FLAG_AT - 0.2, FLAG_AT + 0.2, t);
-      const settled = smooth(FLAG_AT + 1.2, FLAG_AT + 2.2, t);
-      material.opacity = on * (0.95 - 0.45 * settled);
-      material.color.copy(flag).lerp(rest, settled);
-    },
-  };
-}
-
-function Blocked({ field, clock }: { field: ValleyField; clock: SceneClock }) {
-  const outlines = useMemo(() => blockedOutlines(field), [field]);
-  useFrame(() => outlines.update(clock.t));
-  return <lineSegments geometry={outlines.geometry} material={outlines.material} renderOrder={2} />;
+  return <mesh geometry={geometry} material={om.material} receiveShadow renderOrder={1} />;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -578,7 +561,7 @@ function Driver({ clock, still, onReady }: { clock: SceneClock; still: boolean; 
 export default function HeroCanvas({
   sequence,
   houses,
-  field,
+  plots,
   still,
   running,
   lowDetail,
@@ -606,8 +589,7 @@ export default function HeroCanvas({
       <Road />
       <Houses houses={houses} />
       <Trees count={lowDetail ? 1400 : 3200} />
-      <Field field={field} sequence={sequence} clock={clock} onSeason={onSeason} />
-      <Blocked field={field} clock={clock} />
+      <Field houses={houses} plots={plots} sequence={sequence} clock={clock} onSeason={onSeason} />
     </Canvas>
   );
 }

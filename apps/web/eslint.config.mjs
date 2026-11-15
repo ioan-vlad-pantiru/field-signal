@@ -14,6 +14,7 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Vendored MapLibre worker, copied from node_modules at dev/build time.
     "public/vendor/**",
+    "public/pitch/**",
   ]),
 ]);
 
