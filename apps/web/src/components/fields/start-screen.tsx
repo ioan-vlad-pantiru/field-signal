@@ -202,15 +202,12 @@ function FieldCard({
   const t = useTranslations("Fields");
   const locale = useAppLocale();
   const meta = [t("area", { ha: formatNumber(fieldAreaHa(field), locale, 1) }), field.near].filter(Boolean).join(" · ");
-  const body = (
+  const head = (
     <>
       <FieldThumb boundary={field.boundary} parts={field.parts} />
       <span className="min-w-0 flex-1">
         <span className="block truncate font-semibold">{field.name}</span>
         <span className="block truncate text-sm tabular-nums text-ink-muted">{meta}</span>
-        <span className="mt-0.5 block text-sm leading-snug">
-          <VerdictLine verdict={verdict} />
-        </span>
       </span>
     </>
   );
@@ -223,7 +220,7 @@ function FieldCard({
         onClick={onToggle}
         className={cardClass(true, `flex w-full items-center gap-3 p-3 ${selected ? "ring-2 ring-field" : ""}`)}
       >
-        {body}
+        {head}
         <span
           aria-hidden="true"
           className={`flex size-7 shrink-0 items-center justify-center rounded-full ${selected ? "bg-field text-on-field" : "ring-2 ring-line"}`}
@@ -235,12 +232,17 @@ function FieldCard({
   }
 
   return (
-    <div className={cardClass(false, "flex items-center gap-3 p-3")}>
-      {body}
-      <div className="flex shrink-0 items-center gap-1">
-        <IconButton label={t("options", { name: field.name })} onClick={onOptions}>
+    <div className={cardClass(false, "flex flex-col gap-2 p-3")}>
+      <div className="flex items-center gap-3">
+        {head}
+        <IconButton label={t("options", { name: field.name })} onClick={onOptions} className="-mr-1">
           <MoreIcon size={20} />
         </IconButton>
+      </div>
+      <div className="flex items-center gap-3 border-t border-line pt-2">
+        <span className="min-w-0 flex-1 text-sm leading-snug">
+          <VerdictLine verdict={verdict} />
+        </span>
         <Button variant="tonal" onClick={onAnalyze}>
           {t("analyze")}
         </Button>
@@ -274,7 +276,7 @@ function LocalCard({ field, verdict, onAnalyze }: { field: LocalField; verdict: 
   }
 
   return (
-    <div className={cardClass(false, "flex flex-col gap-3 p-3")}>
+    <div className={cardClass(false, "flex flex-col gap-2 p-3")}>
       <div className="flex items-center gap-3">
         <FieldThumb boundary={field.boundary} parts={field.parts} />
         <span className="min-w-0 flex-1">
@@ -282,9 +284,11 @@ function LocalCard({ field, verdict, onAnalyze }: { field: LocalField; verdict: 
           <span className="block truncate text-sm tabular-nums text-ink-muted">
             {t("area", { ha })} · {t("thisDevice")}
           </span>
-          <span className="mt-0.5 block truncate text-sm">
-            <VerdictLine verdict={verdict} />
-          </span>
+        </span>
+      </div>
+      <div className="flex items-center gap-3 border-t border-line pt-2">
+        <span className="min-w-0 flex-1 text-sm leading-snug">
+          <VerdictLine verdict={verdict} />
         </span>
         <Button variant="tonal" onClick={onAnalyze}>
           {t("analyze")}

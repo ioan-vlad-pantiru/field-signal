@@ -109,7 +109,11 @@ export function SeasonAxis({
   return (
     <div aria-hidden="true" style={columns(years.length)} className={`grid gap-[3px] text-xs tabular-nums text-ink-muted ${className}`}>
       {years.map((year, index) => (
-        <span key={year} className={`overflow-visible whitespace-nowrap ${selectedYear === year ? "font-semibold text-ink" : ""}`}>
+        // The last label ends at the strip's right edge instead of running past it.
+        <span
+          key={year}
+          className={`overflow-visible whitespace-nowrap ${index === years.length - 1 ? "flex justify-end" : ""} ${selectedYear === year ? "font-semibold text-ink" : ""}`}
+        >
           {index === 0 || year % 5 === 0 || selectedYear === year ? year : ""}
         </span>
       ))}
