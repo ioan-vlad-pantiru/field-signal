@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { Marker } from "maplibre-gl";
+import { Marker, type LngLatBoundsLike } from "maplibre-gl";
 import type { CropOutlook, Zone } from "@/lib/contracts";
 import { useMap } from "@/components/map/use-map";
 import { RISK_TONE } from "@/components/ui/tone";
@@ -14,6 +14,14 @@ const REGION_ZOOM = 9.1;
 const HIT_AREA = "after:absolute after:-inset-[5px] after:rounded-full after:content-['']";
 /** The commune open in the details: a ring around its marker, matching its selected table row. */
 const SELECTED = ["outline-solid", "outline-3", "outline-offset-2", "outline-ink", "z-[1]"];
+
+/** The box around every commune, so a narrow phone can zoom out until all of them show. */
+function boundsOf(zones: Zone[]): LngLatBoundsLike | undefined {
+  if (zones.length < 2) return undefined;
+  const lons = zones.map((z) => z.centroid.lon);
+  const lats = zones.map((z) => z.centroid.lat);
+  return [Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)];
+}
 
 function centroidOf(zones: Zone[]): { lat: number; lon: number } {
   if (zones.length === 0) return { lat: 46.3, lon: 23.75 };
@@ -44,7 +52,10 @@ export function ZoneMap({
 }) {
   const center = centroidOf(zones);
   const t = useTranslations("Feed");
-  const { container, map, failed } = useMap([center.lon, center.lat], REGION_ZOOM, { cooperativeGestures: true });
+  const { container, map, failed } = useMap([center.lon, center.lat], REGION_ZOOM, {
+    cooperativeGestures: true,
+    bounds: boundsOf(zones),
+  });
   const onSelectRef = useRef(onSelect);
   const elements = useRef(new Map<string, HTMLButtonElement>());
 

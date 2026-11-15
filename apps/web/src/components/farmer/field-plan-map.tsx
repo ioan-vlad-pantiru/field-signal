@@ -248,7 +248,7 @@ export function FieldPlanMap({
         ref={container}
         role="img"
         aria-label={label}
-        className="h-[min(56svh,26rem)] w-full overflow-hidden rounded-[var(--radius-xl)] bg-surface-sunken shadow-1 sm:h-[28rem] print:hidden"
+        className="h-[min(56svh,26rem)] w-full overflow-hidden bg-surface-sunken sm:rounded-[var(--radius-xl)] sm:shadow-1 sm:h-[28rem] print:hidden"
       />
       {snapshot ? (
         // eslint-disable-next-line @next/next/no-img-element -- a data URL of the live map, print only

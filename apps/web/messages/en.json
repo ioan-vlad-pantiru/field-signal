@@ -136,7 +136,7 @@
         "matters": "Matters",
         "most": "Most"
       },
-      "irrigated": "The field is irrigated"
+      "irrigated": "{count, plural, one {The field is irrigated} other {The fields are irrigated}}"
     },
     "save": {
       "nameLabel": "Name (optional)",
@@ -271,8 +271,9 @@
       "fewer": "Switch to {name}: <b>{best, plural, one {# poor season} other {# poor seasons}}</b> instead of {current} since {start}.",
       "fewerNone": "Switch to {name}: <b>no poor seasons</b> instead of {current} since {start}.",
       "same": "<b>{name}</b> fits your priorities best, with as many poor seasons.",
-      "more": "<b>{name}</b> fits your priorities best, but had {best, plural, one {# poor season} other {# poor seasons}}, not {current}, since {start}.",
+      "more": "<b>{name}</b> fits your priorities best, though it had {best, plural, one {# poor season} other {# poor seasons}} since {start} (yours had {current}).",
       "risk": "Main risk now: {risk}. It hit {count, plural, one {# season} other {# seasons}} of your current rotation.",
+      "riskYield": "Main risk now: weak harvests. They hit {count, plural, one {# season} other {# seasons}} of your current rotation.",
       "noRisk": "No single weather risk stands out.",
       "data": "Data behind this"
     },
@@ -733,7 +734,8 @@
     "selected": "{count, plural, one {# parcel selected} other {# parcels selected}}",
     "fieldsCount": "{count, plural, =0 {No fields yet} one {# field} other {# fields}}",
     "hint": {
-      "pick": "Zoom in, then tap parcels to add them",
+      "zoom": "Zoom in to see the parcels",
+      "pick": "Tap parcels to add them",
       "brushPick": "Drag over parcels to add them",
       "select": "Tap parcels to move them",
       "brushSelect": "Drag over parcels to select them"

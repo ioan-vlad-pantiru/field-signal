@@ -156,6 +156,12 @@ describe("mainRisk", () => {
     assert.deepEqual(mainRisk([other, current]), { code: "dry", label: { en: "dry", ro: "dry" }, seasons: 2 });
   });
 
+  it("prefers a weather cause over the model's yield index", () => {
+    const current = withReasons([["bad", ["model_yield_index", "heat"]], ["bad", ["model_yield_index"]]]);
+    assert.equal(mainRisk([current])?.code, "heat");
+    assert.equal(mainRisk([withReasons([["bad", ["model_yield_index"]]])])?.code, "model_yield_index");
+  });
+
   it("breaks ties by the reason seen first", () => {
     const current = withReasons([["bad", ["heat"]], ["bad", ["frost"]]]);
     assert.equal(mainRisk([current])?.code, "heat");

@@ -48,6 +48,7 @@ export function FarmView() {
   const farm = useFarm();
   const [stage, setStage] = useState<Stage>("parcels");
   const [brush, setBrush] = useState(false);
+  const [parcelsShown, setParcelsShown] = useState(false);
   const [basemap, setBasemap] = useState<Basemap>("satellite");
   /** null until the farmer opens or closes it: then it opens by itself for an empty farm. */
   const [importChoice, setImportChoice] = useState<boolean | null>(null);
@@ -128,7 +129,9 @@ export function FarmView() {
 
   const inspectedField = inspected !== null ? fieldOf.get(inspected) : undefined;
   const hint = picking
-    ? brush
+    ? !parcelsShown
+      ? t("hint.zoom")
+      : brush
       ? t("hint.brushPick")
       : t("hint.pick")
     : brush
@@ -170,6 +173,7 @@ export function FarmView() {
             start={START}
             label={t("mapLabel")}
             className="h-full"
+            onParcelsShown={setParcelsShown}
           />
 
           {/* Top: back to My fields, and the import / farm sheet. */}

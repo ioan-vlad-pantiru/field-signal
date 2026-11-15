@@ -75,7 +75,8 @@ export function ZoneCompare({ zones, crop, ids }: { zones: Zone[]; crop: Crop; i
       label: t("supplyRisk"),
       a: a ? <RiskBadge level={a.availability.level} /> : "—",
       b: b ? <RiskBadge level={b.availability.level} /> : "—",
-      winner: better(a?.availability.score, b?.availability.score, false),
+      // Same level is a tie here; the score row below shows the finer difference.
+      winner: better(a && RISK_ORDER[a.availability.level], b && RISK_ORDER[b.availability.level], false),
     },
     {
       key: "score",

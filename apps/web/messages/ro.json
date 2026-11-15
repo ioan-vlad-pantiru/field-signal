@@ -136,7 +136,7 @@
         "matters": "Contează",
         "most": "Cel mai mult"
       },
-      "irrigated": "Câmpul este irigat"
+      "irrigated": "{count, plural, one {Câmpul este irigat} other {Câmpurile sunt irigate}}"
     },
     "save": {
       "nameLabel": "Nume (opțional)",
@@ -271,8 +271,9 @@
       "fewer": "Treceți la {name}: <b>{best, plural, one {# sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}</b> în loc de {current} din {start}.",
       "fewerNone": "Treceți la {name}: <b>niciun sezon slab</b> în loc de {current} din {start}.",
       "same": "<b>{name}</b> se potrivește cel mai bine priorităților dvs., cu tot atâtea sezoane slabe.",
-      "more": "<b>{name}</b> se potrivește cel mai bine priorităților, dar a avut {best, plural, one {# sezon slab} few {# sezoane slabe} other {# de sezoane slabe}}, nu {current}, din {start}.",
+      "more": "<b>{name}</b> se potrivește cel mai bine priorităților, deși a avut {best, plural, one {# sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} din {start} (rotația actuală: {current}).",
       "risk": "Riscul principal acum: {risk}. A lovit {count, plural, one {un sezon} few {# sezoane} other {# de sezoane}} din rotația actuală.",
+      "riskYield": "Riscul principal acum: recolte slabe, în {count, plural, one {un sezon} few {# sezoane} other {# de sezoane}} din rotația actuală.",
       "noRisk": "Niciun risc meteo nu iese în evidență.",
       "data": "Datele din spate"
     },
@@ -733,7 +734,8 @@
     "selected": "{count, plural, one {# parcelă selectată} few {# parcele selectate} other {# de parcele selectate}}",
     "fieldsCount": "{count, plural, =0 {Nicio solă încă} one {# solă} few {# sole} other {# de sole}}",
     "hint": {
-      "pick": "Măriți harta, apoi atingeți parcelele ca să le adăugați",
+      "zoom": "Măriți harta ca să vedeți parcelele",
+      "pick": "Atingeți parcelele ca să le adăugați",
       "brushPick": "Trageți peste parcele ca să le adăugați",
       "select": "Atingeți parcelele ca să le mutați",
       "brushSelect": "Trageți peste parcele ca să le selectați"

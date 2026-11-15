@@ -132,11 +132,14 @@ export interface MainRisk {
   seasons: number;
 }
 
+/** Reason code the model puts on every weak season; a weather cause names the risk better. */
+export const YIELD_INDEX_CODE = "model_yield_index";
+
 /**
  * The reason that most often made the current rotation's past seasons weak (watch or bad). Same
  * rule as the WhatsApp bot (`services/api/src/api/whatsapp/models.py::_main_risk`), so the web and
  * the bot name the same risk: count each reason code over those seasons; ties go to the code seen
- * first. Null when no weak season has a reason.
+ * first. The yield index counts only when no weather cause appears. Null when no weak season has a reason.
  */
 export function mainRisk(strategies: readonly Pick<Strategy, "is_current" | "replay">[]): MainRisk | null {
   const current = strategies.find((s) => s.is_current) ?? strategies[0];
@@ -152,8 +155,10 @@ export function mainRisk(strategies: readonly Pick<Strategy, "is_current" | "rep
       } else found.set(reason.code, { code: reason.code, label: reason.label, seasons: 1 });
     }
   }
+  // The model's own yield index marks every poor season; a weather cause, when there is one, says more.
+  const causes = [...found.values()].filter((entry) => entry.code !== YIELD_INDEX_CODE);
   let best: MainRisk | null = null;
-  for (const entry of found.values()) if (!best || entry.seasons > best.seasons) best = entry;
+  for (const entry of causes.length ? causes : found.values()) if (!best || entry.seasons > best.seasons) best = entry;
   return best;
 }
 

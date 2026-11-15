@@ -168,7 +168,7 @@ export function ResultsSkeleton() {
       <p role="status" aria-live="polite" className="font-semibold">
         {t("loading")}
       </p>
-      <Skeleton className="-mx-gutter h-[min(56svh,26rem)] rounded-[var(--radius-xl)] sm:mx-0 sm:h-[28rem]" />
+      <Skeleton className="-mx-gutter h-[min(56svh,26rem)] rounded-none sm:rounded-[var(--radius-xl)] sm:mx-0 sm:h-[28rem]" />
       <Skeleton className="h-48 rounded-[var(--radius-xl)]" />
       <div className="-mx-gutter flex gap-3 overflow-hidden px-gutter lg:mx-0 lg:grid lg:grid-cols-3 lg:px-0">
         {[0, 1, 2].map((i) => (

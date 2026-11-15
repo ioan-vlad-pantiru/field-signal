@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { mockStocks } from "@/lib/mocks";
 import { formatNumber } from "@/lib/format";
@@ -37,13 +37,16 @@ export function StocksView({ initialPath = "A", onPath }: { initialPath?: PathId
   const open = rows.find((a) => a.row.id === openId) ?? null;
   // "Smart Feed (pet food)" → "Smart Feed" on the chip; the sheet and report keep the full name.
   const shortName = (p: PathId) => l(s.paths[p].name).split(" (")[0];
+  const format = useFormatter();
+  // "2026-11-15" read as a calendar date, shown the local way ("15 Nov 2026", "15 nov. 2026").
+  const asOf = format.dateTime(new Date(`${s.as_of.slice(0, 10)}T00:00:00Z`), { dateStyle: "medium", timeZone: "UTC" });
   const tonnes = (value: number) => t("tonnes", { value: formatNumber(value, locale, 0) });
 
   return (
     <div className="flex flex-col gap-5">
       <ScreenHeader
         title={t("title")}
-        meta={t("meta", { date: s.as_of })}
+        meta={t("meta", { date: asOf })}
         actions={
           <Link
             href={{ pathname: "/stocks/report", query: { path } }}
@@ -121,7 +124,7 @@ export function StocksView({ initialPath = "A", onPath }: { initialPath?: PathId
           <section>
             <p>{l(s.scenario)}</p>
             <p className="mt-2 text-sm text-ink-muted">
-              {t("context", { date: s.as_of, year: s.marketing_year, window: l(s.window) })}
+              {t("context", { date: asOf, year: s.marketing_year, window: l(s.window) })}
             </p>
           </section>
           <section>

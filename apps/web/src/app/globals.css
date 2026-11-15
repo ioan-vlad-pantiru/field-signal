@@ -208,6 +208,10 @@ h3 {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
+/* Containers that only take focus from script (a sheet body, a skip target) need no ring. */
+[tabindex="-1"]:focus-visible {
+  outline: none;
+}
 
 /* ---------- Motion ---------- */
 
@@ -525,6 +529,13 @@ input[type="range"].slider::-moz-range-thumb {
   border-radius: var(--radius-md) !important;
   box-shadow: var(--shadow-float) !important;
   overflow: hidden;
+}
+/* Finger-sized on touch screens (MapLibre draws them at 29px). */
+@media (pointer: coarse) {
+  .maplibregl-ctrl-group button {
+    width: 40px;
+    height: 40px;
+  }
 }
 /* On the field picker they sit under the round basemap and drag-to-select buttons. */
 .field-map-frame .maplibregl-ctrl-top-right {

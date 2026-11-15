@@ -99,6 +99,9 @@ def _value(e: contracts.Evidence, lang: Lang) -> str:
     return f"{e.value:g} {unit}".strip()
 
 
+YIELD_INDEX_CODE = "model_yield_index"
+
+
 def _main_risk(a: contracts.FieldAnalysis, lang: Lang) -> str | None:
     """The reason that most often made the current rotation's past seasons poor."""
     current = next((s for s in a.strategies if s.is_current), a.strategies[0])
@@ -111,7 +114,9 @@ def _main_risk(a: contracts.FieldAnalysis, lang: Lang) -> str | None:
                 labels[r.code] = getattr(r.label, lang)
     if not counts:
         return None
-    return labels[counts.most_common(1)[0][0]]
+    # The yield index marks every poor season; a weather cause, when there is one, says more.
+    causes = Counter({code: n for code, n in counts.items() if code != YIELD_INDEX_CODE})
+    return labels[(causes or counts).most_common(1)[0][0]]
 
 
 def from_contract(a: contracts.FieldAnalysis, lang: Lang) -> FieldAnalysis:

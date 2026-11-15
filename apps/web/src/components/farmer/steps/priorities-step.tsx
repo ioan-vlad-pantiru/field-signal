@@ -43,11 +43,14 @@ export function PrioritiesStep({
   onLevels,
   irrigated,
   onIrrigated,
+  fieldCount = 1,
 }: {
   levels: PriorityLevels;
   onLevels: (levels: PriorityLevels) => void;
   irrigated: boolean;
   onIrrigated: (irrigated: boolean) => void;
+  /** How many fields the switches apply to, for "The field is" / "The fields are irrigated". */
+  fieldCount?: number;
 }) {
   const t = useTranslations("Field.setup");
   const [fine, setFine] = useState(() => PRIORITIES.some((p) => levels[p] === "less"));
@@ -95,7 +98,7 @@ export function PrioritiesStep({
         <ChevronDownIcon size={16} className={`transition-transform duration-[var(--duration-base)] ${fine ? "rotate-180" : ""}`} />
       </button>
       <div className="mt-2 border-t border-line pt-2">
-        <Toggle label={t("irrigated")} checked={irrigated} onChange={onIrrigated} />
+        <Toggle label={t("irrigated", { count: fieldCount })} checked={irrigated} onChange={onIrrigated} />
       </div>
     </div>
   );

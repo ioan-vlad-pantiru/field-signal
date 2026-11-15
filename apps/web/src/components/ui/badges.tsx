@@ -9,7 +9,7 @@ export function ToneBadge({ tone, label, prefix }: { tone: Tone; label: string; 
   const Icon = TONE_ICONS[tone];
   return (
     <span
-      className={`inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-1 text-sm font-semibold ${TONE_CLASSES[tone].soft} ${TONE_CLASSES[tone].text}`}
+      className={`inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-1 text-sm font-semibold ${prefix ? "" : "shrink-0 whitespace-nowrap"} ${TONE_CLASSES[tone].soft} ${TONE_CLASSES[tone].text}`}
     >
       <Icon size={16} />
       <span className="text-ink">

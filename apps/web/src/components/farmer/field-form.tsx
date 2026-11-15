@@ -390,16 +390,11 @@ export function FieldForm({
                 </button>
               ) : null}
               {drawing && selected.length > 0 ? (
-                <div className="pointer-events-auto flex w-full max-w-md flex-col gap-2 rounded-[var(--radius-lg)] bg-glass p-2 shadow-float backdrop-blur-md">
-                  <p className="px-2 pt-1 font-semibold tabular-nums" aria-live="polite">
-                    {t("parcel.selected", { count: selected.length, ha: formatNumber(selectedHa, locale, 1) })}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {selected.length > 1 && total < MAX_FIELDS ? (
-                      <Button variant="secondary" onClick={addSeparate} disabled={joining}>
-                        {t("parcel.separate")}
-                      </Button>
-                    ) : null}
+                <div className="pointer-events-auto flex w-full max-w-md flex-col gap-1 rounded-[var(--radius-lg)] bg-glass p-1.5 pl-4 shadow-float backdrop-blur-md">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-semibold tabular-nums" aria-live="polite">
+                      {t("parcel.selected", { count: selected.length, ha: formatNumber(selectedHa, locale, 1) })}
+                    </p>
                     <Button
                       variant="quiet"
                       onClick={() => {
@@ -411,6 +406,11 @@ export function FieldForm({
                       {t("parcel.clear")}
                     </Button>
                   </div>
+                  {selected.length > 1 && total < MAX_FIELDS ? (
+                    <Button variant="secondary" onClick={addSeparate} disabled={joining} className="-ml-2.5 self-start">
+                      {t("parcel.separate")}
+                    </Button>
+                  ) : null}
                 </div>
               ) : drawing ? (
                 <MapChip>
@@ -454,7 +454,8 @@ export function FieldForm({
         )}
       </div>
 
-      <ActionBar note={ready || selected.length > 0 ? undefined : t("needField")}>
+      {/* While drawing, the hint on the map already says what to do. */}
+      <ActionBar note={ready || selected.length > 0 || drawing ? undefined : t("needField")}>
         <Button type="submit" size="lg" disabled={(!ready && selected.length === 0) || joining} className="flex-1">
           {joining
             ? t("parcel.joining")
@@ -494,7 +495,13 @@ export function FieldForm({
           ) : null}
           <section className="flex flex-col gap-1">
             <h3 className="text-sm font-semibold text-ink-muted">{t("setup.priorities")}</h3>
-            <PrioritiesStep levels={levels} onLevels={setLevels} irrigated={irrigated} onIrrigated={setIrrigated} />
+            <PrioritiesStep
+              levels={levels}
+              onLevels={setLevels}
+              irrigated={irrigated}
+              onIrrigated={setIrrigated}
+              fieldCount={Math.max(1, total)}
+            />
           </section>
           {boundary ? (
             <SaveToAccount

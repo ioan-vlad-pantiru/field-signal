@@ -16,7 +16,7 @@ const NORMAL_BAND = 0.1;
 /** The indicators measured at this place: latest year against the average, with a sparkline. */
 export function IndicatorList({ analysis }: { analysis: FieldAnalysis }) {
   return (
-    <ul className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
+    <ul className="grid grid-cols-[minmax(0,1fr)] gap-x-8 gap-y-6 sm:grid-cols-2">
       {analysis.indicators.map((indicator) => (
         <IndicatorItem key={indicator.id} indicator={indicator} />
       ))}
