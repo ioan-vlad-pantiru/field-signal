@@ -118,11 +118,9 @@
     "setup": {
       "title": "Câmpul dvs.",
       "titleMany": "{count, plural, one {# câmp} few {# câmpuri} other {# de câmpuri}}",
-      "rotation": "Culturile, an de an",
-      "change": "Anul {n}: {crop}. Schimbați",
+      "rotation": "Rotația dvs. actuală",
       "remove": "Scoateți {crop} din anul {n}",
       "addYear": "Adăugați un an",
-      "pickerLabel": "Cultura din anul {n}",
       "presets": "Rotații obișnuite",
       "priorities": "Ce contează cel mai mult",
       "priority": {
@@ -138,7 +136,9 @@
         "matters": "Contează",
         "most": "Cel mai mult"
       },
-      "irrigated": "{count, plural, one {Câmpul este irigat} other {Câmpurile sunt irigate}}"
+      "rotationHelp": "Cultura pe care o semănați anul viitor, apoi fiecare an în parte — ultima este cultura de anul trecut.",
+      "rotationNeeded": "Setați-vă rotația: atingeți o cultură sau alegeți o rotație obișnuită mai jos.",
+      "yearN": "Anul {n}"
     },
     "save": {
       "nameLabel": "Nume (opțional)",

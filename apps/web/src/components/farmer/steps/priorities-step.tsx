@@ -38,20 +38,7 @@ export function weightsFrom(levels: PriorityLevels): Record<Priority, number> {
  * three-level control behind "Fine-tune" for farmers who want "matters less" too. Every level the
  * API accepted before is still reachable.
  */
-export function PrioritiesStep({
-  levels,
-  onLevels,
-  irrigated,
-  onIrrigated,
-  fieldCount = 1,
-}: {
-  levels: PriorityLevels;
-  onLevels: (levels: PriorityLevels) => void;
-  irrigated: boolean;
-  onIrrigated: (irrigated: boolean) => void;
-  /** How many fields the switches apply to, for "The field is" / "The fields are irrigated". */
-  fieldCount?: number;
-}) {
+export function PrioritiesStep({ levels, onLevels }: { levels: PriorityLevels; onLevels: (levels: PriorityLevels) => void }) {
   const t = useTranslations("Field.setup");
   const [fine, setFine] = useState(() => PRIORITIES.some((p) => levels[p] === "less"));
   const id = useId();
@@ -97,9 +84,6 @@ export function PrioritiesStep({
         {t(fine ? "simple" : "fineTune")}
         <ChevronDownIcon size={16} className={`transition-transform duration-[var(--duration-base)] ${fine ? "rotate-180" : ""}`} />
       </button>
-      <div className="mt-2 border-t border-line pt-2">
-        <Toggle label={t("irrigated", { count: fieldCount })} checked={irrigated} onChange={onIrrigated} />
-      </div>
     </div>
   );
 }

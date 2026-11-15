@@ -43,7 +43,6 @@ export function PlanStep({
   const t = useTranslations("FarmPlan");
   const tf = useTranslations("Farm");
   const [levels, setLevels] = useState<PriorityLevels>(DEFAULT_LEVELS);
-  const [irrigated, setIrrigated] = useState(false);
   const [state, setState] = useState<State>({ status: "idle" });
   const startYear = useMemo(() => nextSeason(), []);
   const ready = useMemo(() => plannableFields(fields), [fields]);
@@ -59,7 +58,6 @@ export function PlanStep({
     const request: FarmPlanRequest = {
       fields: ready.map((f) => toPlanField(f, declaredCrops)) as FarmPlanRequest["fields"],
       priorities: weightsFrom(levels),
-      irrigated,
       start_year: startYear,
       years: PLAN_YEARS,
     };
@@ -94,9 +92,6 @@ export function PlanStep({
             <PrioritiesStep
               levels={levels}
               onLevels={setLevels}
-              irrigated={irrigated}
-              onIrrigated={setIrrigated}
-              fieldCount={Math.max(1, ready.length)}
             />
           </Card>
 

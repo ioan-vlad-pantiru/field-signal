@@ -118,11 +118,9 @@
     "setup": {
       "title": "Your field",
       "titleMany": "{count, plural, one {# field} other {# fields}}",
-      "rotation": "Crops, year by year",
-      "change": "Year {n}: {crop}. Change",
+      "rotation": "Your current rotation",
       "remove": "Remove {crop} from year {n}",
       "addYear": "Add a year",
-      "pickerLabel": "Crop for year {n}",
       "presets": "Common rotations",
       "priorities": "What matters most",
       "priority": {
@@ -138,7 +136,9 @@
         "matters": "Matters",
         "most": "Most"
       },
-      "irrigated": "{count, plural, one {The field is irrigated} other {The fields are irrigated}}"
+      "rotationHelp": "The crop you sow next, then each year after — the last one is last year's crop.",
+      "rotationNeeded": "Set your own rotation: tap a crop, or pick a common rotation below.",
+      "yearN": "Year {n}"
     },
     "save": {
       "nameLabel": "Name (optional)",
