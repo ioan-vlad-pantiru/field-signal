@@ -1,11 +1,11 @@
 // Field Signal service worker: keeps the app shell (and the mock data bundled in its JS)
 // available offline so the demo runs without a network. Bump VERSION to drop old caches.
-const VERSION = "v3";
+const VERSION = "v4";
 const SHELL_CACHE = `field-signal-shell-${VERSION}`;
 const RUNTIME_CACHE = `field-signal-runtime-${VERSION}`;
 const TILE_CACHE = `field-signal-tiles-${VERSION}`;
 
-const PAGES = ["/ro", "/en", "/ro/field", "/en/field", "/ro/feed", "/en/feed", "/ro/about", "/en/about"];
+const PAGES = ["/en", "/ro", "/en/field", "/ro/field", "/en/buyers", "/ro/buyers", "/en/more", "/ro/more", "/en/more/about", "/ro/more/about"];
 const STATIC_FILES = [
   "/manifest.webmanifest",
   "/icon.svg",
@@ -108,7 +108,7 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === "navigate") {
-    const locale = url.pathname.startsWith("/en") ? "/en" : "/ro";
+    const locale = url.pathname.startsWith("/ro") ? "/ro" : "/en";
     event.respondWith(networkFirst(request, locale));
     return;
   }
