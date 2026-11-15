@@ -18,10 +18,6 @@
     "more": "Mai mult",
     "home": "Field Signal, prima pagină"
   },
-  "Footer": {
-    "credit": "Creat la NASA Space Apps Challenge 2026 · Date: NASA POWER, MODIS, SMAP, SoilGrids",
-    "team": "Echipa Farm Titans"
-  },
   "Banner": {
     "title": "Date demonstrative",
     "text": "Cifrele de mai jos sunt inventate pentru demonstrație. Nu luați decizii pe baza lor.",
@@ -509,26 +505,18 @@
     "listHint": "Atingeți o comună ca să vedeți de ce. Bifați două ca să le comparați."
   },
   "About": {
-    "title": "Despre Field Signal",
-    "intro": "Field Signal pune la un loc 25 de ani de date despre vreme, umiditatea solului și starea vegetației, ca să vedeți cum s-ar fi descurcat diferite rotații pe câmpul dumneavoastră.",
-    "judgment": "Instrumentul sprijină judecata fermierului. Nu o înlocuiește.",
-    "whatTitle": "Ce face",
-    "what": {
-      "farmer": "Pentru fermieri: compară rotația de acum cu două alternative (cel puțin una cu mazăre) și arată, an de an, cum ar fi mers fiecare.",
-      "buyer": "Pentru cumpărătorii de furaje: arată pe comune riscul de a nu găsi destulă recoltă, riscurile de calitate (aflatoxine, fuzarioză, ploi la recoltare) și impactul asupra mediului.",
-      "transparency": "Fiecare cifră are sursa, perioada, presupunerile și nivelul de încredere lângă ea."
-    },
-    "sourcesTitle": "Datele folosite",
-    "sourcesHint": "Date publice. Rezoluția arată cât de mare este „pixelul” fiecărei surse.",
-    "table": {
-      "dataset": "Sursa",
-      "use": "La ce o folosim",
-      "resolution": "Rezoluție",
-      "period": "Perioadă",
-      "nasaData": "Date NASA",
-      "otherData": "Altă sursă publică"
+    "title": "Despre și date",
+    "lead": "25 de sezoane de vreme, sol și imagini din satelit, refăcute pe câmpul dumneavoastră.",
+    "how": {
+      "title": "Cum funcționează",
+      "text": "Alegeți câmpul și spuneți ce cultivați. Refacem pe el fiecare sezon din 2001 încoace, cu secete și primăveri ploioase cu tot, și comparăm rotația dumneavoastră cu alte două, dintre care cel puțin una cu mazăre. Cumpărătorii de furaje văd aceleași semnale, comună cu comună.",
+      "judgment": "Arată ce ar fi adus sezoanele trecute. Decizia rămâne a dumneavoastră; pașii riscanți merită discutați cu un agronom."
     },
     "sources": {
+      "title": "Surse de date",
+      "nasa": "NASA",
+      "other": "Altă sursă publică",
+      "note": "Folosim date publice, gratuite, de la NASA și de la alte instituții. NASA nu este partener și nu susține acest instrument.",
       "power": "Căldură, ploaie și umezeala aerului, zi de zi",
       "modis": "Cât de verde și viguroasă este vegetația (NDVI)",
       "smap": "Apa din sol, în zona rădăcinilor",
@@ -536,31 +524,26 @@
       "eucropmap": "Ce culturi sunt unde, pentru suprafețe pe comună",
       "ins": "Producții oficiale pe județ, pentru verificarea modelului"
     },
-    "aiTitle": "Rolul inteligenței artificiale",
+    "glossaryTitle": "Glosar",
     "ai": {
+      "title": "Inteligența artificială",
       "modelTitle": "Modelul de risc",
       "model": "Un model mic estimează șansa unui an slab pentru fiecare zonă și cultură, din semnalele de vreme și vegetație din perioadele critice. Îl testăm lăsând deoparte câte un an și publicăm și reușitele, și greșelile.",
       "textTitle": "Explicațiile",
       "text": "Un model de limbaj transformă cifrele calculate în text simplu. Are voie să folosească doar valorile calculate de noi și un format fix."
     },
-    "limitsTitle": "Ce nu poate vedea",
     "limits": {
+      "title": "Ce nu poate vedea",
       "hail": "Grindina și alte fenomene locale de scurtă durată.",
       "pests": "Dăunătorii și bolile din câmpul dumneavoastră.",
       "markets": "Prețurile și piețele.",
       "management": "Lucrările, hibrizii și îngrășămintele folosite de dumneavoastră.",
       "scale": "Datele de vreme descriu o zonă de zeci de kilometri, nu exact parcela."
     },
-    "demoTitle": "Despre datele din demonstrație",
-    "demo": "În această versiune, cifrele sunt demonstrative. Le marcăm clar cu „Date demonstrative” până când legăm datele reale.",
-    "judgmentDetail": "Arată ce s-ar fi întâmplat în anii trecuți. Decizia pentru câmpul dumneavoastră rămâne a dumneavoastră.",
-    "whatCards": {
-      "farmer": "Pentru fermieri",
-      "buyer": "Pentru cumpărătorii de furaje",
-      "transparency": "Totul la vedere"
-    },
-    "nasaNote": "Folosim date publice, gratuite, publicate de NASA și de alte instituții. NASA nu este partener și nu susține acest instrument.",
-    "aiHint": "Inteligența artificială face două lucruri mici și verificabile. Nu ia decizii în locul dumneavoastră."
+    "demo": {
+      "title": "Date demonstrative",
+      "text": "Acolo unde încă nu avem date reale, arătăm cifre demonstrative și le marcăm mereu cu „Date demonstrative”."
+    }
   },
   "CropsShort": {
     "maize": "Porumb",
@@ -577,10 +560,9 @@
   "Simulator": {
     "eyebrow": "Simulator de câmp",
     "backToField": "Înapoi la câmpul meu",
-    "title": "Vedeți rotația pe un câmp",
-    "intro": "Un tractor mic seamănă fiecare cultură din rotație, câmpul crește și se recoltează, apoi urmează cultura următoare. Maroniul înseamnă sol gol; verdele înseamnă câmp acoperit.",
-    "banner": "Ilustrație — nu este un plan de lucru pentru utilaj.",
-    "demoNote": "Rotații demo și un câmp demo lângă Aiud. Lunile de semănat și recoltat sunt cele obișnuite în județul Alba; ale dumneavoastră pot fi altele.",
+    "title": "Rotația pe un câmp",
+    "intro": "Fiecare cultură semănată, crescută și recoltată, sezon după sezon.",
+    "demoNote": "O ilustrație, nu un plan de lucru. Un câmp demo lângă Aiud; lunile de semănat și recoltat sunt cele obișnuite în județul Alba, ale dumneavoastră pot fi altele.",
     "strategyLabel": "Rotația",
     "shapeLabel": "Forma câmpului",
     "shape": {
@@ -606,12 +588,11 @@
       "restart": "De la început",
       "prev": "Pasul anterior",
       "next": "Pasul următor",
-      "prevShort": "Înapoi",
-      "nextShort": "Înainte",
       "speed": "Viteză",
       "scrub": "Cronologie",
       "camera": "Cameră",
-      "keys": "Taste: Spațiu pornește sau oprește · ← → pas · 1 2 4 viteză · R de la început · C cameră"
+      "keys": "Spațiu pornește sau oprește · ← → pas · 1 2 4 viteză · R de la început · C cameră",
+      "keysLabel": "Scurtături de tastatură"
     },
     "camera": {
       "overview": "Ansamblu",
@@ -634,129 +615,68 @@
       "scale": "Lunile la scară"
     },
     "stats": {
-      "title": "Lucrul pe câmp, la o operațiune",
-      "illustrative": "Estimări ilustrative pentru acest câmp demo, nu un plan de lucru.",
+      "title": "Lucrul pe câmp",
+      "illustrative": "Estimări ilustrative pentru acest câmp demo: semănătoare de {width} m, plus {laps} ture pe zona de întoarcere, {work} km/h la lucru și {turn} km/h la întoarceri.",
       "area": "Suprafața",
       "passes": "Treceri",
-      "passesHint": "semănătoare de {width} m, plus {laps} ture pe zona de întoarcere",
       "distance": "Distanță parcursă",
       "time": "Timp de lucru",
-      "timeHint": "{work} km/h la lucru, {turn} km/h la întoarceri",
       "bare": "Luni de sol gol între culturi",
       "seasons": "Cultura în fiecare an"
     },
     "seasonRow": "semănat în {sow}, recoltat în {harvest}",
     "seasonRowCover": "semănat în {sow}, încorporat în sol în {harvest}",
     "reducedMotion": "Ați cerut mai puțină mișcare, deci câmpul nu se animă. Folosiți Înapoi și Înainte ca să treceți prin fiecare sezon.",
-    "openLink": "Vedeți pe un câmp"
+    "openLink": "Vedeți pe un câmp",
+    "aboutDemo": "Despre această ilustrație"
   },
   "Home": {
     "title": "Ce culturi merg cel mai bine pe câmpul dumneavoastră?",
     "lead": "Refacem ultimele 25 de sezoane pe pământul dumneavoastră, ca să puteți planifica următorul.",
     "start": "Alegeți câmpul",
-    "buyer": {
-      "title": "Cumpărători de furaje",
-      "text": "Vedeți, comună cu comună, unde vor fi probabil porumb, grâu și orz anul acesta și cu ce risc de calitate.",
-      "cta": "Deschideți pagina pentru cumpărători"
-    },
     "imageAlt": "Transilvania văzută din satelit, vara: terenuri agricole în centru, înconjurate de Carpații împăduriți.",
     "imageCredit": "Transilvania, 2 iulie 2025. Imagine: NASA Worldview, MODIS pe satelitul Terra.",
     "sceneNote": "Ilustrație: o vale de exemplu, nu un câmp real.",
-    "proofTitle": "Exemplu: un câmp de lângă {place}",
-    "proofSentence": "{current, plural, =0 {Niciun sezon slab} one {Un sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} cu {currentCrops}. {best, plural, =0 {Niciunul} one {Unul} other {#}} cu {bestCrops}.",
-    "proofHint": "Un pătrat pentru fiecare an. × înseamnă an slab, ! an de urmărit.",
-    "stripLabel": "{name}: {bad, plural, =0 {niciun sezon slab} one {un sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} și {watch, plural, =0 {niciun sezon de urmărit} one {un sezon de urmărit} few {# sezoane de urmărit} other {# de sezoane de urmărit}} din {total}",
-    "current": "Rotația de acum",
+    "proof": {
+      "line": "{current, plural, =0 {Niciun sezon slab} one {Un sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} cu {currentCrops}. {best, plural, =0 {Niciunul} one {Unul} other {#}} cu {bestCrops}.",
+      "stripLabel": "{name}: {bad, plural, =0 {niciun sezon slab} one {un sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} și {watch, plural, =0 {niciun sezon de urmărit} one {un sezon de urmărit} few {# sezoane de urmărit} other {# de sezoane de urmărit}} din {total}",
+      "title": "{seasons} de sezoane lângă {place}",
+      "current": "Rotația de acum",
+      "legend": "× sezon slab · ! sezon de urmărit"
+    },
     "steps": {
-      "field": {
-        "title": "Alegeți câmpul",
-        "text": "Găsiți-l pe harta din satelit și atingeți parcelele."
+      "title": "Cum funcționează",
+      "field": "Atingeți parcelele pe hartă.",
+      "rotation": "Spuneți ce cultivați.",
+      "result": "Comparați trei rotații, sezon cu sezon."
+    },
+    "doors": {
+      "title": "Începeți de aici",
+      "farmer": {
+        "title": "Sunt fermier",
+        "text": "Planificați rotația următoare"
       },
-      "rotation": {
-        "title": "Spuneți ce cultivați",
-        "text": "Culturile și ce contează cel mai mult: recolta, apa, solul sau riscul."
-      },
-      "result": {
-        "title": "Vedeți ce merge mai bine",
-        "text": "25 de sezoane pentru rotația dumneavoastră și alte două."
+      "buyer": {
+        "title": "Cumpăr furaje",
+        "text": "Vedeți unde va fi recolta"
       }
     },
-    "stats": {
-      "seasons": "sezoane verificate, din 2001 până în 2025",
-      "sources": "surse de date publice, inclusiv NASA",
-      "rotations": "rotații puse alături"
-    },
-    "whatTitle": "Ce este Field Signal?",
-    "whatText": "Un instrument pentru fermierii din România. Alegeți câmpul și ne spuneți ce cultivați. Refacem fiecare sezon din 2001 încoace pe el, cu secetele, primăverile ploioase și caniculele, și vă arătăm ce rotație ar fi rezistat cel mai bine.",
-    "whatJudgment": "Construit pe date publice de la sateliții NASA și din înregistrările meteo, verificat cu producțiile oficiale pe județ.",
-    "lookTitle": "Ce urmărim pe câmpul dumneavoastră",
-    "look": {
-      "weather": {
-        "title": "Vremea, zi de zi",
-        "text": "Căldură, ploaie și îngheț din 2001."
-      },
-      "plants": {
-        "title": "Sănătatea plantelor, din spațiu",
-        "text": "Cât de verzi au fost culturile, sezon de sezon."
-      },
-      "water": {
-        "title": "Apa din sol",
-        "text": "Câtă umiditate au avut rădăcinile."
-      },
-      "soil": {
-        "title": "Solul dumneavoastră",
-        "text": "Textură, pH și materie organică."
-      }
-    },
-    "getTitle": "Ce primiți",
-    "get": {
-      "compare": {
-        "title": "Rotația dumneavoastră, an cu an",
-        "text": "Fiecare sezon bun sau slab, marcat pe o singură bandă."
-      },
-      "alternatives": {
-        "title": "Două rotații care au mers mai bine",
-        "text": "Cel puțin una cu mazăre."
-      },
-      "plan": {
-        "title": "Un plan pentru parcele",
-        "text": "Ce cultură merge unde, sezon de sezon."
-      },
-      "ask": {
-        "title": "Răspunsuri la întrebări",
-        "text": "Întrebați simplu, în română sau engleză."
-      }
-    },
-    "stepsTitle": "Cum funcționează",
-    "audienceTitle": "Pentru cine este",
-    "farmer": {
-      "title": "Fermieri",
-      "text": "Planificați sezonul următor cu 25 de ani de sezoane în spate.",
-      "cta": "Alegeți câmpul"
-    },
-    "limitsTitle": "Ce nu poate vedea",
-    "ctaTitle": "Vreți să vedeți câmpul dumneavoastră?",
-    "ctaText": "Atingeți parcelele pe hartă. Nu aveți nevoie de cont."
+    "credit": "Făcut la NASA Space Apps 2026 de Farm Titans · Date: NASA POWER, MODIS, SMAP, SoilGrids"
   },
   "Account": {
-    "title": "Contul meu",
-    "intro": "Păstrați aici câmpurile și deschideți-le din nou de pe telefon sau laptop.",
+    "title": "Cont",
+    "intro": "Câmpurile dumneavoastră, pe orice dispozitiv.",
     "signInTitle": "Intrați în cont",
     "signUpTitle": "Creați un cont",
-    "signInTab": "Intrați în cont",
-    "signUpTab": "Cont nou",
     "email": "Email",
     "password": "Parolă",
-    "passwordHint": "Cel puțin 8 caractere.",
-    "name": "Numele dvs. (opțional)",
+    "name": "Numele (opțional)",
     "signIn": "Intrați în cont",
-    "signUp": "Creați contul",
+    "signUp": "Creați cont",
     "working": "Un moment…",
     "signOut": "Ieșiți din cont",
-    "signedInAs": "Conectat ca {email}",
-    "hello": "Bună ziua, {name}",
     "loading": "Se încarcă contul…",
-    "offline": "Nu putem ajunge la server acum. Câmpurile dvs. sunt în siguranță; încercați din nou peste puțin timp.",
+    "offline": "Nu putem ajunge la server. Câmpurile sunt în siguranță; încercați din nou puțin mai târziu.",
     "retry": "Încercați din nou",
     "errors": {
       "email_taken": "Există deja un cont cu acest email. Intrați în cont.",
@@ -829,7 +749,6 @@
       "openMany": "Analizați {count, plural, few {# câmpuri} other {# de câmpuri}}"
     },
     "profile": {
-      "title": "Profil și securitate",
       "email": "Email",
       "since": "Cont creat în",
       "name": "Nume",
@@ -837,15 +756,19 @@
       "nameSaved": "Numele a fost salvat.",
       "passwordTitle": "Schimbați parola",
       "currentPassword": "Parola actuală",
-      "newPassword": "Parola nouă",
-      "changePassword": "Schimbați parola",
+      "newPassword": "Parola nouă (cel puțin 8 caractere)",
+      "changePassword": "Schimbați",
       "passwordChanged": "Parola a fost schimbată. Celelalte dispozitive au fost deconectate.",
       "deleteTitle": "Ștergeți contul",
       "deleteText": "Se șterg contul și {count, plural, =0 {} one {câmpul salvat} few {cele # câmpuri salvate} other {cele # de câmpuri salvate}}. Nu se poate anula.",
-      "deleteStart": "Ștergeți contul…",
-      "deletePassword": "Introduceți parola pentru confirmare",
-      "deleteConfirm": "Ștergeți contul definitiv"
-    }
+      "deletePassword": "Parola dumneavoastră",
+      "deleteConfirm": "Ștergeți",
+      "nameEmpty": "Adăugați-vă numele",
+      "cancel": "Anulați"
+    },
+    "newPassword": "Parolă (cel puțin 8 caractere)",
+    "noAccount": "Nu aveți cont?",
+    "haveAccount": "Aveți deja cont?"
   },
   "Assistant": {
     "launcher": "Întrebați",

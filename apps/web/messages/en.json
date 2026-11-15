@@ -18,10 +18,6 @@
     "more": "More",
     "home": "Field Signal home"
   },
-  "Footer": {
-    "credit": "Created at NASA Space Apps Challenge 2026 · Data: NASA POWER, MODIS, SMAP, SoilGrids",
-    "team": "Team Farm Titans"
-  },
   "Banner": {
     "title": "Demo data",
     "text": "The numbers below are made up for this demo. Do not make decisions based on them.",
@@ -509,26 +505,18 @@
     "listHint": "Tap a commune to see why. Tick two to compare them."
   },
   "About": {
-    "title": "About Field Signal",
-    "intro": "Field Signal brings together 25 years of data on weather, soil moisture and plant health, so you can see how different rotations would have done on your field.",
-    "judgment": "The tool supports the farmer's judgment. It does not replace it.",
-    "whatTitle": "What it does",
-    "what": {
-      "farmer": "For farmers: compares your current rotation with two alternatives (at least one with peas) and shows, year by year, how each would have done.",
-      "buyer": "For feed buyers: shows, by commune, the risk of not finding enough harvest, quality risks (aflatoxins, fusarium, harvest rain) and environmental impact.",
-      "transparency": "Every number shows its source, period, assumptions and confidence next to it."
-    },
-    "sourcesTitle": "Data we use",
-    "sourcesHint": "Public data. Resolution shows how big each source's “pixel” is.",
-    "table": {
-      "dataset": "Source",
-      "use": "What we use it for",
-      "resolution": "Resolution",
-      "period": "Period",
-      "nasaData": "NASA data",
-      "otherData": "Other public source"
+    "title": "About and data",
+    "lead": "25 seasons of weather, soil and satellite data, replayed on your field.",
+    "how": {
+      "title": "How it works",
+      "text": "Pick your field and say what you grow. We replay every season since 2001 on it, droughts and wet springs included, and compare your rotation with two others, at least one with peas. Feed buyers see the same signals commune by commune.",
+      "judgment": "It shows what past seasons would have done. The decision stays yours; check risky calls with an agronomist."
     },
     "sources": {
+      "title": "Data sources",
+      "nasa": "NASA",
+      "other": "Other public data",
+      "note": "We use free public data from NASA and other institutions. NASA is not a partner and does not endorse this tool.",
       "power": "Heat, rain and air humidity, day by day",
       "modis": "How green and vigorous the vegetation is (NDVI)",
       "smap": "Water in the soil, around the roots",
@@ -536,31 +524,26 @@
       "eucropmap": "Which crops grow where, for areas per commune",
       "ins": "Official county yields, to check the model"
     },
-    "aiTitle": "The role of AI",
+    "glossaryTitle": "Glossary",
     "ai": {
+      "title": "How we use AI",
       "modelTitle": "The risk model",
       "model": "A small model estimates the chance of a poor year for each zone and crop, from weather and vegetation signals in the critical periods. We test it by leaving out one year at a time and publish both hits and misses.",
       "textTitle": "The explanations",
       "text": "A language model turns the computed numbers into plain text. It may only use values we computed, in a fixed format."
     },
-    "limitsTitle": "What it cannot see",
     "limits": {
+      "title": "What it can't see",
       "hail": "Hail and other short, local weather events.",
       "pests": "Pests and diseases in your field.",
       "markets": "Prices and markets.",
       "management": "Your field work, hybrids and fertiliser.",
       "scale": "Weather data describe an area tens of kilometres wide, not your exact plot."
     },
-    "demoTitle": "About the demo data",
-    "demo": "In this version the numbers are for demonstration. We mark them clearly as “Demo data” until the real data are connected.",
-    "judgmentDetail": "It shows what would have happened in past years. The decision for your field stays yours.",
-    "whatCards": {
-      "farmer": "For farmers",
-      "buyer": "For feed buyers",
-      "transparency": "Everything in the open"
-    },
-    "nasaNote": "We use free public data published by NASA and other institutions. NASA is not a partner and does not endorse this tool.",
-    "aiHint": "AI does two small, checkable jobs. It does not make decisions for you."
+    "demo": {
+      "title": "Demo data",
+      "text": "Where real data is not available yet, we show demonstration numbers and always mark them “Demo data”."
+    }
   },
   "CropsShort": {
     "maize": "Maize",
@@ -577,10 +560,9 @@
   "Simulator": {
     "eyebrow": "Field simulator",
     "backToField": "Back to my field",
-    "title": "See your rotation on a field",
-    "intro": "A small tractor sows each crop of the rotation, the field grows and is harvested, then the next crop follows. Brown means bare soil; green means the field is covered.",
-    "banner": "Illustration — not a machine work plan.",
-    "demoNote": "Demo rotations and a demo field near Aiud. Sowing and harvest months are typical for Alba county; yours will differ.",
+    "title": "Your rotation on a field",
+    "intro": "Watch each crop sown, grown and harvested, season after season.",
+    "demoNote": "An illustration, not a work plan. A demo field near Aiud; sowing and harvest months are typical for Alba county, and yours will differ.",
     "strategyLabel": "Rotation",
     "shapeLabel": "Field shape",
     "shape": {
@@ -606,12 +588,11 @@
       "restart": "Restart",
       "prev": "Previous step",
       "next": "Next step",
-      "prevShort": "Back",
-      "nextShort": "Next",
       "speed": "Speed",
       "scrub": "Timeline",
       "camera": "Camera",
-      "keys": "Keys: Space play or pause · ← → step · 1 2 4 speed · R restart · C camera"
+      "keys": "Space play or pause · ← → step · 1 2 4 speed · R restart · C camera",
+      "keysLabel": "Keyboard shortcuts"
     },
     "camera": {
       "overview": "Overview",
@@ -634,129 +615,68 @@
       "scale": "Drawn to scale in months"
     },
     "stats": {
-      "title": "Field work, per operation",
-      "illustrative": "Illustrative estimates for this demo field, not a work plan.",
+      "title": "Field work",
+      "illustrative": "Illustrative estimates for this demo field: a {width} m drill plus {laps} headland laps, {work} km/h working and {turn} km/h on turns.",
       "area": "Field area",
       "passes": "Passes",
-      "passesHint": "{width} m drill, plus {laps} headland laps",
       "distance": "Distance driven",
       "time": "Working time",
-      "timeHint": "{work} km/h working, {turn} km/h on turns",
       "bare": "Months of bare soil between crops",
       "seasons": "Crop by season"
     },
     "seasonRow": "sown in {sow}, harvested in {harvest}",
     "seasonRowCover": "sown in {sow}, worked into the soil in {harvest}",
     "reducedMotion": "Reduced motion is on, so the field does not animate. Use Back and Next to step through each season.",
-    "openLink": "See it on a field"
+    "openLink": "See it on a field",
+    "aboutDemo": "About this illustration"
   },
   "Home": {
     "title": "Which crops will do best on your field?",
     "lead": "We replay the last 25 seasons on your own land, so you can plan the next one.",
     "start": "Choose your field",
-    "buyer": {
-      "title": "Feed buyers",
-      "text": "See, commune by commune, where maize, wheat and barley are likely this year, and at what quality risk.",
-      "cta": "Open the buyer view"
-    },
     "imageAlt": "Satellite view of Transylvania in summer: farmland in the centre, ringed by the forested Carpathians.",
     "imageCredit": "Transylvania, 2 July 2025. Image: NASA Worldview, MODIS on Terra.",
     "sceneNote": "Illustration: an example valley, not a real field.",
-    "proofTitle": "Example: a field near {place}",
-    "proofSentence": "{current, plural, =0 {No poor seasons} one {1 poor season} other {# poor seasons}} with {currentCrops}. {best, plural, =0 {None} one {1} other {#}} with {bestCrops}.",
-    "proofHint": "One square per year. × is a bad year, ! a year to watch.",
-    "stripLabel": "{name}: {bad, plural, =0 {no poor seasons} one {1 poor season} other {# poor seasons}} and {watch, plural, =0 {no seasons to watch} one {1 season to watch} other {# seasons to watch}} out of {total}",
-    "current": "Your rotation now",
+    "proof": {
+      "line": "{current, plural, =0 {No poor seasons} one {1 poor season} other {# poor seasons}} with {currentCrops}. {best, plural, =0 {None} one {1} other {#}} with {bestCrops}.",
+      "stripLabel": "{name}: {bad, plural, =0 {no poor seasons} one {1 poor season} other {# poor seasons}} and {watch, plural, =0 {no seasons to watch} one {1 season to watch} other {# seasons to watch}} out of {total}",
+      "title": "{seasons} seasons near {place}",
+      "current": "Your rotation now",
+      "legend": "× poor season · ! season to watch"
+    },
     "steps": {
-      "field": {
-        "title": "Choose your field",
-        "text": "Find it on the satellite map and tap your parcels."
+      "title": "How it works",
+      "field": "Tap your parcels on the map.",
+      "rotation": "Say what you grow.",
+      "result": "Compare three rotations, season by season."
+    },
+    "doors": {
+      "title": "Start here",
+      "farmer": {
+        "title": "I farm",
+        "text": "Plan your next rotation"
       },
-      "rotation": {
-        "title": "Say what you grow",
-        "text": "Your crops, and what matters most: harvest, water, soil or risk."
-      },
-      "result": {
-        "title": "See what works best",
-        "text": "25 seasons for your rotation and two others."
+      "buyer": {
+        "title": "I buy feed",
+        "text": "See where the harvest will be"
       }
     },
-    "stats": {
-      "seasons": "seasons checked, 2001 to 2025",
-      "sources": "public data sources, NASA included",
-      "rotations": "rotations side by side"
-    },
-    "whatTitle": "What is Field Signal?",
-    "whatText": "A tool for farmers in Romania. You choose your field and tell us what you grow. We replay every season since 2001 on it, with the droughts, wet springs and heat waves, and show which rotation would have held up best.",
-    "whatJudgment": "Built on public data from NASA satellites and weather records, checked against official county yields.",
-    "lookTitle": "What we look at on your field",
-    "look": {
-      "weather": {
-        "title": "Weather, day by day",
-        "text": "Heat, rain and frost since 2001."
-      },
-      "plants": {
-        "title": "Plant health from space",
-        "text": "How green the crops were, season after season."
-      },
-      "water": {
-        "title": "Water in the soil",
-        "text": "How much moisture the roots had."
-      },
-      "soil": {
-        "title": "Your soil",
-        "text": "Texture, pH and organic matter."
-      }
-    },
-    "getTitle": "What you get",
-    "get": {
-      "compare": {
-        "title": "Your rotation, year by year",
-        "text": "Every good and poor season, marked on one strip."
-      },
-      "alternatives": {
-        "title": "Two rotations that did better",
-        "text": "At least one with peas."
-      },
-      "plan": {
-        "title": "A plan for your plots",
-        "text": "Which crop goes where, season by season."
-      },
-      "ask": {
-        "title": "Answers to your questions",
-        "text": "Ask in plain words, in Romanian or English."
-      }
-    },
-    "stepsTitle": "How it works",
-    "audienceTitle": "Who it is for",
-    "farmer": {
-      "title": "Farmers",
-      "text": "Plan next season with 25 years of seasons behind you.",
-      "cta": "Choose your field"
-    },
-    "limitsTitle": "What it cannot see",
-    "ctaTitle": "Ready to see your field?",
-    "ctaText": "Tap your parcels on the map. No account needed."
+    "credit": "Made at NASA Space Apps 2026 by Farm Titans · Data: NASA POWER, MODIS, SMAP, SoilGrids"
   },
   "Account": {
-    "title": "My account",
-    "intro": "Keep your fields here and open any of them again from your phone or laptop.",
+    "title": "Account",
+    "intro": "Keep your fields on every device.",
     "signInTitle": "Sign in",
     "signUpTitle": "Create an account",
-    "signInTab": "Sign in",
-    "signUpTab": "New account",
     "email": "Email",
     "password": "Password",
-    "passwordHint": "At least 8 characters.",
     "name": "Your name (optional)",
     "signIn": "Sign in",
     "signUp": "Create account",
     "working": "One moment…",
     "signOut": "Sign out",
-    "signedInAs": "Signed in as {email}",
-    "hello": "Hello, {name}",
     "loading": "Loading your account…",
-    "offline": "We can't reach the server right now. Your fields are safe; try again in a moment.",
+    "offline": "We can't reach the server. Your fields are safe; try again soon.",
     "retry": "Try again",
     "errors": {
       "email_taken": "There is already an account with this email. Sign in instead.",
@@ -829,7 +749,6 @@
       "openMany": "Analyse {count} fields"
     },
     "profile": {
-      "title": "Profile and security",
       "email": "Email",
       "since": "Member since",
       "name": "Name",
@@ -837,15 +756,19 @@
       "nameSaved": "Name saved.",
       "passwordTitle": "Change password",
       "currentPassword": "Current password",
-      "newPassword": "New password",
-      "changePassword": "Change password",
+      "newPassword": "New password (at least 8 characters)",
+      "changePassword": "Change",
       "passwordChanged": "Password changed. Other devices were signed out.",
       "deleteTitle": "Delete account",
       "deleteText": "Deletes your account and {count, plural, =0 {} one {your saved field} other {all # saved fields}}. This cannot be undone.",
-      "deleteStart": "Delete my account…",
-      "deletePassword": "Enter your password to confirm",
-      "deleteConfirm": "Delete account for good"
-    }
+      "deletePassword": "Your password",
+      "deleteConfirm": "Delete",
+      "nameEmpty": "Add your name",
+      "cancel": "Cancel"
+    },
+    "newPassword": "Password (at least 8 characters)",
+    "noAccount": "No account yet?",
+    "haveAccount": "Already have an account?"
   },
   "Assistant": {
     "launcher": "Ask",
