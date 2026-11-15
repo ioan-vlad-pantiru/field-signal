@@ -246,17 +246,7 @@
       "mapLabel": "Câmpul dumneavoastră în {year}: {crop}",
       "mapUnavailable": "Harta nu poate fi afișată în acest browser. Sezoanele de mai jos conțin tot planul.",
       "play": "Derulați sezoanele",
-      "season": "Sezonul (anul recoltei)",
-      "plot": "Parcela",
-      "notFarmland": "Nu se cultivă: {ha} ha ({reasons})",
-      "hexScale": "1 hexagon = 1 ha",
-      "reason": {
-        "road": "drum",
-        "building": "clădiri",
-        "water": "apă",
-        "woods": "pădure",
-        "built_up": "zonă construită"
-      }
+      "season": "Sezonul (anul recoltei)"
     },
     "back": "Schimbați câmpul sau culturile",
     "share": "Trimiteți sau tipăriți",
@@ -590,37 +580,10 @@
     "aboutDemo": "Despre această ilustrație"
   },
   "Home": {
-    "title": "Ce culturi merg cel mai bine pe câmpul dumneavoastră?",
-    "lead": "Refacem ultimele 25 de sezoane pe pământul dumneavoastră, ca să puteți planifica următorul.",
+    "title": "Ce rotație a culturilor vi se potrivește cel mai bine?",
+    "subtitle": "Alegeri inteligente, pe baza istoricului din câmp",
     "start": "Alegeți câmpul",
-    "imageAlt": "Transilvania văzută din satelit, vara: terenuri agricole în centru, înconjurate de Carpații împăduriți.",
-    "imageCredit": "Transilvania, 2 iulie 2025. Imagine: NASA Worldview, MODIS pe satelitul Terra.",
-    "sceneNote": "Ilustrație: o vale de exemplu, nu un câmp real.",
-    "proof": {
-      "line": "{current, plural, =0 {Niciun sezon slab} one {Un sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} cu {currentCrops}. {best, plural, =0 {Niciunul} one {Unul} other {#}} cu {bestCrops}.",
-      "stripLabel": "{name}: {bad, plural, =0 {niciun sezon slab} one {un sezon slab} few {# sezoane slabe} other {# de sezoane slabe}} și {watch, plural, =0 {niciun sezon de urmărit} one {un sezon de urmărit} few {# sezoane de urmărit} other {# de sezoane de urmărit}} din {total}",
-      "title": "{seasons} de sezoane lângă {place}",
-      "current": "Rotația de acum",
-      "legend": "× sezon slab · ! sezon de urmărit"
-    },
-    "steps": {
-      "title": "Cum funcționează",
-      "field": "Atingeți parcelele pe hartă.",
-      "rotation": "Spuneți ce cultivați.",
-      "result": "Comparați trei rotații, sezon cu sezon."
-    },
-    "doors": {
-      "title": "Începeți de aici",
-      "farmer": {
-        "title": "Sunt fermier",
-        "text": "Planificați rotația următoare"
-      },
-      "buyer": {
-        "title": "Cumpăr furaje",
-        "text": "Vedeți unde va fi recolta"
-      }
-    },
-    "credit": "Făcut la NASA Space Apps 2026 de Farm Titans · Date: NASA POWER, MODIS, SMAP, SoilGrids"
+    "imageAlt": "Transilvania văzută din satelit, vara: terenuri agricole în centru, înconjurate de Carpații împăduriți."
   },
   "Account": {
     "title": "Cont",
