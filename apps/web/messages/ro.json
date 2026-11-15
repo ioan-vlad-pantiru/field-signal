@@ -483,33 +483,53 @@
   "About": {
     "title": "Despre și date",
     "lead": "25 de ani de vreme, sol și date din satelit, refăcute pe câmpul dumneavoastră.",
+    "what": {
+      "title": "Ce face",
+      "farmer": "Field Signal răspunde la o singură întrebare: ce să semăn mai departe pe acest câmp? Atingeți parcela pe hartă, spuneți ce cultivați acum și ce contează cel mai mult pentru dumneavoastră: recolta, apa, solul sau riscul. Comparăm rotația dumneavoastră cu cele mai bune alternative, dăm fiecăreia o notă din 100 și refacem fiecare sezon din 2001 până în 2025, ca să vedeți cum s-ar fi descurcat fiecare în anii buni și în cei slabi.",
+      "farm": "Pentru o fermă întreagă, importați parcelele din AGI Online și primiți un plan: ce cultură vine pe fiecare câmp în fiecare an, cu verificări simple față de regulile europene de rotație a culturilor și o listă pentru declarația anuală la APIA.",
+      "buyers": "Cumpărătorii de furaje au o a doua vedere: perspectiva recoltelor pe doi ani, pe regiuni și culturi, și câte zile de stoc mai are o fabrică de nutrețuri până trebuie să cumpere.",
+      "coverage": "Deocamdată, harta parcelelor acoperă județul Alba: toate cele 171.607 parcele declarate la APIA în 2025."
+    },
     "how": {
       "title": "Cum funcționează",
-      "text": "Alegeți câmpul și spuneți ce cultivați. Refacem pe el fiecare sezon din 2001 încoace, cu secete și primăveri ploioase cu tot, și comparăm rotația dumneavoastră cu alte două, dintre care cel puțin una cu mazăre. Cumpărătorii de furaje văd aceleași semnale, comună cu comună.",
+      "replay": "Nu încercăm să prognozăm vremea de la anul. Refacem trecutul: același câmp, vremea reală din fiecare an trecut, o altă cultură. Vă amintiți acei ani, așa că puteți compara rezultatul cu propria experiență.",
+      "model": "În spate este un model antrenat de noi. A învățat cum se schimbă de la o lună la alta cât de verde este un câmp și câtă apă are solul, în funcție de vreme, de sol și de culturi: cea din acest an și cele două dinainte. Schimbăm cultura, păstrăm vremea reală, iar modelul reface sezonul.",
+      "plan": "Pentru un plan, eliminăm mai întâi rotațiile care încalcă reguli agronomice de bază, cum ar fi aceeași cultură doi ani la rând. Fiecare rotație rămasă este trecută prin vremea din anii trecuți și primește note pentru recoltă, apă, sănătatea solului și risc. Prioritățile dumneavoastră hotărăsc cât cântărește fiecare notă.",
       "judgment": "Arată ce ar fi adus sezoanele trecute. Decizia rămâne a dumneavoastră; pașii riscanți merită discutați cu un agronom."
+    },
+    "tested": {
+      "title": "Cum l-am testat",
+      "training": "Modelul a învățat din 306.373 de puncte de pe terenuri agricole din România și din șase țări apropiate, între 2016 și 2024.",
+      "unseen": "L-am testat pe 39.588 de puncte din unsprezece regiuni pe care nu le văzuse niciodată, printre ele și Alba. Mergând trei ani înainte doar pe propriile predicții, a explicat 65–69% din variația lunară a vegetației și 84–88% din cea a umidității solului.",
+      "swap": "Am verificat și schimbarea culturii, pe câmpuri care au avut cu adevărat cealaltă cultură, în aceeași vreme. Modelul a nimerit luna de vârf a sezonului la toate cele șase culturi.",
+      "yield": "Pentru perspectiva cumpărătorilor, câte un model pentru fiecare cultură transformă cât de verde a fost sezonul în tone la hectar. Comparat cu recoltele regionale oficiale, merge bine la porumb și la floarea-soarelui și este aproximativ la orz și la leguminoasele boabe."
     },
     "sources": {
       "title": "Surse de date",
       "nasa": "NASA",
       "other": "Altă sursă publică",
       "note": "Folosim date publice, gratuite, de la NASA și de la alte instituții. NASA nu este partener și nu susține acest instrument.",
-      "power": "Temperatură, ploaie, umezeala aerului, umiditatea solului și radiația, zi de zi",
-      "modis": "Cât de verde și viguroasă este vegetația (NDVI), de la satelitul Terra",
-      "myd13": "Același indice de vegetație, de la satelitul Aqua, care umple golurile lăsate de nori",
-      "smap": "Apa din sol, în zona rădăcinilor",
-      "eucropmap": "Ce culturi sunt unde, și suprafețele pe comună",
-      "ins": "Suprafețe, producții și recolte oficiale pe județ, pentru verificarea modelului",
+      "power": "Temperatură, ploaie, umezeala aerului, vânt și soare, zi de zi, iar din ele apa pe care o pierde un câmp verde (ET0)",
+      "hls": "Cât de verde și viguroasă este cultura (NDVI), din imagini Landsat și Sentinel-2; din ele a învățat modelul",
+      "smap": "Apa din sol, în zona rădăcinilor; din ea a învățat modelul",
+      "srtm": "Înălțimea și panta terenului, pentru antrenarea modelului",
       "soilgrids": "Carbon organic, pH și textura solului, 0–30 cm",
-      "gisco": "Limitele regiunilor și ale comunelor",
-      "et0": "Evapotranspirația de referință: cât de multă apă pierde zilnic un câmp verde bine udat"
+      "dem": "Înălțimea și panta terenului de sub câmpul dumneavoastră",
+      "croptypes": "Ce cultură a fost unde, an de an: istoricul culturilor din care a învățat modelul",
+      "apia": "Contururile parcelelor declarate de fermieri, pe care le atingeți pe hartă",
+      "eucropmap": "Ce culturi au fost cartate pe fiecare parcelă",
+      "eurostat": "Recoltele regionale oficiale, pentru antrenarea și verificarea modelelor de recoltă",
+      "gisco": "Limitele regiunilor și ale comunelor"
     },
     "glossaryTitle": "Glosar",
     "ai": {
       "title": "Inteligența artificială",
-      "modelTitle": "Modelul de risc",
-      "model": "Un model mic estimează șansa unui an slab pentru fiecare zonă și cultură, din semnalele de vreme și vegetație din perioadele critice. Îl testăm lăsând deoparte câte un an și publicăm și reușitele, și greșelile.",
-      "textTitle": "Explicațiile",
-      "text": "Un model de limbaj transformă cifrele calculate în text simplu. Are voie să folosească doar valorile calculate de noi și un format fix."
+      "modelTitle": "Modelul de culturi",
+      "model": "O rețea neuronală mică, antrenată de noi pe date din satelit și de vreme. Din ea vin toate notele și toate sezoanele refăcute.",
+      "yieldTitle": "Modelele de recoltă",
+      "yield": "Șapte modele mici, câte unul pentru fiecare cultură, aflate în spatele perspectivei recoltelor pentru cumpărători.",
+      "textTitle": "Asistentul",
+      "text": "Un model de limbaj deschis, deja existent (Qwen), pe care nu l-am antrenat noi. Explică rezultatele și are voie să folosească doar cifrele calculate de aplicație. Tot el scrie rezumatul raportului de stocuri pentru cumpărători."
     },
     "limits": {
       "title": "Ce nu poate vedea",
@@ -517,11 +537,60 @@
       "pests": "Dăunătorii și bolile din câmpul dumneavoastră.",
       "markets": "Prețurile și piețele.",
       "management": "Lucrările, hibrizii și îngrășămintele folosite de dumneavoastră.",
-      "scale": "Datele de vreme descriu o zonă de zeci de kilometri, nu exact parcela."
+      "scale": "Datele de vreme descriu o zonă de zeci de kilometri, nu exact parcela.",
+      "greenness": "Tonele la hectar: nota pentru recoltă compară cât de verde ar fi cultura cu un an obișnuit pentru ea."
     },
     "demo": {
       "title": "Date demonstrative",
-      "text": "Acolo unde încă nu avem date reale, arătăm cifre demonstrative și le marcăm mereu cu „Date demonstrative”."
+      "text": "Rezultatele pe câmp, planurile de fermă și perspectiva recoltelor vin din model. Fila Stocuri folosește un scenariu inventat, iar simulatorul de câmp este o ilustrație. Dacă serverul nu răspunde, aplicația arată cifre demonstrative incluse în ea și le marchează cu „Date demonstrative”."
+    },
+    "diagrams": {
+      "replay": {
+        "caption": "O rotație, refăcută: de la câmpul dumneavoastră la o notă din 100.",
+        "field": "Câmpul dumneavoastră și o rotație de încercat",
+        "weather": "Vremea reală din fiecare sezon trecut",
+        "model": "Modelul de culturi",
+        "states": "Vegetația și umiditatea solului, lună de lună",
+        "scores": "Patru note: recoltă, apă, sănătatea solului, risc",
+        "priorities": "Prioritățile dumneavoastră",
+        "fit": "Potrivire din 100"
+      },
+      "step": {
+        "caption": "Un pas al modelului de culturi. Un sezon înseamnă acest pas, repetat lună după lună.",
+        "now": "Luna aceasta: vegetația și umiditatea solului",
+        "inputs": "Vremea, culturile din trei ani, solul și relieful",
+        "model": "Modelul de culturi",
+        "next": "Luna viitoare: vegetația și umiditatea solului",
+        "loop": "Același pas din nou, pentru fiecare lună a sezonului"
+      },
+      "outlook": {
+        "caption": "De la sezoanele simulate la perspectiva recoltelor pentru cumpărători.",
+        "seasons": "Sezoane simulate cu vremea din 41 de ani trecuți",
+        "greenness": "Vârful și totalul vegetației din fiecare sezon",
+        "yieldModel": "Modelul de recoltă al culturii",
+        "tonnes": "Tone la hectar: minim, obișnuit, maxim",
+        "map": "Harta perspectivei, 136 de regiuni"
+      },
+      "system": {
+        "caption": "Cum se leagă părțile între ele.",
+        "app": "Aplicația web",
+        "whatsapp": "WhatsApp",
+        "api": "API",
+        "model": "Modelul de culturi și optimizatorul fermei",
+        "parcels": "Parcelele APIA",
+        "accounts": "Conturi și câmpuri salvate",
+        "llm": "Model de limbaj (Qwen)"
+      }
+    },
+    "made": {
+      "title": "Cine l-a făcut",
+      "text": "Echipa Farm Titans, la NASA Space Apps Challenge 2026, pentru provocarea „Field Shift: Adapting Farms with NASA Data”. Folosește doar date deschise, iar codul este și el deschis.",
+      "code": "Codul sursă pe GitHub",
+      "tools": "Construit cu",
+      "web": "Web",
+      "api": "API",
+      "models": "Modele și date",
+      "hosting": "Găzduire"
     }
   },
   "CropsShort": {
