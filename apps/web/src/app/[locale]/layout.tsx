@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
+import Script from "next/script";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
@@ -9,6 +10,7 @@ import { BottomBar } from "@/components/layout/nav";
 import { PageTransition } from "@/components/layout/page-transition";
 import { ServiceWorkerRegistration } from "@/components/layout/service-worker";
 import { SiteHeader } from "@/components/layout/site-header";
+import { CF_ANALYTICS_TOKEN } from "@/lib/site";
 import "../globals.css";
 
 const geist = Geist({ variable: "--font-geist", subsets: ["latin", "latin-ext"] });
@@ -64,6 +66,13 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
           <Assistant />
           <ServiceWorkerRegistration />
         </NextIntlClientProvider>
+        {/* Cookieless visit counts, production builds only; it follows client-side route changes itself. */}
+        {process.env.NODE_ENV === "production" && (
+          <Script
+            src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon={JSON.stringify({ token: CF_ANALYTICS_TOKEN })}
+          />
+        )}
       </body>
     </html>
   );
